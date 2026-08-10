@@ -1,0 +1,130 @@
+export const metadata = {
+  title: 'Greedy',
+  description: 'At each step, make the locally optimal choice with the hope that it leads to a globally optimal solution. Works when greedy choice property and optimal substructure hold.',
+  timeComplexity: 'O(n log n) typically (due to sorting)',
+  spaceComplexity: 'O(1) or O(n)',
+  useCases: ['Activity selection', 'Jump game', 'Gas station', 'Merge intervals', 'Huffman coding'],
+  variations: [
+    { id: 'interval', title: 'Interval Scheduling / Merging', description: 'Sort by start or end time, then greedily select non-overlapping intervals or merge overlapping ones.' },
+    { id: 'reach', title: 'Reach / Jump Problems', description: 'Track the furthest reachable index. Greedily maximize reach at each step.' },
+    { id: 'exchange', title: 'Exchange Argument', description: 'Prove greedy is optimal by showing swapping any two adjacent choices never improves the result.' },
+    { id: 'priority', title: 'Priority Queue Greedy', description: 'Use a min/max heap to always process the most urgent item. Classic: Huffman, Task Scheduling.' },
+  ],
+};
+
+## Concept
+
+Greedy works when you can prove two things:
+1. **Greedy choice property**: A globally optimal solution can always include the locally optimal choice.
+2. **Optimal substructure**: After making the greedy choice, the remaining problem has the same structure.
+
+> **Key insight**: If you can't easily prove these, consider DP instead. Many greedy problems look like DP but have a much simpler solution.
+
+## Template
+
+### Merge Intervals
+
+```python
+def merge(intervals: list[list[int]]) -> list[list[int]]:
+    intervals.sort(key=lambda x: x[0])  # sort by start time
+    merged = [intervals[0]]
+
+    for start, end in intervals[1:]:
+        if start <= merged[-1][1]:          # overlaps with last merged
+            merged[-1][1] = max(merged[-1][1], end)
+        else:
+            merged.append([start, end])
+
+    return merged
+```
+
+### Activity Selection (Max Non-Overlapping Intervals)
+
+```python
+def erase_overlap_intervals(intervals: list[list[int]]) -> int:
+    intervals.sort(key=lambda x: x[1])   # sort by end time (key insight)
+    count = 0
+    last_end = float('-inf')
+
+    for start, end in intervals:
+        if start >= last_end:             # no overlap
+            last_end = end
+        else:
+            count += 1                    # must remove this interval
+
+    return count
+```
+
+### Jump Game II (Minimum Jumps)
+
+```python
+def jump(nums: list[int]) -> int:
+    jumps = 0
+    current_end = 0   # end of current jump range
+    farthest = 0      # farthest reachable index
+
+    for i in range(len(nums) - 1):
+        farthest = max(farthest, i + nums[i])
+        if i == current_end:           # exhausted current jump
+            jumps += 1
+            current_end = farthest     # make the jump
+
+    return jumps
+```
+
+### Gas Station (Circular)
+
+```python
+def can_complete_circuit(gas: list[int], cost: list[int]) -> int:
+    if sum(gas) < sum(cost):
+        return -1
+
+    tank = 0
+    start = 0
+
+    for i in range(len(gas)):
+        tank += gas[i] - cost[i]
+        if tank < 0:            # can't reach next station from `start`
+            tank = 0
+            start = i + 1       # try starting from next station
+
+    return start
+```
+
+### Task Scheduler (Priority Queue)
+
+```python
+import heapq
+from collections import Counter
+
+def least_interval(tasks: list[str], n: int) -> int:
+    freq = Counter(tasks)
+    max_heap = [-f for f in freq.values()]
+    heapq.heapify(max_heap)
+    time = 0
+
+    while max_heap:
+        cycle = []
+        for _ in range(n + 1):
+            if max_heap:
+                cycle.append(heapq.heappop(max_heap))
+        for f in cycle:
+            if f + 1 < 0:
+                heapq.heappush(max_heap, f + 1)
+        time += n + 1 if max_heap else len(cycle)
+
+    return time
+```
+
+## When to Use
+
+- Problem involves **selection** from a set with some optimization goal
+- There's a natural **ordering** (sort by deadline, end time, ratio, etc.)
+- The problem has "minimum number of X" or "maximum number of non-overlapping Y"
+- After sorting, a single linear scan gives the answer
+
+## Common Pitfalls
+
+- Applying greedy to a problem that actually needs DP
+- Choosing the wrong sort key (e.g., sort by start vs. end in interval problems)
+- Missing edge cases in the gas station / circular array problems

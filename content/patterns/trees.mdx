@@ -1,0 +1,136 @@
+export const metadata = {
+  title: 'Trees',
+  description: 'Hierarchical structures where each node has at most one parent. Most problems reduce to a DFS traversal computing values bottom-up or top-down.',
+  timeComplexity: 'O(n) for full traversal',
+  spaceComplexity: 'O(h) — h = height; O(log n) balanced, O(n) worst',
+  useCases: ['Tree traversals', 'Path sum problems', 'LCA', 'Diameter', 'BST operations', 'Serialization'],
+  variations: [
+    { id: 'traversal', title: 'DFS Traversals (Pre/In/Post-order)', description: 'The foundation. Inorder of BST = sorted order. Preorder = serialize tree. Postorder = bottom-up aggregation.' },
+    { id: 'bfs-level', title: 'BFS / Level-Order', description: 'Process nodes level by level using a queue. Essential for finding level-specific properties.' },
+    { id: 'path', title: 'Root-to-Leaf / Any Path', description: 'Path sum, max path sum, longest path. Carry accumulated value top-down; return aggregated value bottom-up.' },
+    { id: 'bst', title: 'Binary Search Tree (BST)', description: 'Exploit the BST property: left < node < right. Enables O(log n) search, insert, and range queries.' },
+    { id: 'lca', title: 'Lowest Common Ancestor (LCA)', description: 'Find the deepest node that is an ancestor of both targets. Works via DFS post-order or parent-pointer + path.' },
+  ],
+};
+
+## Concept
+
+The key to tree problems is choosing the **direction of information flow**:
+
+- **Top-down**: pass data from parent to child (e.g., current path sum)
+- **Bottom-up**: return aggregated data from children to parent (e.g., height, diameter)
+
+Most hard tree problems combine both.
+
+> **Key insight**: If you can define `f(node)` that returns what you need from a subtree, a single DFS gives you the answer.
+
+## Template
+
+### DFS — Bottom-Up (Postorder)
+
+```python
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+def tree_height(root: TreeNode | None) -> int:
+    if not root:
+        return 0
+    left_h = tree_height(root.left)
+    right_h = tree_height(root.right)
+    return 1 + max(left_h, right_h)
+```
+
+### Path Sum (Any Path — Not Just Root-to-Leaf)
+
+```python
+def max_path_sum(root: TreeNode | None) -> int:
+    best = [float('-inf')]
+
+    def dfs(node: TreeNode | None) -> int:
+        if not node:
+            return 0
+        # Take only positive contributions from children
+        left = max(0, dfs(node.left))
+        right = max(0, dfs(node.right))
+        # Update global best: path going through this node
+        best[0] = max(best[0], node.val + left + right)
+        # Return max one-directional contribution for parent
+        return node.val + max(left, right)
+
+    dfs(root)
+    return best[0]
+```
+
+### BFS — Level Order
+
+```python
+from collections import deque
+
+def level_order(root: TreeNode | None) -> list[list[int]]:
+    if not root:
+        return []
+    result = []
+    queue = deque([root])
+
+    while queue:
+        level_size = len(queue)
+        level = []
+        for _ in range(level_size):
+            node = queue.popleft()
+            level.append(node.val)
+            if node.left: queue.append(node.left)
+            if node.right: queue.append(node.right)
+        result.append(level)
+
+    return result
+```
+
+### BST — Validate
+
+```python
+def is_valid_bst(root: TreeNode | None,
+                  lo: float = float('-inf'),
+                  hi: float = float('inf')) -> bool:
+    if not root:
+        return True
+    if root.val <= lo or root.val >= hi:
+        return False
+    return (is_valid_bst(root.left, lo, root.val) and
+            is_valid_bst(root.right, root.val, hi))
+```
+
+### Lowest Common Ancestor
+
+```python
+def lca(root: TreeNode | None,
+        p: TreeNode,
+        q: TreeNode) -> TreeNode | None:
+    if not root or root is p or root is q:
+        return root
+    left = lca(root.left, p, q)
+    right = lca(root.right, p, q)
+    if left and right:
+        return root   # p and q are in different subtrees
+    return left or right
+```
+
+## When to Use
+
+| Problem shape | Approach |
+|---------------|----------|
+| Compute height / depth | Bottom-up DFS |
+| Check if subtree satisfies property | Bottom-up DFS returning bool |
+| Path sum / path count | Top-down DFS with running sum |
+| Level-specific info | BFS |
+| BST range queries | Inorder DFS |
+| Ancestors / LCA | Post-order DFS |
+
+## Common Pitfalls
+
+- Returning wrong value in the recursive function (mixing local max with global best)
+- Not handling `None` (empty subtree) as the base case
+- In BST validation, using only parent comparison instead of valid range `[lo, hi]`
+- Forgetting `level_size = len(queue)` capture before the level loop in BFS

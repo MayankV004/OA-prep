@@ -1,0 +1,142 @@
+export const metadata = {
+  title: 'Heap',
+  description: 'A priority queue that gives O(log n) insert/extract. Use whenever you need repeated access to the min or max element dynamically.',
+  timeComplexity: 'O(log n) push/pop; O(n) heapify; O(n log k) for top-k',
+  spaceComplexity: 'O(k) for top-k; O(n) full heap',
+  useCases: ['Top-K elements', 'K-th largest/smallest', 'Merge K sorted lists', 'Median of data stream', 'Dijkstra'],
+  variations: [
+    { id: 'top-k', title: 'Top-K Elements (Min-Heap of size K)', description: 'Maintain a min-heap of size k. If new element > heap top, replace. Result is the k largest elements.' },
+    { id: 'two-heaps', title: 'Two Heaps (Median Stream)', description: 'Max-heap for lower half, min-heap for upper half. Balance sizes to read median in O(1).' },
+    { id: 'merge-k', title: 'Merge K Sorted Lists', description: 'Push the first element of each list into a min-heap. Repeatedly extract min, push next from same list.' },
+    { id: 'schedule', title: 'Event / Interval Scheduling', description: 'Sort events by start; use a min-heap of end times to track active intervals.' },
+  ],
+};
+
+## Concept
+
+Python's `heapq` is a **min-heap**. For a max-heap, negate values (`-x`).
+
+| Operation | Time |
+|-----------|------|
+| heappush | O(log n) |
+| heappop | O(log n) |
+| heapify | O(n) |
+| peek (heap[0]) | O(1) |
+
+> **Key insight**: Whenever you need "give me the smallest/largest of what I have so far," reach for a heap.
+
+## Template
+
+### Top-K Largest Elements
+
+```python
+import heapq
+
+def top_k_largest(nums: list[int], k: int) -> list[int]:
+    # Maintain a min-heap of size k
+    # The top of the heap is the smallest of the k largest
+    heap = []
+
+    for num in nums:
+        heapq.heappush(heap, num)
+        if len(heap) > k:
+            heapq.heappop(heap)     # remove the smallest
+
+    return list(heap)
+
+# Alternative: O(n log k) guaranteed
+def kth_largest(nums: list[int], k: int) -> int:
+    return heapq.nlargest(k, nums)[-1]
+```
+
+### Median of Data Stream (Two Heaps)
+
+```python
+import heapq
+
+class MedianFinder:
+    def __init__(self):
+        self.lo = []   # max-heap (negate) — lower half
+        self.hi = []   # min-heap — upper half
+
+    def add_num(self, num: int) -> None:
+        heapq.heappush(self.lo, -num)       # push to max-heap
+
+        # Balance: ensure lo[-lo[0]] <= hi[0]
+        if self.hi and -self.lo[0] > self.hi[0]:
+            heapq.heappush(self.hi, -heapq.heappop(self.lo))
+
+        # Balance sizes: |lo| - |hi| <= 1
+        if len(self.lo) > len(self.hi) + 1:
+            heapq.heappush(self.hi, -heapq.heappop(self.lo))
+        elif len(self.hi) > len(self.lo):
+            heapq.heappush(self.lo, -heapq.heappop(self.hi))
+
+    def find_median(self) -> float:
+        if len(self.lo) > len(self.hi):
+            return -self.lo[0]
+        return (-self.lo[0] + self.hi[0]) / 2
+```
+
+### Merge K Sorted Lists
+
+```python
+import heapq
+from typing import Optional
+
+class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+
+def merge_k_lists(lists: list[Optional[ListNode]]) -> Optional[ListNode]:
+    heap = []
+
+    for i, node in enumerate(lists):
+        if node:
+            heapq.heappush(heap, (node.val, i, node))
+
+    dummy = ListNode()
+    curr = dummy
+
+    while heap:
+        val, i, node = heapq.heappop(heap)
+        curr.next = node
+        curr = curr.next
+        if node.next:
+            heapq.heappush(heap, (node.next.val, i, node.next))
+
+    return dummy.next
+```
+
+### Meeting Rooms II (Min Rooms Needed)
+
+```python
+import heapq
+
+def min_meeting_rooms(intervals: list[list[int]]) -> int:
+    intervals.sort()                  # sort by start time
+    heap = []                         # min-heap of end times
+
+    for start, end in intervals:
+        if heap and heap[0] <= start:
+            heapq.heapreplace(heap, end)   # reuse room
+        else:
+            heapq.heappush(heap, end)      # need new room
+
+    return len(heap)
+```
+
+## When to Use
+
+- Repeatedly accessing minimum or maximum from a dynamic collection
+- "Find the k-th largest/smallest" — fixed-size heap
+- "Median of stream" — two heaps
+- "Merge multiple sorted sources" — k-way merge heap
+- Greedy scheduling problems with end times
+
+## Common Pitfalls
+
+- Python's heap is a **min-heap** — negate values for max-heap behavior
+- Using `heap[0]` for peek is fine but don't pop unless you mean to extract
+- In `Merge K Lists`, use `(val, index, node)` tuples to avoid comparing `ListNode` objects directly

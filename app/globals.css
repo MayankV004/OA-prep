@@ -128,3 +128,54 @@
     @apply font-sans;
   }
 }
+
+/* ─── MDX / Prose Content Styles ─── */
+.prose-content {
+  max-width: none;
+}
+
+/* rehype-pretty-code: code blocks */
+.prose-content [data-rehype-pretty-code-figure] {
+  margin: 1rem 0;
+}
+
+.prose-content [data-rehype-pretty-code-figure] pre {
+  overflow-x: auto;
+  border-radius: 0.75rem;
+  border: 1px solid var(--border);
+  background-color: oklch(0.97 0 0);
+  padding: 1rem 1.25rem;
+  font-size: 0.8125rem;
+  line-height: 1.7;
+}
+
+.dark .prose-content [data-rehype-pretty-code-figure] pre {
+  background-color: oklch(0.16 0 0);
+}
+
+.prose-content [data-rehype-pretty-code-figure] [data-line] {
+  padding: 0 0.25rem;
+  border-radius: 0.25rem;
+}
+
+/* Inline code (not inside figure) */
+.prose-content :not([data-rehype-pretty-code-figure]) > code {
+  background-color: var(--muted);
+  color: var(--primary);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.375rem;
+  font-size: 0.8125rem;
+  font-family: var(--font-mono);
+}
+
+/* Language label */
+.prose-content [data-rehype-pretty-code-title] {
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  color: var(--muted-foreground);
+  background-color: var(--muted);
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: 0.75rem 0.75rem 0 0;
+  padding: 0.375rem 1rem;
+}

@@ -1,0 +1,107 @@
+export const metadata = {
+  title: 'Two Pointers',
+  description: 'Use two indices moving toward or away from each other to reduce an O(n²) search to O(n), typically on sorted arrays or strings.',
+  timeComplexity: 'O(n) or O(n log n) with sort',
+  spaceComplexity: 'O(1)',
+  useCases: ['Two Sum on sorted array', 'Remove duplicates', 'Container with most water', 'Palindrome check'],
+  variations: [
+    { id: 'opposite', title: 'Opposite Ends (Converging)', description: 'Left starts at 0, right at n-1. They move toward each other until they meet.' },
+    { id: 'same-dir', title: 'Same Direction (Fast & Slow)', description: 'Both pointers start at the same end. Fast pointer explores; slow pointer marks the boundary.' },
+    { id: 'multi-array', title: 'Two Arrays / Merge', description: 'One pointer per array, used to merge or compare two sorted sequences.' },
+  ],
+};
+
+## Concept
+
+Two pointers exploit sorted order (or an invariant) to eliminate entire regions of the search space at each step. Rather than trying every pair O(n²), you intelligently advance one pointer based on the current comparison.
+
+> **Key insight**: If the array is sorted (or can be sorted), you can almost always replace a nested loop with two pointers.
+
+## Template
+
+### Opposite Ends — Two Sum
+
+```python
+def two_sum_sorted(arr: list[int], target: int) -> tuple[int, int] | None:
+    left, right = 0, len(arr) - 1
+
+    while left < right:
+        s = arr[left] + arr[right]
+        if s == target:
+            return (left, right)
+        elif s < target:
+            left += 1       # need a larger sum
+        else:
+            right -= 1      # need a smaller sum
+
+    return None
+```
+
+### Same Direction — Remove Duplicates In-Place
+
+```python
+def remove_duplicates(arr: list[int]) -> int:
+    if not arr:
+        return 0
+
+    slow = 0                            # boundary of unique region
+
+    for fast in range(1, len(arr)):
+        if arr[fast] != arr[slow]:      # found a new unique element
+            slow += 1
+            arr[slow] = arr[fast]
+
+    return slow + 1                     # length of unique section
+```
+
+### Three Sum (Sort + Two Pointers)
+
+```python
+def three_sum(nums: list[int]) -> list[list[int]]:
+    nums.sort()
+    result = []
+
+    for i in range(len(nums) - 2):
+        if i > 0 and nums[i] == nums[i - 1]:   # skip duplicates
+            continue
+
+        left, right = i + 1, len(nums) - 1
+
+        while left < right:
+            total = nums[i] + nums[left] + nums[right]
+            if total == 0:
+                result.append([nums[i], nums[left], nums[right]])
+                while left < right and nums[left] == nums[left + 1]:
+                    left += 1
+                while left < right and nums[right] == nums[right - 1]:
+                    right -= 1
+                left += 1
+                right -= 1
+            elif total < 0:
+                left += 1
+            else:
+                right -= 1
+
+    return result
+```
+
+## When to Use
+
+- Array is **sorted** (or sorting doesn't change the answer)
+- Looking for a **pair or triplet** satisfying a sum condition
+- Need to **partition** or remove elements in-place without extra space
+- Classic palindrome / reverse checks
+
+## Complexity Analysis
+
+| Variation | Time | Space |
+|-----------|------|-------|
+| Opposite ends | O(n) | O(1) |
+| Same direction | O(n) | O(1) |
+| After sorting | O(n log n) | O(1) |
+
+## Common Pitfalls
+
+- Forgetting to skip duplicates in Three Sum / Four Sum
+- Moving the wrong pointer when the sum doesn't match the target
+- Not handling the edge case where `left === right` (they must not cross)

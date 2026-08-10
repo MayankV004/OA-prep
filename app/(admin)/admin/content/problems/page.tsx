@@ -51,9 +51,13 @@ export default function AdminProblemsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Problems</h1>
-        <Button size="sm"><Plus className="h-4 w-4 mr-1.5" />Add Problem</Button>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Problems</h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            {problems.length} problems across all users
+          </p>
+        </div>
       </div>
 
       <div className="flex gap-3 flex-wrap">
@@ -78,7 +82,7 @@ export default function AdminProblemsPage() {
         </select>
       </div>
 
-      <div className="rounded-lg border border-border overflow-hidden">
+      <div className="rounded-xl border border-border overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-muted/50 border-b border-border">
             <tr>

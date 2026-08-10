@@ -1,0 +1,98 @@
+export const metadata = {
+  title: 'Sliding Window',
+  description: 'Maintain a dynamic window over a sequence to track a running computation, avoiding redundant reprocessing of overlapping elements.',
+  timeComplexity: 'O(n)',
+  spaceComplexity: 'O(1) – O(k)',
+  useCases: ['Subarray with max sum', 'Longest substring without repeating chars', 'Minimum window substring'],
+  variations: [
+    { id: 'fixed', title: 'Fixed-Size Window', description: 'Window size k is constant. Slide by adding the next element and removing the leftmost.' },
+    { id: 'variable', title: 'Variable-Size Window', description: 'Window expands/contracts based on a condition. Use two pointers (left, right) and shrink when invariant breaks.' },
+    { id: 'hash', title: 'Window + Hash Map', description: 'Combine sliding window with a frequency map to track character or element counts within the window.' },
+  ],
+};
+
+## Concept
+
+The sliding window technique replaces brute-force nested loops with a single linear scan. Instead of recomputing the entire subarray each time, you **add** the incoming element and **remove** the outgoing element.
+
+> **Key insight**: If you can express the problem as "find the optimal contiguous subarray/substring satisfying condition X," sliding window likely applies.
+
+## Template
+
+### Fixed-Size Window
+
+```python
+def fixed_window(arr: list[int], k: int) -> int:
+    # Build initial window
+    window_sum = sum(arr[:k])
+    best = window_sum
+
+    for i in range(k, len(arr)):
+        window_sum += arr[i] - arr[i - k]   # slide: add right, remove left
+        best = max(best, window_sum)
+
+    return best
+```
+
+### Variable-Size Window (Two-Pointer)
+
+```python
+def variable_window(arr: list[int], target: int) -> int:
+    left = 0
+    current = 0
+    best = float('inf')
+
+    for right in range(len(arr)):
+        current += arr[right]               # expand right
+
+        while current >= target:            # shrink from left while valid
+            best = min(best, right - left + 1)
+            current -= arr[left]
+            left += 1
+
+    return best if best != float('inf') else 0
+```
+
+### Window + Hash Map
+
+```python
+from collections import defaultdict
+
+def window_with_map(s: str, k: int) -> int:
+    freq = defaultdict(int)
+    left = 0
+    best = 0
+
+    for right in range(len(s)):
+        freq[s[right]] += 1
+
+        while len(freq) > k:               # too many distinct chars
+            freq[s[left]] -= 1
+            if freq[s[left]] == 0:
+                del freq[s[left]]
+            left += 1
+
+        best = max(best, right - left + 1)
+
+    return best
+```
+
+## When to Use
+
+- The problem asks for something about a **contiguous subarray or substring**
+- Brute force is O(n²) or O(n³) — window brings it to O(n)
+- The "validity" of a window is easy to maintain incrementally
+
+## Complexity Analysis
+
+| Variation | Time | Space |
+|-----------|------|-------|
+| Fixed window | O(n) | O(1) |
+| Variable window | O(n) amortized | O(1) |
+| Window + map | O(n) | O(k) |
+
+## Common Pitfalls
+
+- Forgetting to shrink the window when the condition is violated
+- Off-by-one errors when computing window size (`right - left + 1`)
+- Not resetting frequency map correctly when the left pointer advances

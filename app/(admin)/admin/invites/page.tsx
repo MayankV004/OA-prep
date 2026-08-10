@@ -72,11 +72,14 @@ export default function AdminInvitesPage() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-2xl font-bold">Invites</h1>
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">Invites</h1>
+        <p className="text-muted-foreground text-sm mt-1">Send and manage user invitations</p>
+      </div>
 
       {/* Send invite form */}
-      <div className="rounded-xl border border-border p-5 space-y-4 max-w-md">
-        <h2 className="font-semibold">Send Invite</h2>
+      <div className="rounded-xl border border-border bg-card p-5 space-y-4 max-w-md">
+        <h2 className="font-semibold text-sm">Send New Invite</h2>
         <div className="space-y-3">
           <Input
             placeholder="Email address"
@@ -120,9 +123,9 @@ export default function AdminInvitesPage() {
           ))}
         </div>
 
-        <div className="rounded-lg border border-border overflow-hidden">
+        <div className="rounded-xl border border-border overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-muted/50 border-b border-border">
+            <thead className="bg-muted/40 border-b border-border">
               <tr>
                 <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">Email</th>
                 <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">Role</th>

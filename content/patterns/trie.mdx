@@ -1,0 +1,142 @@
+export const metadata = {
+  title: 'Trie',
+  description: 'A tree-based prefix data structure for strings. Enables O(L) insert, search, and prefix lookup where L is the word length.',
+  timeComplexity: 'O(L) per insert/search (L = word length)',
+  spaceComplexity: 'O(N × L) — N words of length L',
+  useCases: ['Autocomplete', 'Word search', 'Prefix matching', 'Longest common prefix', 'Word dictionary with wildcard'],
+  variations: [
+    { id: 'basic', title: 'Basic Trie (Insert / Search / StartsWith)', description: 'Core operations: insert a word, check exact match, check if any word starts with a prefix.' },
+    { id: 'wildcard', title: 'Trie with Wildcards (DFS)', description: 'Handle "." wildcard by exploring all children. Used in problems like WordDictionary (LeetCode 211).' },
+    { id: 'max-xor', title: 'Binary Trie (Maximum XOR)', description: 'Store numbers bit by bit (MSB to LSB). Greedily choose the opposite bit to maximize XOR.' },
+  ],
+};
+
+## Concept
+
+Each node in a Trie represents a character. A path from root to a `is_end = True` node spells out a complete word. Children are stored in a dict (or fixed array of 26 for lowercase letters).
+
+> **Key insight**: Tries trade space for time. If you're doing repeated prefix queries on a set of strings, a Trie is almost always the right answer.
+
+## Template
+
+### Basic Trie
+
+```python
+class TrieNode:
+    def __init__(self):
+        self.children: dict[str, 'TrieNode'] = {}
+        self.is_end = False
+
+class Trie:
+    def __init__(self):
+        self.root = TrieNode()
+
+    def insert(self, word: str) -> None:
+        node = self.root
+        for ch in word:
+            if ch not in node.children:
+                node.children[ch] = TrieNode()
+            node = node.children[ch]
+        node.is_end = True
+
+    def search(self, word: str) -> bool:
+        node = self.root
+        for ch in word:
+            if ch not in node.children:
+                return False
+            node = node.children[ch]
+        return node.is_end
+
+    def starts_with(self, prefix: str) -> bool:
+        node = self.root
+        for ch in prefix:
+            if ch not in node.children:
+                return False
+            node = node.children[ch]
+        return True
+```
+
+### Trie with Wildcard (DFS)
+
+```python
+class WordDictionary:
+    def __init__(self):
+        self.root = TrieNode()
+
+    def add_word(self, word: str) -> None:
+        node = self.root
+        for ch in word:
+            if ch not in node.children:
+                node.children[ch] = TrieNode()
+            node = node.children[ch]
+        node.is_end = True
+
+    def search(self, word: str) -> bool:
+        def dfs(node: TrieNode, i: int) -> bool:
+            if i == len(word):
+                return node.is_end
+            ch = word[i]
+            if ch == '.':
+                return any(dfs(child, i + 1) for child in node.children.values())
+            if ch not in node.children:
+                return False
+            return dfs(node.children[ch], i + 1)
+
+        return dfs(self.root, 0)
+```
+
+### Binary Trie — Maximum XOR
+
+```python
+class BinaryTrieNode:
+    def __init__(self):
+        self.children: dict[int, 'BinaryTrieNode'] = {}
+
+class MaxXORTrie:
+    def __init__(self):
+        self.root = BinaryTrieNode()
+
+    def insert(self, num: int) -> None:
+        node = self.root
+        for i in range(31, -1, -1):     # MSB to LSB
+            bit = (num >> i) & 1
+            if bit not in node.children:
+                node.children[bit] = BinaryTrieNode()
+            node = node.children[bit]
+
+    def max_xor(self, num: int) -> int:
+        node = self.root
+        xor = 0
+        for i in range(31, -1, -1):
+            bit = (num >> i) & 1
+            want = 1 - bit              # we want the opposite bit
+            if want in node.children:
+                xor |= (1 << i)
+                node = node.children[want]
+            else:
+                node = node.children[bit]
+        return xor
+```
+
+## When to Use
+
+- Set of strings, repeated **prefix** or **exact** lookups
+- Autocomplete / suggestion features
+- Word games (Boggle, Word Search II)
+- **Maximum XOR** of pairs — binary trie
+- Replace a hash map when you need prefix semantics
+
+## Complexity Analysis
+
+| Operation | Time | Space |
+|-----------|------|-------|
+| Insert | O(L) | — |
+| Search | O(L) | — |
+| StartsWith | O(L) | — |
+| Space total | — | O(N × L) |
+
+## Common Pitfalls
+
+- Forgetting to set `is_end = True` after inserting all characters
+- Confusing `search` (exact match) with `starts_with` (prefix)
+- In `Word Search II` on a grid, using a visited set and not backtracking properly

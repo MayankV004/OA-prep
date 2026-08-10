@@ -1,0 +1,130 @@
+export const metadata = {
+  title: 'Bit Manipulation',
+  description: 'Use bitwise operators to solve integer problems with O(1) space and often O(1) or O(log n) time, exploiting the binary representation of numbers.',
+  timeComplexity: 'O(1) for single operations; O(n) or O(n log n) for array problems',
+  spaceComplexity: 'O(1)',
+  useCases: ['Find unique number in array', 'Count set bits', 'Power of two check', 'Subsets via bitmask', 'XOR tricks'],
+  variations: [
+    { id: 'xor', title: 'XOR Tricks', description: 'XOR is its own inverse: a ^ a = 0, a ^ 0 = a. Find the unique element, missing number, or swap without temp variable.' },
+    { id: 'masks', title: 'Bit Masks & Sets', description: 'Represent a subset as an integer bitmask. Enumerate all 2ⁿ subsets in O(2ⁿ) time.' },
+    { id: 'count-bits', title: 'Counting & Checking Bits', description: 'Brian Kernighan trick, popcount, checking specific bit positions.' },
+    { id: 'arithmetic', title: 'Bit Arithmetic', description: 'Add, multiply, or divide without arithmetic operators. Fast power-of-two checks and rounding.' },
+  ],
+};
+
+## Concept
+
+Core bit operators:
+
+| Operator | Name | Effect |
+|----------|------|--------|
+| `&` | AND | 1 only if both bits are 1 |
+| `\|` | OR | 1 if either bit is 1 |
+| `^` | XOR | 1 if bits differ |
+| `~` | NOT | Flip all bits |
+| `<<` | Left shift | Multiply by 2 |
+| `>>` | Right shift | Divide by 2 |
+
+> **Key insight**: `n & (n - 1)` removes the lowest set bit. `n & (-n)` isolates the lowest set bit. `a ^ a = 0` cancels pairs.
+
+## Template
+
+### XOR — Find Unique Element
+
+```python
+def single_number(nums: list[int]) -> int:
+    result = 0
+    for n in nums:
+        result ^= n    # duplicates cancel out
+    return result
+```
+
+### Find Missing Number (XOR)
+
+```python
+def missing_number(nums: list[int]) -> int:
+    n = len(nums)
+    expected_xor = 0
+    for i in range(n + 1):
+        expected_xor ^= i
+    for num in nums:
+        expected_xor ^= num
+    return expected_xor
+```
+
+### Count Set Bits (Hamming Weight)
+
+```python
+def hamming_weight(n: int) -> int:
+    count = 0
+    while n:
+        n &= n - 1      # Brian Kernighan: clears lowest set bit
+        count += 1
+    return count
+
+# Or simply:
+def popcount(n: int) -> int:
+    return bin(n).count('1')
+```
+
+### Enumerate All Subsets via Bitmask
+
+```python
+def subsets_bitmask(nums: list[int]) -> list[list[int]]:
+    n = len(nums)
+    result = []
+
+    for mask in range(1 << n):              # 0 to 2^n - 1
+        subset = []
+        for i in range(n):
+            if mask & (1 << i):             # bit i is set
+                subset.append(nums[i])
+        result.append(subset)
+
+    return result
+```
+
+### Power of Two
+
+```python
+def is_power_of_two(n: int) -> bool:
+    return n > 0 and (n & (n - 1)) == 0
+```
+
+### Add Without `+` Operator
+
+```python
+def get_sum(a: int, b: int) -> int:
+    mask = 0xFFFFFFFF  # 32-bit mask
+    while b & mask:
+        carry = (a & b) << 1
+        a = a ^ b
+        b = carry
+    return a if b == 0 else a & mask
+```
+
+### Reverse Bits
+
+```python
+def reverse_bits(n: int) -> int:
+    result = 0
+    for _ in range(32):
+        result = (result << 1) | (n & 1)
+        n >>= 1
+    return result
+```
+
+## When to Use
+
+- Two identical elements cancel out (XOR)
+- Need to represent or enumerate **subsets** compactly (bitmask)
+- Checking power-of-two, parity, or specific bit positions
+- Space must be O(1) — XOR avoids extra storage
+- DP state is a small set (≤ 20 elements) → bitmask DP
+
+## Common Pitfalls
+
+- Python integers are arbitrary precision — for 32-bit problems, apply `& 0xFFFFFFFF` mask
+- `~n` in Python gives `-(n+1)` due to two's complement — use `n ^ 0xFFFFFFFF` for unsigned flip
+- Shifting left by large amounts creates big integers in Python (no overflow like C++)
+- Off-by-one in bitmask: `1 << n` gives n+1 subsets including empty set

@@ -47,9 +47,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-  
-  // Note: We might want to handle loading states or redirect if unauthorized here
-  // authClient.useSession() can be used for that, but we'll keep it simple for layout rendering
+  const { data: session } = authClient.useSession();
+  const isAdmin = (session?.user as any)?.role === 'admin';
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -115,11 +114,13 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 </kbd>
               </Button>
             </Link>
-            <Link href="/admin">
-              <Button variant="ghost" className="w-full justify-start h-8 text-sm">
-                <Shield className="mr-2 h-4 w-4" />Admin
-              </Button>
-            </Link>
+            {isAdmin && (
+              <Link href="/admin">
+                <Button variant="ghost" className="w-full justify-start h-8 text-sm">
+                  <Shield className="mr-2 h-4 w-4" />Admin Panel
+                </Button>
+              </Link>
+            )}
             <a href="/api/export" download>
               <Button variant="ghost" className="w-full justify-start h-8 text-sm">
                 <Download className="mr-2 h-4 w-4" />Export Data

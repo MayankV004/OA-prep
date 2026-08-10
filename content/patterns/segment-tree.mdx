@@ -1,0 +1,149 @@
+export const metadata = {
+  title: 'Segment Tree',
+  description: 'A binary tree over an array that supports range queries (sum, min, max) and point/range updates in O(log n).',
+  timeComplexity: 'O(n) build; O(log n) query and update',
+  spaceComplexity: 'O(n)',
+  useCases: ['Range sum / min / max queries', 'Range updates with lazy propagation', 'Count of elements in range', 'Coordinate compression'],
+  variations: [
+    { id: 'point-update', title: 'Point Update + Range Query', description: 'Update a single element; query a range. The most common form.' },
+    { id: 'lazy', title: 'Lazy Propagation (Range Update)', description: 'Defer range updates using a lazy tag. Push tags down only when needed.' },
+    { id: 'coordinate', title: 'Dynamic / Coordinate-Compressed', description: 'When values are large but sparse, compress coordinates first. Build on compressed indices.' },
+  ],
+};
+
+## Concept
+
+A segment tree divides the array into segments recursively. Each node stores the aggregate (sum/min/max) for its segment. This allows both updates and queries in O(log n) — unlike a prefix sum array which only allows O(1) query but O(n) update.
+
+> **Key insight**: Use a segment tree when you need **both** fast range queries **and** fast updates. If only queries, use prefix sum. If only updates, use BIT (Fenwick Tree).
+
+## Template
+
+### Point Update, Range Sum Query
+
+```python
+class SegmentTree:
+    def __init__(self, nums: list[int]):
+        self.n = len(nums)
+        self.tree = [0] * (4 * self.n)
+        self._build(nums, 0, 0, self.n - 1)
+
+    def _build(self, nums: list[int], node: int, start: int, end: int) -> None:
+        if start == end:
+            self.tree[node] = nums[start]
+            return
+        mid = (start + end) // 2
+        self._build(nums, 2 * node + 1, start, mid)
+        self._build(nums, 2 * node + 2, mid + 1, end)
+        self.tree[node] = self.tree[2 * node + 1] + self.tree[2 * node + 2]
+
+    def update(self, idx: int, val: int,
+               node: int = 0, start: int = 0, end: int = -1) -> None:
+        if end == -1:
+            end = self.n - 1
+        if start == end:
+            self.tree[node] = val
+            return
+        mid = (start + end) // 2
+        if idx <= mid:
+            self.update(idx, val, 2 * node + 1, start, mid)
+        else:
+            self.update(idx, val, 2 * node + 2, mid + 1, end)
+        self.tree[node] = self.tree[2 * node + 1] + self.tree[2 * node + 2]
+
+    def query(self, l: int, r: int,
+              node: int = 0, start: int = 0, end: int = -1) -> int:
+        if end == -1:
+            end = self.n - 1
+        if r < start or end < l:
+            return 0                 # out of range
+        if l <= start and end <= r:
+            return self.tree[node]   # fully within range
+        mid = (start + end) // 2
+        return (self.query(l, r, 2 * node + 1, start, mid) +
+                self.query(l, r, 2 * node + 2, mid + 1, end))
+```
+
+### Binary Indexed Tree (BIT / Fenwick Tree) — Simpler for Sum
+
+```python
+class BinaryIndexedTree:
+    def __init__(self, n: int):
+        self.n = n
+        self.tree = [0] * (n + 1)
+
+    def update(self, i: int, delta: int) -> None:
+        i += 1                          # 1-indexed
+        while i <= self.n:
+            self.tree[i] += delta
+            i += i & (-i)               # move to parent
+
+    def prefix_sum(self, i: int) -> int:
+        i += 1                          # 1-indexed
+        total = 0
+        while i > 0:
+            total += self.tree[i]
+            i -= i & (-i)               # move to responsible node
+        return total
+
+    def range_sum(self, l: int, r: int) -> int:
+        return self.prefix_sum(r) - (self.prefix_sum(l - 1) if l > 0 else 0)
+```
+
+### Segment Tree with Lazy Propagation
+
+```python
+class LazySegTree:
+    def __init__(self, n: int):
+        self.n = n
+        self.tree = [0] * (4 * n)
+        self.lazy = [0] * (4 * n)
+
+    def _push_down(self, node: int, start: int, end: int) -> None:
+        if self.lazy[node]:
+            mid = (start + end) // 2
+            for child in (2 * node + 1, 2 * node + 2):
+                self.tree[child] += self.lazy[node] * (
+                    (mid - start + 1) if child == 2 * node + 1 else (end - mid)
+                )
+                self.lazy[child] += self.lazy[node]
+            self.lazy[node] = 0
+
+    def range_update(self, l: int, r: int, val: int,
+                     node: int = 0, start: int = 0, end: int = -1) -> None:
+        if end == -1:
+            end = self.n - 1
+        if r < start or end < l:
+            return
+        if l <= start and end <= r:
+            self.tree[node] += val * (end - start + 1)
+            self.lazy[node] += val
+            return
+        self._push_down(node, start, end)
+        mid = (start + end) // 2
+        self.range_update(l, r, val, 2 * node + 1, start, mid)
+        self.range_update(l, r, val, 2 * node + 2, mid + 1, end)
+        self.tree[node] = self.tree[2 * node + 1] + self.tree[2 * node + 2]
+```
+
+## When to Use
+
+- Range sum/min/max queries **with** updates → Segment Tree or BIT
+- Range updates **with** range queries → Lazy Segment Tree
+- Counting inversions → BIT on coordinate-compressed values
+- Order statistics (rank queries) → Segment Tree with counts
+
+## Complexity Analysis
+
+| Operation | Segment Tree | BIT |
+|-----------|-------------|-----|
+| Build | O(n) | O(n log n) |
+| Update | O(log n) | O(log n) |
+| Query | O(log n) | O(log n) |
+| Range update | O(log n) lazy | ❌ (need 2 BITs) |
+
+## Common Pitfalls
+
+- Allocating only `2n` nodes instead of `4n` (causes index out of bounds)
+- Not pushing down lazy tags before querying/updating children
+- BIT is 1-indexed — remember to add 1 when converting from 0-indexed input
