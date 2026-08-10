@@ -1,8 +1,5 @@
-import createMDX from '@next/mdx';
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  pageExtensions: ['js', 'jsx', 'md', 'mdx', 'ts', 'tsx'],
   async headers() {
     const isDev = process.env.NODE_ENV !== 'production';
     const scriptSrc = isDev ? "'self' 'unsafe-inline' 'unsafe-eval'" : "'self' 'unsafe-inline'";
@@ -21,12 +18,4 @@ const nextConfig = {
   },
 };
 
-// Turbopack requires plugin names as strings (not imported functions)
-const withMDX = createMDX({
-  options: {
-    remarkPlugins: ['remark-gfm'],
-    rehypePlugins: [],
-  },
-});
-
-export default withMDX(nextConfig);
+export default nextConfig;

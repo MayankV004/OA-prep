@@ -22,4 +22,4 @@ userSchema.index({ email: 1 }, { unique: true });
 userSchema.index({ role: 1 });
 userSchema.index({ disabled: 1 });
 
-export const User = models.User || model('User', userSchema);
+export const User = models.User || model('User', userSchema, 'user');

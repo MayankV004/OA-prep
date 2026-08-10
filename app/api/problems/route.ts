@@ -24,6 +24,16 @@ export async function GET(req: NextRequest) {
 
     const query: any = { userId: targetUserId, kind };
 
+    if (searchParams.has('pattern')) {
+      query.pattern = searchParams.get('pattern');
+    }
+    if (searchParams.has('bucket')) {
+      query.bucket = searchParams.get('bucket');
+    }
+    if (searchParams.has('platform')) {
+      query.platform = searchParams.get('platform');
+    }
+
     if (searchParams.has('completed')) {
       query.completed = searchParams.get('completed') === 'true';
     }
@@ -31,7 +41,9 @@ export async function GET(req: NextRequest) {
       query.difficulty = searchParams.get('difficulty');
     }
     
+    console.log('Querying problems with:', query);
     const problems = await Problem.find(query).sort({ updatedAt: -1 });
+    console.log(`Found ${problems.length} problems for query`);
     return problems;
   });
 }

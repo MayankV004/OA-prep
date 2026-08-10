@@ -16,6 +16,7 @@ export interface Problem {
   notes?: string;
   tags?: string[];
   pattern?: string;
+  variation?: string;
   bucket?: string;
   platform?: string;
   contest?: string;

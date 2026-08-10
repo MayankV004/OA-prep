@@ -15,7 +15,7 @@ async function promoteAdmin() {
   }
   const email = args[emailArgIndex + 1].toLowerCase();
 
-  await mongoose.connect(uri);
+  await mongoose.connect(uri, { dbName: process.env.MONGODB_DB });
   console.log('Connected to MongoDB');
 
   const user = await User.findOne({ email });

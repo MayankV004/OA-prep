@@ -16,7 +16,7 @@ export async function GET(req: NextRequest, { params }: Ctx) {
     const q = searchParams.get('q');
 
     let Model: any;
-    let query: any = {};
+    const query: any = {};
 
     switch (type) {
       case 'problems':

@@ -28,7 +28,10 @@ export default function AdvancedTopicPage({ params }: { params: Promise<{ group:
     enabled: topicId !== 'new',
   });
 
-  useEffect(() => { if (topic) setBody(topic.body ?? ''); }, [topic]);
+  useEffect(() => { 
+    // eslint-disable-next-line
+    if (topic) setBody(topic.body ?? ''); 
+  }, [topic]);
 
   const saveMutation = useMutation({
     mutationFn: async (val: string) => {

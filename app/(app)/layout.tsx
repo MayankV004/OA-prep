@@ -43,30 +43,9 @@ const NAV_SECTIONS = [
   },
 ];
 
-export default function AppLayout({ children }: { children: ReactNode }) {
-  const [mobileOpen, setMobileOpen] = useState(false);
+function NavLinks({ onNav }: { onNav?: () => void }) {
   const pathname = usePathname();
-  const router = useRouter();
-  const { data: session } = authClient.useSession();
-  const isAdmin = (session?.user as any)?.role === 'admin';
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        router.push('/search');
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [router]);
-
-  const handleSignOut = async () => {
-    await authClient.signOut();
-    router.push('/sign-in');
-  };
-
-  const NavLinks = ({ onNav }: { onNav?: () => void }) => (
+  return (
     <div className="flex flex-col gap-4">
       {NAV_SECTIONS.map(section => (
         <div key={section.label}>
@@ -90,6 +69,29 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       ))}
     </div>
   );
+}
+
+export default function AppLayout({ children }: { children: ReactNode }) {
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const router = useRouter();
+  const { data: session } = authClient.useSession();
+  const isAdmin = (session?.user as any)?.role === 'admin';
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        router.push('/search');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [router]);
+
+  const handleSignOut = async () => {
+    await authClient.signOut();
+    router.push('/sign-in');
+  };
 
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">

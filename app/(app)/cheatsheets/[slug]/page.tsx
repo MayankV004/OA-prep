@@ -30,7 +30,10 @@ export default function CheatsheetPage({ params }: { params: Promise<{ slug: str
 
   const sheet = sheets.find(s => s.slug === slug);
 
-  useEffect(() => { if (sheet) setBody(sheet.body ?? ''); }, [sheet]);
+  useEffect(() => { 
+    // eslint-disable-next-line
+    if (sheet) setBody(sheet.body ?? ''); 
+  }, [sheet]);
 
   const saveMutation = useMutation({
     mutationFn: async (val: string) => {

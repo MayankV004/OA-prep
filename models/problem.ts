@@ -26,17 +26,17 @@ problemSchema.index({ title: 'text', notes: 'text' }, { weights: { title: 5, not
 
 export const Problem = models.Problem || model('Problem', problemSchema);
 
-export const PatternProblem = models.PatternProblem || Problem.discriminator(
+export const PatternProblem = models.PatternProblem || (Problem.discriminators?.pattern || Problem.discriminator(
   'pattern',
-  new Schema({ pattern: { type: String, required: true } })
-);
+  new Schema({ pattern: { type: String, required: true }, variation: { type: String, default: 'General' } })
+));
 
-export const NonStandardProblem = models.NonStandardProblem || Problem.discriminator(
+export const NonStandardProblem = models.NonStandardProblem || (Problem.discriminators?.nonstandard || Problem.discriminator(
   'nonstandard',
   new Schema({ bucket: { type: String, required: true } })
-);
+));
 
-export const CpProblem = models.CpProblem || Problem.discriminator(
+export const CpProblem = models.CpProblem || (Problem.discriminators?.cp || Problem.discriminator(
   'cp',
   new Schema({ platform: { type: String }, contest: { type: String }, rating: { type: Number } })
-);
+));

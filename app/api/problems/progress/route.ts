@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { withAuth } from '@/lib/auth';
 import { Problem } from '@/models';
 import dbConnect from '@/lib/db';
+import mongoose from 'mongoose';
 
 export async function GET(req: NextRequest) {
   return withAuth(req, async ({ userId, role }) => {
@@ -22,7 +23,7 @@ export async function GET(req: NextRequest) {
     else throw { status: 400, message: 'Invalid kind' };
 
     const result = await Problem.aggregate([
-      { $match: { userId: userId, kind } },
+      { $match: { userId: new mongoose.Types.ObjectId(userId), kind } },
       {
         $group: {
           _id: `$${groupField}`,

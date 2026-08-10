@@ -37,7 +37,9 @@ export default function TopicPage({
 
   useEffect(() => {
     if (topic) {
+      // eslint-disable-next-line
       setBody(topic.body ?? '');
+      // eslint-disable-next-line
       setTitle(topic.title);
     }
   }, [topic]);

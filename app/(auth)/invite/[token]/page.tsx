@@ -99,7 +99,7 @@ export default function InvitePage({ params }: { params: Promise<{ token: string
           </div>
           <h1 className="text-xl font-semibold">Join PlacementDeck</h1>
           <p className="mt-1.5 text-sm text-muted-foreground">
-            You've been invited to join as <span className="font-medium text-foreground">{invite.email}</span>
+            You&apos;ve been invited to join as <span className="font-medium text-foreground">{invite.email}</span>
           </p>
         </div>
 

@@ -7,8 +7,14 @@ import { NotesDrawer } from './NotesDrawer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
-import { Plus, Search, Filter } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 
 interface ProblemTableProps {
   kind: 'pattern' | 'nonstandard' | 'cp';
@@ -43,6 +49,14 @@ export function ProblemTable({ kind, group, groupLabel, showRating }: ProblemTab
   const completed = filtered.filter(p => p.completed).length;
   const total = filtered.length;
   const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+  // Group by variation
+  const groupedByVariation = filtered.reduce((acc, problem) => {
+    const variation = problem.variation || 'General';
+    if (!acc[variation]) acc[variation] = [];
+    acc[variation].push(problem);
+    return acc;
+  }, {} as Record<string, Problem[]>);
 
   if (isLoading) {
     return (
@@ -83,11 +97,10 @@ export function ProblemTable({ kind, group, groupLabel, showRating }: ProblemTab
             <button
               key={d}
               onClick={() => setDiffFilter(d)}
-              className={`px-2.5 py-1 text-xs rounded-md font-medium transition-colors ${
-                diffFilter === d
+              className={`px-2.5 py-1 text-xs rounded-md font-medium transition-colors ${diffFilter === d
                   ? 'bg-primary text-primary-foreground'
                   : 'bg-muted text-muted-foreground hover:bg-muted/80'
-              }`}
+                }`}
             >
               {d === 'all' ? 'All' : d}
             </button>
@@ -101,28 +114,44 @@ export function ProblemTable({ kind, group, groupLabel, showRating }: ProblemTab
           <p className="text-sm">No problems found.</p>
         </div>
       ) : (
-        <div className="rounded-lg border border-border overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/50">
-              <tr>
-                <th className="w-10 px-3 py-2" />
-                <th className="px-3 py-2 text-left font-medium text-muted-foreground">Problem</th>
-                <th className="px-3 py-2 text-left font-medium text-muted-foreground">Difficulty</th>
-                {showRating && <th className="px-3 py-2 text-left font-medium text-muted-foreground">Rating</th>}
-                <th className="w-16 px-3 py-2" />
-              </tr>
-            </thead>
-            <tbody className="bg-background">
-              {filtered.map(problem => (
-                <ProblemRow
-                  key={problem._id}
-                  problem={problem}
-                  queryKey={queryKey}
-                  onNotesClick={setNotesTarget}
-                />
-              ))}
-            </tbody>
-          </table>
+        <div className="rounded-lg border border-border overflow-hidden bg-card">
+          <Accordion defaultValue={Object.keys(groupedByVariation)} className="w-full">
+            {Object.entries(groupedByVariation).map(([variation, groupProblems], index) => (
+              <AccordionItem key={variation} value={variation} className={index === Object.keys(groupedByVariation).length - 1 ? 'border-b-0' : ''}>
+                <AccordionTrigger className="px-4 py-3 hover:bg-muted/30 text-sm font-semibold">
+                  <div className="flex items-center gap-2">
+                    <span>{variation}</span>
+                    <span className="text-xs font-normal text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                      {groupProblems.filter(p => p.completed).length} / {groupProblems.length}
+                    </span>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="pb-0 pt-0">
+                  <table className="w-full text-sm">
+                    <thead className="bg-muted/50 hidden">
+                      <tr>
+                        <th className="w-10 px-3 py-2" />
+                        <th className="px-3 py-2 text-left font-medium text-muted-foreground">Problem</th>
+                        <th className="px-3 py-2 text-left font-medium text-muted-foreground">Difficulty</th>
+                        {showRating && <th className="px-3 py-2 text-left font-medium text-muted-foreground">Rating</th>}
+                        <th className="w-16 px-3 py-2" />
+                      </tr>
+                    </thead>
+                    <tbody className="bg-background">
+                      {groupProblems.map(problem => (
+                        <ProblemRow
+                          key={problem._id}
+                          problem={problem}
+                          queryKey={queryKey}
+                          onNotesClick={setNotesTarget}
+                        />
+                      ))}
+                    </tbody>
+                  </table>
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
         </div>
       )}
 
