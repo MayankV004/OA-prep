@@ -1,125 +1,173 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { authClient } from '@/lib/auth-client';
 import { 
   LayoutDashboard, 
   Code2, 
+  Layers,
+  Trophy,
   BookOpen, 
   FileText, 
+  HelpCircle,
+  Search,
   LogOut,
-  Settings,
-  Menu
+  Menu,
+  X,
+  Shield,
+  Download,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { ThemeToggle } from '@/components/ThemeToggle'; // Assuming we create this
+import { ThemeToggle } from '@/components/ThemeToggle';
 
-const NAV_ITEMS = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Problems', href: '/problems', icon: Code2 },
-  { name: 'Topics', href: '/topics', icon: BookOpen },
-  { name: 'Cheatsheets', href: '/cheatsheets', icon: FileText },
+const NAV_SECTIONS = [
+  {
+    label: 'Practice',
+    items: [
+      { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+      { name: 'Pattern DSA', href: '/dsa', icon: Code2 },
+      { name: 'Non-standard', href: '/non-standard', icon: Layers },
+      { name: 'Comp. Prog.', href: '/cp', icon: Trophy },
+    ],
+  },
+  {
+    label: 'Study',
+    items: [
+      { name: 'Subjects', href: '/subjects', icon: BookOpen },
+      { name: 'Advanced Topics', href: '/advanced', icon: FileText },
+      { name: 'Interview Q&A', href: '/interview', icon: HelpCircle },
+      { name: 'Cheat Sheets', href: '/cheatsheets', icon: FileText },
+    ],
+  },
 ];
 
 export default function AppLayout({ children }: { children: ReactNode }) {
+  const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
   
   // Note: We might want to handle loading states or redirect if unauthorized here
   // authClient.useSession() can be used for that, but we'll keep it simple for layout rendering
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        router.push('/search');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [router]);
+
   const handleSignOut = async () => {
     await authClient.signOut();
     router.push('/sign-in');
   };
 
-  const NavLinks = () => (
-    <div className="flex flex-col gap-2">
-      {NAV_ITEMS.map((item) => {
-        const isActive = pathname.startsWith(item.href);
-        return (
-          <Link key={item.name} href={item.href}>
-            <Button
-              variant={isActive ? 'secondary' : 'ghost'}
-              className="w-full justify-start"
-            >
-              <item.icon className="mr-2 h-4 w-4" />
-              {item.name}
-            </Button>
-          </Link>
-        );
-      })}
+  const NavLinks = ({ onNav }: { onNav?: () => void }) => (
+    <div className="flex flex-col gap-4">
+      {NAV_SECTIONS.map(section => (
+        <div key={section.label}>
+          <p className="px-3 mb-1 text-xs font-semibold text-muted-foreground/70 uppercase tracking-wider">
+            {section.label}
+          </p>
+          <div className="flex flex-col gap-0.5">
+            {section.items.map(item => {
+              const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
+              return (
+                <Link key={item.href} href={item.href} onClick={onNav}>
+                  <Button variant={isActive ? 'secondary' : 'ghost'} className="w-full justify-start h-8 text-sm">
+                    <item.icon className="mr-2 h-4 w-4" />
+                    {item.name}
+                  </Button>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      ))}
     </div>
   );
 
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
       <div className="hidden border-r bg-muted/40 md:block">
-        <div className="flex h-full max-h-screen flex-col gap-2">
+        <div className="flex h-full max-h-screen flex-col">
           <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
-            <Link href="/" className="flex items-center gap-2 font-semibold">
-              <Code2 className="h-6 w-6" />
-              <span className="">PlacementDeck</span>
+            <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
+              <Code2 className="h-5 w-5 text-primary" />
+              <span>PlacementDeck</span>
             </Link>
           </div>
-          <div className="flex-1 px-2 py-4">
+          <div className="flex-1 overflow-auto px-3 py-4">
             <NavLinks />
           </div>
-          <div className="mt-auto p-4 border-t">
-            <Button variant="ghost" className="w-full justify-start" onClick={handleSignOut}>
-              <LogOut className="mr-2 h-4 w-4" />
-              Sign Out
+          <div className="p-3 border-t space-y-1">
+            <Link href="/search">
+              <Button variant="ghost" className="w-full justify-start h-8 text-sm group">
+                <Search className="mr-2 h-4 w-4" />
+                <span className="flex-1 text-left">Search</span>
+                <kbd className="hidden md:inline-flex h-5 items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span className="text-xs">⌘</span>K
+                </kbd>
+              </Button>
+            </Link>
+            <Link href="/admin">
+              <Button variant="ghost" className="w-full justify-start h-8 text-sm">
+                <Shield className="mr-2 h-4 w-4" />Admin
+              </Button>
+            </Link>
+            <a href="/api/export" download>
+              <Button variant="ghost" className="w-full justify-start h-8 text-sm">
+                <Download className="mr-2 h-4 w-4" />Export Data
+              </Button>
+            </a>
+            <Button variant="ghost" className="w-full justify-start h-8 text-sm text-muted-foreground hover:text-foreground" onClick={handleSignOut}>
+              <LogOut className="mr-2 h-4 w-4" />Sign Out
             </Button>
           </div>
         </div>
       </div>
       <div className="flex flex-col">
-        <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                className="shrink-0 md:hidden"
-              >
-                <Menu className="h-5 w-5" />
-                <span className="sr-only">Toggle navigation menu</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="flex flex-col">
-              <nav className="grid gap-2 text-lg font-medium">
-                <Link
-                  href="#"
-                  className="flex items-center gap-2 text-lg font-semibold mb-4"
-                >
-                  <Code2 className="h-6 w-6" />
-                  <span>PlacementDeck</span>
-                </Link>
-                {NAV_ITEMS.map((item) => (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className={`mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 ${pathname.startsWith(item.href) ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-                  >
-                    <item.icon className="h-5 w-5" />
-                    {item.name}
-                  </Link>
-                ))}
+        {/* Mobile nav drawer */}
+        {mobileOpen && (
+          <div className="fixed inset-0 z-50 md:hidden">
+            <div className="absolute inset-0 bg-black/50" onClick={() => setMobileOpen(false)} />
+            <div className="absolute left-0 top-0 h-full w-64 bg-background border-r flex flex-col">
+              <div className="flex items-center justify-between p-4 border-b">
+                <span className="font-semibold flex items-center gap-2"><Code2 className="h-5 w-5" />PlacementDeck</span>
+                <button onClick={() => setMobileOpen(false)}><X className="h-5 w-5" /></button>
+              </div>
+              <nav className="flex flex-col gap-3 p-3 flex-1 overflow-auto">
+                <NavLinks onNav={() => setMobileOpen(false)} />
               </nav>
-              <div className="mt-auto pt-4">
-                <Button variant="ghost" className="w-full justify-start" onClick={handleSignOut}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Sign Out
+              <div className="p-2 border-t flex flex-col gap-1">
+                <a href="/api/export" download>
+                  <Button variant="ghost" className="w-full justify-start text-sm">
+                    <Download className="mr-2 h-4 w-4" />Export Data
+                  </Button>
+                </a>
+                <Button variant="ghost" className="w-full justify-start text-sm text-muted-foreground" onClick={handleSignOut}>
+                  <LogOut className="mr-2 h-4 w-4" />Sign Out
                 </Button>
               </div>
-            </SheetContent>
-          </Sheet>
-          <div className="w-full flex-1">
-            {/* Breadcrumbs or search can go here */}
+            </div>
           </div>
+        )}
+        <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
+          <Button
+            variant="outline"
+            size="icon"
+            className="shrink-0 md:hidden"
+            onClick={() => setMobileOpen(true)}
+          >
+            <Menu className="h-5 w-5" />
+            <span className="sr-only">Toggle navigation menu</span>
+          </Button>
+          <div className="w-full flex-1" />
           <ThemeToggle />
         </header>
         <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
