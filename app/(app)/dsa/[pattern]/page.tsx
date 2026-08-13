@@ -8,21 +8,18 @@ import { ExplanationBlock } from '@/components/dsa/ExplanationBlock';
 import { PatternContentClient } from '@/components/dsa/PatternContentClient';
 import { highlightCode } from '@/lib/shiki';
 import { notFound } from 'next/navigation';
-import { client } from '@/sanity/lib/client';
+import dbConnect from '@/lib/db';
+import { Pattern } from '@/models';
+import ReactMarkdown from 'react-markdown';
 
-export const revalidate = 60; // revalidate this page every 60 seconds
+export const revalidate = 60;
 
 export default async function DSAPatternPage({ params }: { params: Promise<{ pattern: string }> }) {
   const { pattern: slug } = await params;
   
-  // Find the pattern by matching the slug from Sanity and fetch its nested problems
-  const pattern = await client.fetch(`*[_type == "pattern" && slug.current == $slug][0]{
-    ...,
-    variations[]{
-      ...,
-      "problems": problems[]->
-    }
-  }`, { slug });
+  await dbConnect();
+  const patternDoc = await Pattern.findOne({ slug }).lean();
+  const pattern = patternDoc ? JSON.parse(JSON.stringify(patternDoc)) : null;
 
   if (!pattern) {
     notFound();
@@ -34,71 +31,90 @@ export default async function DSAPatternPage({ params }: { params: Promise<{ pat
   const htmlBlocks: Record<string, string> = {};
   if (pattern.variations) {
     for (const v of pattern.variations) {
-      if (v.templateCode) {
-        htmlBlocks[v.id] = await highlightCode(v.templateCode, 'java');
+      if (v.templateCode || v.template_code) {
+        htmlBlocks[v._id || v.id] = await highlightCode(v.templateCode || v.template_code, 'java');
       }
     }
   }
 
   return (
-    <div className="space-y-10 max-w-5xl mx-auto pb-24">
-      {/* Back button + breadcrumb */}
-      <div className="flex items-center gap-3 px-2">
-        <Link href="/dsa">
-          <Button variant="ghost" size="icon" className="shrink-0 rounded-full bg-muted/50 hover:bg-muted">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-        </Link>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Link href="/dsa" className="hover:text-foreground transition-colors font-medium">Pattern DSA</Link>
-          <ChevronRight className="h-3 w-3" />
-          <span className="text-foreground font-semibold">{pattern.title}</span>
+    <div className="pb-24">
+      {/* Twitter-like Sticky Header */}
+      <div className="sticky top-0 z-40 bg-background/85 backdrop-blur-xl border-b border-border/40 w-full px-6 sm:px-10 py-6 sm:py-8 flex flex-col gap-2 transition-all duration-300">
+        <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground/80">
+          <Link href="/dsa" className="flex items-center hover:text-foreground transition-colors group">
+            <ArrowLeft className="h-4 w-4 mr-1.5 group-hover:-translate-x-1 transition-transform duration-300" />
+            Pattern DSA
+          </Link>
+          <ChevronRight className="h-3.5 w-3.5" />
+          <span className="text-foreground/90">{pattern.title}</span>
+        </div>
+        <div className="flex items-center gap-4 mt-1">
+          <div className="p-2.5 rounded-xl bg-primary/10 text-primary border border-primary/20 shadow-sm hidden sm:block">
+            <BookOpen className="h-6 w-6" />
+          </div>
+          <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-foreground">
+            {pattern.title}
+          </h1>
         </div>
       </div>
 
-      {/* Hero Header */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-card to-background border border-border p-8 sm:p-10 shadow-sm">
-        <div className="absolute top-0 right-0 -mt-16 -mr-16 h-64 w-64 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="flex items-start gap-5">
-            <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 shrink-0 shadow-inner">
-              <BookOpen className="h-7 w-7 text-primary" />
+      <div className=" mx-auto px-6 sm:px-10 pt-10 space-y-12">
+        <div className="space-y-10">
+          {/* Concept / Description */}
+          {(pattern.description || pattern.concept) && (
+            <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none text-foreground/90 leading-relaxed border-b border-border/50 pb-8">
+              <ReactMarkdown>{pattern.description || pattern.concept}</ReactMarkdown>
             </div>
-            <div>
-              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
-                {pattern.title}
-              </h1>
-              <p className="text-base text-muted-foreground mt-2 font-medium">
-                Conceptual guide · Template code · Practice Problems
-              </p>
+          )}
+
+          {pattern.important_details && pattern.important_details.length > 0 && (
+            <div className="bg-primary/5 rounded-2xl p-6 border border-primary/10 transition-colors duration-300 hover:bg-primary/10">
+              <h4 className="text-sm font-bold text-primary mb-4 flex items-center gap-2 uppercase tracking-wider">
+                <span className="h-2 w-2 rounded-full bg-primary" /> Key Details
+              </h4>
+              <ul className="space-y-2 text-sm text-foreground/80 list-disc list-inside">
+                {pattern.important_details.map((detail: string, idx: number) => (
+                  <li key={idx} className="leading-relaxed">
+                    <div className="inline prose prose-sm dark:prose-invert max-w-none">
+                      <ReactMarkdown>{detail}</ReactMarkdown>
+                    </div>
+                  </li>
+                ))}
+              </ul>
             </div>
-          </div>
+          )}
+
+          {pattern.other_relevant_details && (
+            <div className="text-sm text-muted-foreground bg-muted/30 rounded-xl p-5 border border-border/50">
+              <h4 className="text-sm font-semibold text-foreground/70 mb-2">Additional Information</h4>
+              <div className="prose prose-sm dark:prose-invert max-w-none">
+                <ReactMarkdown>{pattern.other_relevant_details}</ReactMarkdown>
+              </div>
+            </div>
+          )}
+          
+          {pattern.templateCode && (
+            <div className="space-y-2">
+              <h2 className="text-sm font-semibold flex items-center gap-2 text-foreground/80 uppercase tracking-wider">
+                Template Code
+              </h2>
+              <TemplateCodeBlock code={pattern.templateCode} html={baseTemplateHtml} />
+            </div>
+          )}
+
+          <ExplanationBlock text={pattern.explanation} />
+          
+          {pattern.variations && pattern.variations.length > 0 && (
+            <div className="pt-4 space-y-4">
+              <h2 className="text-lg font-bold">Variations</h2>
+              <PatternContentClient 
+                pattern={pattern} 
+                htmlBlocks={htmlBlocks} 
+              />
+            </div>
+          )}
         </div>
-      </div>
-
-      <div className="space-y-10">
-        <PatternConceptBlock concept={pattern.concept} />
-        
-        {pattern.templateCode && (
-          <div className="space-y-2">
-            <h2 className="text-sm font-semibold flex items-center gap-2 text-foreground/80 uppercase tracking-wider">
-              Template Code
-            </h2>
-            <TemplateCodeBlock code={pattern.templateCode} html={baseTemplateHtml} />
-          </div>
-        )}
-
-        <ExplanationBlock text={pattern.explanation} />
-        
-        {pattern.variations && pattern.variations.length > 0 && (
-          <div className="pt-4 space-y-4">
-            <h2 className="text-lg font-bold">Variations</h2>
-            <PatternContentClient 
-              pattern={pattern} 
-              htmlBlocks={htmlBlocks} 
-            />
-          </div>
-        )}
       </div>
     </div>
   );

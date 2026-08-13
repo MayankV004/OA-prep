@@ -41,7 +41,8 @@ export function ProblemTable({ kind, group, groupLabel, showRating }: ProblemTab
   });
 
   const filtered = problems.filter(p => {
-    const matchesSearch = !search || p.title.toLowerCase().includes(search.toLowerCase());
+    const titleOrName = (p.name || p.title || '');
+    const matchesSearch = !search || titleOrName.toLowerCase().includes(search.toLowerCase());
     const matchesDiff = diffFilter === 'all' || p.difficulty === diffFilter;
     return matchesSearch && matchesDiff;
   });

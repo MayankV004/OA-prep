@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { withRole } from '@/lib/auth';
-import { User, Problem } from '@/models';
+import { User, Activity, Topic, Cheatsheet, Question, UserProgress } from '@/models';
 import { userUpdateSchema } from '@/lib/zod';
 import { recordActivity } from '@/lib/activity';
 import dbConnect from '@/lib/db';
@@ -15,8 +15,8 @@ export async function GET(req: NextRequest, { params }: Ctx) {
     if (!user) throw { status: 404, message: 'User not found' };
 
     const [totalProblems, completedProblems] = await Promise.all([
-      Problem.countDocuments({ userId: id }),
-      Problem.countDocuments({ userId: id, completed: true }),
+      UserProgress.countDocuments({ userId: id }),
+      UserProgress.countDocuments({ userId: id, completed: true }),
     ]);
 
     return { ...user.toObject(), totalProblems, completedProblems };

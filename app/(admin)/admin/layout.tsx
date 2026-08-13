@@ -20,6 +20,7 @@ import {
   ArrowLeft,
   BookOpen,
   Tag,
+  LayoutList,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -45,6 +46,7 @@ const ADMIN_NAV: {
     items: [
       { name: 'Problems', href: '/admin/content/problems', icon: Database },
       { name: 'Topics', href: '/admin/content/topics', icon: BookOpen },
+      { name: 'Patterns', href: '/admin/content/patterns', icon: LayoutList },
       { name: 'Cheat Sheets', href: '/admin/content/cheatsheets', icon: FileText },
       { name: 'Questions', href: '/admin/content/questions', icon: FileText },
     ],

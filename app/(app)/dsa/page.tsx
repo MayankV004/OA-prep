@@ -1,16 +1,17 @@
-import { client } from '@/sanity/lib/client';
 import DSAPageClient from './DSAPageClient';
+import dbConnect from '@/lib/db';
+import { Pattern } from '@/models';
 
-export const revalidate = 60; // revalidate every 60 seconds
+export const revalidate = 60;
 
 async function getPatterns() {
-  return client.fetch(`*[_type == "pattern"] | order(title asc) {
-    title,
-    "slug": slug.current,
-    timeComplexity,
-    spaceComplexity,
-    useCases
-  }`);
+  await dbConnect();
+  const patterns = await Pattern.find()
+    .select('title slug timeComplexity spaceComplexity useCases')
+    .sort({ title: 1 })
+    .lean();
+  
+  return JSON.parse(JSON.stringify(patterns));
 }
 
 export default async function DSAPage() {

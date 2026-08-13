@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { withAuth } from '@/lib/auth';
-import { Problem, Topic, Cheatsheet, Question } from '@/models';
+import { Topic, Cheatsheet, Question } from '@/models';
 import { searchQuerySchema } from '@/lib/zod';
 import dbConnect from '@/lib/db';
 import mongoose from 'mongoose';
@@ -19,15 +19,6 @@ export async function GET(req: NextRequest) {
 
     const searches: Promise<any[]>[] = [];
 
-    if (kind === 'all' || kind === 'problems') {
-      searches.push(
-        Problem.find({ ...userFilter, ...textFilter }, { score: scoreSort })
-          .sort(scoreSort)
-          .limit(limit)
-          .lean()
-          .then(r => r.map(d => ({ ...d, _type: 'problem' })))
-      );
-    }
     if (kind === 'all' || kind === 'topics') {
       searches.push(
         Topic.find({ ...userFilter, ...textFilter }, { score: scoreSort })

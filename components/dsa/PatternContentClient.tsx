@@ -68,12 +68,14 @@ export function PatternContentClient({ pattern, htmlBlocks }: PatternContentClie
           return null;
         }
 
+        const variationId = variationData._id || variationData.id || '';
+
         return (
           <VariationAccordionItem
-            key={variationData.id}
+            key={variationId}
             variation={variationData}
             problems={variationProblems}
-            html={htmlBlocks[variationData.id]}
+            html={htmlBlocks[variationId]}
             onToggleComplete={handleToggleComplete}
           />
         );

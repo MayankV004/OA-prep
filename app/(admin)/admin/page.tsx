@@ -16,6 +16,7 @@ import {
   ArrowRight,
   Mail,
   BookOpen,
+  LayoutList,
 } from 'lucide-react';
 import { useState } from 'react';
 import Link from 'next/link';
@@ -136,8 +137,9 @@ export default function AdminDashboard() {
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {[
+            { icon: LayoutList, label: 'Patterns', href: '/admin/content/patterns', desc: 'Manage DSA patterns' },
             { icon: Database, label: 'Problems', href: '/admin/content/problems', desc: 'User-tracked problems' },
-            { icon: BookOpen, label: 'Topics', href: '/admin/content/topics', desc: 'Subject topics' },
+            { icon: BookOpen, label: 'Topics', href: '/admin/content/topics', desc: 'Core subject topics' },
             { icon: FileText, label: 'Cheat Sheets', href: '/admin/content/cheatsheets', desc: 'Quick reference sheets' },
             { icon: Mail, label: 'Invites', href: '/admin/invites', desc: 'Manage invitations' },
           ].map((item) => (

@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { withAuth } from '@/lib/auth';
-import { Problem, Topic, Cheatsheet, Question } from '@/models';
+import { Topic, Cheatsheet, Question } from '@/models';
 import dbConnect from '@/lib/db';
 
 type Ctx = { params: Promise<{ type: string }> };
@@ -20,11 +20,7 @@ export async function GET(req: NextRequest, { params }: Ctx) {
 
     switch (type) {
       case 'problems':
-        Model = Problem;
-        const kind = searchParams.get('kind');
-        if (kind && kind !== 'all') query.kind = kind;
-        if (q) query.title = { $regex: q, $options: 'i' };
-        break;
+        return { data: [] }; // Problems are now managed via Sanity Studio
       case 'topics':
         Model = Topic;
         if (q) query.title = { $regex: q, $options: 'i' };

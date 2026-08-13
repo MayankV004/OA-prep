@@ -31,16 +31,36 @@ export const problemType = defineType({
       validation: Rule => Rule.required()
     }),
     defineField({
-      name: 'pattern',
-      title: 'Pattern',
-      type: 'reference',
-      to: [{ type: 'pattern' }]
+      name: 'problemType',
+      title: 'Problem Type',
+      type: 'string',
+      options: {
+        list: [
+          { title: 'DSA', value: 'DSA' },
+          { title: 'CP', value: 'CP' },
+          { title: 'Both', value: 'Both' }
+        ]
+      },
+      initialValue: 'DSA'
     }),
     defineField({
-      name: 'variation',
-      title: 'Variation (ID or Title)',
-      description: 'Used to group problems within a pattern (matches Variation ID or Title)',
-      type: 'string'
+      name: 'rating',
+      title: 'CP Rating',
+      type: 'number',
+      hidden: ({ document }) => document?.problemType === 'DSA'
+    }),
+    defineField({
+      name: 'contest',
+      title: 'Contest Name',
+      type: 'string',
+      hidden: ({ document }) => document?.problemType === 'DSA'
+    }),
+    defineField({
+      name: 'companyTags',
+      title: 'Company Tags',
+      type: 'array',
+      of: [{ type: 'string' }],
+      hidden: ({ document }) => document?.problemType === 'CP'
     })
   ]
 })

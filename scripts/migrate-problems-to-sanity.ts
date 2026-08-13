@@ -63,20 +63,21 @@ async function main() {
     
     const docId = `problem-${Buffer.from(prob.url).toString('base64').replace(/[^a-zA-Z0-9]/g, '').substring(0, 32)}`;
     
-    const doc = {
-      _id: docId,
-      _type: 'problem',
+    const patchSet: any = {
       title: prob.title,
       url: prob.url,
-      difficulty: prob.difficulty,
-      pattern: {
-        _type: 'reference',
-        _ref: sanityPattern._id
-      },
-      variation: prob.variation || 'General'
+      difficulty: prob.difficulty || 'Medium',
+      problemType: 'DSA',
     };
     
-    await client.createOrReplace(doc);
+    if (prob.tags && prob.tags.length > 0) {
+      patchSet.companyTags = prob.tags;
+    }
+    
+    await client.transaction()
+      .createIfNotExists({ _id: docId, _type: 'problem' })
+      .patch(docId, p => p.set(patchSet))
+      .commit();
     console.log(`✅ Migrated Problem: ${prob.title}`);
   }
   

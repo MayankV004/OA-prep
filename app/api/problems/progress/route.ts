@@ -20,40 +20,38 @@ export async function GET(req: NextRequest) {
     const returnType = searchParams.get('returnType'); // 'ids' or 'stats'
 
     if (kind === 'pattern' && returnType === 'ids') {
-      // For PatternContentClient: return only the completed problems from UserProgress
       const progress = await UserProgress.find({ 
         userId: targetUserId,
         completed: true 
-      }).select('sanityProblemId -_id');
-      return progress.map(p => p.sanityProblemId);
+      }).select('problemId -_id');
+      return progress.map(p => p.problemId);
     }
 
-    // For DSAPageClient: return pattern stats
     if (kind === 'pattern') {
-      const { client } = await import('@/sanity/lib/client');
-      
-      // Fetch all problems from Sanity grouped by pattern title
-      // We can fetch patterns and their problem counts
-      const sanityPatterns = await client.fetch(`*[_type == "pattern"]{
-        title,
-        "problems": variations[].problems[]._ref
-      }`);
+      const { Pattern } = await import('@/models');
+      const patterns = await Pattern.find().select('title variations').lean();
 
-      // Fetch user's completed problems
       const completedProgress = await UserProgress.find({ 
         userId: targetUserId,
         completed: true 
-      }).select('sanityProblemId -_id');
-      const completedIds = new Set(completedProgress.map(p => p.sanityProblemId));
+      }).select('problemId -_id');
+      const completedIds = new Set(completedProgress.map(p => p.problemId));
 
-      const stats = sanityPatterns.map((p: any) => {
+      const stats = patterns.map((p: any) => {
         let completedCount = 0;
-        const total = p.problems ? p.problems.length : 0;
-        if (p.problems) {
-          p.problems.forEach((id: string) => {
-            if (completedIds.has(id)) completedCount++;
+        let total = 0;
+        
+        if (p.variations) {
+          p.variations.forEach((v: any) => {
+            if (v.problems) {
+              total += v.problems.length;
+              v.problems.forEach((prob: any) => {
+                if (completedIds.has(prob._id.toString())) completedCount++;
+              });
+            }
           });
         }
+        
         return {
           group: p.title,
           total,
@@ -98,7 +96,7 @@ export async function POST(req: NextRequest) {
     const { problemId, completed } = toggleSchema.parse(body);
 
     const progress = await UserProgress.findOneAndUpdate(
-      { userId, sanityProblemId: problemId },
+      { userId, problemId },
       { completed, completedAt: completed ? new Date() : null },
       { upsert: true, new: true }
     );

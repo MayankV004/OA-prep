@@ -53,15 +53,36 @@ export function ProblemList({ problems, onToggleComplete }: ProblemListProps) {
             
             <div className="flex items-center justify-between w-full">
               <Link
-                href={p.url}
+                href={p.link || (p as any).url || '#'}
                 target="_blank"
                 className="text-sm font-semibold text-foreground/90 hover:text-primary transition-colors truncate flex items-center gap-2 group/link"
               >
-                {p.title}
+                {p.name || p.title}
                 <ExternalLink className="h-3 w-3 text-muted-foreground opacity-0 -translate-x-2 group-hover/link:opacity-100 group-hover/link:translate-x-0 transition-all duration-300" />
               </Link>
 
               <div className="flex items-center gap-3 shrink-0 ml-4">
+                {(p.platform || (p as any).source) && (
+                  <span className="px-2 py-0.5 text-[10px] font-semibold text-muted-foreground bg-muted rounded-md border border-border/50 uppercase tracking-wider hidden sm:inline-block">
+                    {p.platform || (p as any).source}
+                  </span>
+                )}
+                
+                {p.company_tags && p.company_tags.length > 0 && (
+                  <div className="hidden md:flex gap-1">
+                    {p.company_tags.slice(0, 2).map(tag => (
+                      <span key={tag} className="px-1.5 py-0.5 text-[10px] bg-primary/5 text-primary/80 border border-primary/10 rounded-sm truncate max-w-[60px]" title={tag}>
+                        {tag}
+                      </span>
+                    ))}
+                    {p.company_tags.length > 2 && (
+                      <span className="px-1.5 py-0.5 text-[10px] bg-primary/5 text-primary/80 border border-primary/10 rounded-sm">
+                        +{p.company_tags.length - 2}
+                      </span>
+                    )}
+                  </div>
+                )}
+
                 <span className={cn(
                   "px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest rounded-md border backdrop-blur-sm shadow-sm transition-colors duration-300",
                   difficultyColors[p.difficulty.toLowerCase() as keyof typeof difficultyColors] || "text-muted-foreground bg-muted border-border"

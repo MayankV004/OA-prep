@@ -32,7 +32,7 @@ async function main() {
 
     // Fetch the pattern from Sanity
     const sanityPattern = await client.fetch(`*[_type == "pattern" && slug.current == $slug][0]`, { slug: patternSlug });
-    
+
     if (!sanityPattern) {
       console.warn(`⚠️ Pattern '${patternSlug}' not found in Sanity. Skipping file: ${file}`);
       continue;
@@ -63,34 +63,38 @@ async function main() {
       const problemRefs = [];
 
       for (const prob of problemsToMigrate) {
-        if (!prob.title || !prob.url) {
-          console.warn(`⚠️ Problem missing title or url in ${file}. Skipping.`, prob.title);
+        const title = prob.title || prob.name;
+        const url = prob.url || prob.link;
+
+        if (!title || !url) {
+          console.warn(`⚠️ Problem missing title or url in ${file}. Skipping.`, prob);
           continue;
         }
 
-        const docId = `problem-${Buffer.from(prob.url).toString('base64').replace(/[^a-zA-Z0-9]/g, '').substring(0, 32)}`;
-        
-        const doc = {
-          _id: docId,
-          _type: 'problem',
-          title: prob.title,
-          url: prob.url,
+        const docId = `problem-${Buffer.from(url).toString('base64').replace(/[^a-zA-Z0-9]/g, '').substring(0, 32)}`;
+
+        const patchSet: any = {
+          title: title,
+          url: url,
           difficulty: prob.difficulty || 'Medium',
-          pattern: {
-            _type: 'reference',
-            _ref: sanityPattern._id
-          },
-          variation: variation.name || variation.id || 'General'
+          problemType: 'DSA',
         };
-        
-        await client.createOrReplace(doc);
+
+        if (prob.company_tags) {
+          patchSet.companyTags = Array.isArray(prob.company_tags) ? prob.company_tags : [prob.company_tags];
+        }
+
+        await client.transaction()
+          .createIfNotExists({ _id: docId, _type: 'problem' })
+          .patch(docId, p => p.set(patchSet))
+          .commit();
         problemRefs.push({ _type: 'reference', _key: docId, _ref: docId });
         count++;
       }
 
       const targetVarId = variation.id || variation.name;
       const sanityVarIndex = updatedVariations.findIndex((v: any) => v.id === targetVarId || v.title === targetVarId);
-      
+
       if (sanityVarIndex !== -1) {
         updatedVariations[sanityVarIndex] = {
           ...updatedVariations[sanityVarIndex],

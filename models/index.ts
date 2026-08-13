@@ -3,6 +3,7 @@ export * from './group';
 export * from './topic';
 export * from './problem';
 export * from './question';
+export * from './pattern';
 export * from './cheatsheet';
 export * from './taxonomy';
 export * from './activity';

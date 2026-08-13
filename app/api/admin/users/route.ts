@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { withRole } from '@/lib/auth';
-import { User, Problem, Activity } from '@/models';
+import { User, Activity } from '@/models';
 import { userUpdateSchema } from '@/lib/zod';
 import { recordActivity } from '@/lib/activity';
 import dbConnect from '@/lib/db';

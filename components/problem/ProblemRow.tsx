@@ -9,8 +9,10 @@ import { cn } from '@/lib/utils';
 
 export interface Problem {
   _id: string;
-  title: string;
-  url: string;
+  title?: string;
+  name?: string;
+  url?: string;
+  link?: string;
   difficulty: 'Easy' | 'Medium' | 'Hard';
   completed: boolean;
   notes?: string;
@@ -21,6 +23,7 @@ export interface Problem {
   platform?: string;
   contest?: string;
   rating?: number;
+  company_tags?: string[];
 }
 
 interface ProblemRowProps {
@@ -76,7 +79,7 @@ export function ProblemRow({ problem, queryKey, onNotesClick }: ProblemRowProps)
       </td>
       <td className="px-3 py-3">
         <a
-          href={problem.url}
+          href={problem.link || problem.url || '#'}
           target="_blank"
           rel="noopener noreferrer"
           className={cn(
@@ -84,7 +87,7 @@ export function ProblemRow({ problem, queryKey, onNotesClick }: ProblemRowProps)
             problem.completed && 'line-through text-muted-foreground'
           )}
         >
-          {problem.title}
+          {problem.name || problem.title}
           <ExternalLink className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 flex-shrink-0" />
         </a>
         {problem.tags && problem.tags.length > 0 && (

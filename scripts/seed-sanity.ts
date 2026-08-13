@@ -19,7 +19,7 @@ async function main() {
     console.error('Error: SANITY_API_TOKEN is missing in .env.local');
     process.exit(1);
   }
-  
+
   if (process.env.SANITY_API_TOKEN === 'your_sanity_token_here') {
     console.error('Error: Please replace "your_sanity_token_here" with a real token in .env.local');
     process.exit(1);
@@ -29,11 +29,11 @@ async function main() {
   // Since scripts run via ts-node often have issues with next aliases, we use relative paths
   console.log('Loading patterns data...');
   const allPatterns = require('../data/patterns');
-  
+
   for (const key in allPatterns) {
     const pattern = allPatterns[key];
     console.log(`Migrating pattern: ${pattern.title}...`);
-    
+
     try {
       const doc = {
         _type: 'pattern',
@@ -59,13 +59,13 @@ async function main() {
       // Use a custom ID based on slug to avoid duplicates on re-runs
       const docId = `pattern-${pattern.slug}`;
       await client.createOrReplace({ ...doc, _id: docId });
-      
+
       console.log(`✅ Created/Updated: ${pattern.title}`);
     } catch (err) {
       console.error(`❌ Error migrating ${pattern.title}:`, err);
     }
   }
-  
+
   console.log('Migration complete!');
 }
 
