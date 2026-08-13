@@ -2,10 +2,19 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Search, Trash2, FileText, Clock } from 'lucide-react';
+import { FileText, Plus, Trash2 } from 'lucide-react';
 import { formatDistanceToNow, parseISO } from 'date-fns';
+
+import { DataTable, type Column } from '@/components/admin/DataTable';
+import { SlideOver } from '@/components/admin/SlideOver';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { ConfirmDialog } from '@/components/ui/alert-dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/components/ui/toast';
+import { PageHeading, Text } from '@/components/ui/typography';
 
 interface Cheatsheet {
   _id: string;
@@ -16,11 +25,27 @@ interface Cheatsheet {
   createdAt: string;
 }
 
+function relative(value?: string) {
+  if (!value) return '—';
+  try {
+    return formatDistanceToNow(parseISO(value), { addSuffix: true });
+  } catch {
+    return '—';
+  }
+}
+
 export default function AdminCheatsheetsPage() {
   const queryClient = useQueryClient();
+  const toast = useToast();
   const [search, setSearch] = useState('');
+  const [createOpen, setCreateOpen] = useState(false);
+  const [confirming, setConfirming] = useState<Cheatsheet | null>(null);
+  const [bulkConfirm, setBulkConfirm] = useState<{
+    ids: string[];
+    clear: () => void;
+  } | null>(null);
 
-  const { data, isLoading } = useQuery<{ data: Cheatsheet[] }>({
+  const { data, isLoading, error } = useQuery<{ data: Cheatsheet[] }>({
     queryKey: ['admin', 'cheatsheets', search],
     queryFn: async () => {
       const params = new URLSearchParams({ limit: '50' });
@@ -35,106 +60,268 @@ export default function AdminCheatsheetsPage() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      if (!confirm('Delete this cheat sheet? This cannot be undone.')) return;
-      await fetch(`/api/cheatsheets/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/cheatsheets/${id}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.error?.message ?? 'Failed to delete cheat sheet');
+      }
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'cheatsheets'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'cheatsheets'] });
+      toast.add('Cheat sheet deleted', { type: 'success' });
+      setConfirming(null);
+    },
+    onError: (err: unknown) => {
+      toast.add("Couldn't delete cheat sheet", {
+        description: err instanceof Error ? err.message : undefined,
+        type: 'error',
+      });
+    },
   });
+
+  // TODO: backend — bulk endpoint would replace this client-side loop
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (ids: string[]) => {
+      const results = await Promise.allSettled(
+        ids.map(async (id) => {
+          const res = await fetch(`/api/cheatsheets/${id}`, { method: 'DELETE' });
+          if (!res.ok) throw new Error(id);
+        })
+      );
+      return {
+        succeeded: results.filter((r) => r.status === 'fulfilled').length,
+        failed: results.filter((r) => r.status === 'rejected').length,
+      };
+    },
+    onSuccess: ({ succeeded, failed }) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'cheatsheets'] });
+      toast.add(`${succeeded} deleted, ${failed} failed`, {
+        type: failed > 0 ? 'error' : 'success',
+      });
+      bulkConfirm?.clear();
+      setBulkConfirm(null);
+    },
+    onError: () => {
+      toast.add("Couldn't delete the selected cheat sheets", { type: 'error' });
+    },
+  });
+
+  const columns: Column<Cheatsheet>[] = [
+    {
+      id: 'title',
+      header: 'Title',
+      primary: true,
+      sortValue: (row) => row.title,
+      cell: (row) => (
+        <div className="min-w-0">
+          <span className="block truncate font-medium text-foreground" title={row.title}>
+            {row.title}
+          </span>
+          <code className="mt-0.5 block truncate font-mono text-2xs text-text-muted">
+            /{row.slug}
+          </code>
+        </div>
+      ),
+    },
+    {
+      id: 'tags',
+      header: 'Tags',
+      hideBelow: 'sm',
+      sortValue: (row) => row.tags?.length ?? 0,
+      cell: (row) =>
+        row.tags?.length ? (
+          <div className="flex flex-wrap items-center justify-end gap-1 md:justify-start">
+            {row.tags.slice(0, 3).map((tag) => (
+              <Badge key={tag} variant="secondary">
+                {tag}
+              </Badge>
+            ))}
+            {row.tags.length > 3 ? (
+              <Text as="span" size="micro" tone="muted" numeric>
+                +{row.tags.length - 3}
+              </Text>
+            ) : null}
+          </div>
+        ) : (
+          <Text as="span" size="caption" tone="muted">
+            —
+          </Text>
+        ),
+    },
+    {
+      id: 'author',
+      header: 'Author',
+      hideBelow: 'lg',
+      sortValue: (row) => row.userId?.name ?? null,
+      cell: (row) =>
+        row.userId ? (
+          <div className="min-w-0">
+            <Text as="span" size="caption" tone="primary" weight="medium" className="block truncate">
+              {row.userId.name}
+            </Text>
+            <Text as="span" size="micro" tone="muted" className="block truncate">
+              {row.userId.email}
+            </Text>
+          </div>
+        ) : (
+          <Text as="span" size="caption" tone="muted">
+            Unknown
+          </Text>
+        ),
+    },
+    {
+      id: 'createdAt',
+      header: 'Created',
+      hideBelow: 'md',
+      sortValue: (row) => row.createdAt ?? null,
+      cell: (row) => (
+        <Text as="span" size="caption" tone="muted" numeric>
+          {relative(row.createdAt)}
+        </Text>
+      ),
+    },
+  ];
+
+  const newSheetButton = (
+    <Button onClick={() => setCreateOpen(true)}>
+      <Plus className="size-4" aria-hidden />
+      New cheat sheet
+    </Button>
+  );
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <FileText className="h-6 w-6 text-primary" />
-            Cheat Sheets
-          </h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            {cheatsheets.length} cheat sheets across all users
-          </p>
-        </div>
-      </div>
+      <PageHeading
+        overline="Content"
+        title="Cheat sheets"
+        description="Every cheat sheet published across all users."
+        actions={newSheetButton}
+      />
 
-      {/* Search */}
-      <div className="relative max-w-sm">
-        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Search cheat sheets..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="pl-8 h-9"
-        />
-      </div>
-
-      {/* Table */}
-      <div className="rounded-xl border border-border overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-muted/40 border-b border-border">
-            <tr>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Title</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Slug</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Author</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Created</th>
-              <th className="px-4 py-3 w-12" />
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border/50">
-            {isLoading ? (
-              [...Array(5)].map((_, i) => (
-                <tr key={i}>
-                  <td colSpan={5} className="px-4 py-3">
-                    <div className="h-4 bg-muted animate-pulse rounded" />
-                  </td>
-                </tr>
-              ))
-            ) : (
-              cheatsheets.map((sheet) => (
-                <tr key={sheet._id} className="hover:bg-muted/20 transition-colors">
-                  <td className="px-4 py-3 font-medium">{sheet.title}</td>
-                  <td className="px-4 py-3">
-                    <code className="text-xs bg-muted px-1.5 py-0.5 rounded text-muted-foreground">
-                      {sheet.slug}
-                    </code>
-                  </td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground">
-                    {sheet.userId ? (
-                      <span>
-                        <span className="font-medium text-foreground">{sheet.userId.name}</span>{' '}
-                        <span className="opacity-60">({sheet.userId.email})</span>
-                      </span>
-                    ) : (
-                      <span className="italic">Unknown</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                      <Clock className="h-3 w-3" />
-                      {formatDistanceToNow(parseISO(sheet.createdAt), { addSuffix: true })}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      onClick={() => deleteMutation.mutate(sheet._id)}
-                      disabled={deleteMutation.isPending}
-                    >
-                      <Trash2 className="h-3.5 w-3.5 text-destructive opacity-50 hover:opacity-100 transition-opacity" />
-                    </Button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-        {!isLoading && cheatsheets.length === 0 && (
-          <div className="text-center py-16 text-muted-foreground text-sm">
-            <FileText className="h-8 w-8 mx-auto mb-3 opacity-30" />
-            No cheat sheets found
-          </div>
+      <DataTable
+        data={cheatsheets}
+        columns={columns}
+        getRowId={(row) => row._id}
+        loading={isLoading}
+        error={error}
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search cheat sheets…"
+        emptyTitle="No cheat sheets yet"
+        emptyDescription="Cheat sheets created by any user will show up here."
+        emptyIcon={FileText}
+        emptyAction={newSheetButton}
+        rowActions={(row) => (
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={`Delete ${row.title}`}
+            className="size-11 text-text-muted hover:text-destructive md:size-8"
+            onClick={() => setConfirming(row)}
+          >
+            <Trash2 className="size-4" aria-hidden />
+          </Button>
         )}
-      </div>
+        bulkActions={(ids, clear) => (
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => setBulkConfirm({ ids, clear })}
+          >
+            <Trash2 className="size-3.5" aria-hidden />
+            Delete
+          </Button>
+        )}
+        pageSize={15}
+      />
+
+      {/* TODO: backend — POST endpoint needed before this form can submit */}
+      <SlideOver
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        title="New cheat sheet"
+        description="Form is ready — the create endpoint is not."
+        width="lg"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setCreateOpen(false)}>
+              Cancel
+            </Button>
+            <Button disabled>Create cheat sheet</Button>
+          </>
+        }
+      >
+        <form
+          className="space-y-5"
+          onSubmit={(e) => {
+            // TODO: backend — POST endpoint needed before this form can submit
+            e.preventDefault();
+          }}
+        >
+          <div className="rounded-lg bg-warning-muted p-3">
+            <Text size="caption" className="text-warning">
+              Saving is disabled: there is no <code className="font-mono">POST</code>{' '}
+              /api/cheatsheets endpoint yet. The fields below are wired to local state only.
+            </Text>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="sheet-title">Title</Label>
+              <Input id="sheet-title" name="title" placeholder="e.g. Big-O Reference" />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="sheet-slug">Slug</Label>
+              <Input
+                id="sheet-slug"
+                name="slug"
+                placeholder="e.g. big-o-reference"
+                className="font-mono"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="sheet-tags">Tags</Label>
+            <Input id="sheet-tags" name="tags" placeholder="complexity, dsa, interview" />
+            <Text size="micro" tone="muted">
+              Comma separated.
+            </Text>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="sheet-content">Content</Label>
+            <Textarea
+              id="sheet-content"
+              name="content"
+              rows={10}
+              className="font-mono text-xs"
+              placeholder="Markdown…"
+            />
+          </div>
+        </form>
+      </SlideOver>
+
+      <ConfirmDialog
+        open={Boolean(confirming)}
+        onOpenChange={(open) => !open && setConfirming(null)}
+        itemName={confirming?.title ?? 'this cheat sheet'}
+        action="delete"
+        pending={deleteMutation.isPending}
+        onConfirm={() => confirming && deleteMutation.mutate(confirming._id)}
+      />
+
+      <ConfirmDialog
+        open={Boolean(bulkConfirm)}
+        onOpenChange={(open) => !open && setBulkConfirm(null)}
+        itemName={`${bulkConfirm?.ids.length ?? 0} cheat sheets`}
+        action="delete"
+        confirmLabel="Yes, delete all"
+        description={`This will permanently delete ${bulkConfirm?.ids.length ?? 0} cheat sheets. This action cannot be undone.`}
+        pending={bulkDeleteMutation.isPending}
+        onConfirm={() => bulkConfirm && bulkDeleteMutation.mutate(bulkConfirm.ids)}
+      />
     </div>
   );
 }

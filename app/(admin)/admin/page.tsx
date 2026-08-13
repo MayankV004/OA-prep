@@ -1,26 +1,44 @@
 'use client';
 
+import { useMemo, useState } from 'react';
+import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
-  Search,
-  Shield,
-  Users,
-  UserCheck,
+  format,
+  formatDistanceToNow,
+  parseISO,
+  startOfWeek,
+  subWeeks,
+} from 'date-fns';
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
+import {
+  Activity,
+  ArrowRight,
+  BookOpen,
   Database,
   FileText,
-  Activity,
-  TrendingUp,
-  ArrowRight,
-  Mail,
-  BookOpen,
   LayoutList,
+  Mail,
+  Shield,
+  UserCheck,
+  Users,
 } from 'lucide-react';
-import { useState } from 'react';
-import Link from 'next/link';
-import { formatDistanceToNow, parseISO } from 'date-fns';
+
+import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Heading, Metric, PageHeading, Text } from '@/components/ui/typography';
+import { DataTable, type Column } from '@/components/admin/DataTable';
 
 interface UserRow {
   _id: string;
@@ -32,43 +50,105 @@ interface UserRow {
   lastSeenAt?: string;
 }
 
+/* ── Stat card ──────────────────────────────────────────────────────── */
+
 function StatCard({
   icon: Icon,
   label,
   value,
   sub,
-  color,
+  tone,
   href,
 }: {
-  icon: any;
+  icon: React.ComponentType<{ className?: string }>;
   label: string;
   value: number | string;
   sub?: string;
-  color: string;
+  tone: 'accent' | 'success' | 'info' | 'warning';
   href: string;
 }) {
+  const toneClass = {
+    accent: 'bg-accent text-accent-foreground',
+    success: 'bg-success-muted text-success',
+    info: 'bg-info-muted text-info',
+    warning: 'bg-warning-muted text-warning',
+  }[tone];
+
   return (
-    <Link href={href}>
-      <div className={`group relative overflow-hidden rounded-2xl border border-border bg-card p-5 hover:border-primary/30 hover:shadow-md transition-all cursor-pointer`}>
-        <div className="flex items-start justify-between mb-4">
-          <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${color}`}>
-            <Icon className="h-5 w-5" />
+    <Link href={href} className="group block rounded-xl outline-none">
+      <Card interactive className="h-full">
+        <CardContent className="space-y-3">
+          <div className="flex items-start justify-between gap-2">
+            <span
+              aria-hidden
+              className={cn('grid size-9 place-items-center rounded-lg', toneClass)}
+            >
+              <Icon className="size-4" />
+            </span>
+            <ArrowRight
+              aria-hidden
+              className="size-4 text-text-muted opacity-0 transition-opacity group-hover:opacity-100"
+            />
           </div>
-          <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-        </div>
-        <p className="text-3xl font-bold tracking-tight">{value}</p>
-        <p className="text-sm font-medium text-foreground mt-0.5">{label}</p>
-        {sub && <p className="text-xs text-muted-foreground mt-1">{sub}</p>}
-        <div className={`absolute bottom-0 left-0 right-0 h-0.5 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-r from-transparent via-primary to-transparent`} />
-      </div>
+
+          <div className="space-y-0.5">
+            <Metric>{value}</Metric>
+            <Text size="caption" tone="secondary" weight="medium">
+              {label}
+            </Text>
+            {sub ? (
+              <Text size="micro" tone="muted" numeric>
+                {sub}
+              </Text>
+            ) : null}
+          </div>
+        </CardContent>
+      </Card>
     </Link>
   );
 }
 
+/* ── Chart tooltip ──────────────────────────────────────────────────── */
+
+function ChartTooltip({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean;
+  payload?: { value?: number }[];
+  label?: string;
+}) {
+  if (!active || !payload?.length) return null;
+
+  return (
+    <div className="rounded-lg bg-popover px-3 py-2 shadow-e3">
+      <Text size="micro" tone="muted">
+        Week of {label}
+      </Text>
+      <Text size="caption" tone="primary" weight="semibold" numeric>
+        {payload[0]?.value ?? 0} new
+      </Text>
+    </div>
+  );
+}
+
+/* ── Content quick links ────────────────────────────────────────────── */
+
+const CONTENT_LINKS = [
+  { icon: LayoutList, label: 'Patterns', href: '/admin/content/patterns', desc: 'Manage DSA patterns' },
+  { icon: Database, label: 'Problems', href: '/admin/content/problems', desc: 'User-tracked problems' },
+  { icon: BookOpen, label: 'Topics', href: '/admin/content/topics', desc: 'Core subject topics' },
+  { icon: FileText, label: 'Cheat Sheets', href: '/admin/content/cheatsheets', desc: 'Quick reference sheets' },
+  { icon: Mail, label: 'Invites', href: '/admin/invites', desc: 'Manage invitations' },
+];
+
+const SIGNUP_WEEKS = 8;
+
 export default function AdminDashboard() {
   const [search, setSearch] = useState('');
 
-  const { data, isLoading } = useQuery<{ data: UserRow[] }>({
+  const { data, isLoading, error } = useQuery<{ data: UserRow[] }>({
     queryKey: ['admin', 'users', search],
     queryFn: async () => {
       const params = new URLSearchParams({ limit: '50' });
@@ -84,24 +164,150 @@ export default function AdminDashboard() {
   const adminCount = users.filter((u) => u.role === 'admin').length;
   const activeCount = users.filter((u) => !u.disabled).length;
 
-  return (
-    <div className="space-y-8">
-      {/* Page header */}
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground text-sm mt-1">
-          Platform overview and quick actions
-        </p>
-      </div>
+  /**
+   * Signup trend is derived entirely from the `createdAt` values already on the
+   * loaded page of users — no extra request. It therefore describes the fetched
+   * page, not the whole platform.
+   * TODO: backend — an aggregate signups-per-week endpoint would make this exact.
+   */
+  const signupSeries = useMemo(() => {
+    const rows = data?.data ?? [];
+    const now = new Date();
 
-      {/* Stats grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+    const buckets = Array.from({ length: SIGNUP_WEEKS }, (_, i) => {
+      const start = startOfWeek(subWeeks(now, SIGNUP_WEEKS - 1 - i), {
+        weekStartsOn: 1,
+      });
+      return { key: start.getTime(), label: format(start, 'MMM d'), count: 0 };
+    });
+
+    for (const user of rows) {
+      if (!user.createdAt) continue;
+      const created = parseISO(user.createdAt);
+      if (Number.isNaN(created.getTime())) continue;
+
+      const key = startOfWeek(created, { weekStartsOn: 1 }).getTime();
+      const bucket = buckets.find((b) => b.key === key);
+      if (bucket) bucket.count += 1;
+    }
+
+    return buckets.map(({ label, count }) => ({ label, count }));
+  }, [data]);
+
+  const hasSignupData = signupSeries.some((point) => point.count > 0);
+
+  const columns: Column<UserRow>[] = [
+    {
+      id: 'user',
+      header: 'User',
+      primary: true,
+      sortValue: (row) => row.name,
+      cell: (row) => (
+        <div className="flex min-w-0 items-center gap-2.5">
+          <span
+            aria-hidden
+            className="grid size-7 shrink-0 place-items-center rounded-full bg-accent text-2xs font-semibold text-accent-foreground"
+          >
+            {row.name?.[0]?.toUpperCase() ?? '?'}
+          </span>
+          <span className="min-w-0">
+            <Text
+              as="span"
+              size="caption"
+              tone="primary"
+              weight="medium"
+              className="block truncate"
+            >
+              {row.name}
+            </Text>
+            <Text as="span" size="micro" tone="muted" className="block truncate">
+              {row.email}
+            </Text>
+          </span>
+        </div>
+      ),
+    },
+    {
+      id: 'role',
+      header: 'Role',
+      sortValue: (row) => row.role,
+      cell: (row) =>
+        row.role === 'admin' ? (
+          <Badge variant="secondary" className="bg-accent text-accent-foreground">
+            <Shield aria-hidden />
+            Admin
+          </Badge>
+        ) : (
+          <Badge variant="secondary">User</Badge>
+        ),
+    },
+    {
+      id: 'status',
+      header: 'Status',
+      sortValue: (row) => (row.disabled ? 1 : 0),
+      cell: (row) =>
+        row.disabled ? (
+          <Badge variant="destructive">Disabled</Badge>
+        ) : (
+          <Badge variant="secondary" className="bg-success-muted text-success">
+            Active
+          </Badge>
+        ),
+    },
+    {
+      id: 'createdAt',
+      header: 'Joined',
+      hideBelow: 'lg',
+      sortValue: (row) => row.createdAt ?? null,
+      cell: (row) => (
+        <Text size="caption" tone="muted" as="span" numeric>
+          {row.createdAt
+            ? formatDistanceToNow(parseISO(row.createdAt), { addSuffix: true })
+            : '—'}
+        </Text>
+      ),
+    },
+    {
+      id: 'lastSeenAt',
+      header: 'Last seen',
+      hideBelow: 'lg',
+      sortValue: (row) => row.lastSeenAt ?? null,
+      cell: (row) => (
+        <Text size="caption" tone="muted" as="span" numeric>
+          {row.lastSeenAt
+            ? formatDistanceToNow(parseISO(row.lastSeenAt), { addSuffix: true })
+            : '—'}
+        </Text>
+      ),
+    },
+  ];
+
+  return (
+    <div className="animate-in-fade space-y-8">
+      <PageHeading
+        overline="Admin"
+        title="Dashboard"
+        description="Platform overview, content shortcuts and the most recent accounts."
+        actions={
+          <Button
+            size="lg"
+            className="h-11 sm:h-9"
+            render={<Link href="/admin/invites" />}
+          >
+            <Mail aria-hidden />
+            Invite user
+          </Button>
+        }
+      />
+
+      {/* ── Stats ─────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           icon={Users}
-          label="Total Users"
+          label="Total users"
           value={totalUsers}
           sub={`${activeCount} active`}
-          color="bg-blue-500/10 text-blue-600 dark:text-blue-400"
+          tone="info"
           href="/admin/users"
         />
         <StatCard
@@ -109,161 +315,173 @@ export default function AdminDashboard() {
           label="Admins"
           value={adminCount}
           sub="with full access"
-          color="bg-primary/10 text-primary"
+          tone="accent"
           href="/admin/users"
         />
         <StatCard
           icon={UserCheck}
-          label="Active Users"
+          label="Active users"
           value={activeCount}
           sub={`${totalUsers - activeCount} disabled`}
-          color="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+          tone="success"
           href="/admin/users"
         />
         <StatCard
           icon={Activity}
-          label="Activity Log"
+          label="Activity log"
           value="View"
           sub="Recent platform events"
-          color="bg-orange-500/10 text-orange-600 dark:text-orange-400"
+          tone="warning"
           href="/admin/activity"
         />
       </div>
 
-      {/* Content quick links */}
-      <div>
-        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-          Content Management
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {[
-            { icon: LayoutList, label: 'Patterns', href: '/admin/content/patterns', desc: 'Manage DSA patterns' },
-            { icon: Database, label: 'Problems', href: '/admin/content/problems', desc: 'User-tracked problems' },
-            { icon: BookOpen, label: 'Topics', href: '/admin/content/topics', desc: 'Core subject topics' },
-            { icon: FileText, label: 'Cheat Sheets', href: '/admin/content/cheatsheets', desc: 'Quick reference sheets' },
-            { icon: Mail, label: 'Invites', href: '/admin/invites', desc: 'Manage invitations' },
-          ].map((item) => (
-            <Link key={item.href} href={item.href}>
-              <div className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card hover:border-primary/30 hover:bg-muted/30 transition-all cursor-pointer group">
-                <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                  <item.icon className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-medium">{item.label}</p>
-                  <p className="text-xs text-muted-foreground truncate">{item.desc}</p>
-                </div>
-                <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 ml-auto shrink-0 transition-opacity" />
+      {/* ── Signup trend ──────────────────────────────────────────── */}
+      <Card>
+        <CardHeader>
+          <CardTitle>New accounts</CardTitle>
+          <Text size="caption" tone="muted">
+            Weekly signups across the {totalUsers} loaded accounts, last{' '}
+            {SIGNUP_WEEKS} weeks.
+          </Text>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="h-48 animate-shimmer rounded-lg bg-muted" aria-hidden />
+          ) : hasSignupData ? (
+            <div className="h-48 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={signupSeries}
+                  margin={{ top: 8, right: 4, bottom: 0, left: -20 }}
+                >
+                  <CartesianGrid
+                    vertical={false}
+                    stroke="var(--divider)"
+                    strokeDasharray="3 3"
+                  />
+                  <XAxis
+                    dataKey="label"
+                    tickLine={false}
+                    axisLine={false}
+                    tick={{ fill: 'var(--muted-foreground)', fontSize: 11 }}
+                  />
+                  <YAxis
+                    allowDecimals={false}
+                    tickLine={false}
+                    axisLine={false}
+                    width={40}
+                    tick={{ fill: 'var(--muted-foreground)', fontSize: 11 }}
+                  />
+                  <Tooltip
+                    cursor={{ fill: 'var(--muted)' }}
+                    content={<ChartTooltip />}
+                  />
+                  <Bar
+                    dataKey="count"
+                    name="New accounts"
+                    fill="var(--chart-1)"
+                    radius={[4, 4, 0, 0]}
+                    maxBarSize={40}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <EmptyState
+              compact
+              icon={Activity}
+              title="No recent signups"
+              description="Nobody in the loaded set joined in the last eight weeks."
+            />
+          )}
+        </CardContent>
+      </Card>
+
+      {/* ── Content quick links ───────────────────────────────────── */}
+      <section className="space-y-3">
+        <Heading level="overline">Content management</Heading>
+
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {CONTENT_LINKS.map((item) => (
+            <Link key={item.href} href={item.href} className="group block rounded-xl outline-none">
+              <div className="lift flex min-h-11 items-center gap-3 rounded-xl bg-card p-4 shadow-e1">
+                <span
+                  aria-hidden
+                  className="grid size-9 shrink-0 place-items-center rounded-lg bg-muted text-text-muted transition-colors group-hover:bg-accent group-hover:text-accent-foreground"
+                >
+                  <item.icon className="size-4" />
+                </span>
+
+                <span className="min-w-0">
+                  <Text as="span" size="caption" tone="primary" weight="medium" className="block">
+                    {item.label}
+                  </Text>
+                  <Text as="span" size="micro" tone="muted" className="block truncate">
+                    {item.desc}
+                  </Text>
+                </span>
+
+                <ArrowRight
+                  aria-hidden
+                  className="ml-auto size-4 shrink-0 text-text-muted opacity-0 transition-opacity group-hover:opacity-100"
+                />
               </div>
             </Link>
           ))}
         </div>
-      </div>
+      </section>
 
-      {/* Users table */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-sm font-semibold">All Users</h2>
-            <p className="text-xs text-muted-foreground">{totalUsers} registered</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-              <Input
-                placeholder="Search users..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-8 h-8 text-sm w-52"
-              />
-            </div>
-            <Link href="/admin/invites">
-              <Button size="sm" className="h-8 text-xs">
-                <Mail className="h-3.5 w-3.5 mr-1.5" />
-                Invite
-              </Button>
-            </Link>
-          </div>
+      {/* ── Recent users ──────────────────────────────────────────── */}
+      <section className="space-y-3">
+        <div className="flex items-baseline justify-between gap-3">
+          <Heading level="section">All users</Heading>
+          <Text size="caption" tone="muted" numeric>
+            {totalUsers} loaded
+          </Text>
         </div>
 
-        <div className="rounded-xl border border-border overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/40 border-b border-border">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">User</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Role</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Status</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Joined</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Last seen</th>
-                <th className="px-4 py-3 w-12" />
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border/50">
-              {isLoading
-                ? [...Array(5)].map((_, i) => (
-                    <tr key={i}>
-                      <td colSpan={6} className="px-4 py-3">
-                        <div className="h-5 bg-muted animate-pulse rounded" />
-                      </td>
-                    </tr>
-                  ))
-                : users.map((user) => (
-                    <tr key={user._id} className="hover:bg-muted/20 transition-colors">
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2.5">
-                          <div className="h-7 w-7 rounded-full bg-gradient-to-br from-primary/40 to-primary/20 flex items-center justify-center text-xs font-semibold text-primary shrink-0">
-                            {user.name[0]?.toUpperCase()}
-                          </div>
-                          <div>
-                            <p className="font-medium text-sm leading-tight">{user.name}</p>
-                            <p className="text-xs text-muted-foreground">{user.email}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${
-                            user.role === 'admin'
-                              ? 'bg-primary/10 text-primary'
-                              : 'bg-muted text-muted-foreground'
-                          }`}
-                        >
-                          {user.role === 'admin' && <Shield className="h-3 w-3" />}
-                          {user.role}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={`text-xs font-semibold ${
-                            user.disabled ? 'text-destructive' : 'text-emerald-600 dark:text-emerald-400'
-                          }`}
-                        >
-                          {user.disabled ? '● Disabled' : '● Active'}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-xs text-muted-foreground">
-                        {formatDistanceToNow(parseISO(user.createdAt), { addSuffix: true })}
-                      </td>
-                      <td className="px-4 py-3 text-xs text-muted-foreground">
-                        {user.lastSeenAt
-                          ? formatDistanceToNow(parseISO(user.lastSeenAt), { addSuffix: true })
-                          : '—'}
-                      </td>
-                      <td className="px-4 py-3">
-                        <Link href={`/admin/users/${user._id}`}>
-                          <Button variant="ghost" size="xs" className="h-7 text-xs">
-                            View
-                          </Button>
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-            </tbody>
-          </table>
-          {!isLoading && users.length === 0 && (
-            <div className="text-center py-12 text-muted-foreground text-sm">No users found</div>
+        <DataTable
+          data={users}
+          columns={columns}
+          getRowId={(row) => row._id}
+          loading={isLoading}
+          error={error}
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search users…"
+          emptyTitle="No users yet"
+          emptyDescription="Invite someone to get the platform started."
+          emptyIcon={Users}
+          emptyAction={
+            <Button render={<Link href="/admin/invites" />}>
+              <Mail aria-hidden />
+              Invite user
+            </Button>
+          }
+          actions={
+            <Button
+              variant="soft"
+              size="sm"
+              className="h-11 sm:h-7"
+              render={<Link href="/admin/users" />}
+            >
+              Manage users
+            </Button>
+          }
+          rowActions={(row) => (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-11 sm:h-7"
+              render={<Link href={`/admin/users/${row._id}`} />}
+            >
+              View
+            </Button>
           )}
-        </div>
-      </div>
+          pageSize={10}
+        />
+      </section>
     </div>
   );
 }
