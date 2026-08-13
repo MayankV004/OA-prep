@@ -2,8 +2,9 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { ThemeProvider } from 'next-themes';
 import { useState } from 'react';
+
+import { ToastProvider, Toaster } from '@/components/ui/toast';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -17,12 +18,15 @@ export function Providers({ children }: { children: React.ReactNode }) {
       })
   );
 
+  // ThemeProvider lives in app/layout.tsx — a second nested instance here was
+  // redundant and fought the root one over the `class` attribute.
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+      <ToastProvider>
         {children}
+        <Toaster />
         <ReactQueryDevtools initialIsOpen={false} />
-      </ThemeProvider>
+      </ToastProvider>
     </QueryClientProvider>
   );
 }
