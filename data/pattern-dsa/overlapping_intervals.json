@@ -1,0 +1,121 @@
+{
+  "pattern": "Overlapping Intervals",
+  "description": "Overlapping interval problems involve processing ranges or segments on a number line. Tasks typically include merging overlapping ranges, finding intersections, scheduling non-overlapping events, or determining the maximum number of overlapping intervals at any given time.",
+  "important_details": [
+    "Sorting is Step 1: 90% of interval problems require sorting the intervals based on start time (or sometimes end time) before applying any logic.",
+    "Overlap Condition: Two intervals [a, b] and [c, d] overlap if `a <= d` and `c <= b`. If sorted by start time, this simplifies to `c <= b`.",
+    "Inclusive vs. Exclusive: Pay close attention to whether boundaries are inclusive (e.g., [1, 3] and [3, 4] overlap at 3) or exclusive.",
+    "Time Representation: Time can be given in minutes, hours, or timestamps. Normalize them into integers if possible."
+  ],
+  "other_relevant_details": "If a problem asks for the 'minimum number of rooms' or 'maximum concurrent events', it's an interval overlap problem. The Line Sweep technique is often the most efficient way to handle dynamic overlapping queries.",
+  "variations": [
+    {
+      "variation": "Merge Intervals",
+      "description": "Combining overlapping or contiguous intervals into a single continuous interval.",
+      "important_details": [
+        "Sort intervals by start time.",
+        "Iterate through the sorted list. If the current interval's start is <= the last merged interval's end, merge them by updating the end to `max(last.end, current.end)`.",
+        "If it doesn't overlap, add it to the result list as a new interval."
+      ],
+      "template_code": "public int[][] merge(int[][] intervals) {\n    Arrays.sort(intervals, (a, b) -> Integer.compare(a[0], b[0]));\n    List<int[]> merged = new ArrayList<>();\n    for (int[] interval : intervals) {\n        if (merged.isEmpty() || merged.get(merged.size() - 1)[1] < interval[0]) {\n            merged.add(interval);\n        } else {\n            merged.get(merged.size() - 1)[1] = Math.max(merged.get(merged.size() - 1)[1], interval[1]);\n        }\n    }\n    return merged.toArray(new int[merged.size()][]);\n}",
+      "other_relevant_details": "Time Complexity: O(N log N) due to sorting. Space Complexity: O(N) for the output array. This is the foundational pattern for all interval problems.",
+      "problems": [
+        {"name": "Merge Intervals", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/merge-intervals/", "company_tags": null},
+        {"name": "Insert Interval", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/insert-interval/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Interval Scheduling / Meeting Rooms",
+      "description": "Finding the maximum number of non-overlapping intervals that can be scheduled, or the minimum number of resources (rooms) needed to accommodate all intervals.",
+      "important_details": [
+        "Min Rooms (Max Overlap): Sort by start time. Use a Min-Heap to track end times of ongoing meetings. If a room is free (heap top <= current start), remove it. Push current end time. Heap size is the answer.",
+        "Max Non-overlapping Intervals: Sort by END time. Greedily pick the interval that finishes earliest and doesn't overlap with the last picked one."
+      ],
+      "template_code": "public int minMeetingRooms(int[][] intervals) {\n    if (intervals == null || intervals.length == 0) return 0;\n    Arrays.sort(intervals, (a, b) -> Integer.compare(a[0], b[0]));\n    PriorityQueue<Integer> minHeap = new PriorityQueue<>();\n    minHeap.offer(intervals[0][1]);\n    for (int i = 1; i < intervals.length; i++) {\n        if (intervals[i][0] >= minHeap.peek()) {\n            minHeap.poll(); // Room is freed up\n        }\n        minHeap.offer(intervals[i][1]);\n    }\n    return minHeap.size();\n}",
+      "other_relevant_details": "Time Complexity: O(N log N) for sorting + O(N log N) for heap operations = O(N log N). Space: O(N).",
+      "problems": [
+        {"name": "Meeting Rooms", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/meeting-rooms/", "company_tags": null},
+        {"name": "Meeting Rooms II", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/meeting-rooms-ii/", "company_tags": null},
+        {"name": "Non-overlapping Intervals", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/non-overlapping-intervals/", "company_tags": null},
+        {"name": "Maximum Length of Pair Chain", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-length-of-pair-chain/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Interval Intersection",
+      "description": "Finding the common overlapping regions between two lists of sorted intervals.",
+      "important_details": [
+        "Two Pointers approach: One for each list.",
+        "Intersection of A[i] and B[j] is `[max(A[i].start, B[j].start), min(A[i].end, B[j].end)]`. Add this to result if start <= end.",
+        "Discard the interval that ends first by incrementing its pointer (i++ or j++)."
+      ],
+      "template_code": "public int[][] intervalIntersection(int[][] firstList, int[][] secondList) {\n    List<int[]> result = new ArrayList<>();\n    int i = 0, j = 0;\n    while (i < firstList.length && j < secondList.length) {\n        int start = Math.max(firstList[i][0], secondList[j][0]);\n        int end = Math.min(firstList[i][1], secondList[j][1]);\n        if (start <= end) result.add(new int[]{start, end});\n        if (firstList[i][1] < secondList[j][1]) i++;\n        else j++;\n    }\n    return result.toArray(new int[result.size()][]);\n}",
+      "other_relevant_details": "Time Complexity: O(M + N). Space: O(1) auxiliary. For 'Employee Free Time', merge all intervals first, then find the gaps between them.",
+      "problems": [
+        {"name": "Interval List Intersections", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/interval-list-intersections/", "company_tags": null},
+        {"name": "Employee Free Time", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/employee-free-time/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Minimum Arrows / Point Coverage",
+      "description": "Finding the minimum number of points needed to intersect all intervals. A classic greedy problem.",
+      "important_details": [
+        "Sort intervals by END time.",
+        "Shoot an arrow at the end of the first interval.",
+        "Skip all subsequent intervals that start before or at this arrow's position (they are burst). When an interval starts after the arrow, shoot a new arrow at its end."
+      ],
+      "template_code": "public int findMinArrowShots(int[][] points) {\n    if (points.length == 0) return 0;\n    Arrays.sort(points, (a, b) -> Integer.compare(a[1], b[1]));\n    int arrows = 1;\n    int arrowPos = points[0][1];\n    for (int i = 1; i < points.length; i++) {\n        if (points[i][0] > arrowPos) {\n            arrows++;\n            arrowPos = points[i][1];\n        }\n    }\n    return arrows;\n}",
+      "other_relevant_details": "Time Complexity: O(N log N). Space: O(1) or O(N) depending on sorting algorithm. Sorting by start time also works but requires slightly different logic.",
+      "problems": [
+        {"name": "Minimum Number of Arrows to Burst Balloons", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/minimum-number-of-arrows-to-burst-balloons/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Calendar / Booking",
+      "description": "Designing a system to book intervals dynamically while preventing overlaps (single or double) or tracking the maximum concurrent bookings.",
+      "important_details": [
+        "My Calendar I: Use a TreeMap where key=start, value=end. For a new booking [s, e), find `floorKey(s)` and `ceilingKey(s)` to check for overlaps.",
+        "My Calendar II: Track overlaps explicitly or use a Line Sweep approach with a TreeMap.",
+        "My Calendar III: TreeMap Line Sweep tracking the maximum frequency at any point."
+      ],
+      "template_code": "// My Calendar I using TreeMap\nclass MyCalendar {\n    private TreeMap<Integer, Integer> calendar;\n    public MyCalendar() { calendar = new TreeMap<>(); }\n    public boolean book(int start, int end) {\n        Integer prev = calendar.floorKey(start);\n        Integer next = calendar.ceilingKey(start);\n        if ((prev == null || calendar.get(prev) <= start) && (next == null || end <= next)) {\n            calendar.put(start, end);\n            return true;\n        }\n        return false;\n    }\n}",
+      "other_relevant_details": "Time Complexity per booking: O(log N) for TreeMap operations. Space: O(N). Highly efficient for dynamic, online booking queries.",
+      "problems": [
+        {"name": "My Calendar I", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/my-calendar-i/", "company_tags": null},
+        {"name": "My Calendar II", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/my-calendar-ii/", "company_tags": null},
+        {"name": "My Calendar III", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/my-calendar-iii/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Line Sweep / Difference Array",
+      "description": "Marking the start (+1) and end (-1) of intervals on a timeline to calculate running sums, which represent the number of overlapping intervals at any given point.",
+      "important_details": [
+        "Create events: `(start, +1)` and `(end, -1)`.",
+        "Sort events. If times are equal, process exits (-1) before entries (+1) to avoid false overlaps.",
+        "Traverse sorted events, maintaining a running count. The max value of this count is the peak overlap."
+      ],
+      "template_code": "public boolean carPooling(int[][] trips, int capacity) {\n    Map<Integer, Integer> timeline = new TreeMap<>();\n    for (int[] trip : trips) {\n        int passengers = trip[0];\n        timeline.put(trip[1], timeline.getOrDefault(trip[1], 0) + passengers);\n        timeline.put(trip[2], timeline.getOrDefault(trip[2], 0) - passengers);\n    }\n    int currCapacity = 0;\n    for (int delta : timeline.values()) {\n        currCapacity += delta;\n        if (currCapacity > capacity) return false;\n    }\n    return true;\n}",
+      "other_relevant_details": "Time Complexity: O(N log N). Space: O(N). If the range of time is small (e.g., 0 to 1000), a simple array `int[] timeline = new int[1001]` can be used for O(1) updates, making the whole algorithm O(N + Range).",
+      "problems": [
+        {"name": "Car Pooling", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/car-pooling/", "company_tags": null},
+        {"name": "Maximum Population Year", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-population-year/", "company_tags": null},
+        {"name": "Flowers in Full Bloom", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/flowers-in-full-bloom/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Interval + Data Structure (Advanced)",
+      "description": "Combining intervals with advanced data structures like Priority Queues (Heaps) or Segment Trees to solve complex spatial or skyline problems.",
+      "important_details": [
+        "The Skyline Problem: Requires sorting critical points (start and end of buildings) and using a Max-Heap to track current building heights.",
+        "When entering a building, push height to heap. When leaving, remove from heap (lazy removal is often needed for performance).",
+        "If the max height in the heap changes, a critical point for the skyline is found."
+      ],
+      "template_code": "// Concept for The Skyline Problem\npublic List<List<Integer>> getSkyline(int[][] buildings) {\n    List<int[]> heights = new ArrayList<>();\n    for (int[] b : buildings) {\n        heights.add(new int[]{b[0], -b[2]}); // start, negative height\n        heights.add(new int[]{b[1], b[2]});  // end, positive height\n    }\n    Collections.sort(heights, (a, b) -> a[0] != b[0] ? a[0] - b[0] : a[1] - b[1]);\n    TreeMap<Integer, Integer> heightMap = new TreeMap<>(Collections.reverseOrder());\n    heightMap.put(0, 1);\n    int prevMax = 0;\n    List<List<Integer>> sky = new ArrayList<>();\n    for (int[] h : heights) {\n        if (h[1] < 0) heightMap.merge(-h[1], 1, Integer::sum);\n        else heightMap.merge(h[1], -1, Integer::sum);\n        if (heightMap.get(h[1]) == 0) heightMap.remove(h[1]);\n        int currMax = heightMap.firstKey();\n        if (currMax != prevMax) {\n            sky.add(Arrays.asList(h[0], currMax));\n            prevMax = currMax;\n        }\n    }\n    return sky;\n}",
+      "other_relevant_details": "Time Complexity: O(N log N). TreeMap is used as a Multiset to allow duplicate heights and fast max-retrieval. Lazy deletion with a standard PriorityQueue can also work but might degrade to O(N^2) worst case.",
+      "problems": [
+        {"name": "Range Module", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/range-module/", "company_tags": null},
+        {"name": "Data Stream as Disjoint Intervals", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/data-stream-as-disjoint-intervals/", "company_tags": null},
+        {"name": "The Skyline Problem", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/the-skyline-problem/", "company_tags": null}
+      ]
+    }
+  ]
+}

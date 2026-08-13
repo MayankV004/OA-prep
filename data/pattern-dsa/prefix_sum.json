@@ -1,0 +1,120 @@
+{
+  "pattern": "Prefix Sum",
+  "description": "Prefix Sum is a precomputation technique that stores the cumulative sum of elements up to each index in an array. It allows range sum queries or subarray sum calculations to be answered in O(1) time, rather than recalculating the sum iteratively.",
+  "important_details": [
+    "Preprocessing: Requires an initial O(N) pass to build the prefix sum array.",
+    "Querying: The sum of any subarray [L, R] (inclusive) can be found using `prefix[R+1] - prefix[L]`.",
+    "Space-Time Tradeoff: Trades O(N) extra space for O(1) query time. Essential for brute-force optimization.",
+    "Limitations: Best suited for static arrays. If the original array elements change dynamically, a Fenwick Tree (BIT) or Segment Tree is required instead."
+  ],
+  "other_relevant_details": "Prefix sums are not limited to addition. They can be used with XOR (Prefix XOR) or modular arithmetic. When combined with a Hash Map, they become a powerful tool for counting subarrays that satisfy a specific mathematical condition (e.g., sum equals K, or sum divisible by K) in O(N) time.",
+  "variations": [
+    {
+      "variation": "1D Prefix Sum",
+      "description": "The standard cumulative sum of a 1D array. Used to quickly answer range sum queries or find equilibrium indices.",
+      "important_details": [
+        "Array Construction: `prefix[i+1] = prefix[i] + arr[i]`.",
+        "Range Query [L, R]: `prefix[R+1] - prefix[L]`.",
+        "Can be space-optimized to O(1) if only the running sum is needed and past queries don't need to be answered."
+      ],
+      "template_code": "class NumArray {\n    private int[] prefix;\n\n    public NumArray(int[] nums) {\n        prefix = new int[nums.length + 1];\n        for (int i = 0; i < nums.length; i++) {\n            prefix[i + 1] = prefix[i] + nums[i];\n        }\n    }\n\n    public int sumRange(int left, int right) {\n        return prefix[right + 1] - prefix[left];\n    }\n}",
+      "other_relevant_details": "Time Complexity: O(N) preprocessing, O(1) per query. Space Complexity: O(N).",
+      "problems": [
+        {"name": "Range Sum Query - Immutable", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/range-sum-query-immutable/", "company_tags": null},
+        {"name": "Running Sum of 1d Array", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/running-sum-of-1d-array/", "company_tags": null},
+        {"name": "Find Pivot Index", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/find-pivot-index/", "company_tags": null},
+        {"name": "Product of Array Except Self", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/product-of-array-except-self/", "company_tags": null},
+        {"name": "Maximum Subarray", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-subarray/", "company_tags": null},
+        {"name": "Sum of Even Numbers After Queries", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/sum-of-even-numbers-after-queries/", "company_tags": null},
+        {"name": "Subarray Sums Bounded by M", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/sum-between-boundaries/", "company_tags": null},
+        {"name": "Minimum Value to Get Positive Step by Step Sum", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/minimum-value-to-get-positive-step-by-step-sum/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "2D Prefix Sum",
+      "description": "Extending prefix sums to 2D matrices to calculate the sum of any rectangular submatrix in O(1) time.",
+      "important_details": [
+        "Construction Formula: `prefix[i][j] = grid[i-1][j-1] + prefix[i-1][j] + prefix[i][j-1] - prefix[i-1][j-1]`.",
+        "Query Formula (Sum of rectangle from (r1, c1) to (r2, c2)): `D - B - C + A` (using inclusion-exclusion principle).",
+        "Handle boundaries carefully by making the prefix array size (M+1) x (N+1) to avoid index out-of-bounds checks."
+      ],
+      "template_code": "class NumMatrix {\n    private int[][] prefix;\n\n    public NumMatrix(int[][] matrix) {\n        int m = matrix.length, n = matrix[0].length;\n        prefix = new int[m + 1][n + 1];\n        for (int i = 1; i <= m; i++) {\n            for (int j = 1; j <= n; j++) {\n                prefix[i][j] = matrix[i - 1][j - 1] \n                             + prefix[i - 1][j] \n                             + prefix[i][j - 1] \n                             - prefix[i - 1][j - 1];\n            }\n        }\n    }\n\n    public int sumRegion(int row1, int col1, int row2, int col2) {\n        return prefix[row2 + 1][col2 + 1] \n             - prefix[row1][col2 + 1] \n             - prefix[row2 + 1][col1] \n             + prefix[row1][col1];\n    }\n}",
+      "other_relevant_details": "Time Complexity: O(M*N) preprocessing, O(1) per query. Space: O(M*N). Can be optimized to O(N) space if computing row-by-row.",
+      "problems": [
+        {"name": "Range Sum Query 2D - Immutable", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/range-sum-query-2d-immutable/", "company_tags": null},
+        {"name": "Matrix Block Sum", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/matrix-block-sum/", "company_tags": null},
+        {"name": "Maximum Size Square Sub-matrix With All Ones", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-size-square-sub-matrix-with-all-ones/", "company_tags": null},
+        {"name": "Max Sum of Rectangle No Larger Than K", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/max-sum-of-rectangle-no-larger-than-k/", "company_tags": null},
+        {"name": "Count Submatrices With All Ones", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/count-submatrices-with-all-ones/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Prefix XOR",
+      "description": "Using the XOR operation instead of addition for cumulative properties. Exploits the fact that `A ^ A = 0` and `A ^ 0 = A`.",
+      "important_details": [
+        "Construction: `xor[i+1] = xor[i] ^ arr[i]`.",
+        "Range Query [L, R]: `xor[R+1] ^ xor[L]`.",
+        "If the XOR of subarray [L, R] is 0, it means the prefix XOR at L-1 is equal to the prefix XOR at R."
+      ],
+      "template_code": "public int[] xorQueries(int[] arr, int[][] queries) {\n    int n = arr.length;\n    int[] prefix = new int[n + 1];\n    for (int i = 0; i < n; i++) {\n        prefix[i + 1] = prefix[i] ^ arr[i];\n    }\n    int[] ans = new int[queries.length];\n    for (int i = 0; i < queries.length; i++) {\n        int L = queries[i][0], R = queries[i][1];\n        ans[i] = prefix[R + 1] ^ prefix[L];\n    }\n    return ans;\n}",
+      "other_relevant_details": "Time Complexity: O(N) preprocessing, O(1) per query. Very useful for problems asking to partition an array into two parts with equal XOR.",
+      "problems": [
+        {"name": "XOR Queries of a Subarray", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/xor-queries-of-a-subarray/", "company_tags": null},
+        {"name": "Count Triplets That Can Form Two Arrays of Equal XOR", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/count-triplets-that-can-form-two-arrays-of-equal-xor/", "company_tags": null},
+        {"name": "Maximum XOR of Two Numbers in an Array", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-xor-of-two-numbers-in-an-array/", "company_tags": null},
+        {"name": "Maximum XOR With an Element From Array", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-xor-with-an-element-from-array/", "company_tags": null},
+        {"name": "Find Longest Awesome Substring", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/find-longest-awesome-substring/", "company_tags": null},
+        {"name": "Count Substrings With Equal Number of 0s and 1s", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/count-substrings-with-equal-number-of-0s-and-1s/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Difference Array / Range Update",
+      "description": "The inverse of prefix sum. Used to apply multiple range updates (e.g., add X to all elements from L to R) in O(1) time, and then compute the final array at the end.",
+      "important_details": [
+        "Update Rule: To add `val` to range [L, R], do `diff[L] += val` and `diff[R+1] -= val`.",
+        "Final Array: Constructed by taking the prefix sum of the difference array.",
+        "Highly efficient when there are many range updates and few queries, or when only the final state is needed."
+      ],
+      "template_code": "public int[] getModifiedArray(int length, int[][] updates) {\n    int[] diff = new int[length];\n    for (int[] update : updates) {\n        int start = update[0], end = update[1], val = update[2];\n        diff[start] += val;\n        if (end + 1 < length) {\n            diff[end + 1] -= val;\n        }\n    }\n    for (int i = 1; i < length; i++) {\n        diff[i] += diff[i - 1];\n    }\n    return diff;\n}",
+      "other_relevant_details": "Time Complexity: O(1) per update, O(N) to build final array. Space: O(N). Often used in Car Pooling or Meeting Room overlap checks.",
+      "problems": [
+        {"name": "Range Addition", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/range-addition/", "company_tags": null},
+        {"name": "Corporate Flight Bookings", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/corporate-flight-bookings/", "company_tags": null},
+        {"name": "Car Pooling", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/car-pooling/", "company_tags": null},
+        {"name": "Minimum Number of K Consecutive Bit Flips", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/minimum-number-of-k-consecutive-bit-flips/", "company_tags": null},
+        {"name": "Shifting Letters II", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/shifting-letters-ii/", "company_tags": null},
+        {"name": "Amount of New Area Painted Each Day", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/amount-of-new-area-painted-each-day/", "company_tags": null},
+        {"name": "Describe the Painting", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/describe-the-painting/", "company_tags": null},
+        {"name": "Check if All the Integers in a Range Are Covered", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/check-if-all-the-integers-in-a-range-are-covered/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Prefix Sum with Hashmap",
+      "description": "Combining prefix sums with a Hash Map to find or count subarrays that sum to a specific target (or satisfy a modulo condition) in O(N) time.",
+      "important_details": [
+        "Map stores: `prefix_sum -> frequency` or `prefix_sum -> first_occurrence_index`.",
+        "Logic: If current prefix sum is `S`, and we want a subarray summing to `K`, we check if `S - K` exists in the map.",
+        "Handles negative numbers, which makes standard sliding window unusable.",
+        "Initialize map with `(0, 1)` to handle subarrays starting from index 0."
+      ],
+      "template_code": "public int subarraySum(int[] nums, int k) {\n    int count = 0, prefixSum = 0;\n    Map<Integer, Integer> map = new HashMap<>();\n    map.put(0, 1); // Base case: sum 0 occurs once\n    \n    for (int num : nums) {\n        prefixSum += num;\n        if (map.containsKey(prefixSum - k)) {\n            count += map.get(prefixSum - k);\n        }\n        map.put(prefixSum, map.getOrDefault(prefixSum, 0) + 1);\n    }\n    return count;\n}",
+      "other_relevant_details": "Time Complexity: O(N). Space: O(N). The technique easily extends to 2D matrices by fixing the left and right columns and running 1D prefix sum on the rows between them.",
+      "problems": [
+        {"name": "Continuous Subarray Sum", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/continuous-subarray-sum/", "company_tags": null},
+        {"name": "Subarray Sums Divisible by K", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/subarray-sums-divisible-by-k/", "company_tags": null},
+        {"name": "Subarray Sum Equals K", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/subarray-sum-equals-k/", "company_tags": null},
+        {"name": "Contiguous Array", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/contiguous-array/", "company_tags": null},
+        {"name": "Longest Subarray With Sum Equals K", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/longest-subarray-with-sum-equals-k/", "company_tags": null},
+        {"name": "Count Number of Nice Subarrays", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/count-number-of-nice-subarrays/", "company_tags": null},
+        {"name": "Binary Subarrays With Sum", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/binary-subarrays-with-sum/", "company_tags": null},
+        {"name": "Number of Submatrices That Sum to Target", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/number-of-submatrices-that-sum-to-target/", "company_tags": null},
+        {"name": "Maximum Size Subarray Sum Equals k", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-size-subarray-sum-equals-k/", "company_tags": null},
+        {"name": "Subarrays with K Different Integers", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/subarrays-with-k-different-integers/", "company_tags": null},
+        {"name": "Number of Wonderful Substrings", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/number-of-wonderful-substrings/", "company_tags": null},
+        {"name": "Make Sum Divisible by P", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/make-sum-divisible-by-p/", "company_tags": null},
+        {"name": "Check if Array Pairs Are Divisible by k", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/check-if-array-pairs-are-divisible-by-k/", "company_tags": null},
+        {"name": "Find the Longest Substring Containing Vowels in Even Counts", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/find-the-longest-substring-containing-vowels-in-even-counts/", "company_tags": null}
+      ]
+    }
+  ]
+}

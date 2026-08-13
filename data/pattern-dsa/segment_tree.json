@@ -1,0 +1,96 @@
+{
+  "pattern": "Segment Tree",
+  "description": "A Segment Tree is a highly versatile binary tree data structure used for storing information about intervals or segments of an array. It enables efficient range queries (like sum, min, max) and point/range updates in O(log N) time, making it superior to prefix sums when array elements are dynamically updated.",
+  "important_details": [
+    "Array Size: The segment tree is typically represented as an array of size `4 * N` to safely accommodate all leaf and internal nodes without index out-of-bounds errors.",
+    "Node Representation: The root node at index 0 (or 1) represents the entire array [0, N-1]. For a node at index `i` covering range [L, R], its left child is at `2*i` covering [L, mid] and right child at `2*i+1` covering [mid+1, R].",
+    "Query Logic: Range queries are answered by recursively combining the results of relevant child segments. Unnecessary branches are pruned.",
+    "Lazy Propagation: A technique to defer range updates. Instead of updating all nodes immediately, a 'lazy' array marks pending updates, applying them only when a query or subsequent update traverses through that node."
+  ],
+  "other_relevant_details": "Segment Trees are heavily tested in OA and competitive programming when a problem involves dynamic array modifications paired with range queries (e.g., 'find the sum of elements from index L to R' followed by 'update index i to val'). While Fenwick Trees (BIT) are more memory-efficient and faster for point updates, Segment Trees are far more flexible and can handle complex range updates that BITs cannot.",
+  "variations": [
+    {
+      "variation": "Point Update & Range Query (Iterative / Bottom-Up)",
+      "description": "The most efficient and concise way to implement a segment tree for operations like sum, min, or max. It builds the tree from the bottom up.",
+      "important_details": [
+        "Tree Size: `int[] tree = new int[2 * n]`. Leaves are stored at indices `n` to `2n - 1`.",
+        "Build: Place array elements at `tree[n+i]`. Then iterate from `i = n - 1` down to 1: `tree[i] = tree[2*i] + tree[2*i+1]`.",
+        "Update: Set `p += n; tree[p] = val;`. Then traverse up: `while (p > 1) { p /= 2; tree[p] = tree[2*p] + tree[2*p+1]; }`.",
+        "Query: Combine intervals from left and right pointers moving upwards."
+      ],
+      "template_code": "class NumArray {\n    int[] tree;\n    int n;\n    public NumArray(int[] nums) {\n        n = nums.length;\n        tree = new int[2 * n];\n        for (int i = 0; i < n; i++) tree[n + i] = nums[i];\n        for (int i = n - 1; i > 0; i--) tree[i] = tree[2 * i] + tree[2 * i + 1];\n    }\n    public void update(int index, int val) {\n        index += n;\n        tree[index] = val;\n        for (index /= 2; index >= 1; index /= 2) {\n            tree[index] = tree[2 * index] + tree[2 * index + 1];\n        }\n    }\n    public int sumRange(int left, int right) {\n        int sum = 0;\n        for (left += n, right += n + 1; left < right; left /= 2, right /= 2) {\n            if ((left & 1) != 0) sum += tree[left++];\n            if ((right & 1) != 0) sum += tree[--right];\n        }\n        return sum;\n    }\n}",
+      "other_relevant_details": "Time Complexity: O(N) build, O(log N) update/query. Space: O(2N). Preferred for its short code length in interviews. Note that this specific template handles size `n` as-is; padding to a power of 2 is sometimes done but not strictly needed here.",
+      "problems": [
+        {"name": "Range Sum Query - Mutable", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/range-sum-query-mutable/", "company_tags": null},
+        {"name": "Count of Range Sum", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/count-of-range-sum/", "company_tags": null},
+        {"name": "Sliding Window Maximum (Segment Tree approach)", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/sliding-window-maximum/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Recursive Segment Tree (Min/Max)",
+      "description": "The standard top-down recursive template. Highly flexible and the basis for learning Lazy Propagation. Best for range minimum or maximum queries.",
+      "important_details": [
+        "Tree Array: `int[] tree = new int[4 * n]`.",
+        "Build: Recursively split the range `[L, R]` into halves until `L == R`.",
+        "Update: Traverse down to the leaf, update it, and update the ancestors as `min(left, right)`.",
+        "Query: If query range fully covers node range, return node value. If no overlap, return Integer.MAX_VALUE. If partial overlap, recurse both children and return `min`."
+      ],
+      "template_code": "class SegmentTree {\n    int[] tree;\n    int n;\n    public SegmentTree(int[] nums) {\n        n = nums.length;\n        tree = new int[4 * n];\n        build(nums, 0, 0, n - 1);\n    }\n    private void build(int[] nums, int node, int start, int end) {\n        if (start == end) {\n            tree[node] = nums[start];\n        } else {\n            int mid = start + (end - start) / 2;\n            build(nums, 2 * node + 1, start, mid);\n            build(nums, 2 * node + 2, mid + 1, end);\n            tree[node] = Math.min(tree[2 * node + 1], tree[2 * node + 2]);\n        }\n    }\n    public void update(int idx, int val) {\n        update(0, 0, n - 1, idx, val);\n    }\n    private void update(int node, int start, int end, int idx, int val) {\n        if (start == end) {\n            tree[node] = val;\n        } else {\n            int mid = start + (end - start) / 2;\n            if (idx <= mid) update(2 * node + 1, start, mid, idx, val);\n            else update(2 * node + 2, mid + 1, end, idx, val);\n            tree[node] = Math.min(tree[2 * node + 1], tree[2 * node + 2]);\n        }\n    }\n    public int query(int L, int R) {\n        return query(0, 0, n - 1, L, R);\n    }\n    private int query(int node, int start, int end, int L, int R) {\n        if (R < start || L > end) return Integer.MAX_VALUE; // No overlap\n        if (L <= start && end <= R) return tree[node]; // Total overlap\n        int mid = start + (end - start) / 2;\n        int leftMin = query(2 * node + 1, start, mid, L, R);\n        int rightMin = query(2 * node + 2, mid + 1, end, L, R);\n        return Math.min(leftMin, rightMin);\n    }\n}",
+      "other_relevant_details": "Time Complexity: O(N) build, O(log N) update/query. Space: O(4N).",
+      "problems": [
+        {"name": "Range Minimum Query", "difficulty": "Medium", "platform": "gfg", "link": null, "company_tags": null},
+        {"name": "Falling Squares", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/falling-squares/", "company_tags": null},
+        {"name": "Count of Smaller Numbers After Self", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/count-of-smaller-numbers-after-self/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Lazy Propagation (Range Update & Range Query)",
+      "description": "The most powerful Segment Tree variation. Allows updating a range of elements (e.g., add `val` to all elements from `L` to `R`) in O(log N) time by deferring updates to child nodes until necessary.",
+      "important_details": [
+        "Lazy Array: `int[] lazy = new int[4 * n]` stores pending additions for each node.",
+        "Push Down: Before visiting any node, if `lazy[node] != 0`, apply the pending value to `tree[node]`, and propagate it to its children's `lazy` arrays. Then clear `lazy[node]`.",
+        "Range Update: If a node is fully within the update range, update its `lazy` value and push down. If partial, recurse left and right, then `tree[node] = tree[left] + tree[right]`.",
+        "Range Query: Same as standard query, but always call `push()` first."
+      ],
+      "template_code": "class LazySegmentTree {\n    int[] tree, lazy;\n    int n;\n    public LazySegmentTree(int[] nums) {\n        n = nums.length;\n        tree = new int[4 * n];\n        lazy = new int[4 * n];\n        build(nums, 0, 0, n - 1);\n    }\n    private void build(int[] nums, int node, int start, int end) {\n        if (start == end) { tree[node] = nums[start]; }\n        else {\n            int mid = start + (end - start) / 2;\n            build(nums, 2 * node + 1, start, mid);\n            build(nums, 2 * node + 2, mid + 1, end);\n            tree[node] = tree[2 * node + 1] + tree[2 * node + 2];\n        }\n    }\n    private void push(int node, int start, int end) {\n        if (lazy[node] != 0) {\n            tree[node] += (end - start + 1) * lazy[node];\n            if (start != end) {\n                lazy[2 * node + 1] += lazy[node];\n                lazy[2 * node + 2] += lazy[node];\n            }\n            lazy[node] = 0;\n        }\n    }\n    public void updateRange(int L, int R, int val) {\n        updateRange(0, 0, n - 1, L, R, val);\n    }\n    private void updateRange(int node, int start, int end, int L, int R, int val) {\n        push(node, start, end);\n        if (start > end || start > R || end < L) return;\n        if (start >= L && end <= R) {\n            lazy[node] += val;\n            push(node, start, end);\n            return;\n        }\n        int mid = start + (end - start) / 2;\n        updateRange(2 * node + 1, start, mid, L, R, val);\n        updateRange(2 * node + 2, mid + 1, end, L, R, val);\n        tree[node] = tree[2 * node + 1] + tree[2 * node + 2];\n    }\n    public int queryRange(int L, int R) {\n        return queryRange(0, 0, n - 1, L, R);\n    }\n    private int queryRange(int node, int start, int end, int L, int R) {\n        if (start > end || start > R || end < L) return 0;\n        push(node, start, end);\n        if (start >= L && end <= R) return tree[node];\n        int mid = start + (end - start) / 2;\n        return queryRange(2 * node + 1, start, mid, L, R) + queryRange(2 * node + 2, mid + 1, end, L, R);\n    }\n}",
+      "other_relevant_details": "Time Complexity: O(N) build, O(log N) range update and range query. Space: O(4N). Essential for problems like Range Addition combined with queries.",
+      "problems": [
+        {"name": "Range Addition", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/range-addition/", "company_tags": null},
+        {"name": "My Calendar III", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/my-calendar-iii/", "company_tags": null},
+        {"name": "Amount of New Area Painted Each Day", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/amount-of-new-area-painted-each-day/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Dynamic / Implicit Segment Tree (Coordinate Compression Alternative)",
+      "description": "Used when the range of possible values is massive (e.g., $10^9$) but the number of updates/queries is small (e.g., $10^5$). Nodes are created dynamically only when accessed.",
+      "important_details": [
+        "No Pre-allocation: Instead of an array of size `4*N`, use a Node class with `left` and `right` child pointers.",
+        "Memory: O(Q log C) where Q is the number of operations and C is the coordinate range.",
+        "Often combined with Lazy Propagation for range updates on sparse intervals."
+      ],
+      "template_code": "class DynamicSegmentTree {\n    class Node {\n        Node left, right;\n        int val, lazy;\n    }\n    Node root;\n    int minRange, maxRange;\n    public DynamicSegmentTree(int min, int max) {\n        root = new Node();\n        minRange = min;\n        maxRange = max;\n    }\n    public void update(int L, int R, int val) {\n        update(root, minRange, maxRange, L, R, val);\n    }\n    private void update(Node node, int start, int end, int L, int R, int val) {\n        if (L <= start && end <= R) {\n            node.val += (end - start + 1) * val;\n            node.lazy += val;\n            return;\n        }\n        int mid = start + (end - start) / 2;\n        push(node, start, end, mid);\n        if (L <= mid) update(node.left, start, mid, L, R, val);\n        if (R > mid) update(node.right, mid + 1, end, L, R, val);\n        node.val = node.left.val + node.right.val;\n    }\n    private void push(Node node, int start, int end, int mid) {\n        if (node.left == null) node.left = new Node();\n        if (node.right == null) node.right = new Node();\n        if (node.lazy != 0) {\n            node.left.val += (mid - start + 1) * node.lazy;\n            node.left.lazy += node.lazy;\n            node.right.val += (end - mid) * node.lazy;\n            node.right.lazy += node.lazy;\n            node.lazy = 0;\n        }\n    }\n    public int query(int L, int R) {\n        return query(root, minRange, maxRange, L, R);\n    }\n    private int query(Node node, int start, int end, int L, int R) {\n        if (node == null || start > R || end < L) return 0;\n        if (L <= start && end <= R) return node.val;\n        int mid = start + (end - start) / 2;\n        push(node, start, end, mid);\n        return query(node.left, start, mid, L, R) + query(node.right, mid + 1, end, L, R);\n    }\n}",
+      "other_relevant_details": "Time Complexity: O(log C) per operation. Very common in advanced OA problems where coordinate compression is either too tedious or fails due to online processing requirements.",
+      "problems": [
+        {"name": "My Calendar III", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/my-calendar-iii/", "company_tags": null},
+        {"name": "Falling Squares", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/falling-squares/", "company_tags": null},
+        {"name": "Range Module", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/range-module/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Merge Sort Tree",
+      "description": "A segment tree where each node stores a sorted list (array) of the elements in its corresponding range. Used for answering queries like 'count of numbers greater than X in range [L, R]'.",
+      "important_details": [
+        "Build: Merge two sorted child arrays to form the parent array (similar to merge sort).",
+        "Query: For a query (L, R, X), traverse the tree. If a node is fully within [L, R], use Binary Search (`Collections.binarySearch`) to count elements > X.",
+        "Memory Intensive: Takes O(N log N) space because each element appears in log N nodes."
+      ],
+      "template_code": "class MergeSortTree {\n    List<List<Integer>> tree;\n    int n;\n    public MergeSortTree(int[] nums) {\n        n = nums.length;\n        tree = new ArrayList<>(4 * n);\n        for (int i = 0; i < 4 * n; i++) tree.add(new ArrayList<>());\n        build(nums, 0, 0, n - 1);\n    }\n    private void build(int[] nums, int node, int start, int end) {\n        if (start == end) {\n            tree.get(node).add(nums[start]);\n        } else {\n            int mid = start + (end - start) / 2;\n            build(nums, 2 * node + 1, start, mid);\n            build(nums, 2 * node + 2, mid + 1, end);\n            merge(tree.get(node), tree.get(2 * node + 1), tree.get(2 * node + 2));\n        }\n    }\n    private void merge(List<Integer> res, List<Integer> left, List<Integer> right) {\n        int i = 0, j = 0;\n        while (i < left.size() && j < right.size()) {\n            if (left.get(i) < right.get(j)) res.add(left.get(i++));\n            else res.add(right.get(j++));\n        }\n        while (i < left.size()) res.add(left.get(i++));\n        while (j < right.size()) res.add(right.get(j++));\n    }\n    public int query(int L, int R, int X) {\n        return query(0, 0, n - 1, L, R, X);\n    }\n    private int query(int node, int start, int end, int L, int R, int X) {\n        if (R < start || L > end) return 0;\n        if (L <= start && end <= R) {\n            // Count elements strictly greater than X\n            int idx = Collections.binarySearch(tree.get(node), X);\n            if (idx < 0) idx = -idx - 1;\n            else idx++; // if X is found, elements greater than X start from idx+1\n            return tree.get(node).size() - idx;\n        }\n        int mid = start + (end - start) / 2;\n        return query(2 * node + 1, start, mid, L, R, X) + query(2 * node + 2, mid + 1, end, L, R, X);\n    }\n}",
+      "other_relevant_details": "Time Complexity: O(N log N) build, O(log^2 N) query. Space: O(N log N). An alternative to BIT with coordinate compression for offline queries.",
+      "problems": [
+        {"name": "Count of Smaller Numbers After Self", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/count-of-smaller-numbers-after-self/", "company_tags": null},
+        {"name": "Range Frequency Queries", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/range-frequency-queries/", "company_tags": null},
+        {"name": "Kth Smallest Number in Multiplication Table (Concept)", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/kth-smallest-number-in-multiplication-table/", "company_tags": null}
+      ]
+    }
+  ]
+}

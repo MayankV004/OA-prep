@@ -1,0 +1,141 @@
+{
+  "pattern": "Backtracking",
+  "description": "Backtracking is an algorithmic technique for solving problems recursively by trying to build a solution incrementally, one piece at a time, and removing solutions that fail to satisfy the constraints of the problem at any point of time.",
+  "important_details": [
+    "State Space Tree: Conceptualizes the problem as a tree where each node represents a partial solution.",
+    "Pruning: Abandoning a path (backtracking) as soon as it is determined that the path cannot possibly lead to a valid or optimal solution.",
+    "Three core steps: Choose a path, Explore recursively, and Un-choose (backtrack) to try the next path.",
+    "Often used when you need to find all (or some) solutions to a problem, unlike DP which is used for optimization (max/min/count)."
+  ],
+  "other_relevant_details": "Backtracking problems generally have exponential time complexities (e.g., O(N!), O(2^N)). Careful pruning is the only way to pass Online Assessments within time limits. Always look for constraints like N <= 15 or N <= 20, which strongly hint at Backtracking or Bitmask DP.",
+  "variations": [
+    {
+      "variation": "Subsets / Powersets",
+      "description": "Generating all possible subsets of a given set of elements. The order of elements in the subset usually does not matter, and duplicates may need to be handled.",
+      "important_details": [
+        "At each element, you have exactly two choices: Include it in the current subset or Exclude it.",
+        "To handle duplicates (e.g., Subsets II), sort the array first, and skip consecutive identical elements if they were excluded in the current recursive depth.",
+        "Pass the 'start' index to the next recursive call to avoid generating permutations of the same subset."
+      ],
+      "template_code": "public List<List<Integer>> subsets(int[] nums) {\n    List<List<Integer>> result = new ArrayList<>();\n    Arrays.sort(nums); // Required for handling duplicates\n    backtrack(result, new ArrayList<>(), nums, 0);\n    return result;\n}\n\nprivate void backtrack(List<List<Integer>> result, List<Integer> tempList, int[] nums, int start) {\n    result.add(new ArrayList<>(tempList));\n    for (int i = start; i < nums.length; i++) {\n        if (i > start && nums[i] == nums[i - 1]) continue; // Skip duplicates\n        tempList.add(nums[i]);\n        backtrack(result, tempList, nums, i + 1);\n        tempList.remove(tempList.size() - 1);\n    }\n}",
+      "other_relevant_details": "Time Complexity: O(N * 2^N) to generate and copy all subsets. Space Complexity: O(N) for the recursion stack.",
+      "problems": [
+        {"name": "Subsets", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/subsets/", "company_tags": null},
+        {"name": "Subsets II", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/subsets-ii/", "company_tags": null},
+        {"name": "Letter Case Permutation", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/letter-case-permutation/", "company_tags": null},
+        {"name": "Power Set of a String", "difficulty": "Medium", "platform": "gfg", "link": null, "company_tags": null},
+        {"name": "Subsequences of a String", "difficulty": "Medium", "platform": "gfg", "link": null, "company_tags": null},
+        {"name": "Count of Subsets with Sum = K", "difficulty": "Medium", "platform": "gfg", "link": null, "company_tags": null},
+        {"name": "Beautiful Arrangement", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/beautiful-arrangement/", "company_tags": null},
+        {"name": "Maximum XOR Subset", "difficulty": "Hard", "platform": "gfg", "link": null, "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Permutations",
+      "description": "Generating all possible arrangements of a set of elements where order matters.",
+      "important_details": [
+        "Unlike subsets, you iterate from 0 to N every time, but skip elements that are already used in the current path.",
+        "A boolean array `used` is typically maintained to track which elements are currently in the partial permutation.",
+        "For duplicates (Permutations II), sort the array and skip an element if it is the same as the previous element AND the previous element has NOT been used in this exact recursive branch."
+      ],
+      "template_code": "public List<List<Integer>> permute(int[] nums) {\n    List<List<Integer>> result = new ArrayList<>();\n    Arrays.sort(nums); // Required for duplicates\n    backtrack(result, new ArrayList<>(), nums, new boolean[nums.length]);\n    return result;\n}\n\nprivate void backtrack(List<List<Integer>> result, List<Integer> tempList, int[] nums, boolean[] used) {\n    if (tempList.size() == nums.length) {\n        result.add(new ArrayList<>(tempList));\n    } else {\n        for (int i = 0; i < nums.length; i++) {\n            if (used[i] || (i > 0 && nums[i] == nums[i - 1] && !used[i - 1])) continue;\n            used[i] = true;\n            tempList.add(nums[i]);\n            backtrack(result, tempList, nums, used);\n            used[i] = false;\n            tempList.remove(tempList.size() - 1);\n        }\n    }\n}",
+      "other_relevant_details": "Time Complexity: O(N * N!) because there are N! permutations and copying each takes O(N). Space Complexity: O(N).",
+      "problems": [
+        {"name": "Permutations", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/permutations/", "company_tags": null},
+        {"name": "Permutations II", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/permutations-ii/", "company_tags": null},
+        {"name": "Next Permutation", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/next-permutation/", "company_tags": null},
+        {"name": "Permutation Sequence", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/permutation-sequence/", "company_tags": null},
+        {"name": "String Permutations (with duplicates)", "difficulty": "Medium", "platform": "gfg", "link": null, "company_tags": null},
+        {"name": "Palindrome Permutation II", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/palindrome-permutation-ii/", "company_tags": null},
+        {"name": "Letter Tile Possibilities", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/letter-tile-possibilities/", "company_tags": null},
+        {"name": "Word Break II", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/word-break-ii/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Combinations",
+      "description": "Selecting 'k' elements from 'n' elements, or finding combinations that sum up to a specific target.",
+      "important_details": [
+        "Order does not matter (i.e., [1,2] is the same as [2,1]).",
+        "Pass a 'start' index to recursive calls to prevent generating reversed duplicates.",
+        "If the same element can be reused, pass `i` instead of `i + 1` to the next recursion call.",
+        "Pruning: If the current sum exceeds the target, break the loop early (works if the array is sorted)."
+      ],
+      "template_code": "public List<List<Integer>> combinationSum(int[] candidates, int target) {\n    List<List<Integer>> result = new ArrayList<>();\n    Arrays.sort(candidates); // Helps with pruning\n    backtrack(result, new ArrayList<>(), candidates, target, 0);\n    return result;\n}\n\nprivate void backtrack(List<List<Integer>> result, List<Integer> tempList, int[] nums, int remain, int start) {\n    if (remain == 0) {\n        result.add(new ArrayList<>(tempList));\n    } else if (remain > 0) {\n        for (int i = start; i < nums.length; i++) {\n            if (nums[i] > remain) break; // Pruning\n            tempList.add(nums[i]);\n            backtrack(result, tempList, nums, remain - nums[i], i); // 'i' not 'i+1' because we can reuse same elements\n            tempList.remove(tempList.size() - 1);\n        }\n    }\n}",
+      "other_relevant_details": "Time Complexity: O(2^N) in the worst case. Space Complexity: O(target) if minimum element is 1.",
+      "problems": [
+        {"name": "Combinations", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/combinations/", "company_tags": null},
+        {"name": "Combination Sum", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/combination-sum/", "company_tags": null},
+        {"name": "Combination Sum II", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/combination-sum-ii/", "company_tags": null},
+        {"name": "Combination Sum III", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/combination-sum-iii/", "company_tags": null},
+        {"name": "Generate Parentheses", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/generate-parentheses/", "company_tags": null},
+        {"name": "Factor Combinations", "difficulty": "Medium", "platform": "leetcode", "link": null, "company_tags": null},
+        {"name": "Letter Combinations of a Phone Number", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/letter-combinations-of-a-phone-number/", "company_tags": null},
+        {"name": "Combination Sum IV", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/combination-sum-iv/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "N-Queens / Sudoku",
+      "description": "Constraint satisfaction problems where you must place items on a board (grid or graph) such that no two items threaten or conflict with each other.",
+      "important_details": [
+        "State involves tracking the current row (for N-Queens) or empty cell (for Sudoku).",
+        "Requires an `isValid()` helper function to check if placing a piece violates constraints (columns, diagonals, or Sudoku sub-boxes).",
+        "If a placement leads to a dead end, undo the placement (`board[i][j] = '.'`) and try the next possibility."
+      ],
+      "template_code": "public List<List<String>> solveNQueens(int n) {\n    List<List<String>> result = new ArrayList<>();\n    char[][] board = new char[n][n];\n    for (char[] row : board) Arrays.fill(row, '.');\n    backtrack(result, board, 0);\n    return result;\n}\n\nprivate void backtrack(List<List<String>> result, char[][] board, int row) {\n    if (row == board.length) {\n        result.add(construct(board));\n        return;\n    }\n    for (int col = 0; col < board.length; col++) {\n        if (isValid(board, row, col)) {\n            board[row][col] = 'Q';\n            backtrack(result, board, row + 1);\n            board[row][col] = '.'; // Backtrack\n        }\n    }\n}\n\nprivate boolean isValid(char[][] board, int row, int col) {\n    for (int i = 0; i < row; i++)\n        for (int j = 0; j < board.length; j++)\n            if (board[i][j] == 'Q' && (col == j || Math.abs(row - i) == Math.abs(col - j)))\n                return false;\n    return true;\n}",
+      "other_relevant_details": "Time Complexity: O(N!) for N-Queens. Space Complexity: O(N^2) for the board.",
+      "problems": [
+        {"name": "N-Queens", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/n-queens/", "company_tags": null},
+        {"name": "N-Queens II", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/n-queens-ii/", "company_tags": null},
+        {"name": "Sudoku Solver", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/sudoku-solver/", "company_tags": null},
+        {"name": "Valid Sudoku", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/valid-sudoku/", "company_tags": null},
+        {"name": "The Knight's Tour", "difficulty": "Hard", "platform": "gfg", "link": null, "company_tags": null},
+        {"name": "Rat in a Maze", "difficulty": "Medium", "platform": "gfg", "link": null, "company_tags": null},
+        {"name": "M-Coloring Problem", "difficulty": "Medium", "platform": "gfg", "link": null, "company_tags": null},
+        {"name": "Tiling Problem (backtracking variant)", "difficulty": "Hard", "platform": "gfg", "link": null, "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Word Search / Path in Grid",
+      "description": "Finding specific paths, strings, or shapes in a 2D matrix using 4-directional or 8-directional DFS traversal.",
+      "important_details": [
+        "State involves the current coordinates (r, c) and the current index in the target word/path.",
+        "Marking cells as visited is critical. A common trick to save space is temporarily changing the board character (e.g., to '#') and restoring it during the backtrack step.",
+        "Direction arrays `int[] dr = {-1, 1, 0, 0}` and `int[] dc = {0, 0, -1, 1}` are used to cleanly explore neighbors."
+      ],
+      "template_code": "public boolean exist(char[][] board, String word) {\n    for (int i = 0; i < board.length; i++) {\n        for (int j = 0; j < board[0].length; j++) {\n            if (backtrack(board, word, i, j, 0)) return true;\n        }\n    }\n    return false;\n}\n\nprivate boolean backtrack(char[][] board, String word, int r, int c, int index) {\n    if (index == word.length()) return true;\n    if (r < 0 || c < 0 || r >= board.length || c >= board[0].length || board[r][c] != word.charAt(index)) return false;\n    \n    char temp = board[r][c];\n    board[r][c] = '#'; // Mark visited\n    \n    boolean found = backtrack(board, word, r + 1, c, index + 1) ||\n                    backtrack(board, word, r - 1, c, index + 1) ||\n                    backtrack(board, word, r, c + 1, index + 1) ||\n                    backtrack(board, word, r, c - 1, index + 1);\n                    \n    board[r][c] = temp; // Backtrack\n    return found;\n}",
+      "other_relevant_details": "Time Complexity: O(N * M * 4^L) where L is the length of the word. Space Complexity: O(L) recursion stack.",
+      "problems": [
+        {"name": "Word Search", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/word-search/", "company_tags": null},
+        {"name": "Word Search II", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/word-search-ii/", "company_tags": null},
+        {"name": "Unique Paths III", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/unique-paths-iii/", "company_tags": null},
+        {"name": "Path With Maximum Gold", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/path-with-maximum-gold/", "company_tags": null},
+        {"name": "Number of Distinct Islands", "difficulty": "Medium", "platform": "leetcode", "link": null, "company_tags": null},
+        {"name": "The Maze", "difficulty": "Medium", "platform": "leetcode", "link": null, "company_tags": null},
+        {"name": "Robot Room Cleaner", "difficulty": "Hard", "platform": "leetcode", "link": null, "company_tags": null},
+        {"name": "Flood Fill", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/flood-fill/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Partition into Subsets",
+      "description": "Dividing a string or array into contiguous or non-contiguous sub-parts that each satisfy a specific condition (e.g., palindrome, equal sum).",
+      "important_details": [
+        "State tracks the current index and the current partition/path being built.",
+        "The loop typically runs from the current `start` index to the end, checking if the substring/array slice is valid.",
+        "If valid, add it to the current path, recurse with the next index, and backtrack.",
+        "Heavily relies on helper functions (like `isPalindrome` or prefix sums) to validate partitions before recursing."
+      ],
+      "template_code": "public List<List<String>> partition(String s) {\n    List<List<String>> result = new ArrayList<>();\n    backtrack(result, new ArrayList<>(), s, 0);\n    return result;\n}\n\nprivate void backtrack(List<List<String>> result, List<String> tempList, String s, int start) {\n    if (start == s.length()) {\n        result.add(new ArrayList<>(tempList));\n        return;\n    }\n    for (int i = start; i < s.length(); i++) {\n        if (isPalindrome(s, start, i)) {\n            tempList.add(s.substring(start, i + 1));\n            backtrack(result, tempList, s, i + 1);\n            tempList.remove(tempList.size() - 1);\n        }\n    }\n}\n\nprivate boolean isPalindrome(String s, int low, int high) {\n    while (low < high) {\n        if (s.charAt(low++) != s.charAt(high--)) return false;\n    }\n    return true;\n}",
+      "other_relevant_details": "Time Complexity: O(N * 2^N) because there are 2^N possible partitions, and substring/palindrome checks take O(N). Space Complexity: O(N).",
+      "problems": [
+        {"name": "Palindrome Partitioning", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/palindrome-partitioning/", "company_tags": null},
+        {"name": "Palindrome Partitioning II", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/palindrome-partitioning-ii/", "company_tags": null},
+        {"name": "Partition to K Equal Sum Subsets", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/partition-to-k-equal-sum-subsets/", "company_tags": null},
+        {"name": "Word Break", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/word-break/", "company_tags": null},
+        {"name": "Restore IP Addresses", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/restore-ip-addresses/", "company_tags": null},
+        {"name": "Matchsticks to Square", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/matchsticks-to-square/", "company_tags": null},
+        {"name": "Split Array into Fibonacci Sequence", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/split-array-into-fibonacci-sequence/", "company_tags": null},
+        {"name": "Additive Number", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/additive-number/", "company_tags": null}
+      ]
+    }
+  ]
+}

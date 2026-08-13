@@ -1,0 +1,220 @@
+{
+  "pattern": "Graph Algorithms",
+  "description": "Graph algorithms are used to solve problems represented as networks consisting of nodes (vertices) and connections (edges). These algorithms handle traversals, finding shortest paths, detecting cycles, determining connectivity, and optimizing network costs.",
+  "important_details": [
+    "Graph Representation: Adjacency List (preferred for sparse graphs, O(V+E) space) vs. Adjacency Matrix (preferred for dense graphs, O(V^2) space).",
+    "Visited Set: Crucial for preventing infinite loops in graphs with cycles.",
+    "Directed vs. Undirected: The direction of edges fundamentally changes how reachability and cycles are calculated.",
+    "Weights: Unweighted graphs usually use BFS for shortest paths, while weighted graphs require Dijkstra's, Bellman-Ford, or Floyd-Warshall."
+  ],
+  "other_relevant_details": "When solving graph problems, first identify if the graph is directed or undirected, weighted or unweighted, and cyclic or acyclic. This dictates the choice of algorithm. Many graph problems can also be modeled as 2D grid traversals (e.g., islands, mazes).",
+  "variations": [
+    {
+      "variation": "BFS",
+      "description": "Breadth-First Search explores the graph level by level, visiting all immediate neighbors before moving deeper. It is the standard algorithm for finding the shortest path in unweighted graphs.",
+      "important_details": [
+        "Data Structure: Uses a Queue (FIFO) to process nodes in the order they are discovered.",
+        "Shortest Path: Guarantees the shortest path in terms of the number of edges in unweighted graphs.",
+        "Multi-source BFS: Can initialize the queue with multiple starting nodes simultaneously (e.g., Rotten Oranges)."
+      ],
+      "template_code": "public int bfsShortestPath(int[][] grid) {\n    int m = grid.length, n = grid[0].length;\n    if (grid[0][0] == 1) return -1;\n    Queue<int[]> queue = new LinkedList<>();\n    boolean[][] visited = new boolean[m][n];\n    queue.offer(new int[]{0, 0});\n    visited[0][0] = true;\n    int distance = 1;\n    int[] dr = {-1, 1, 0, 0}, dc = {0, 0, -1, 1};\n    \n    while (!queue.isEmpty()) {\n        int size = queue.size();\n        for (int i = 0; i < size; i++) {\n            int[] curr = queue.poll();\n            if (curr[0] == m - 1 && curr[1] == n - 1) return distance;\n            for (int j = 0; j < 4; j++) {\n                int nr = curr[0] + dr[j], nc = curr[1] + dc[j];\n                if (nr >= 0 && nr < m && nc >= 0 && nc < n && !visited[nr][nc] && grid[nr][nc] == 0) {\n                    visited[nr][nc] = true;\n                    queue.offer(new int[]{nr, nc});\n                }\n            }\n        }\n        distance++;\n    }\n    return -1;\n}",
+      "other_relevant_details": "Time Complexity: O(V + E). Space Complexity: O(V) for the queue and visited array.",
+      "problems": [
+        {"name": "Shortest Path in Binary Matrix", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/shortest-path-in-binary-matrix/", "company_tags": null},
+        {"name": "Rotten Oranges", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/rotting-oranges/", "company_tags": null},
+        {"name": "As Far From Land as Possible", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/as-far-from-land-as-possible/", "company_tags": null},
+        {"name": "Word Ladder", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/word-ladder/", "company_tags": null},
+        {"name": "01 Matrix", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/01-matrix/", "company_tags": null},
+        {"name": "Pacific Atlantic Water Flow", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/pacific-atlantic-water-flow/", "company_tags": null},
+        {"name": "Walls and Gates", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/walls-and-gates/", "company_tags": null},
+        {"name": "Snakes and Ladders", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/snakes-and-ladders/", "company_tags": null},
+        {"name": "Minimum Genetic Mutation", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/minimum-genetic-mutation/", "company_tags": null},
+        {"name": "Sliding Puzzle", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/sliding-puzzle/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "0-1 BFS",
+      "description": "An optimization of BFS for graphs where edge weights are strictly 0 or 1. It uses a Deque instead of a priority queue to achieve O(V+E) shortest path finding.",
+      "important_details": [
+        "Data Structure: Deque (Double-ended queue).",
+        "Transition: If edge weight is 0, push to the FRONT of the deque. If weight is 1, push to the BACK.",
+        "This maintains the level-order property without the O(log V) overhead of Dijkstra's priority queue."
+      ],
+      "template_code": "public int minCost(int[][] grid) {\n    int m = grid.length, n = grid[0].length;\n    int[] dist = new int[m * n];\n    Arrays.fill(dist, Integer.MAX_VALUE);\n    dist[0] = 0;\n    Deque<int[]> dq = new ArrayDeque<>();\n    dq.offerFirst(new int[]{0, 0}); // {node_index, cost}\n    int[] dr = {0, 0, 1, -1}, dc = {1, -1, 0, 0};\n    \n    while (!dq.isEmpty()) {\n        int[] curr = dq.pollFirst();\n        int r = curr[0] / n, c = curr[0] % n;\n        if (r == m - 1 && c == n - 1) return curr[1];\n        for (int i = 0; i < 4; i++) {\n            int nr = r + dr[i], nc = c + dc[i];\n            if (nr >= 0 && nr < m && nc >= 0 && nc < n) {\n                int newCost = curr[1] + (grid[r][c] == i + 1 ? 0 : 1);\n                if (newCost < dist[nr * n + nc]) {\n                    dist[nr * n + nc] = newCost;\n                    if (grid[r][c] == i + 1) dq.offerFirst(new int[]{nr * n + nc, newCost});\n                    else dq.offerLast(new int[]{nr * n + nc, newCost});\n                }\n            }\n        }\n    }\n    return -1;\n}",
+      "other_relevant_details": "Time Complexity: O(V + E). Much faster than Dijkstra for 0/1 weight constraints.",
+      "problems": [
+        {"name": "Minimum Obstacle Removal to Reach Corner", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/minimum-obstacle-removal-to-reach-corner/", "company_tags": null},
+        {"name": "Minimum Cost to Make at Least One Valid Path in a Grid", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/minimum-cost-to-make-at-least-one-valid-path-in-a-grid/", "company_tags": null},
+        {"name": "Shortest Path in a Grid with Obstacles Elimination", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/shortest-path-in-a-grid-with-obstacles-elimination/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "DFS",
+      "description": "Depth-First Search explores as far as possible along each branch before backtracking. It is highly memory-efficient and used for connectivity, cycle detection, and topological sorting.",
+      "important_details": [
+        "Data Structure: Uses a Stack (LIFO) or recursion (which utilizes the call stack).",
+        "Exploration: Dives deep into a path until a dead end is reached, then backtracks.",
+        "State Tracking: Often requires tracking 'visited' states. For cycle detection, states are typically 0 (unvisited), 1 (visiting), and 2 (visited)."
+      ],
+      "template_code": "public int numIslands(char[][] grid) {\n    int count = 0;\n    for (int i = 0; i < grid.length; i++) {\n        for (int j = 0; j < grid[0].length; j++) {\n            if (grid[i][j] == '1') {\n                dfs(grid, i, j);\n                count++;\n            }\n        }\n    }\n    return count;\n}\n\nprivate void dfs(char[][] grid, int r, int c) {\n    if (r < 0 || c < 0 || r >= grid.length || c >= grid[0].length || grid[r][c] != '1') return;\n    grid[r][c] = '0'; // Mark visited\n    dfs(grid, r + 1, c);\n    dfs(grid, r - 1, c);\n    dfs(grid, r, c + 1);\n    dfs(grid, r, c - 1);\n}",
+      "other_relevant_details": "Time Complexity: O(V + E). Space Complexity: O(H) where H is the maximum depth of the recursion tree.",
+      "problems": [
+        {"name": "Number of Provinces", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/number-of-provinces/", "company_tags": null},
+        {"name": "Number of Closed Islands", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/number-of-closed-islands/", "company_tags": null},
+        {"name": "Time Needed to Inform All Employees", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/time-needed-to-inform-all-employees/", "company_tags": null},
+        {"name": "Find Eventual Safe States", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/find-eventual-safe-states/", "company_tags": null},
+        {"name": "Number of Islands", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/number-of-islands/", "company_tags": null},
+        {"name": "Max Area of Island", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/max-area-of-island/", "company_tags": null},
+        {"name": "Surrounded Regions", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/surrounded-regions/", "company_tags": null},
+        {"name": "All Paths from Source to Target", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/all-paths-from-source-to-target/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Topological Sort",
+      "description": "Linear ordering of vertices in a Directed Acyclic Graph (DAG) such that for every directed edge u -> v, vertex u comes before v. Used for dependency resolution.",
+      "important_details": [
+        "Cycle Detection: If a cycle exists, topological sort is impossible.",
+        "Kahn's Algorithm (BFS): Computes indegrees. Nodes with 0 indegree are processed first.",
+        "DFS Approach: Push nodes to a stack after all their descendants are visited. Pop from stack for the topological order."
+      ],
+      "template_code": "public int[] findOrder(int numCourses, int[][] prerequisites) {\n    List<List<Integer>> graph = new ArrayList<>();\n    int[] indegree = new int[numCourses];\n    for (int i = 0; i < numCourses; i++) graph.add(new ArrayList<>());\n    for (int[] p : prerequisites) {\n        graph.get(p[1]).add(p[0]);\n        indegree[p[0]]++;\n    }\n    Queue<Integer> queue = new LinkedList<>();\n    for (int i = 0; i < numCourses; i++) if (indegree[i] == 0) queue.offer(i);\n    int[] order = new int[numCourses];\n    int idx = 0;\n    while (!queue.isEmpty()) {\n        int curr = queue.poll();\n        order[idx++] = curr;\n        for (int neighbor : graph.get(curr)) {\n            if (--indegree[neighbor] == 0) queue.offer(neighbor);\n        }\n    }\n    return idx == numCourses ? order : new int[]{};\n}",
+      "other_relevant_details": "Time Complexity: O(V + E). Space: O(V + E).",
+      "problems": [
+        {"name": "Course Schedule", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/course-schedule/", "company_tags": null},
+        {"name": "Course Schedule II", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/course-schedule-ii/", "company_tags": null},
+        {"name": "Alien Dictionary", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/alien-dictionary/", "company_tags": null},
+        {"name": "Sequence Reconstruction", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/sequence-reconstruction/", "company_tags": null},
+        {"name": "Strange Printer II", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/strange-printer-ii/", "company_tags": null},
+        {"name": "Minimum Height Trees", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/minimum-height-trees/", "company_tags": null},
+        {"name": "Sort Items by Groups Respecting Dependencies", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/sort-items-by-groups-respecting-dependencies/", "company_tags": null},
+        {"name": "Build a Matrix With Conditions", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/build-a-matrix-with-conditions/", "company_tags": null},
+        {"name": "Find All Possible Recipes from Given Supplies", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/find-all-possible-recipes-from-given-supplies/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Union-Find (Disjoint Set Union)",
+      "description": "Maintains a collection of disjoint sets. It provides near O(1) time operations to find the root of an element and union two sets. Used for dynamic connectivity.",
+      "important_details": [
+        "Path Compression: Flattens the tree structure during 'find' operations, ensuring future queries are O(1).",
+        "Union by Rank/Size: Attaches the smaller tree to the root of the larger tree, keeping depth logarithmic.",
+        "Cycle Detection: If `find(u) == find(v)` before unioning them, adding edge u-v creates a cycle."
+      ],
+      "template_code": "class UnionFind {\n    private int[] parent;\n    private int[] rank;\n    public UnionFind(int n) {\n        parent = new int[n];\n        rank = new int[n];\n        for (int i = 0; i < n; i++) parent[i] = i;\n    }\n    public int find(int x) {\n        if (parent[x] != x) parent[x] = find(parent[x]);\n        return parent[x];\n    }\n    public boolean union(int x, int y) {\n        int rootX = find(x), rootY = find(y);\n        if (rootX == rootY) return false; \n        if (rank[rootX] < rank[rootY]) parent[rootX] = rootY;\n        else if (rank[rootX] > rank[rootY]) parent[rootY] = rootX;\n        else { parent[rootY] = rootX; rank[rootX]++; }\n        return true;\n    }\n}",
+      "other_relevant_details": "Time Complexity: O(alpha(N)) per operation, where alpha is the Inverse Ackermann function (practically O(1)). Space: O(N).",
+      "problems": [
+        {"name": "Number of Connected Components in an Undirected Graph", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/number-of-connected-components-in-an-undirected-graph/", "company_tags": null},
+        {"name": "Redundant Connection", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/redundant-connection/", "company_tags": null},
+        {"name": "Accounts Merge", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/accounts-merge/", "company_tags": null},
+        {"name": "Number of Operations to Make Network Connected", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/number-of-operations-to-make-network-connected/", "company_tags": null},
+        {"name": "Satisfiability of Equality Equations", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/satisfiability-of-equality-equations/", "company_tags": null},
+        {"name": "Most Stones Removed with Same Row or Column", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/most-stones-removed-with-same-row-or-column/", "company_tags": null},
+        {"name": "Swim in Rising Water", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/swim-in-rising-water/", "company_tags": null},
+        {"name": "Remove Max Number of Edges to Keep Graph Fully Traversable", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/remove-max-number-of-edges-to-keep-graph-fully-traversable/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Shortest Path (Dijkstra, Bellman-Ford, Floyd-Warshall)",
+      "description": "Algorithms for finding the shortest paths between nodes in a weighted graph. Dijkstra handles non-negative weights, Bellman-Ford handles negative weights, and Floyd-Warshall finds all-pairs shortest paths.",
+      "important_details": [
+        "Dijkstra: Uses a Min-Heap. Greedily picks the unvisited node with the smallest distance. Fails on negative edges.",
+        "Bellman-Ford: Relaxes all edges V-1 times. Can detect negative cycles. O(V*E).",
+        "Floyd-Warshall: DP approach. `dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j])`. Great for dense graphs or when querying shortest paths between all pairs. O(V^3)."
+      ],
+      "template_code": "// Floyd-Warshall Algorithm\npublic int[][] floydWarshall(int n, int[][] edges) {\n    int[][] dist = new int[n][n];\n    for (int i = 0; i < n; i++) {\n        Arrays.fill(dist[i], 10000000); // Use a large number instead of MAX_VALUE to avoid overflow\n        dist[i][i] = 0;\n    }\n    for (int[] e : edges) {\n        dist[e[0]][e[1]] = e[2];\n        dist[e[1]][e[0]] = e[2]; // If undirected\n    }\n    for (int k = 0; k < n; k++) {\n        for (int i = 0; i < n; i++) {\n            for (int j = 0; j < n; j++) {\n                if (dist[i][k] + dist[k][j] < dist[i][j]) {\n                    dist[i][j] = dist[i][k] + dist[k][j];\n                }\n            }\n        }\n    }\n    return dist;\n}",
+      "other_relevant_details": "Time Complexity: Dijkstra O(E log V), Bellman-Ford O(V*E), Floyd-Warshall O(V^3). Use Floyd-Warshall when graph is small (N <= 100) or transitive closure is needed.",
+      "problems": [
+        {"name": "Network Delay Time", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/network-delay-time/", "company_tags": null},
+        {"name": "Cheapest Flights Within K Stops", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/cheapest-flights-within-k-stops/", "company_tags": null},
+        {"name": "Path with Maximum Probability", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/path-with-maximum-probability/", "company_tags": null},
+        {"name": "Find the City With the Smallest Number of Neighbors at a Threshold Distance", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/find-the-city-with-the-smallest-number-of-neighbors-at-a-threshold-distance/", "company_tags": null},
+        {"name": "Course Schedule IV", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/course-schedule-iv/", "company_tags": null},
+        {"name": "Minimum Cost to Convert String I", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/minimum-cost-to-convert-string-i/", "company_tags": null},
+        {"name": "Minimum Cost to Reach Destination in Time", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/minimum-cost-to-reach-destination-in-time/", "company_tags": null},
+        {"name": "Second Minimum Time to Reach Destination", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/second-minimum-time-to-reach-destination/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Minimum Spanning Tree (MST)",
+      "description": "Finding a subset of edges in a weighted, undirected graph that connects all vertices together without any cycles and with the minimum possible total edge weight.",
+      "important_details": [
+        "Kruskal's Algorithm: Sorts all edges by weight. Uses Union-Find to add edges if they don't form a cycle. Edge-centric.",
+        "Prim's Algorithm: Starts from an arbitrary node. Uses a Min-Heap to greedily add the cheapest edge connecting the current tree to a new vertex. Node-centric.",
+        "If the graph is disconnected, an MST cannot be formed (forms a Minimum Spanning Forest)."
+      ],
+      "template_code": "// Prim's Algorithm\npublic int minCostConnectPoints(int[][] points) {\n    int n = points.length, cost = 0, edgesUsed = 0;\n    boolean[] visited = new boolean[n];\n    PriorityQueue<int[]> pq = new PriorityQueue<>((a, b) -> a[1] - b[1]);\n    pq.offer(new int[]{0, 0}); \n    \n    while (edgesUsed < n) {\n        int[] curr = pq.poll();\n        int node = curr[0], weight = curr[1];\n        if (visited[node]) continue;\n        visited[node] = true;\n        cost += weight;\n        edgesUsed++;\n        for (int next = 0; next < n; next++) {\n            if (!visited[next]) {\n                int dist = Math.abs(points[node][0] - points[next][0]) + Math.abs(points[node][1] - points[next][1]);\n                pq.offer(new int[]{next, dist});\n            }\n        }\n    }\n    return cost;\n}",
+      "other_relevant_details": "Time Complexity (Prim): O(E log V). Time Complexity (Kruskal): O(E log E).",
+      "problems": [
+        {"name": "Min Cost to Connect All Points", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/min-cost-to-connect-all-points/", "company_tags": null},
+        {"name": "Connecting Cities With Minimum Cost", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/connecting-cities-with-minimum-cost/", "company_tags": null},
+        {"name": "Optimize Water Distribution in a Village", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/optimize-water-distribution-in-a-village/", "company_tags": null},
+        {"name": "Find Critical and Pseudo-Critical Edges in MST", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/find-critical-and-pseudo-critical-edges-in-minimum-spanning-tree/", "company_tags": null},
+        {"name": "Remove Max Number of Edges to Keep Graph Fully Traversable", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/remove-max-number-of-edges-to-keep-graph-fully-traversable/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Bridges & Articulation Points (Tarjan's)",
+      "description": "Finding critical edges (Bridges) whose removal disconnects the graph, and critical vertices (Articulation Points) whose removal increases the number of connected components.",
+      "important_details": [
+        "Uses DFS with discovery times (`disc`) and low-link values (`low`).",
+        "Bridge condition: During DFS, for edge u-v, if `low[v] > disc[u]`, the edge is a bridge.",
+        "Articulation Point condition: For root, if it has >1 child. For non-root u, if `low[v] >= disc[u]`, u is an articulation point."
+      ],
+      "template_code": "private int time = 0;\npublic List<List<Integer>> criticalConnections(int n, List<List<Integer>> connections) {\n    List<List<Integer>> graph = new ArrayList<>();\n    for (int i = 0; i < n; i++) graph.add(new ArrayList<>());\n    for (List<Integer> conn : connections) {\n        graph.get(conn.get(0)).add(conn.get(1));\n        graph.get(conn.get(1)).add(conn.get(0));\n    }\n    List<List<Integer>> bridges = new ArrayList<>();\n    int[] disc = new int[n], low = new int[n];\n    Arrays.fill(disc, -1);\n    for (int i = 0; i < n; i++) {\n        if (disc[i] == -1) dfs(i, -1, disc, low, graph, bridges);\n    }\n    return bridges;\n}\nprivate void dfs(int u, int parent, int[] disc, int[] low, List<List<Integer>> graph, List<List<Integer>> bridges) {\n    disc[u] = low[u] = time++;\n    for (int v : graph.get(u)) {\n        if (v == parent) continue;\n        if (disc[v] == -1) {\n            dfs(v, u, disc, low, graph, bridges);\n            low[u] = Math.min(low[u], low[v]);\n            if (low[v] > disc[u]) bridges.add(Arrays.asList(u, v));\n        } else {\n            low[u] = Math.min(low[u], disc[v]);\n        }\n    }\n}",
+      "other_relevant_details": "Time Complexity: O(V + E). Single pass DFS. Works on directed and undirected graphs but primarily used for undirected.",
+      "problems": [
+        {"name": "Critical Connections in a Network", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/critical-connections-in-a-network/", "company_tags": null},
+        {"name": "Minimize Malware Spread", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/minimize-malware-spread/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Strongly Connected Components (SCC)",
+      "description": "A subgraph where every node is reachable from every other node. Used to compress graphs, detect cycles, or solve 2-SAT problems.",
+      "important_details": [
+        "Kosaraju's Algorithm: 1) DFS on original graph, pushing nodes to a stack by finish time. 2) Reverse the graph. 3) Pop nodes from stack and DFS on reversed graph to find SCCs.",
+        "Tarjan's Algorithm: Single DFS using low-link values. A node is an SCC root if `disc[u] == low[u]`."
+      ],
+      "template_code": "// Kosaraju's Algorithm Concept\npublic int countSCC(int n, List<List<Integer>> graph) {\n    Stack<Integer> stack = new Stack<>();\n    boolean[] visited = new boolean[n];\n    for (int i = 0; i < n; i++) if (!visited[i]) dfs1(i, graph, visited, stack);\n    \n    List<List<Integer>> revGraph = new ArrayList<>();\n    for (int i = 0; i < n; i++) revGraph.add(new ArrayList<>());\n    for (int u = 0; u < n; u++) for (int v : graph.get(u)) revGraph.get(v).add(u);\n    \n    Arrays.fill(visited, false);\n    int sccCount = 0;\n    while (!stack.isEmpty()) {\n        int node = stack.pop();\n        if (!visited[node]) {\n            dfs2(node, revGraph, visited);\n            sccCount++;\n        }\n    }\n    return sccCount;\n}",
+      "other_relevant_details": "Time Complexity: O(V + E). Requires two DFS traversals.",
+      "problems": [
+        {"name": "Longest Cycle in a Graph", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/longest-cycle-in-a-graph/", "company_tags": null},
+        {"name": "Find Eventual Safe States", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/find-eventual-safe-states/", "company_tags": null},
+        {"name": "Maximum Employees to Be Invited to a Meeting", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-employees-to-be-invited-to-a-meeting/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Binary Search on Graph",
+      "description": "Combining binary search with graph traversal. Typically involves binary searching the answer (e.g., max capacity, min effort) and using BFS/DFS to check if the path is feasible under that constraint.",
+      "important_details": [
+        "Monotonicity: If a path exists with max effort X, it also exists for X+1.",
+        "Feasibility check: A graph traversal (BFS/DFS) that only uses edges satisfying `edge_weight <= mid`.",
+        "Alternative to Dijkstra when you specifically need a min-max or max-min path."
+      ],
+      "template_code": "public int minimumEffortPath(int[][] heights) {\n    int left = 0, right = 1000000;\n    while (left < right) {\n        int mid = left + (right - left) / 2;\n        if (canReachDestination(heights, mid)) {\n            right = mid;\n        } else {\n            left = mid + 1;\n        }\n    }\n    return left;\n}\nprivate boolean canReachDestination(int[][] h, int maxEffort) {\n    Queue<int[]> q = new LinkedList<>();\n    q.offer(new int[]{0, 0});\n    boolean[][] visited = new boolean[h.length][h[0].length];\n    visited[0][0] = true;\n    int[] dr = {0, 0, 1, -1}, dc = {1, -1, 0, 0};\n    while (!q.isEmpty()) {\n        int[] curr = q.poll();\n        if (curr[0] == h.length - 1 && curr[1] == h[0].length - 1) return true;\n        for (int i = 0; i < 4; i++) {\n            int nr = curr[0] + dr[i], nc = curr[1] + dc[i];\n            if (nr >= 0 && nr < h.length && nc >= 0 && nc < h[0].length && !visited[nr][nc]) {\n                if (Math.abs(h[nr][nc] - h[curr[0]][curr[1]]) <= maxEffort) {\n                    visited[nr][nc] = true;\n                    q.offer(new int[]{nr, nc});\n                }\n            }\n        }\n    }\n    return false;\n}",
+      "other_relevant_details": "Time Complexity: O(V + E) * O(log(Max_Weight)).",
+      "problems": [
+        {"name": "Path With Minimum Effort", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/path-with-minimum-effort/", "company_tags": null},
+        {"name": "Swim in Rising Water", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/swim-in-rising-water/", "company_tags": null},
+        {"name": "Find the Safest Path in a Grid", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/find-the-safest-path-in-a-grid/", "company_tags": null},
+        {"name": "Minimize Max Distance to Gas Station", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/minimize-max-distance-to-gas-station/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "3D / 4D DP Graph Problems",
+      "description": "DP or BFS state transitions where the state includes spatial coordinates (x, y) PLUS extra dimensions like remaining steps (k), obstacles eliminated (k), or a bitmask of visited nodes.",
+      "important_details": [
+        "State array: `dp[x][y][k]` or `dp[mask][node]`.",
+        "Often combined with BFS (multi-source or stateful BFS).",
+        "Bitmask DP is common here where `mask` tracks visited nodes (N <= 15-20)."
+      ],
+      "template_code": "// Shortest Path Visiting All Nodes (Bitmask DP + BFS)\npublic int shortestPathLength(int[][] graph) {\n    int n = graph.length;\n    int allVisited = (1 << n) - 1;\n    Queue<int[]> queue = new LinkedList<>(); \n    boolean[][] visited = new boolean[n][1 << n];\n    for (int i = 0; i < n; i++) {\n        queue.offer(new int[]{i, 1 << i, 0});\n        visited[i][1 << i] = true;\n    }\n    while (!queue.isEmpty()) {\n        int[] curr = queue.poll();\n        int node = curr[0], mask = curr[1], dist = curr[2];\n        if (mask == allVisited) return dist;\n        for (int neighbor : graph[node]) {\n            int newMask = mask | (1 << neighbor);\n            if (!visited[neighbor][newMask]) {\n                visited[neighbor][newMask] = true;\n                queue.offer(new int[]{neighbor, newMask, dist + 1});\n            }\n        }\n    }\n    return -1;\n}",
+      "other_relevant_details": "Time Complexity depends on state space. For bitmask it's O(2^N * N^2). For grid + K obstacles, O(M * N * K).",
+      "problems": [
+        {"name": "Shortest Path Visiting All Nodes", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/shortest-path-visiting-all-nodes/", "company_tags": null},
+        {"name": "Shortest Path in a Grid with Obstacles Elimination", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/shortest-path-in-a-grid-with-obstacles-elimination/", "company_tags": null},
+        {"name": "Cherry Pickup", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/cherry-pickup/", "company_tags": null},
+        {"name": "Cherry Pickup II", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/cherry-pickup-ii/", "company_tags": null},
+        {"name": "Maximum Number of Moves in a Grid", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-number-of-moves-in-a-grid/", "company_tags": null}
+      ]
+    }
+  ]
+}

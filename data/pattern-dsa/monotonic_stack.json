@@ -1,0 +1,129 @@
+{
+  "pattern": "Monotonic Stack",
+  "description": "A Monotonic Stack is a stack data structure where the elements are maintained in a strictly increasing or decreasing order. It is primarily used to efficiently find the 'next greater element', 'previous smaller element', or similar boundary queries in an array in O(N) time instead of O(N^2).",
+  "important_details": [
+    "Increasing vs. Decreasing: An increasing stack (top is largest) is used to find the 'previous smaller' or 'next smaller' element. A decreasing stack (top is smallest) is used to find the 'previous greater' or 'next greater' element.",
+    "LIFO Principle: When a new element violates the monotonic property, elements are popped from the stack until the property is restored. The popped elements have found their 'next' boundary (the current element).",
+    "Storing Indices: Typically, we store indices in the stack rather than values to allow O(1) calculation of distances (e.g., number of days until a warmer temperature) or to modify the original array."
+  ],
+  "other_relevant_details": "Time Complexity: O(N). Even though there is a nested while loop, every element is pushed exactly once and popped at most once. Space Complexity: O(N) for the stack. This pattern is highly frequent in OA and technical interviews, especially for problems involving spans, areas, or immediate boundaries.",
+  "variations": [
+    {
+      "variation": "Next Greater / Smaller Element",
+      "description": "Finding the immediate next element to the right of each element that is strictly greater or smaller than it.",
+      "important_details": [
+        "Use a strictly decreasing stack to find the Next Greater Element (NGE).",
+        "Iterate left to right. If `nums[i] > stack.top()`, pop the stack. The NGE for the popped element is `nums[i]`.",
+        "For circular arrays (Next Greater Element II), iterate `2 * N` times and use modulo `i % N` to simulate the wrap-around."
+      ],
+      "template_code": "public int[] nextGreaterElement(int[] nums) {\n    int n = nums.length;\n    int[] res = new int[n];\n    Arrays.fill(res, -1);\n    Deque<Integer> stack = new ArrayDeque<>(); // stores indices\n    \n    for (int i = 0; i < n; i++) {\n        while (!stack.isEmpty() && nums[stack.peek()] < nums[i]) {\n            res[stack.pop()] = nums[i];\n        }\n        stack.push(i);\n    }\n    return res;\n}",
+      "other_relevant_details": "Time Complexity: O(N). Space Complexity: O(N). Elements remaining in the stack after the loop have no Next Greater Element.",
+      "problems": [
+        {"name": "Next Greater Element I", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/next-greater-element-i/", "company_tags": null},
+        {"name": "Next Greater Element II", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/next-greater-element-ii/", "company_tags": null},
+        {"name": "Daily Temperatures", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/daily-temperatures/", "company_tags": null},
+        {"name": "Next Smaller Element", "difficulty": "Easy", "platform": "gfg", "link": null, "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Previous Greater / Smaller Element",
+      "description": "Finding the immediate previous element to the left of each element that is strictly greater or smaller than it.",
+      "important_details": [
+        "Iterate left to right. Use a stack to maintain candidates for the 'previous' element.",
+        "Before pushing `nums[i]` to the stack, pop all elements that are `>= nums[i]` (if looking for a previous smaller element).",
+        "The top of the stack after popping is the Previous Smaller Element. If stack is empty, there is none."
+      ],
+      "template_code": "public int[] previousSmallerElement(int[] nums) {\n    int n = nums.length;\n    int[] res = new int[n];\n    Arrays.fill(res, -1);\n    Deque<Integer> stack = new ArrayDeque<>(); \n    \n    for (int i = 0; i < n; i++) {\n        while (!stack.isEmpty() && nums[stack.peek()] >= nums[i]) {\n            stack.pop();\n        }\n        if (!stack.isEmpty()) {\n            res[i] = nums[stack.peek()];\n        }\n        stack.push(i);\n    }\n    return res;\n}",
+      "other_relevant_details": "Time Complexity: O(N). Space Complexity: O(N). Often combined with Next Smaller Element to solve Largest Rectangle in Histogram.",
+      "problems": [
+        {"name": "Online Stock Span", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/online-stock-span/", "company_tags": null},
+        {"name": "Previous Smaller Element", "difficulty": "Easy", "platform": "gfg", "link": null, "company_tags": null},
+        {"name": "Find the Most Competitive Subsequence", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/find-the-most-competitive-subsequence/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Largest Rectangle in Histogram",
+      "description": "Finding the maximum rectangular area in a histogram. This is the classic application of Monotonic Stacks, combining previous smaller and next smaller concepts.",
+      "important_details": [
+        "For each bar, the maximum area it can form is bounded by the Previous Smaller Element (left) and Next Smaller Element (right).",
+        "Width = `Right_Smaller_Index - Left_Smaller_Index - 1`.",
+        "Area = `Height * Width`.",
+        "A strictly increasing stack is used. When a bar is smaller than the stack top, the stack top's right boundary is found."
+      ],
+      "template_code": "public int largestRectangleArea(int[] heights) {\n    Deque<Integer> stack = new ArrayDeque<>();\n    int maxArea = 0;\n    \n    for (int i = 0; i <= heights.length; i++) {\n        int h = (i == heights.length) ? 0 : heights[i];\n        while (!stack.isEmpty() && h < heights[stack.peek()]) {\n            int height = heights[stack.pop()];\n            int width = stack.isEmpty() ? i : i - stack.peek() - 1;\n            maxArea = Math.max(maxArea, height * width);\n        }\n        stack.push(i);\n    }\n    return maxArea;\n}",
+      "other_relevant_details": "Time Complexity: O(N). Space Complexity: O(N). A dummy height of 0 is appended at the end to force the stack to empty itself and calculate remaining areas.",
+      "problems": [
+        {"name": "Largest Rectangle in Histogram", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/largest-rectangle-in-histogram/", "company_tags": null},
+        {"name": "Maximal Rectangle", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/maximal-rectangle/", "company_tags": null},
+        {"name": "Maximum Score of a Good Subarray", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-score-of-a-good-subarray/", "company_tags": null},
+        {"name": "Largest Rectangle in Binary Matrix", "difficulty": "Hard", "platform": "gfg", "link": null, "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Trapping Rain Water (Monotonic Stack approach)",
+      "description": "Calculating trapped water using a decreasing stack. While two-pointer is O(1) space, the stack approach is more intuitive for boundary-based problems.",
+      "important_details": [
+        "Use a strictly decreasing stack of indices.",
+        "When a bar is taller than the stack top, a 'valley' is formed. Pop the stack to get the valley bottom.",
+        "Calculate trapped water above the valley using `min(current_bar, stack_new_top) - valley_bottom` multiplied by the width."
+      ],
+      "template_code": "public int trap(int[] height) {\n    Deque<Integer> stack = new ArrayDeque<>();\n    int water = 0;\n    \n    for (int i = 0; i < height.length; i++) {\n        while (!stack.isEmpty() && height[i] > height[stack.peek()]) {\n            int bottom = stack.pop();\n            if (stack.isEmpty()) break; \n            int leftBound = stack.peek();\n            int width = i - leftBound - 1;\n            int boundedHeight = Math.min(height[leftBound], height[i]) - height[bottom];\n            water += width * boundedHeight;\n        }\n        stack.push(i);\n    }\n    return water;\n}",
+      "other_relevant_details": "Time Complexity: O(N). Space Complexity: O(N). The stack maintains the left boundaries of potential valleys.",
+      "problems": [
+        {"name": "Trapping Rain Water", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/trapping-rain-water/", "company_tags": null},
+        {"name": "Trapping Rain Water II", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/trapping-rain-water-ii/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Lexicographical Ordering / Remove K Digits",
+      "description": "Building the lexicographically smallest or largest subsequence of a given length by removing elements greedily.",
+      "important_details": [
+        "To find the smallest sequence, use an increasing stack.",
+        "If the current digit is smaller than the stack top, and we still have removals left (`k > 0`), pop the stack.",
+        "Push the current digit. After the loop, if `k > 0`, remove from the end."
+      ],
+      "template_code": "public String removeKdigits(String num, int k) {\n    Deque<Character> stack = new ArrayDeque<>();\n    \n    for (char c : num.toCharArray()) {\n        while (k > 0 && !stack.isEmpty() && stack.peek() > c) {\n            stack.pop();\n            k--;\n        }\n        stack.push(c);\n    }\n    \n    while (k-- > 0) stack.pop(); // Remove remaining from end\n    \n    StringBuilder sb = new StringBuilder();\n    while (!stack.isEmpty()) sb.append(stack.pollLast()); // Reverse to get correct order\n    \n    // Remove leading zeros\n    int i = 0;\n    while (i < sb.length() - 1 && sb.charAt(i) == '0') i++;\n    String res = sb.substring(i);\n    return res.isEmpty() ? \"0\" : res;\n}",
+      "other_relevant_details": "Time Complexity: O(N). Space Complexity: O(N). Similar logic applies to 'Create Maximum Number' and 'Smallest Subsequence of Distinct Characters'.",
+      "problems": [
+        {"name": "Remove K Digits", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/remove-k-digits/", "company_tags": null},
+        {"name": "Smallest Subsequence of Distinct Characters", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/smallest-subsequence-of-distinct-characters/", "company_tags": null},
+        {"name": "Create Maximum Number", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/create-maximum-number/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Sliding Window Maximum (Monotonic Deque)",
+      "description": "Finding the maximum in every sliding window of size K. Uses a Deque to maintain a strictly decreasing queue of useful indices.",
+      "important_details": [
+        "Data Structure: `ArrayDeque` storing indices. The values corresponding to these indices must be strictly decreasing.",
+        "Before adding `nums[i]`, pop from the back of the deque all indices whose value is `<= nums[i]` (they are useless).",
+        "Remove from the front of the deque if the index is outside the current window (`index <= i - k`).",
+        "The maximum for the current window is always at the front of the deque."
+      ],
+      "template_code": "public int[] maxSlidingWindow(int[] nums, int k) {\n    int n = nums.length;\n    int[] res = new int[n - k + 1];\n    Deque<Integer> dq = new ArrayDeque<>(); // stores indices, values are strictly decreasing\n    \n    for (int i = 0; i < n; i++) {\n        // Remove elements out of window from front\n        if (!dq.isEmpty() && dq.peekFirst() <= i - k) dq.pollFirst();\n        \n        // Remove smaller elements from back\n        while (!dq.isEmpty() && nums[dq.peekLast()] < nums[i]) dq.pollLast();\n        \n        dq.offerLast(i);\n        \n        // Record answer\n        if (i >= k - 1) res[i - k + 1] = nums[dq.peekFirst()];\n    }\n    return res;\n}",
+      "other_relevant_details": "Time Complexity: O(N) because each element is pushed and popped at most once. Space: O(K).",
+      "problems": [
+        {"name": "Sliding Window Maximum", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/sliding-window-maximum/", "company_tags": null},
+        {"name": "Jump Game VI", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/jump-game-vi/", "company_tags": null},
+        {"name": "Constrained Subsequence Sum", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/constrained-subsequence-sum/", "company_tags": null},
+        {"name": "Shortest Subarray with Sum at Least K", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/shortest-subarray-with-sum-at-least-k/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Subarray Minimums / Sum of Subarray Minimums",
+      "description": "Finding the sum of the minimums of all contiguous subarrays. Requires calculating the distance to the previous smaller and next smaller elements for each item.",
+      "important_details": [
+        "For each element `arr[i]`, find how many subarrays have `arr[i]` as their minimum.",
+        "Left Bound: Distance to Previous Strictly Smaller element. Right Bound: Distance to Next Smaller or Equal element (to avoid double counting).",
+        "Count of subarrays = `left_count * right_count`. Add `arr[i] * count` to the total sum.",
+        "Modulo arithmetic is usually required."
+      ],
+      "template_code": "public int sumSubarrayMins(int[] arr) {\n    int n = arr.length;\n    int mod = 1000000007;\n    \n    long[] left = new long[n]; // distance to previous strictly smaller\n    long[] right = new long[n]; // distance to next smaller or equal\n    Deque<Integer> stack = new ArrayDeque<>();\n    \n    for (int i = 0; i < n; i++) {\n        while (!stack.isEmpty() && arr[stack.peek()] > arr[i]) stack.pop();\n        left[i] = stack.isEmpty() ? i + 1 : i - stack.peek();\n        stack.push(i);\n    }\n    stack.clear();\n    \n    for (int i = n - 1; i >= 0; i--) {\n        while (!stack.isEmpty() && arr[stack.peek()] >= arr[i]) stack.pop();\n        right[i] = stack.isEmpty() ? n - i : stack.peek() - i;\n        stack.push(i);\n    }\n    \n    long ans = 0;\n    for (int i = 0; i < n; i++) {\n        ans = (ans + arr[i] * left[i] * right[i]) % mod;\n    }\n    return (int) ans;\n}",
+      "other_relevant_details": "Time Complexity: O(N). Space Complexity: O(N). The strict vs non-strict inequality on left and right bounds is critical to avoid overcounting duplicate minimums.",
+      "problems": [
+        {"name": "Sum of Subarray Minimums", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/sum-of-subarray-minimums/", "company_tags": null},
+        {"name": "Sum of Subarray Ranges", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/sum-of-subarray-ranges/", "company_tags": null},
+        {"name": "Number of Visible People in a Queue", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/number-of-visible-people-in-a-queue/", "company_tags": null}
+      ]
+    }
+  ]
+}

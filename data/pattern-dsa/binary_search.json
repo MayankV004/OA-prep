@@ -1,0 +1,287 @@
+{
+  "pattern": "Binary Search",
+  "description": "Binary Search is an efficient algorithm for finding an item from a sorted list of items or a monotonic search space. It works by repeatedly dividing the search interval in half. If the value of the search key is less than the item in the middle of the interval, narrow the interval to the lower half. Otherwise, narrow it to the upper half.",
+  "important_details": [
+    "Precondition: The search space must be sorted or exhibit a monotonic property (a clear true/false boundary).",
+    "Time Complexity: O(log N), where N is the size of the search space.",
+    "Overflow Prevention: Calculate mid as `left + (right - left) / 2` instead of `(left + right) / 2` to prevent integer overflow.",
+    "Boundary Conditions: Choosing `left <= right` vs `left < right` and updating `left = mid + 1` vs `left = mid` is critical and depends on whether you are searching for an exact match or a boundary (lower/upper bound)."
+  ],
+  "other_relevant_details": "Binary search is not limited to searching in arrays. It can be applied to any function f(x) that is monotonic. If a problem asks to 'minimize the maximum' or 'maximize the minimum', it is often a binary search on the answer space.",
+  "variations": [
+    {
+      "variation": "Classic Binary Search",
+      "description": "The standard binary search to find an exact match of a target value in a sorted array.",
+      "important_details": [
+        "Loop condition is `left <= right` because the target might be at the exact `mid` index.",
+        "Return `mid` immediately when `nums[mid] == target`.",
+        "If target is greater, discard left half: `left = mid + 1`. If smaller, discard right half: `right = mid - 1`."
+      ],
+      "template_code": "public int search(int[] nums, int target) {\n    int left = 0, right = nums.length - 1;\n    while (left <= right) {\n        int mid = left + (right - left) / 2;\n        if (nums[mid] == target) return mid;\n        else if (nums[mid] < target) left = mid + 1;\n        else right = mid - 1;\n    }\n    return -1;\n}",
+      "other_relevant_details": "Time Complexity: O(log N). Space Complexity: O(1).",
+      "problems": [
+        {"name": "Binary Search", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/binary-search/", "priority": "MUST", "company_tags": null},
+        {"name": "Search Insert Position", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/search-insert-position/", "priority": "GOOD", "company_tags": null},
+        {"name": "Guess Number Higher or Lower", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/guess-number-higher-or-lower/", "priority": null, "company_tags": null},
+        {"name": "First Bad Version", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/first-bad-version/", "priority": "SKIP", "company_tags": null},
+        {"name": "Sqrt(x)", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/sqrtx/", "priority": "SKIP", "company_tags": null},
+        {"name": "Valid Perfect Square", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/valid-perfect-square/", "priority": null, "company_tags": null},
+        {"name": "Count Negative Numbers in a Sorted Matrix", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/count-negative-numbers-in-a-sorted-matrix/", "priority": null, "company_tags": null},
+        {"name": "Find Smallest Letter Greater Than Target", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/find-smallest-letter-greater-than-target/", "priority": null, "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Lower Bound / Upper Bound",
+      "description": "Finding the first element that is >= target (lower bound) or > target (upper bound). Used when target might not exist exactly or we need insertion points.",
+      "important_details": [
+        "Loop condition is `left < right` because we exit when the search space is narrowed to one element.",
+        "Do not return early when `nums[mid] == target`; keep searching left for the first occurrence (lower bound).",
+        "Update `right = mid` (not `mid - 1`) to avoid skipping the boundary element."
+      ],
+      "template_code": "public int lowerBound(int[] nums, int target) {\n    int left = 0, right = nums.length;\n    while (left < right) {\n        int mid = left + (right - left) / 2;\n        if (nums[mid] < target) left = mid + 1;\n        else right = mid;\n    }\n    return left;\n}",
+      "other_relevant_details": "Time Complexity: O(log N). Note the right initialization is `nums.length` (not `nums.length - 1`) to handle cases where the target is greater than all elements.",
+      "problems": [
+        {"name": "Find First and Last Position of Element in Sorted Array", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/find-first-and-last-position-of-element-in-sorted-array/", "priority": "MUST", "company_tags": null},
+        {"name": "Search Insert Position", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/search-insert-position/", "priority": null, "company_tags": null},
+        {"name": "Count of Range Sum", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/count-of-range-sum/", "priority": "SKIP", "company_tags": null},
+        {"name": "H-Index II", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/h-index-ii/", "priority": null, "company_tags": null},
+        {"name": "Kth Missing Positive Number", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/kth-missing-positive-number/", "priority": "GOOD", "company_tags": null},
+        {"name": "Find K Closest Elements", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/find-k-closest-elements/", "priority": null, "company_tags": null},
+        {"name": "Time Based Key-Value Store", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/time-based-key-value-store/", "priority": "GOOD", "company_tags": null},
+        {"name": "Random Pick with Weight", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/random-pick-with-weight/", "priority": null, "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Binary Search on Answer Space",
+      "description": "Applying binary search to a range of possible answers (e.g., 1 to 10^14) rather than an array. We check if a given answer `mid` is feasible.",
+      "important_details": [
+        "The search space must be monotonic (if `x` is possible, then any `y > x` is also possible, or vice versa).",
+        "Requires a helper function `isFeasible(mid)` that checks if a given answer satisfies the problem's constraints.",
+        "Find the transition point between impossible and possible answers."
+      ],
+      "template_code": "public int binarySearchAnswer(int low, int high) {\n    while (low < high) {\n        int mid = low + (high - low) / 2;\n        if (isFeasible(mid)) {\n            high = mid; // looking for minimum possible answer\n        } else {\n            low = mid + 1;\n        }\n    }\n    return low;\n}\n\nprivate boolean isFeasible(int capacity) {\n    // Implementation depends on the specific problem\n    return true;\n}",
+      "other_relevant_details": "Time Complexity: O(log(Range) * Complexity of isFeasible). Often combined with greedy algorithms inside the feasibility check.",
+      "problems": [
+        {"name": "Split Array Largest Sum", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/split-array-largest-sum/", "priority": "MUST", "company_tags": null},
+        {"name": "Capacity To Ship Packages Within D Days", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/capacity-to-ship-packages-within-d-days/", "priority": "MUST", "company_tags": null},
+        {"name": "Koko Eating Bananas", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/koko-eating-bananas/", "priority": "MUST", "company_tags": null},
+        {"name": "Minimize Max Distance to Gas Station", "difficulty": "Hard", "platform": "leetcode", "link": null, "priority": null, "company_tags": null},
+        {"name": "Allocate Books / Painter's Partition", "difficulty": "Hard", "platform": "gfg", "link": null, "priority": "GOOD", "company_tags": null},
+        {"name": "Magnetic Force Between Two Balls", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/magnetic-force-between-two-balls/", "priority": "MUST", "company_tags": null},
+        {"name": "Find the Smallest Divisor Given a Threshold", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/find-the-smallest-divisor-given-a-threshold/", "priority": null, "company_tags": null},
+        {"name": "Minimum Number of Days to Make m Bouquets", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/minimum-number-of-days-to-make-m-bouquets/", "priority": null, "company_tags": null},
+        {"name": "Aggressive Cows", "difficulty": "Medium", "platform": "spoj", "link": null, "priority": "GOOD", "company_tags": null},
+        {"name": "EKO - Lumberjack", "difficulty": "Medium", "platform": "spoj", "link": null, "priority": null, "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Binary Search on Rotated / Modified Array",
+      "description": "Searching in a sorted array that has been rotated or has a distinct peak (mountain). Requires identifying which half is sorted to make the next decision.",
+      "important_details": [
+        "At least one half of the array (left or right of `mid`) will always be strictly sorted.",
+        "First, check if the left half is sorted (`nums[left] <= nums[mid]`). If yes, check if the target lies within it; otherwise, search the right half.",
+        "If the right half is sorted, check if the target lies within it; otherwise, search the left half."
+      ],
+      "template_code": "public int search(int[] nums, int target) {\n    int left = 0, right = nums.length - 1;\n    while (left <= right) {\n        int mid = left + (right - left) / 2;\n        if (nums[mid] == target) return mid;\n        if (nums[left] <= nums[mid]) { // Left half is sorted\n            if (nums[left] <= target && target < nums[mid]) right = mid - 1;\n            else left = mid + 1;\n        } else { // Right half is sorted\n            if (nums[mid] < target && target <= nums[right]) left = mid + 1;\n            else right = mid - 1;\n        }\n    }\n    return -1;\n}",
+      "other_relevant_details": "Time Complexity: O(log N). For arrays with duplicates (e.g., Rotated Sorted Array II), worst-case becomes O(N) because `nums[left] == nums[mid] == nums[right]` forces linear scanning.",
+      "problems": [
+        {"name": "Search in Rotated Sorted Array", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/search-in-rotated-sorted-array/", "priority": "MUST", "company_tags": null},
+        {"name": "Search in Rotated Sorted Array II", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/search-in-rotated-sorted-array-ii/", "priority": null, "company_tags": null},
+        {"name": "Find Minimum in Rotated Sorted Array", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/find-minimum-in-rotated-sorted-array/", "priority": "GOOD", "company_tags": null},
+        {"name": "Find Minimum in Rotated Sorted Array II", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/find-minimum-in-rotated-sorted-array-ii/", "priority": null, "company_tags": null},
+        {"name": "Find Peak Element", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/find-peak-element/", "priority": "GOOD", "company_tags": null},
+        {"name": "Peak Index in a Mountain Array", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/peak-index-in-a-mountain-array/", "priority": null, "company_tags": null},
+        {"name": "Find in Mountain Array", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/find-in-mountain-array/", "priority": "GOOD", "company_tags": null},
+        {"name": "Count Rotations", "difficulty": "Easy", "platform": "gfg", "link": null, "priority": null, "company_tags": null},
+        {"name": "Single Element in a Sorted Array", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/single-element-in-a-sorted-array/", "priority": "MUST", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "2D Matrix Binary Search",
+      "description": "Searching in a 2D matrix where rows and columns are sorted, or the whole matrix can be treated as a 1D sorted array.",
+      "important_details": [
+        "If the matrix is strictly sorted (M[i][n-1] < M[i+1][0]), treat it as a 1D array using `mid / n` and `mid % n` for row and column mapping.",
+        "If rows and columns are independently sorted, start at the top-right corner. If target is greater, move down; if smaller, move left."
+      ],
+      "template_code": "public boolean searchMatrix(int[][] matrix, int target) {\n    int m = matrix.length, n = matrix[0].length;\n    int row = 0, col = n - 1; // Start top-right\n    while (row < m && col >= 0) {\n        if (matrix[row][col] == target) return true;\n        else if (matrix[row][col] > target) col--; // Move left\n        else row++; // Move down\n    }\n    return false;\n}",
+      "other_relevant_details": "Time Complexity: O(M + N) for step-wise search, O(log(M * N)) for 1D flattened search. Space: O(1).",
+      "problems": [
+        {"name": "Search a 2D Matrix", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/search-a-2d-matrix/", "priority": "SKIP", "company_tags": null},
+        {"name": "Search a 2D Matrix II", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/search-a-2d-matrix-ii/", "priority": null, "company_tags": null},
+        {"name": "Kth Smallest Element in a Sorted Matrix", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/kth-smallest-element-in-a-sorted-matrix/", "priority": "GOOD", "company_tags": null},
+        {"name": "Count Negative Numbers in a Sorted Matrix", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/count-negative-numbers-in-a-sorted-matrix/", "priority": null, "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Binary Search + Prefix Sum",
+      "description": "Combining binary search with prefix sums to answer range queries or subarray sum conditions efficiently.",
+      "important_details": [
+        "Prefix sum array `prefix[i]` stores sum of first `i` elements. Sum of subarray `[L, R]` is `prefix[R+1] - prefix[L]`.",
+        "Used to optimize sliding window or subarray sum checks to O(1) inside the binary search feasibility function."
+      ],
+      "template_code": "public int minSubArrayLen(int target, int[] nums) {\n    int n = nums.length;\n    int[] prefix = new int[n + 1];\n    for (int i = 0; i < n; i++) prefix[i + 1] = prefix[i] + nums[i];\n    \n    int left = 1, right = n, ans = 0;\n    while (left <= right) {\n        int mid = left + (right - left) / 2; // Length of subarray\n        boolean found = false;\n        for (int i = mid; i <= n; i++) {\n            if (prefix[i] - prefix[i - mid] >= target) found = true;\n        }\n        if (found) {\n            ans = mid;\n            right = mid - 1; // Try smaller length\n        } else {\n            left = mid + 1;\n        }\n    }\n    return ans;\n}",
+      "other_relevant_details": "Time Complexity: O(N log N). Used to optimize two-pointer problems where sliding window isn't directly applicable due to negative numbers.",
+      "problems": [
+        {"name": "Minimum Size Subarray Sum", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/minimum-size-subarray-sum/", "priority": "SKIP", "company_tags": null},
+        {"name": "Shortest Subarray with Sum at Least K", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/shortest-subarray-with-sum-at-least-k/", "priority": null, "company_tags": null},
+        {"name": "Count of Range Sum", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/count-of-range-sum/", "priority": "SKIP", "company_tags": null},
+        {"name": "Random Pick with Weight", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/random-pick-with-weight/", "priority": null, "company_tags": null},
+        {"name": "Find Pivot Index", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/find-pivot-index/", "priority": null, "company_tags": null},
+        {"name": "Subarray Sum Equals K", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/subarray-sum-equals-k/", "priority": null, "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Binary Search + Greedy (Feasibility Check)",
+      "description": "Using a greedy approach to verify if a specific answer `mid` (e.g., minimum capacity, maximum distance) is feasible.",
+      "important_details": [
+        "The feasibility function simulates the process with the given constraint `mid`.",
+        "If feasible, we try to optimize (minimize or maximize the answer) by adjusting the binary search bounds.",
+        "Greedy checks often involve iterating through the array and accumulating counts/sums."
+      ],
+      "template_code": "// e.g., Capacity To Ship Packages Within D Days\npublic int shipWithinDays(int[] weights, int days) {\n    int low = 0, high = 0;\n    for (int w : weights) {\n        low = Math.max(low, w);\n        high += w;\n    }\n    while (low < high) {\n        int mid = low + (high - low) / 2;\n        if (canShip(weights, days, mid)) {\n            high = mid;\n        } else {\n            low = mid + 1;\n        }\n    }\n    return low;\n}\n\nprivate boolean canShip(int[] w, int days, int cap) {\n    int currentLoad = 0, requiredDays = 1;\n    for (int weight : w) {\n        if (currentLoad + weight > cap) {\n            requiredDays++;\n            currentLoad = 0;\n        }\n        currentLoad += weight;\n    }\n    return requiredDays <= days;\n}",
+      "other_relevant_details": "Time Complexity: O(N log(Sum - Max)). Very common in OA and placement tests.",
+      "problems": [
+        {"name": "Capacity To Ship Packages Within D Days", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/capacity-to-ship-packages-within-d-days/", "priority": null, "company_tags": null},
+        {"name": "Koko Eating Bananas", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/koko-eating-bananas/", "priority": null, "company_tags": null},
+        {"name": "Allocate Books / Painter's Partition", "difficulty": "Hard", "platform": "gfg", "link": null, "priority": null, "company_tags": null},
+        {"name": "Aggressive Cows", "difficulty": "Medium", "platform": "spoj", "link": null, "priority": null, "company_tags": null},
+        {"name": "Minimum Time to Complete Trips", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/minimum-time-to-complete-trips/", "priority": "GOOD", "company_tags": null},
+        {"name": "Maximum Candies Allocated to K Children", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-candies-allocated-to-k-children/", "priority": null, "company_tags": null},
+        {"name": "Minimized Maximum of Products Distributed to Any Store", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/minimized-maximum-of-products-distributed-to-any-store/", "priority": null, "company_tags": null},
+        {"name": "Find the Minimum and Maximum Number of Nodes Between Critical Points", "difficulty": "Easy", "platform": "leetcode", "link": null, "priority": null, "company_tags": null},
+        {"name": "Minimum Speed to Arrive on Time", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/minimum-speed-to-arrive-on-time/", "priority": null, "company_tags": null},
+        {"name": "EKO - Lumberjack", "difficulty": "Medium", "platform": "spoj", "link": null, "priority": null, "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Binary Search + Two Pointers",
+      "description": "Using binary search on the answer while a two-pointer approach validates the feasibility. Often used to find K-th smallest pairs or sums.",
+      "important_details": [
+        "Binary search defines a target sum/distance.",
+        "Two pointers count how many pairs have a sum/distance <= target.",
+        "If count < K, increase binary search `low`; else decrease `high`."
+      ],
+      "template_code": "// Find K-th Smallest Pair Distance\npublic int smallestDistancePair(int[] nums, int k) {\n    Arrays.sort(nums);\n    int low = 0, high = nums[nums.length - 1] - nums[0];\n    while (low < high) {\n        int mid = low + (high - low) / 2;\n        int count = 0, left = 0;\n        for (int right = 0; right < nums.length; right++) {\n            while (nums[right] - nums[left] > mid) left++;\n            count += right - left;\n        }\n        if (count < k) low = mid + 1;\n        else high = mid;\n    }\n    return low;\n}",
+      "other_relevant_details": "Time Complexity: O(N log N + N log W) where W is the max distance. Combines sorting, BS, and Sliding Window.",
+      "problems": [
+        {"name": "Find K-th Smallest Pair Distance", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/find-k-th-smallest-pair-distance/", "priority": "MUST", "company_tags": null},
+        {"name": "Kth Smallest Number in Multiplication Table", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/kth-smallest-number-in-multiplication-table/", "priority": "SKIP", "company_tags": null},
+        {"name": "K-th Smallest Prime Fraction", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/k-th-smallest-prime-fraction/", "priority": null, "company_tags": null},
+        {"name": "Kth Largest Element in an Array", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/kth-largest-element-in-an-array/", "priority": null, "company_tags": null},
+        {"name": "Closest Subsequence Sum", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/closest-subsequence-sum/", "priority": null, "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Binary Search + BIT / Segment Tree",
+      "description": "Using binary search over a sorted array or coordinate-compressed values, with a BIT or Segment Tree to dynamically maintain frequencies or counts of elements seen so far.",
+      "important_details": [
+        "Often used for inversion counts or finding smaller elements after self.",
+        "Coordinate compression is usually required because values can be large, while BIT requires O(N) space.",
+        "Iterate from right to left. Query BIT for count of elements < current element. Update BIT with the current element."
+      ],
+      "template_code": "// Count of Smaller Numbers After Self (Concept)\n// Requires BIT implementation\npublic List<Integer> countSmaller(int[] nums) {\n    // 1. Coordinate compress nums\n    // 2. Iterate from right to left\n    // 3. BIT query(idx - 1) gives count of smaller elements\n    // 4. BIT update(idx, 1)\n    return new ArrayList<>();\n}",
+      "other_relevant_details": "Time Complexity: O(N log N). Segment Trees can also be used for range queries if dynamic updates are needed.",
+      "problems": [
+        {"name": "Count of Smaller Numbers After Self", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/count-of-smaller-numbers-after-self/", "priority": "MUST", "company_tags": null},
+        {"name": "Count Inversions", "difficulty": "Medium", "platform": "gfg", "link": null, "priority": "GOOD", "company_tags": null},
+        {"name": "Reverse Pairs", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/reverse-pairs/", "priority": "SKIP", "company_tags": null},
+        {"name": "Create Sorted Array through Instructions", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/create-sorted-array-through-instructions/", "priority": null, "company_tags": null},
+        {"name": "Global and Local Inversions", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/global-and-local-inversions/", "priority": null, "company_tags": null},
+        {"name": "Kth Smallest in Range Query", "difficulty": "Hard", "platform": "competitive", "link": null, "priority": null, "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Binary Search + Heap",
+      "description": "Using a min-heap or max-heap to find the K-th smallest/largest element among multiple sorted arrays or lists.",
+      "important_details": [
+        "Push the first element of each sorted list into a min-heap.",
+        "Pop the minimum element and push the next element from the same list.",
+        "Repeat K times. The K-th popped element is the answer."
+      ],
+      "template_code": "public int kthSmallest(int[][] matrix, int k) {\n    int n = matrix.length;\n    PriorityQueue<int[]> minHeap = new PriorityQueue<>((a, b) -> a[0] - b[0]);\n    for (int i = 0; i < Math.min(n, k); i++) {\n        minHeap.offer(new int[]{matrix[i][0], i, 0});\n    }\n    while (--k > 0) {\n        int[] curr = minHeap.poll();\n        if (curr[2] + 1 < n) {\n            minHeap.offer(new int[]{matrix[curr[1]][curr[2] + 1], curr[1], curr[2] + 1});\n        }\n    }\n    return minHeap.poll()[0];\n}",
+      "other_relevant_details": "Time Complexity: O(K log N). Alternative to BS on Answer Space which takes O(N log(Range)).",
+      "problems": [
+        {"name": "Kth Smallest Element in a Sorted Matrix", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/kth-smallest-element-in-a-sorted-matrix/", "priority": "GOOD", "company_tags": null},
+        {"name": "Find K Pairs with Smallest Sums", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/find-k-pairs-with-smallest-sums/", "priority": "SKIP", "company_tags": null},
+        {"name": "Kth Smallest Number in Multiplication Table", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/kth-smallest-number-in-multiplication-table/", "priority": null, "company_tags": null},
+        {"name": "Median of Two Sorted Arrays", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/median-of-two-sorted-arrays/", "priority": "MUST", "company_tags": null},
+        {"name": "K-th Smallest Prime Fraction", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/k-th-smallest-prime-fraction/", "priority": null, "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Binary Search + Graph / BFS",
+      "description": "Finding a path in a graph where a certain parameter (e.g., maximum edge weight, minimum effort) is minimized. Binary search defines the threshold, and BFS checks connectivity.",
+      "important_details": [
+        "Binary search on the possible range of weights/efforts.",
+        "BFS/DFS is used to check if the destination is reachable using only edges with weight <= mid.",
+        "If reachable, try to minimize the threshold; else increase it."
+      ],
+      "template_code": "public int minimumEffortPath(int[][] heights) {\n    int left = 0, right = 1000000;\n    while (left < right) {\n        int mid = left + (right - left) / 2;\n        if (canReach(heights, mid)) {\n            right = mid;\n        } else {\n            left = mid + 1;\n        }\n    }\n    return left;\n}\n\nprivate boolean canReach(int[][] h, int maxEffort) {\n    // BFS implementation checking if abs diff <= maxEffort\n    return true;\n}",
+      "other_relevant_details": "Time Complexity: O(M * N * log(Max Weight)). Alternative is Dijkstra's algorithm.",
+      "problems": [
+        {"name": "Path With Minimum Effort", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/path-with-minimum-effort/", "priority": "GOOD", "company_tags": null},
+        {"name": "Swim in Rising Water", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/swim-in-rising-water/", "priority": "SKIP", "company_tags": null},
+        {"name": "Minimum Obstacle Removal to Reach Corner", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/minimum-obstacle-removal-to-reach-corner/", "priority": null, "company_tags": null},
+        {"name": "Find the City With the Smallest Number of Neighbors at a Threshold Distance", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/find-the-city-with-the-smallest-number-of-neighbors-at-a-threshold-distance/", "priority": null, "company_tags": null},
+        {"name": "Minimum Weight in Path of K Edges", "difficulty": "Hard", "platform": "competitive", "link": null, "priority": null, "company_tags": null},
+        {"name": "Maximum Width Road", "difficulty": "Medium", "platform": "competitive", "link": null, "priority": null, "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Binary Search + DP (LIS Family)",
+      "description": "Optimizing Longest Increasing Subsequence (LIS) from O(N^2) to O(N log N) using binary search.",
+      "important_details": [
+        "Maintain an array `tails` where `tails[i]` stores the smallest tail of all increasing subsequences of length `i+1`.",
+        "For each element, use binary search to find its position in `tails`.",
+        "If it's larger than all elements, append it. Otherwise, replace the first element that is >= to it."
+      ],
+      "template_code": "public int lengthOfLIS(int[] nums) {\n    int[] tails = new int[nums.length];\n    int size = 0;\n    for (int x : nums) {\n        int i = 0, j = size;\n        while (i != j) {\n            int m = i + (j - i) / 2;\n            if (tails[m] < x) i = m + 1;\n            else j = m;\n        }\n        tails[i] = x;\n        if (i == size) ++size;\n    }\n    return size;\n}",
+      "other_relevant_details": "Time Complexity: O(N log N). Space: O(N). This does not directly reconstruct the sequence but only gives the length.",
+      "problems": [
+        {"name": "Longest Increasing Subsequence", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/longest-increasing-subsequence/", "priority": "MUST", "company_tags": null},
+        {"name": "Number of Longest Increasing Subsequence", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/number-of-longest-increasing-subsequence/", "priority": null, "company_tags": null},
+        {"name": "Russian Doll Envelopes", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/russian-doll-envelopes/", "priority": "GOOD", "company_tags": null},
+        {"name": "Longest Arithmetic Subsequence of Given Difference", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/longest-arithmetic-subsequence-of-given-difference/", "priority": null, "company_tags": null},
+        {"name": "Make Array Strictly Increasing", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/make-array-strictly-increasing/", "priority": null, "company_tags": null},
+        {"name": "Minimum Number of Removals to Make Mountain Array", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/minimum-number-of-removals-to-make-mountain-array/", "priority": null, "company_tags": null},
+        {"name": "Largest Divisible Subset", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/largest-divisible-subset/", "priority": null, "company_tags": null},
+        {"name": "Maximum Length of Pair Chain", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-length-of-pair-chain/", "priority": null, "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Binary Search + Trie (XOR Maximization)",
+      "description": "Finding the maximum XOR of two numbers in an array by inserting elements into a Trie bit by bit and querying the opposite bit for maximization.",
+      "important_details": [
+        "Insert binary representation of numbers (up to 32 bits) into a Trie.",
+        "For each number, traverse the Trie greedily choosing the opposite bit (1 if current bit is 0, else 0) to maximize XOR.",
+        "If the opposite bit doesn't exist, follow the same bit."
+      ],
+      "template_code": "// Concept: Insert into Trie, then query max XOR\n// Requires TrieNode class with children[2]\npublic int findMaximumXOR(int[] nums) {\n    // Build Trie and query\n    return 0;\n}",
+      "other_relevant_details": "Time Complexity: O(N * 32). Space: O(N * 32).",
+      "problems": [
+        {"name": "Maximum XOR of Two Numbers in an Array", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-xor-of-two-numbers-in-an-array/", "priority": "SKIP", "company_tags": null},
+        {"name": "Maximum XOR With an Element From Array", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-xor-with-an-element-from-array/", "priority": "SKIP", "company_tags": null},
+        {"name": "Maximum XOR After Operations", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-xor-after-operations/", "priority": null, "company_tags": null},
+        {"name": "Sum of XOR of All Pairs", "difficulty": "Medium", "platform": "gfg", "link": null, "priority": null, "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Binary Search + DSU (Kruskal's / Connectivity)",
+      "description": "Using binary search to find the maximum/minimum edge weight in a graph such that certain connectivity criteria (e.g., MST weight, number of components) are met.",
+      "important_details": [
+        "Sort edges by weight.",
+        "Binary search on the edge weight threshold.",
+        "Use DSU to union edges <= threshold and check if components are connected or count is correct."
+      ],
+      "template_code": "public int minCostConnectPoints(int[][] points) {\n    // 1. Create all edges and sort them\n    // 2. Binary search on max edge weight allowed\n    // 3. Use DSU to check if graph is connected with that weight constraint\n    return 0;\n}",
+      "other_relevant_details": "Time Complexity: O(E log E). Usually standard Kruskal's is sufficient, but BS+DSU helps when looking for a specific threshold.",
+      "problems": [
+        {"name": "Find Critical and Pseudo-Critical Edges in Minimum Spanning Tree", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/find-critical-and-pseudo-critical-edges-in-minimum-spanning-tree/", "priority": null, "company_tags": null},
+        {"name": "Min Cost to Connect All Points", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/min-cost-to-connect-all-points/", "priority": "SKIP", "company_tags": null},
+        {"name": "Number of Components After Removing Edges", "difficulty": "Medium", "platform": "competitive", "link": null, "priority": null, "company_tags": null},
+        {"name": "Connecting Cities With Minimum Cost", "difficulty": "Medium", "platform": "leetcode", "link": null, "priority": null, "company_tags": null},
+        {"name": "Maximum Component Size by Common Factor", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/largest-component-size-by-common-factor/", "priority": null, "company_tags": null}
+      ]
+    }
+  ]
+}

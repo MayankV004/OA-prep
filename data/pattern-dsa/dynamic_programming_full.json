@@ -1,0 +1,335 @@
+{
+  "pattern": "Dynamic Programming",
+  "description": "Dynamic Programming (DP) is an algorithmic paradigm that solves a given complex problem by breaking it down into simpler subproblems and storing the results of these subproblems to avoid computing the same results again. It is primarily used when the problem exhibits overlapping subproblems and optimal substructure.",
+  "important_details": [
+    "Overlapping Subproblems: The same subproblems are solved multiple times.",
+    "Optimal Substructure: The optimal solution to the main problem can be constructed from optimal solutions of its subproblems.",
+    "Two main approaches: Top-Down (Memoization - recursion + caching) and Bottom-Up (Tabulation - iterative loop filling a table)."
+  ],
+  "other_relevant_details": "To identify a DP problem, look for keywords like 'maximum', 'minimum', 'number of ways', 'is it possible', or optimization tasks. The hardest part is usually defining the 'state' (what variables uniquely identify a subproblem) and writing the 'transition equation' (how one state relates to another).",
+  "variations": [
+    {
+      "variation": "Linear / 1D DP",
+      "description": "DP where the state depends only on a single linear index or a fixed window of previous states (e.g., dp[i] depends on dp[i-1], dp[i-2]).",
+      "important_details": [
+        "State transition usually looks backward by a fixed number of steps (1, 2, or k).",
+        "Highly optimizable to O(1) space using 2-3 variables instead of an entire array."
+      ],
+      "template_code": "public int linearDp(int n, int[] arr) {\n    if (n == 0) return 0;\n    if (n == 1) return arr[0];\n    int[] dp = new int[n];\n    dp[0] = arr[0];\n    dp[1] = Math.max(arr[0], arr[1]);\n    for (int i = 2; i < n; i++) {\n        dp[i] = Math.max(dp[i - 1], dp[i - 2] + arr[i]);\n    }\n    return dp[n - 1];\n}",
+      "other_relevant_details": "Time Complexity: O(N). Space Complexity: O(N) -> O(1) optimized.",
+      "problems": [
+        {"name": "Climbing Stairs", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/climbing-stairs/", "company_tags": null},
+        {"name": "House Robber", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/house-robber/", "company_tags": null},
+        {"name": "House Robber II", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/house-robber-ii/", "company_tags": null},
+        {"name": "Maximum Subarray", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-subarray/", "company_tags": null},
+        {"name": "Jump Game", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/jump-game/", "company_tags": null},
+        {"name": "Jump Game II", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/jump-game-ii/", "company_tags": null},
+        {"name": "Decode Ways", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/decode-ways/", "company_tags": null},
+        {"name": "Min Cost Climbing Stairs", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/min-cost-climbing-stairs/", "company_tags": null},
+        {"name": "Fibonacci Number", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/fibonacci-number/", "company_tags": null},
+        {"name": "Maximum Product Subarray", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-product-subarray/", "company_tags": null},
+        {"name": "Longest Turbulent Subarray", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/longest-turbulent-subarray/", "company_tags": null},
+        {"name": "Delete and Earn", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/delete-and-earn/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Knapsack DP",
+      "description": "Problems involving selecting items to maximize profit or achieve a target sum given weight/cost constraints. Includes 0/1 Knapsack (pick at most once) and Unbounded Knapsack (pick multiple times).",
+      "important_details": [
+        "State: dp[i][w] represents the max value using the first 'i' items with capacity 'w'.",
+        "0/1 Knapsack Transition: dp[i][w] = max(dp[i-1][w], val[i-1] + dp[i-1][w-wt[i-1]])",
+        "Space optimization requires iterating the capacity loop BACKWARDS for 0/1 Knapsack, and FORWARDS for Unbounded Knapsack."
+      ],
+      "template_code": "public int knapsack01(int n, int W, int[] weights, int[] values) {\n    int[] dp = new int[W + 1];\n    for (int i = 0; i < n; i++) {\n        for (int w = W; w >= weights[i]; w--) {\n            dp[w] = Math.max(dp[w], values[i] + dp[w - weights[i]]);\n        }\n    }\n    return dp[W];\n}",
+      "other_relevant_details": "Time Complexity: O(N * W). Space Complexity: O(W).",
+      "problems": [
+        {"name": "0/1 Knapsack", "difficulty": "Medium", "platform": "gfg", "link": null, "company_tags": null},
+        {"name": "Subset Sum", "difficulty": "Medium", "platform": "gfg", "link": null, "company_tags": null},
+        {"name": "Partition Equal Subset Sum", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/partition-equal-subset-sum/", "company_tags": null},
+        {"name": "Coin Change", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/coin-change/", "company_tags": null},
+        {"name": "Coin Change II", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/coin-change-ii/", "company_tags": null},
+        {"name": "Target Sum", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/target-sum/", "company_tags": null},
+        {"name": "Last Stone Weight II", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/last-stone-weight-ii/", "company_tags": null},
+        {"name": "Ones and Zeroes", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/ones-and-zeroes/", "company_tags": null},
+        {"name": "Combination Sum IV", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/combination-sum-iv/", "company_tags": null},
+        {"name": "Perfect Squares", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/perfect-squares/", "company_tags": null},
+        {"name": "Profitable Schemes", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/profitable-schemes/", "company_tags": null},
+        {"name": "Number of Ways to Fill Knapsack", "difficulty": "Hard", "platform": "leetcode", "link": null, "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Subsequence DP (LCS, LIS, Edit Distance)",
+      "description": "DP applied to strings or arrays to find relationships like Longest Common Subsequence (LCS), Longest Increasing Subsequence (LIS), or minimum edits to transform one string to another.",
+      "important_details": [
+        "State: dp[i][j] represents the solution for string1[0..i-1] and string2[0..j-1].",
+        "LCS Transition: If match, dp[i][j] = 1 + dp[i-1][j-1]; else dp[i][j] = max(dp[i-1][j], dp[i][j-1]).",
+        "LIS can be solved in O(N log N) using Binary Search (Patience Sorting) instead of O(N^2) DP."
+      ],
+      "template_code": "public int longestCommonSubsequence(String text1, String text2) {\n    int m = text1.length(), n = text2.length();\n    int[][] dp = new int[m + 1][n + 1];\n    for (int i = 1; i <= m; i++) {\n        for (int j = 1; j <= n; j++) {\n            if (text1.charAt(i - 1) == text2.charAt(j - 1)) {\n                dp[i][j] = 1 + dp[i - 1][j - 1];\n            } else {\n                dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);\n            }\n        }\n    }\n    return dp[m][n];\n}",
+      "other_relevant_details": "Time Complexity: O(M * N). Often requires backtracking the DP table to reconstruct the actual string/subsequence.",
+      "problems": [
+        {"name": "Longest Common Subsequence", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/longest-common-subsequence/", "company_tags": null},
+        {"name": "Edit Distance", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/edit-distance/", "company_tags": null},
+        {"name": "Longest Increasing Subsequence", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/longest-increasing-subsequence/", "company_tags": null},
+        {"name": "Russian Doll Envelopes", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/russian-doll-envelopes/", "company_tags": null},
+        {"name": "Distinct Subsequences", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/distinct-subsequences/", "company_tags": null},
+        {"name": "Shortest Common Supersequence", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/shortest-common-supersequence/", "company_tags": null},
+        {"name": "Longest Palindromic Subsequence", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/longest-palindromic-subsequence/", "company_tags": null},
+        {"name": "Minimum Deletions to Make Palindrome", "difficulty": "Medium", "platform": "leetcode", "link": null, "company_tags": null},
+        {"name": "Interleaving String", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/interleaving-string/", "company_tags": null},
+        {"name": "Wildcard Matching", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/wildcard-matching/", "company_tags": null},
+        {"name": "Regular Expression Matching", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/regular-expression-matching/", "company_tags": null},
+        {"name": "Uncrossed Lines", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/uncrossed-lines/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Interval / Range DP",
+      "description": "Used when a problem asks for the optimal way to merge, partition, or process a contiguous sequence of elements. The state represents a range [i, j].",
+      "important_details": [
+        "State: dp[i][j] represents the optimal cost/value for the interval from index i to j.",
+        "Transition: Iterate a split point 'k' between i and j. dp[i][j] = min/max(dp[i][k] + dp[k+1][j] + cost(i, j, k)).",
+        "Iteration order: Gap/Length based. You must solve all smaller intervals of length L before solving intervals of length L+1."
+      ],
+      "template_code": "public int intervalDp(int n, int[][] cost) {\n    int[][] dp = new int[n][n];\n    for (int length = 2; length <= n; length++) {\n        for (int i = 0; i <= n - length; i++) {\n            int j = i + length - 1;\n            dp[i][j] = Integer.MAX_VALUE;\n            for (int k = i; k < j; k++) {\n                dp[i][j] = Math.min(dp[i][j], dp[i][k] + dp[k + 1][j] + cost[i][j]);\n            }\n        }\n    }\n    return dp[0][n - 1];\n}",
+      "other_relevant_details": "Time Complexity: O(N^3). Space Complexity: O(N^2). Common in Matrix Chain Multiplication and Burst Balloons.",
+      "problems": [
+        {"name": "Matrix Chain Multiplication", "difficulty": "Hard", "platform": "gfg", "link": null, "company_tags": null},
+        {"name": "Burst Balloons", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/burst-balloons/", "company_tags": null},
+        {"name": "Strange Printer", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/strange-printer/", "company_tags": null},
+        {"name": "Palindrome Partitioning II", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/palindrome-partitioning-ii/", "company_tags": null},
+        {"name": "Minimum Cost to Merge Stones", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/minimum-cost-to-merge-stones/", "company_tags": null},
+        {"name": "Optimal BST", "difficulty": "Hard", "platform": "gfg", "link": null, "company_tags": null},
+        {"name": "Remove Boxes", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/remove-boxes/", "company_tags": null},
+        {"name": "Zuma Game", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/zuma-game/", "company_tags": null},
+        {"name": "Largest Rectangle after Partition", "difficulty": "Hard", "platform": "gfg", "link": null, "company_tags": null},
+        {"name": "Predict the Winner", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/predict-the-winner/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Grid / 2D DP",
+      "description": "DP applied to 2D grids where the state depends on adjacent cells (usually top, left, or diagonal). Used for pathfinding or counting ways in a matrix.",
+      "important_details": [
+        "State: dp[i][j] represents the optimal path or number of ways to reach cell (i, j).",
+        "Transition: dp[i][j] = derived from dp[i-1][j] and dp[i][j-1] for standard right/down traversal.",
+        "Obstacles or specific cell values modify the transition logic."
+      ],
+      "template_code": "public int gridPaths(int m, int n, int[][] grid) {\n    int[][] dp = new int[m][n];\n    dp[0][0] = grid[0][0] == 0 ? 1 : 0;\n    for (int i = 0; i < m; i++) {\n        for (int j = 0; j < n; j++) {\n            if (grid[i][j] == 0) {\n                if (i > 0) dp[i][j] += dp[i - 1][j];\n                if (j > 0) dp[i][j] += dp[i][j - 1];\n            }\n        }\n    }\n    return dp[m - 1][n - 1];\n}",
+      "other_relevant_details": "Time Complexity: O(M * N). Space Complexity: O(M * N) -> O(N) optimized using 1D array.",
+      "problems": [
+        {"name": "Unique Paths", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/unique-paths/", "company_tags": null},
+        {"name": "Unique Paths II", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/unique-paths-ii/", "company_tags": null},
+        {"name": "Minimum Path Sum", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/minimum-path-sum/", "company_tags": null},
+        {"name": "Triangle", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/triangle/", "company_tags": null},
+        {"name": "Dungeon Game", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/dungeon-game/", "company_tags": null},
+        {"name": "Cherry Pickup", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/cherry-pickup/", "company_tags": null},
+        {"name": "Cherry Pickup II", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/cherry-pickup-ii/", "company_tags": null},
+        {"name": "Maximal Square", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/maximal-square/", "company_tags": null},
+        {"name": "Count Square Submatrices with All Ones", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/count-square-submatrices-with-all-ones/", "company_tags": null},
+        {"name": "Minimum Falling Path Sum", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/minimum-falling-path-sum/", "company_tags": null},
+        {"name": "Out of Boundary Paths", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/out-of-boundary-paths/", "company_tags": null},
+        {"name": "Number of Paths with Max Score", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/number-of-paths-with-max-score/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Multi-State DP (Stock Problems)",
+      "description": "DP where a state machine is used to track multiple conditions simultaneously (e.g., holding a stock, not holding a stock, cooldown period).",
+      "important_details": [
+        "Define explicit states: e.g., State 0 (Hold), State 1 (Sold/Not Hold), State 2 (Cooldown).",
+        "Transitions map how you move from one state to another based on actions (buy, sell, rest).",
+        "Highly space-optimizable to O(1) by keeping only previous day's states."
+      ],
+      "template_code": "public int maxProfit(int[] prices) {\n    if (prices == null || prices.length == 0) return 0;\n    int hold = Integer.MIN_VALUE, sold = 0, rest = 0;\n    for (int p : prices) {\n        int prevHold = hold, prevSold = sold, prevRest = rest;\n        hold = Math.max(prevHold, prevRest - p);\n        rest = Math.max(prevRest, prevSold);\n        sold = prevHold + p;\n    }\n    return Math.max(sold, rest);\n}",
+      "other_relevant_details": "Time Complexity: O(N). Space Complexity: O(1). Always draw the state diagram first.",
+      "problems": [
+        {"name": "Best Time to Buy and Sell Stock", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/best-time-to-buy-and-sell-stock/", "company_tags": null},
+        {"name": "Best Time to Buy and Sell Stock II", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/best-time-to-buy-and-sell-stock-ii/", "company_tags": null},
+        {"name": "Best Time to Buy and Sell Stock III", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/best-time-to-buy-and-sell-stock-iii/", "company_tags": null},
+        {"name": "Best Time to Buy and Sell Stock IV", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/best-time-to-buy-and-sell-stock-iv/", "company_tags": null},
+        {"name": "Best Time to Buy and Sell Stock with Cooldown", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/best-time-to-buy-and-sell-stock-with-cooldown/", "company_tags": null},
+        {"name": "Best Time to Buy and Sell Stock with Transaction Fee", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/best-time-to-buy-and-sell-stock-with-transaction-fee/", "company_tags": null},
+        {"name": "Buy and Sell Stock (with k transactions and fee)", "difficulty": "Hard", "platform": "leetcode", "link": null, "company_tags": null},
+        {"name": "Paint House", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/paint-house/", "company_tags": null},
+        {"name": "Paint House II", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/paint-house-ii/", "company_tags": null},
+        {"name": "Paint Fence", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/paint-fence/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "DP on Trees",
+      "description": "Applying DP to tree structures where the state at a node depends on the states of its children. Usually implemented via Post-order DFS.",
+      "important_details": [
+        "State: Typically returns an array/tuple of (include_node, exclude_node) or (max_path_through_node, max_path_anywhere).",
+        "Post-order traversal is mandatory: solve subproblems (left/right subtrees) before the current node.",
+        "Watch out for recursion depth limits; may require increasing stack size in JVM for extremely deep trees."
+      ],
+      "template_code": "private int maxDiameter = 0;\n\npublic int diameterOfBinaryTree(TreeNode root) {\n    dfs(root);\n    return maxDiameter;\n}\n\nprivate int dfs(TreeNode node) {\n    if (node == null) return 0;\n    int left = dfs(node.left);\n    int right = dfs(node.right);\n    maxDiameter = Math.max(maxDiameter, left + right);\n    return Math.max(left, right) + 1;\n}",
+      "other_relevant_details": "Time Complexity: O(N). Space Complexity: O(H) where H is tree height (recursion stack).",
+      "problems": [
+        {"name": "Diameter of Binary Tree", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/diameter-of-binary-tree/", "company_tags": null},
+        {"name": "Binary Tree Maximum Path Sum", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/binary-tree-maximum-path-sum/", "company_tags": null},
+        {"name": "House Robber III", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/house-robber-iii/", "company_tags": null},
+        {"name": "Maximum Product of Splitted Binary Tree", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-product-of-splitted-binary-tree/", "company_tags": null},
+        {"name": "Sum of Distances in Tree", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/sum-of-distances-in-tree/", "company_tags": null},
+        {"name": "Distribute Coins in Binary Tree", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/distribute-coins-in-binary-tree/", "company_tags": null},
+        {"name": "Count Good Nodes in Binary Tree", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/count-good-nodes-in-binary-tree/", "company_tags": null},
+        {"name": "Longest ZigZag Path in a Binary Tree", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/longest-zigzag-path-in-a-binary-tree/", "company_tags": null},
+        {"name": "Maximum Sum BST in Binary Tree", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-sum-bst-in-binary-tree/", "company_tags": null},
+        {"name": "All Nodes Distance K in Binary Tree", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/all-nodes-distance-k-in-binary-tree/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Bitmask DP",
+      "description": "DP used when the state involves subsets of a small collection of items (usually N <= 20). A bitmask integer represents which items are used/visited.",
+      "important_details": [
+        "State: dp[mask] where 'mask' is an integer whose bits represent included items (e.g., 1011 means items 0, 1, 3 are used).",
+        "Transition: Iterate over unset bits: new_mask = mask | (1 << i).",
+        "Only feasible for N <= 20 because space and time scale as 2^N."
+      ],
+      "template_code": "public int tsp(int[][] dist, int n) {\n    int[][] dp = new int[1 << n][n];\n    for (int[] row : dp) Arrays.fill(row, Integer.MAX_VALUE / 2);\n    dp[1][0] = 0;\n    for (int mask = 1; mask < (1 << n); mask++) {\n        for (int u = 0; u < n; u++) {\n            if ((mask & (1 << u)) != 0) {\n                for (int v = 0; v < n; v++) {\n                    if ((mask & (1 << v)) == 0) {\n                        dp[mask | (1 << v)][v] = Math.min(dp[mask | (1 << v)][v], dp[mask][u] + dist[u][v]);\n                    }\n                }\n            }\n        }\n    }\n    int ans = Integer.MAX_VALUE;\n    for (int i = 1; i < n; i++) {\n        ans = Math.min(ans, dp[(1 << n) - 1][i] + dist[i][0]);\n    }\n    return ans;\n}",
+      "other_relevant_details": "Time Complexity: O(2^N * N^2). Space Complexity: O(2^N * N).",
+      "problems": [
+        {"name": "Travelling Salesman Problem", "difficulty": "Hard", "platform": "gfg", "link": null, "company_tags": null},
+        {"name": "Shortest Path Visiting All Nodes", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/shortest-path-visiting-all-nodes/", "company_tags": null},
+        {"name": "Minimum XOR Sum of Two Arrays", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/minimum-xor-sum-of-two-arrays/", "company_tags": null},
+        {"name": "Partition to K Equal Sum Subsets", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/partition-to-k-equal-sum-subsets/", "company_tags": null},
+        {"name": "Maximum Students Taking Exam", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-students-taking-exam/", "company_tags": null},
+        {"name": "Number of Ways to Wear Different Hats to Each Other", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/number-of-ways-to-wear-different-hats-to-each-other/", "company_tags": null},
+        {"name": "Minimum Cost to Connect Two Groups of Points", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/minimum-cost-to-connect-two-groups-of-points/", "company_tags": null},
+        {"name": "Count Ways to Build Rooms in an Ant Colony", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/count-ways-to-build-rooms-in-an-ant-colony/", "company_tags": null},
+        {"name": "Stickers to Spell Word", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/stickers-to-spell-word/", "company_tags": null},
+        {"name": "Smallest Sufficient Team", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/smallest-sufficient-team/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Digit DP",
+      "description": "Technique to count numbers in a range [L, R] that satisfy a specific property. It builds numbers digit by digit from left to right.",
+      "important_details": [
+        "State: dp(pos, tight, leading_zero, state_properties).",
+        "tight: Boolean indicating if the prefix matches the upper bound exactly.",
+        "leading_zero: Boolean to handle cases where leading zeros shouldn't count as digits.",
+        "Answer for [L, R] is computed as solve(R) - solve(L-1)."
+      ],
+      "template_code": "public int countNumbers(String upperBoundStr) {\n    int n = upperBoundStr.length();\n    Integer[][][] memo = new Integer[n][2][2];\n    return digitDp(0, 1, 1, upperBoundStr, memo);\n}\n\nprivate int digitDp(int pos, int tight, int leadingZero, String s, Integer[][][] memo) {\n    if (pos == s.length()) {\n        return leadingZero == 1 ? 0 : 1;\n    }\n    if (memo[pos][tight][leadingZero] != null) return memo[pos][tight][leadingZero];\n\n    int limit = tight == 1 ? s.charAt(pos) - '0' : 9;\n    int ans = 0;\n    for (int d = 0; d <= limit; d++) {\n        int nextTight = (tight == 1 && d == limit) ? 1 : 0;\n        int nextLeadingZero = (leadingZero == 1 && d == 0) ? 1 : 0;\n        ans += digitDp(pos + 1, nextTight, nextLeadingZero, s, memo);\n    }\n    return memo[pos][tight][leadingZero] = ans;\n}",
+      "other_relevant_details": "Time Complexity: O(log(R) * states). Used heavily in competitive programming for large bounds (up to 10^18).",
+      "problems": [
+        {"name": "Count Numbers with Unique Digits", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/count-numbers-with-unique-digits/", "company_tags": null},
+        {"name": "Non-negative Integers without Consecutive Ones", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/non-negative-integers-without-consecutive-ones/", "company_tags": null},
+        {"name": "Numbers At Most N Given Digit Set", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/numbers-at-most-n-given-digit-set/", "company_tags": null},
+        {"name": "Digit Count in Range", "difficulty": "Hard", "platform": "leetcode", "link": null, "company_tags": null},
+        {"name": "Count Special Integers", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/count-special-integers/", "company_tags": null},
+        {"name": "Numbers With Repeated Digits", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/numbers-with-repeated-digits/", "company_tags": null},
+        {"name": "Sum of Digits in Range", "difficulty": "Hard", "platform": "gfg", "link": null, "company_tags": null},
+        {"name": "Rotated Digits", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/rotated-digits/", "company_tags": null},
+        {"name": "Monotone Increasing Digits", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/monotone-increasing-digits/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "DP + Data Structures (Optimization)",
+      "description": "Optimizing O(N^2) DP transitions to O(N log N) or O(N) by using data structures like Segment Trees, Binary Indexed Trees, Monotonic Queues, or Binary Search.",
+      "important_details": [
+        "Transition looks like: dp[i] = min/max(dp[j] + cost(i, j)) for valid j < i.",
+        "If the cost function is separable and linear, Convex Hull Trick (CHT) or Li Chao Tree is used.",
+        "If finding max in a sliding window of states, Monotonic Queue is used."
+      ],
+      "template_code": "public int maxSumSlidingWindow(int[] arr, int k) {\n    int n = arr.length;\n    int[] dp = new int[n + 1];\n    Deque<Integer> dq = new ArrayDeque<>();\n    dq.offer(0);\n    for (int i = 1; i <= n; i++) {\n        while (!dq.isEmpty() && dq.peekFirst() < i - k) dq.pollFirst();\n        dp[i] = dp[dq.peekFirst()] + arr[i - 1];\n        while (!dq.isEmpty() && dp[dq.peekLast()] <= dp[i]) dq.pollLast();\n        dq.offerLast(i);\n    }\n    return dp[n];\n}",
+      "other_relevant_details": "Crucial to identify the monotonicity or separability of the cost function to apply these optimizations.",
+      "problems": [
+        {"name": "Longest Increasing Subsequence (O(n log n))", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/longest-increasing-subsequence/", "company_tags": null},
+        {"name": "Russian Doll Envelopes", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/russian-doll-envelopes/", "company_tags": null},
+        {"name": "Jump Game VI", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/jump-game-vi/", "company_tags": null},
+        {"name": "Sliding Window Maximum", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/sliding-window-maximum/", "company_tags": null},
+        {"name": "Minimum Cost to Cut a Stick", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/minimum-cost-to-cut-a-stick/", "company_tags": null},
+        {"name": "Divide Chocolate", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/divide-chocolate/", "company_tags": null},
+        {"name": "Allocate Mailboxes", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/allocate-mailboxes/", "company_tags": null},
+        {"name": "Build Array Where You Can Find The Maximum Exactly K Comparisons", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/build-array-where-you-can-find-the-maximum-exactly-k-comparisons/", "company_tags": null},
+        {"name": "Max Sum of Rectangle No Larger Than K", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/max-sum-of-rectangle-no-larger-than-k/", "company_tags": null},
+        {"name": "Largest Rectangle in Histogram", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/largest-rectangle-in-histogram/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Probability / Expected Value DP",
+      "description": "DP where the state transitions involve probabilities or expected values rather than deterministic costs.",
+      "important_details": [
+        "State: dp(s) = probability of reaching target from state s, OR expected value/cost from state s.",
+        "Transition: dp(s) = Sum( P(s -> s') * dp(s') ) for all next states s'.",
+        "Base cases are usually 1.0 for success states and 0.0 for failure states."
+      ],
+      "template_code": "public double expectedValue(double[][] probabilities, int target) {\n    double[] dp = new double[target + 1];\n    dp[target] = 1.0;\n    for (int state = target - 1; state >= 0; state--) {\n        for (double[] transition : probabilities[state]) {\n            int nextState = (int) transition[0];\n            double prob = transition[1];\n            dp[state] += prob * dp[nextState];\n        }\n    }\n    return dp[0];\n}",
+      "other_relevant_details": "Beware of cyclic dependencies (e.g., dice games); may require solving systems of linear equations or iterative approximation.",
+      "problems": [
+        {"name": "New 21 Game", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/new-21-game/", "company_tags": null},
+        {"name": "Soup Servings", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/soup-servings/", "company_tags": null},
+        {"name": "Airplane Seat Assignment Probability", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/airplane-seat-assignment-probability/", "company_tags": null},
+        {"name": "Probability of a Two Boxes Having The Same Number of Distinct Balls", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/probability-of-a-two-boxes-having-the-same-number-of-distinct-balls/", "company_tags": null},
+        {"name": "Knight Probability in Chessboard", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/knight-probability-in-chessboard/", "company_tags": null},
+        {"name": "Out of Boundary Paths", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/out-of-boundary-paths/", "company_tags": null},
+        {"name": "Dice Roll Simulation", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/dice-roll-simulation/", "company_tags": null},
+        {"name": "Cat and Mouse", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/cat-and-mouse/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Partition DP",
+      "description": "Dividing an array or sequence into K contiguous or non-contiguous partitions to minimize/maximize a specific cost function.",
+      "important_details": [
+        "State: dp[i][k] = min/max cost to partition first 'i' elements into 'k' parts.",
+        "Transition: dp[i][k] = min/max(dp[j][k-1] + cost(j+1, i)) for j in range(0, i).",
+        "Requires a fast way to compute cost(j, i), often using prefix sums."
+      ],
+      "template_code": "public int partitionArray(int[] arr, int K) {\n    int n = arr.length;\n    int[][] dp = new int[n + 1][K + 1];\n    for (int[] row : dp) Arrays.fill(row, Integer.MAX_VALUE / 2);\n    dp[0][0] = 0;\n    for (int i = 1; i <= n; i++) {\n        for (int k = 1; k <= K; k++) {\n            for (int j = 0; j < i; j++) {\n                dp[i][k] = Math.min(dp[i][k], dp[j][k - 1] + computeCost(j, i - 1));\n            }\n        }\n    }\n    return dp[n][K];\n}",
+      "other_relevant_details": "Time Complexity: O(N^2 * K). Can be optimized using Divide and Conquer DP optimization or Knuth's optimization if the cost function satisfies the quadrangle inequality.",
+      "problems": [
+        {"name": "Split Array Largest Sum", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/split-array-largest-sum/", "company_tags": null},
+        {"name": "Largest Sum of Averages", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/largest-sum-of-averages/", "company_tags": null},
+        {"name": "Strange Printer II", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/strange-printer-ii/", "company_tags": null},
+        {"name": "Divide Array in Sets of K Consecutive Numbers", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/divide-array-in-sets-of-k-consecutive-numbers/", "company_tags": null},
+        {"name": "Video Stitching", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/video-stitching/", "company_tags": null},
+        {"name": "Minimum Cost to Cut a Stick", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/minimum-cost-to-cut-a-stick/", "company_tags": null},
+        {"name": "Allocate Mailboxes", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/allocate-mailboxes/", "company_tags": null},
+        {"name": "Minimum Number of Taps to Open to Water a Garden", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/minimum-number-of-taps-to-open-to-water-a-garden/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "SOS DP (Sum over Subsets)",
+      "description": "Technique to compute for every mask the sum of values of all its submasks. Highly specific to bitwise subset calculations.",
+      "important_details": [
+        "State: dp[mask][i] = sum of subsets of 'mask' differing only in the first 'i' bits.",
+        "Transition: If i-th bit is set, dp[mask][i] = dp[mask][i-1] + dp[mask ^ (1<<i)][i-1]. Else, dp[mask][i] = dp[mask][i-1].",
+        "Iterates over bits and masks, building the solution incrementally."
+      ],
+      "template_code": "public int[] sosDp(int[] arr, int n) {\n    int[] dp = new int[1 << n];\n    for (int i = 0; i < (1 << n); i++) dp[i] = arr[i];\n    for (int i = 0; i < n; i++) {\n        for (int mask = 0; mask < (1 << n); mask++) {\n            if ((mask & (1 << i)) != 0) {\n                dp[mask] += dp[mask ^ (1 << i)];\n            }\n        }\n    }\n    return dp;\n}",
+      "other_relevant_details": "Time Complexity: O(N * 2^N). Space Complexity: O(2^N). Widely used in combinatorics and bitwise CP problems.",
+      "problems": [
+        {"name": "Sum over Subsets DP", "difficulty": "Hard", "platform": "codeforces", "link": null, "company_tags": null},
+        {"name": "Minimum XOR Sum of Two Arrays", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/minimum-xor-sum-of-two-arrays/", "company_tags": null},
+        {"name": "Smallest Sufficient Team", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/smallest-sufficient-team/", "company_tags": null},
+        {"name": "Count AND Pairs", "difficulty": "Hard", "platform": "codeforces", "link": null, "company_tags": null},
+        {"name": "Covering Points on Number Line", "difficulty": "Hard", "platform": "codeforces", "link": null, "company_tags": null},
+        {"name": "AND/OR Convolutions", "difficulty": "Hard", "platform": "competitive", "link": null, "company_tags": null}
+      ]
+    },
+    {
+      "variation": "3D / Multi-Dimensional DP",
+      "description": "DP involving 3 or more state variables, often used when tracking progress across multiple strings simultaneously or handling multi-constraint problems.",
+      "important_details": [
+        "State: e.g., dp[i][j][k] where dimensions track string A, string B, and a constraint.",
+        "Careful initialization of 3D base cases is critical (usually zeros for i=0, j=0, or k=0).",
+        "Memory limits can be tight; optimize dimensions if any state is binary."
+      ],
+      "template_code": "public int threeDimensionalDp(String A, String B, String C) {\n    int l = A.length(), m = B.length(), n = C.length();\n    int[][][] dp = new int[l + 1][m + 1][n + 1];\n    for (int i = 1; i <= l; i++) {\n        for (int j = 1; j <= m; j++) {\n            for (int k = 1; k <= n; k++) {\n                if (A.charAt(i - 1) == B.charAt(j - 1) && B.charAt(j - 1) == C.charAt(k - 1)) {\n                    dp[i][j][k] = 1 + dp[i - 1][j - 1][k - 1];\n                } else {\n                    dp[i][j][k] = Math.max(dp[i - 1][j][k], Math.max(dp[i][j - 1][k], dp[i][j][k - 1]));\n                }\n            }\n        }\n    }\n    return dp[l][m][n];\n}",
+      "other_relevant_details": "Time Complexity: O(L * M * N). Space Complexity: O(L * M * N). Can sometimes be optimized to O(M * N) using 2 layers.",
+      "problems": [
+        {"name": "Interleaving String", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/interleaving-string/", "company_tags": null},
+        {"name": "Minimum Difficulty of a Job Schedule", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/minimum-difficulty-of-a-job-schedule/", "company_tags": null},
+        {"name": "K Inverse Pairs Array", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/k-inverse-pairs-array/", "company_tags": null},
+        {"name": "Tallest Billboard", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/tallest-billboard/", "company_tags": null},
+        {"name": "Paint House II", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/paint-house-ii/", "company_tags": null},
+        {"name": "Student Attendance Record II", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/student-attendance-record-ii/", "company_tags": null},
+        {"name": "Count Vowels Permutation", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/count-vowels-permutation/", "company_tags": null},
+        {"name": "Frog Jump", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/frog-jump/", "company_tags": null},
+        {"name": "Minimum Cost to Merge Stones", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/minimum-cost-to-merge-stones/", "company_tags": null},
+        {"name": "Number of Music Playlists", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/number-of-music-playlists/", "company_tags": null},
+        {"name": "Strange Printer II", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/strange-printer-ii/", "company_tags": null},
+        {"name": "Maximize Score After N Operations", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/maximize-score-after-n-operations/", "company_tags": null}
+      ]
+    }
+  ]
+}

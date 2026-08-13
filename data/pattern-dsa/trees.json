@@ -1,0 +1,266 @@
+{
+  "pattern": "Trees",
+  "description": "Trees are hierarchical, non-linear data structures consisting of nodes connected by edges. They are acyclic, connected graphs with a single root node. Common types include Binary Trees (max 2 children) and Binary Search Trees (left child < root < right child).",
+  "important_details": [
+    "Traversals: Depth-First Search (DFS) includes Preorder (Root-Left-Right), Inorder (Left-Root-Right), and Postorder (Left-Right-Root). Breadth-First Search (BFS) is Level Order.",
+    "Recursive Nature: Most tree problems are naturally solved using recursion because the tree itself is a recursive data structure (a node contains its children).",
+    "Base Cases: Always handle the `null` node base case first to avoid NullPointerExceptions.",
+    "BST Property: Inorder traversal of a Binary Search Tree yields nodes in strictly ascending order."
+  ],
+  "other_relevant_details": "When solving tree problems, first identify if it is a standard Binary Tree or a BST. If it is a BST, you can often achieve O(H) time complexity (where H is height) by eliminating half of the tree at each step, similar to Binary Search. Watch out for skewed trees (height O(N)) which can cause StackOverflowErrors during deep recursion.",
+  "variations": [
+    {
+      "variation": "Level Order Traversal (BFS)",
+      "description": "Visiting nodes level by level from top to bottom, and left to right within each level. Typically implemented using a Queue.",
+      "important_details": [
+        "Data Structure: Use a Queue (FIFO) to process nodes.",
+        "Level Distinction: To process nodes level by level, capture the queue size `int size = queue.size()` in a loop before polling elements.",
+        "Useful for finding the maximum width, shortest path in unweighted trees, or level-based aggregations."
+      ],
+      "template_code": "public List<List<Integer>> levelOrder(TreeNode root) {\n    List<List<Integer>> result = new ArrayList<>();\n    if (root == null) return result;\n    Queue<TreeNode> queue = new LinkedList<>();\n    queue.offer(root);\n    while (!queue.isEmpty()) {\n        int size = queue.size();\n        List<Integer> level = new ArrayList<>();\n        for (int i = 0; i < size; i++) {\n            TreeNode node = queue.poll();\n            level.add(node.val);\n            if (node.left != null) queue.offer(node.left);\n            if (node.right != null) queue.offer(node.right);\n        }\n        result.add(level);\n    }\n    return result;\n}",
+      "other_relevant_details": "Time Complexity: O(N). Space Complexity: O(W) where W is the maximum width of the tree.",
+      "problems": [
+        {"name": "Binary Tree Level Order Traversal", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/binary-tree-level-order-traversal/", "company_tags": null},
+        {"name": "Binary Tree Level Order Traversal II", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/binary-tree-level-order-traversal-ii/", "company_tags": null},
+        {"name": "Average of Levels in Binary Tree", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/average-of-levels-in-binary-tree/", "company_tags": null},
+        {"name": "Find Largest Value in Each Tree Row", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/find-largest-value-in-each-tree-row/", "company_tags": null},
+        {"name": "Deepest Leaves Sum", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/deepest-leaves-sum/", "company_tags": null},
+        {"name": "Even Odd Tree", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/even-odd-tree/", "company_tags": null},
+        {"name": "Add One Row to Tree", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/add-one-row-to-tree/", "company_tags": null},
+        {"name": "Check Completeness of a Binary Tree", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/check-completeness-of-a-binary-tree/", "company_tags": null},
+        {"name": "Maximum Level Sum of a Binary Tree", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-level-sum-of-a-binary-tree/", "company_tags": null},
+        {"name": "Populating Next Right Pointers in Each Node", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/populating-next-right-pointers-in-each-node/", "company_tags": null},
+        {"name": "Populating Next Right Pointers in Each Node II", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/populating-next-right-pointers-in-each-node-ii/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Zigzag Level Order",
+      "description": "A variation of BFS where nodes are traversed left-to-right on even levels and right-to-left on odd levels.",
+      "important_details": [
+        "Use a boolean flag `leftToRight` to track direction.",
+        "If `leftToRight` is false, insert elements at the front of the list (index 0) or reverse the list before adding to the result.",
+        "Toggle the flag at the end of each level."
+      ],
+      "template_code": "public List<List<Integer>> zigzagLevelOrder(TreeNode root) {\n    List<List<Integer>> result = new ArrayList<>();\n    if (root == null) return result;\n    Queue<TreeNode> queue = new LinkedList<>();\n    queue.offer(root);\n    boolean leftToRight = true;\n    while (!queue.isEmpty()) {\n        int size = queue.size();\n        LinkedList<Integer> level = new LinkedList<>();\n        for (int i = 0; i < size; i++) {\n            TreeNode node = queue.poll();\n            if (leftToRight) level.addLast(node.val);\n            else level.addFirst(node.val);\n            if (node.left != null) queue.offer(node.left);\n            if (node.right != null) queue.offer(node.right);\n        }\n        result.add(level);\n        leftToRight = !leftToRight;\n    }\n    return result;\n}",
+      "other_relevant_details": "Time Complexity: O(N). Space Complexity: O(W). Using a `LinkedList` for the level allows O(1) insertion at both ends.",
+      "problems": [
+        {"name": "Binary Tree Zigzag Level Order Traversal", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/binary-tree-zigzag-level-order-traversal/", "company_tags": null},
+        {"name": "Reverse Odd Levels of Binary Tree", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/reverse-odd-levels-of-binary-tree/", "company_tags": null},
+        {"name": "N-ary Tree Level Order Traversal", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/n-ary-tree-level-order-traversal/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Right / Left Side View",
+      "description": "Finding the nodes visible when viewing the tree strictly from the right or left side.",
+      "important_details": [
+        "BFS Approach: The right side view consists of the last node in each level of a standard BFS.",
+        "DFS Approach: Recurse right child first. If `depth == result.size()`, it means it's the first node seen at this depth, so add it to the result."
+      ],
+      "template_code": "public List<Integer> rightSideView(TreeNode root) {\n    List<Integer> result = new ArrayList<>();\n    rightViewDFS(root, 0, result);\n    return result;\n}\nprivate void rightViewDFS(TreeNode node, int depth, List<Integer> result) {\n    if (node == null) return;\n    if (depth == result.size()) {\n        result.add(node.val);\n    }\n    rightViewDFS(node.right, depth + 1, result); // Go right first\n    rightViewDFS(node.left, depth + 1, result);\n}",
+      "other_relevant_details": "Time Complexity: O(N). Space Complexity: O(H) for DFS recursion stack.",
+      "problems": [
+        {"name": "Binary Tree Right Side View", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/binary-tree-right-side-view/", "company_tags": null},
+        {"name": "Left Side View of Binary Tree", "difficulty": "Easy", "platform": "gfg", "link": null, "company_tags": null},
+        {"name": "Find Bottom Left Tree Value", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/find-bottom-left-tree-value/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Top View / Bottom View",
+      "description": "Finding the nodes visible when viewing the tree strictly from above or below, considering horizontal distances.",
+      "important_details": [
+        "Assign a horizontal distance (hd) to each node. Root is 0. Left child is `hd - 1`. Right child is `hd + 1`.",
+        "Use a TreeMap to store the first seen node (Top View) or last seen node (Bottom View) for each `hd`.",
+        "BFS is preferred over DFS to ensure top-to-bottom priority is maintained correctly."
+      ],
+      "template_code": "public List<Integer> bottomView(TreeNode root) {\n    List<Integer> result = new ArrayList<>();\n    if (root == null) return result;\n    Map<Integer, Integer> map = new TreeMap<>();\n    Queue<TreeNode> queue = new LinkedList<>();\n    root.val = 0; // Assuming we can store hd in node, else use a wrapper class\n    queue.offer(root);\n    while (!queue.isEmpty()) {\n        TreeNode node = queue.poll();\n        int hd = node.val;\n        map.put(hd, node.val); // Overwrites, giving bottom view\n        if (node.left != null) { node.left.val = hd - 1; queue.offer(node.left); }\n        if (node.right != null) { node.right.val = hd + 1; queue.offer(node.right); }\n    }\n    for (int val : map.values()) result.add(val);\n    return result;\n}",
+      "other_relevant_details": "Time Complexity: O(N log N) due to TreeMap. Space: O(N).",
+      "problems": [
+        {"name": "Top View of Binary Tree", "difficulty": "Medium", "platform": "gfg", "link": null, "company_tags": null},
+        {"name": "Bottom View of Binary Tree", "difficulty": "Medium", "platform": "gfg", "link": null, "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Vertical Order Traversal",
+      "description": "Grouping nodes by their column index. If multiple nodes are in the same row and column, sort them by value.",
+      "important_details": [
+        "Track `(row, col)` for each node.",
+        "Often requires a nested TreeMap: `TreeMap<Integer, TreeMap<Integer, PriorityQueue<Integer>>>` to group by col, then row, then sort by value.",
+        "Unlike Top/Bottom view, Vertical Order includes ALL nodes in a column, not just the top/bottom-most."
+      ],
+      "template_code": "public List<List<Integer>> verticalTraversal(TreeNode root) {\n    TreeMap<Integer, TreeMap<Integer, PriorityQueue<Integer>>> map = new TreeMap<>();\n    dfs(root, 0, 0, map);\n    List<List<Integer>> result = new ArrayList<>();\n    for (TreeMap<Integer, PriorityQueue<Integer>> ys : map.values()) {\n        List<Integer> col = new ArrayList<>();\n        for (PriorityQueue<Integer> nodes : ys.values()) {\n            while (!nodes.isEmpty()) col.add(nodes.poll());\n        }\n        result.add(col);\n    }\n    return result;\n}\nprivate void dfs(TreeNode node, int x, int y, TreeMap<Integer, TreeMap<Integer, PriorityQueue<Integer>>> map) {\n    if (node == null) return;\n    map.putIfAbsent(x, new TreeMap<>());\n    map.get(x).putIfAbsent(y, new PriorityQueue<>());\n    map.get(x).get(y).offer(node.val);\n    dfs(node.left, x - 1, y + 1, map);\n    dfs(node.right, x + 1, y + 1, map);\n}",
+      "other_relevant_details": "Time Complexity: O(N log N) due to TreeMap and PriorityQueues. Space: O(N).",
+      "problems": [
+        {"name": "Vertical Order Traversal of a Binary Tree", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/vertical-order-traversal-of-a-binary-tree/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Maximum Width / Index-Based BFS",
+      "description": "Finding the maximum width of the tree, where width is defined as the number of nodes between the leftmost and rightmost non-null nodes in a level.",
+      "important_details": [
+        "Assign a numerical index to each node. Root is 1. Left child is `2 * parent_index`. Right child is `2 * parent_index + 1`.",
+        "Width of a level = `rightmost_index - leftmost_index + 1`.",
+        "Beware of integer overflow. Use `long` for indices or cast carefully."
+      ],
+      "template_code": "public int widthOfBinaryTree(TreeNode root) {\n    if (root == null) return 0;\n    int maxWidth = 0;\n    Queue<Pair<TreeNode, Integer>> queue = new LinkedList<>();\n    queue.offer(new Pair<>(root, 0));\n    while (!queue.isEmpty()) {\n        int size = queue.size();\n        int start = queue.peek().getValue();\n        int end = start;\n        for (int i = 0; i < size; i++) {\n            Pair<TreeNode, Integer> curr = queue.poll();\n            end = curr.getValue();\n            if (curr.getKey().left != null) queue.offer(new Pair<>(curr.getKey().left, 2 * end));\n            if (curr.getKey().right != null) queue.offer(new Pair<>(curr.getKey().right, 2 * end + 1));\n        }\n        maxWidth = Math.max(maxWidth, end - start + 1);\n    }\n    return maxWidth;\n}",
+      "other_relevant_details": "Time Complexity: O(N). Space Complexity: O(W).",
+      "problems": [
+        {"name": "Maximum Width of Binary Tree", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-width-of-binary-tree/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Distance-K BFS",
+      "description": "Finding all nodes at a specific distance K from a target node. Since trees are directed downward, we must convert it to an undirected graph to traverse upwards.",
+      "important_details": [
+        "Step 1: DFS/BFS to build a child-to-parent map (undirected graph representation).",
+        "Step 2: Standard BFS starting from the target node.",
+        "Use a `visited` set to avoid cycles, as we can now move to parent nodes."
+      ],
+      "template_code": "Map<TreeNode, TreeNode> parentMap = new HashMap<>();\npublic List<Integer> distanceK(TreeNode root, TreeNode target, int k) {\n    buildParentMap(root, null);\n    Queue<TreeNode> queue = new LinkedList<>();\n    Set<TreeNode> visited = new HashSet<>();\n    queue.offer(target);\n    visited.add(target);\n    int dist = 0;\n    while (!queue.isEmpty()) {\n        if (dist == k) break;\n        int size = queue.size();\n        for (int i = 0; i < size; i++) {\n            TreeNode node = queue.poll();\n            if (node.left != null && visited.add(node.left)) queue.offer(node.left);\n            if (node.right != null && visited.add(node.right)) queue.offer(node.right);\n            TreeNode parent = parentMap.get(node);\n            if (parent != null && visited.add(parent)) queue.offer(parent);\n        }\n        dist++;\n    }\n    List<Integer> result = new ArrayList<>();\n    while (!queue.isEmpty()) result.add(queue.poll().val);\n    return result;\n}\nprivate void buildParentMap(TreeNode node, TreeNode parent) {\n    if (node == null) return;\n    parentMap.put(node, parent);\n    buildParentMap(node.left, node);\n    buildParentMap(node.right, node);\n}",
+      "other_relevant_details": "Time Complexity: O(N). Space: O(N).",
+      "problems": [
+        {"name": "All Nodes Distance K in Binary Tree", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/all-nodes-distance-k-in-binary-tree/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Tree Construction",
+      "description": "Rebuilding a tree from its traversal arrays (e.g., Preorder + Inorder, Postorder + Inorder).",
+      "important_details": [
+        "Preorder/Postorder gives the root node.",
+        "Find the root in the Inorder array to determine the size of the left and right subtrees.",
+        "Use a HashMap for O(1) lookups of indices in the Inorder array.",
+        "Recursively construct the left and right subtrees by adjusting array boundaries."
+      ],
+      "template_code": "public TreeNode buildTree(int[] preorder, int[] inorder) {\n    Map<Integer, Integer> inMap = new HashMap<>();\n    for (int i = 0; i < inorder.length; i++) inMap.put(inorder[i], i);\n    return build(preorder, 0, preorder.length - 1, 0, inorder.length - 1, inMap);\n}\nprivate TreeNode build(int[] pre, int preStart, int preEnd, int inStart, int inEnd, Map<Integer, Integer> inMap) {\n    if (preStart > preEnd || inStart > inEnd) return null;\n    TreeNode root = new TreeNode(pre[preStart]);\n    int inRoot = inMap.get(root.val);\n    int numsLeft = inRoot - inStart;\n    root.left = build(pre, preStart + 1, preStart + numsLeft, inStart, inRoot - 1, inMap);\n    root.right = build(pre, preStart + numsLeft + 1, preEnd, inRoot + 1, inEnd, inMap);\n    return root;\n}",
+      "other_relevant_details": "Time Complexity: O(N). Space Complexity: O(N) for map and recursion stack.",
+      "problems": [
+        {"name": "Construct Binary Tree from Preorder and Inorder Traversal", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/construct-binary-tree-from-preorder-and-inorder-traversal/", "company_tags": null},
+        {"name": "Construct Binary Tree from Inorder and Postorder Traversal", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/construct-binary-tree-from-inorder-and-postorder-traversal/", "company_tags": null},
+        {"name": "Maximum Binary Tree", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-binary-tree/", "company_tags": null},
+        {"name": "Construct Binary Search Tree from Preorder Traversal", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/construct-binary-search-tree-from-preorder-traversal/", "company_tags": null},
+        {"name": "Convert Sorted Array to Binary Search Tree", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/convert-sorted-array-to-binary-search-tree/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Height-Related",
+      "description": "Calculating the depth, checking balance, or finding the diameter (longest path between any two nodes) of a tree.",
+      "important_details": [
+        "Height is calculated as `1 + max(left_height, right_height)`.",
+        "Diameter is the number of edges on the longest path. It can either pass through the root (`left_height + right_height`) or be entirely within the left or right subtree.",
+        "Use an instance variable or array to track the max diameter across all recursive calls."
+      ],
+      "template_code": "private int maxDiameter = 0;\npublic int diameterOfBinaryTree(TreeNode root) {\n    height(root);\n    return maxDiameter;\n}\nprivate int height(TreeNode node) {\n    if (node == null) return 0;\n    int left = height(node.left);\n    int right = height(node.right);\n    maxDiameter = Math.max(maxDiameter, left + right);\n    return 1 + Math.max(left, right);\n}",
+      "other_relevant_details": "Time Complexity: O(N). Space Complexity: O(H).",
+      "problems": [
+        {"name": "Maximum Depth of Binary Tree", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-depth-of-binary-tree/", "company_tags": null},
+        {"name": "Minimum Depth of Binary Tree", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/minimum-depth-of-binary-tree/", "company_tags": null},
+        {"name": "Balanced Binary Tree", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/balanced-binary-tree/", "company_tags": null},
+        {"name": "Diameter of Binary Tree", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/diameter-of-binary-tree/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Root to Leaf Paths",
+      "description": "Traversing from the root to every leaf, accumulating values, sums, or building path strings. Often involves backtracking.",
+      "important_details": [
+        "A leaf node is identified by `node.left == null && node.right == null`.",
+        "Backtracking: Add the current node to the path before recursing, and remove it after the recursive calls return.",
+        "Path Sum: Pass the running sum down. If it's a leaf, check if running sum equals target."
+      ],
+      "template_code": "public List<List<Integer>> pathSum(TreeNode root, int targetSum) {\n    List<List<Integer>> result = new ArrayList<>();\n    backtrack(root, targetSum, new ArrayList<>(), result);\n    return result;\n}\nprivate void backtrack(TreeNode node, int targetSum, List<Integer> path, List<List<Integer>> result) {\n    if (node == null) return;\n    path.add(node.val);\n    if (node.left == null && node.right == null && targetSum == node.val) {\n        result.add(new ArrayList<>(path));\n    } else {\n        backtrack(node.left, targetSum - node.val, path, result);\n        backtrack(node.right, targetSum - node.val, path, result);\n    }\n    path.remove(path.size() - 1); // Backtrack\n}",
+      "other_relevant_details": "Time Complexity: O(N) to visit nodes, but copying paths can make it O(N^2) in the worst case for output. Space: O(H).",
+      "problems": [
+        {"name": "Binary Tree Paths", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/binary-tree-paths/", "company_tags": null},
+        {"name": "Path Sum II", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/path-sum-ii/", "company_tags": null},
+        {"name": "Sum Root to Leaf Numbers", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/sum-root-to-leaf-numbers/", "company_tags": null},
+        {"name": "Pseudo-Palindromic Paths in a Binary Tree", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/pseudo-palindromic-paths-in-a-tree/", "company_tags": null},
+        {"name": "Binary Tree Maximum Path Sum", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/binary-tree-maximum-path-sum/", "company_tags": null},
+        {"name": "Insufficient Nodes in Root to Leaf Paths", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/insufficient-nodes-in-root-to-leaf-paths/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Ancestor Problems",
+      "description": "Finding the Lowest Common Ancestor (LCA) of two nodes, or finding the Kth ancestor.",
+      "important_details": [
+        "LCA Logic: If current node is p or q, return it. Recurse left and right.",
+        "If left and right both return non-null, the current node is the LCA.",
+        "If one is null, return the non-null one (LCA is in that subtree)."
+      ],
+      "template_code": "public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {\n    if (root == null || root == p || root == q) return root;\n    TreeNode left = lowestCommonAncestor(root.left, p, q);\n    TreeNode right = lowestCommonAncestor(root.right, p, q);\n    if (left != null && right != null) return root;\n    return left != null ? left : right;\n}",
+      "other_relevant_details": "Time Complexity: O(N). Space: O(H). For BST, LCA is simpler: traverse down, if both p,q are smaller go left, if both larger go right, else root is LCA.",
+      "problems": [
+        {"name": "Lowest Common Ancestor of a Binary Tree", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-tree/", "company_tags": null},
+        {"name": "Lowest Common Ancestor of a Binary Search Tree", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-search-tree/", "company_tags": null},
+        {"name": "Maximum Difference Between Node and Ancestor", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-difference-between-node-and-ancestor/", "company_tags": null},
+        {"name": "Lowest Common Ancestor of Deepest Leaves", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/lowest-common-ancestor-of-deepest-leaves/", "company_tags": null},
+        {"name": "Kth Ancestor of a Tree Node", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/kth-ancestor-of-a-tree-node/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Binary Search Tree (BST)",
+      "description": "Operations leveraging the BST property (left < root < right).",
+      "important_details": [
+        "Inorder traversal yields a sorted array. Useful for finding Kth smallest, or fixing swapped nodes.",
+        "Search/Insert/Delete operations take O(H) time.",
+        "Delete node with 2 children: Find inorder successor (smallest in right subtree), replace value, and delete the successor."
+      ],
+      "template_code": "public TreeNode deleteNode(TreeNode root, int key) {\n    if (root == null) return null;\n    if (key < root.val) root.left = deleteNode(root.left, key);\n    else if (key > root.val) root.right = deleteNode(root.right, key);\n    else {\n        if (root.left == null) return root.right;\n        if (root.right == null) return root.left;\n        TreeNode minNode = findMin(root.right);\n        root.val = minNode.val;\n        root.right = deleteNode(root.right, root.val);\n    }\n    return root;\n}\nprivate TreeNode findMin(TreeNode node) {\n    while (node.left != null) node = node.left;\n    return node;\n}",
+      "other_relevant_details": "Time Complexity: O(H) average, O(N) worst case for skewed trees. Space: O(H) for recursion.",
+      "problems": [
+        {"name": "Validate Binary Search Tree", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/validate-binary-search-tree/", "company_tags": null},
+        {"name": "Range Sum of BST", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/range-sum-of-bst/", "company_tags": null},
+        {"name": "Minimum Absolute Difference in BST", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/minimum-absolute-difference-in-bst/", "company_tags": null},
+        {"name": "Insert into a Binary Search Tree", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/insert-into-a-binary-search-tree/", "company_tags": null},
+        {"name": "Delete Node in a BST", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/delete-node-in-a-bst/", "company_tags": null},
+        {"name": "Kth Smallest Element in a BST", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/kth-smallest-element-in-a-bst/", "company_tags": null},
+        {"name": "Convert BST to Greater Tree", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/convert-bst-to-greater-tree/", "company_tags": null},
+        {"name": "Recover Binary Search Tree", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/recover-binary-search-tree/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Tree DP (Dynamic Programming on Trees)",
+      "description": "Problems where the state at a node depends on the states of its children. Solved using Post-order DFS.",
+      "important_details": [
+        "Usually requires returning an array or custom object representing multiple states (e.g., `[rob, not_rob]`).",
+        "Post-order is mandatory: solve subproblems (left/right subtrees) before the current node.",
+        "Example: House Robber III. If you rob a node, you cannot rob its children. If you don't, you can rob them."
+      ],
+      "template_code": "// House Robber III\npublic int rob(TreeNode root) {\n    int[] result = robHelper(root);\n    return Math.max(result[0], result[1]);\n}\nprivate int[] robHelper(TreeNode node) {\n    if (node == null) return new int[]{0, 0};\n    int[] left = robHelper(node.left);\n    int[] right = robHelper(node.right);\n    int rob = node.val + left[1] + right[1];\n    int notRob = Math.max(left[0], left[1]) + Math.max(right[0], right[1]);\n    return new int[]{rob, notRob};\n}",
+      "other_relevant_details": "Time Complexity: O(N). Space Complexity: O(H) for recursion stack.",
+      "problems": [
+        {"name": "House Robber III", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/house-robber-iii/", "company_tags": null},
+        {"name": "Binary Tree Cameras", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/binary-tree-cameras/", "company_tags": null},
+        {"name": "Distribute Coins in Binary Tree", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/distribute-coins-in-binary-tree/", "company_tags": null},
+        {"name": "Longest ZigZag Path in a Binary Tree", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/longest-zigzag-path-in-a-binary-tree/", "company_tags": null},
+        {"name": "Count Good Nodes in Binary Tree", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/count-good-nodes-in-binary-tree/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Serialize and Deserialize",
+      "description": "Converting a tree to a string format for storage or transmission, and rebuilding it back.",
+      "important_details": [
+        "Preorder traversal is most common for serialization.",
+        "Must explicitly serialize `null` nodes (e.g., as 'X' or '#') to preserve structure.",
+        "Deserialization uses a Queue or Iterator to consume the string tokens recursively."
+      ],
+      "template_code": "public String serialize(TreeNode root) {\n    StringBuilder sb = new StringBuilder();\n    serializeHelper(root, sb);\n    return sb.toString();\n}\nprivate void serializeHelper(TreeNode node, StringBuilder sb) {\n    if (node == null) { sb.append(\"X,\"); return; }\n    sb.append(node.val).append(\",\");\n    serializeHelper(node.left, sb);\n    serializeHelper(node.right, sb);\n}\npublic TreeNode deserialize(String data) {\n    Queue<String> nodes = new LinkedList<>(Arrays.asList(data.split(\",\")));\n    return deserializeHelper(nodes);\n}\nprivate TreeNode deserializeHelper(Queue<String> nodes) {\n    String val = nodes.poll();\n    if (val.equals(\"X\")) return null;\n    TreeNode node = new TreeNode(Integer.parseInt(val));\n    node.left = deserializeHelper(nodes);\n    node.right = deserializeHelper(nodes);\n    return node;\n}",
+      "other_relevant_details": "Time Complexity: O(N) for both. Space Complexity: O(N) for string and recursion stack.",
+      "problems": [
+        {"name": "Serialize and Deserialize Binary Tree", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/serialize-and-deserialize-binary-tree/", "company_tags": null},
+        {"name": "Serialize and Deserialize BST", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/serialize-and-deserialize-bst/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Tree Modification / Transformation",
+      "description": "Restructuring the tree in place, such as flattening it to a linked list or trimming nodes outside a range.",
+      "important_details": [
+        "Flatten to Linked List: Can be done in O(1) space using Morris Traversal, or simply by Reverse Post-order traversal maintaining a `prev` pointer.",
+        "Trim BST: Recursively trim left and right. If current node is out of range, replace it with its left or right child."
+      ],
+      "template_code": "private TreeNode prev = null;\npublic void flatten(TreeNode root) {\n    if (root == null) return;\n    flatten(root.right);\n    flatten(root.left);\n    root.right = prev;\n    root.left = null;\n    prev = root;\n}",
+      "other_relevant_details": "Time Complexity: O(N). Space Complexity: O(H) for recursion, or O(1) if using iterative Morris traversal.",
+      "problems": [
+        {"name": "Flatten Binary Tree to Linked List", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/flatten-binary-tree-to-linked-list/", "company_tags": null},
+        {"name": "Trim a Binary Search Tree", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/trim-a-binary-search-tree/", "company_tags": null}
+      ]
+    }
+  ]
+}

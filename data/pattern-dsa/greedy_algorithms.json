@@ -1,0 +1,153 @@
+{
+  "pattern": "Greedy Algorithms",
+  "description": "Greedy algorithms build up a solution piece by piece by always choosing the piece that offers the most immediate benefit (local optimum). They do not reconsider past choices, making them highly efficient but only applicable to problems that exhibit the 'Greedy Choice Property' and 'Optimal Substructure'.",
+  "important_details": [
+    "Local vs. Global Optimum: A greedy algorithm works if making the locally optimal choice at each step leads to a globally optimal solution. Proving this is the hardest part of a greedy problem.",
+    "Sorting is Step 1: 80% of greedy problems require sorting the input based on a specific criterion (e.g., earliest finish time, highest ratio, smallest weight) before iterating.",
+    "No Backtracking: Once a choice is made, it is final. If a problem requires exploring multiple paths, it is likely DP or Backtracking, not Greedy.",
+    "Contrast with DP: In DP, you evaluate all possible choices at each state. In Greedy, you deterministically pick the best immediate choice."
+  ],
+  "other_relevant_details": "If you are stuck on a greedy problem, try sorting the data in different ways (e.g., by start time, end time, difference between two values, or ratio). Greedy is heavily tested in OAs for problems involving intervals, resource allocation, and maximizing profit/minimum effort.",
+  "variations": [
+    {
+      "variation": "Jump Game (Max Reach)",
+      "description": "Problems where you need to determine if you can reach the end of an array, or find the minimum jumps, given maximum jump lengths at each index.",
+      "important_details": [
+        "Do not use BFS/DP for Jump Game I. Maintain a `maxReach` variable.",
+        "Iterate through the array. If `i > maxReach`, return false (cannot reach here). Update `maxReach = max(maxReach, i + nums[i])`.",
+        "For Jump Game II, maintain `curEnd` and `curFarthest`. When `i == curEnd`, increment jumps and set `curEnd = curFarthest`."
+      ],
+      "template_code": "public int jump(int[] nums) {\n    int jumps = 0, curEnd = 0, curFarthest = 0;\n    for (int i = 0; i < nums.length - 1; i++) {\n        curFarthest = Math.max(curFarthest, i + nums[i]);\n        if (i == curEnd) {\n            jumps++;\n            curEnd = curFarthest;\n            if (curEnd >= nums.length - 1) break;\n        }\n    }\n    return jumps;\n}",
+      "other_relevant_details": "Time Complexity: O(N). Space Complexity: O(1). This is the optimal greedy approach, avoiding the O(N^2) DP solution.",
+      "problems": [
+        {"name": "Jump Game", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/jump-game/", "company_tags": null},
+        {"name": "Jump Game II", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/jump-game-ii/", "company_tags": null},
+        {"name": "Jump Game VII", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/jump-game-vii/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Activity Selection (Interval Scheduling)",
+      "description": "Selecting the maximum number of non-overlapping intervals or meetings. The greedy choice is to always pick the activity that finishes earliest.",
+      "important_details": [
+        "Sort intervals by their END time. (Sorting by start time fails in cases where a long interval starts first).",
+        "Iterate through sorted intervals. If the current interval's start is >= the last selected interval's end, select it and update the end time.",
+        "To find the minimum number of intervals to remove (Non-overlapping Intervals), the answer is `Total Intervals - Max Non-overlapping Intervals`."
+      ],
+      "template_code": "public int eraseOverlapIntervals(int[][] intervals) {\n    Arrays.sort(intervals, (a, b) -> Integer.compare(a[1], b[1]));\n    int count = 0, lastEnd = Integer.MIN_VALUE;\n    for (int[] interval : intervals) {\n        if (interval[0] >= lastEnd) {\n            lastEnd = interval[1];\n        } else {\n            count++; // Overlapping, needs removal\n        }\n    }\n    return count;\n}",
+      "other_relevant_details": "Time Complexity: O(N log N). Space: O(1) or O(N) depending on sorting. This is the standard for Meeting Rooms / Activity Selection.",
+      "problems": [
+        {"name": "Non-overlapping Intervals", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/non-overlapping-intervals/", "company_tags": null},
+        {"name": "Maximum Number of Events That Can Be Attended", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-number-of-events-that-can-be-attended/", "company_tags": null},
+        {"name": "Minimum Number of Arrows to Burst Balloons", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/minimum-number-of-arrows-to-burst-balloons/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Greedy + Two Pointers (Assigning / Pairing)",
+      "description": "Sorting an array and using two pointers to greedily pair the largest/smallest elements to satisfy a constraint (e.g., children and cookies, boats with weight limits).",
+      "important_details": [
+        "Sort both arrays.",
+        "Typically, try to satisfy the greediest/largest element first.",
+        "If the largest element pairs with the smallest, do it. If not, the largest element must be paired alone (or discarded)."
+      ],
+      "template_code": "public int numRescueBoats(int[] people, int limit) {\n    Arrays.sort(people);\n    int boats = 0, left = 0, right = people.length - 1;\n    while (left <= right) {\n        if (people[left] + people[right] <= limit) {\n            left++; // Light person fits with heavy person\n        }\n        right--; // Heavy person always takes a boat\n        boats++;\n    }\n    return boats;\n}",
+      "other_relevant_details": "Time Complexity: O(N log N). Space: O(1). Very common in OA for maximizing resources.",
+      "problems": [
+        {"name": "Assign Cookies", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/assign-cookies/", "company_tags": null},
+        {"name": "Boats to Save People", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/boats-to-save-people/", "company_tags": null},
+        {"name": "Maximum Number of Coins You Can Get", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-number-of-coins-you-can-get/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Queue Reconstruction (Custom Sorting)",
+      "description": "Reconstructing a queue or sequence where each element specifies its intended position relative to others (e.g., number of people taller in front).",
+      "important_details": [
+        "Sort by height descending. If heights are equal, sort by k (number of people in front) ascending.",
+        "Iterate through the sorted list and insert each person at index `k` in a list.",
+        "Because taller people are inserted first, inserting a shorter person at index `k` doesn't violate the `k` of the taller people already in the list."
+      ],
+      "template_code": "public int[][] reconstructQueue(int[][] people) {\n    Arrays.sort(people, (a, b) -> a[0] == b[0] ? a[1] - b[1] : b[0] - a[0]);\n    List<int[]> result = new ArrayList<>();\n    for (int[] p : people) {\n        result.add(p[1], p); // Insert at index k\n    }\n    return result.toArray(new int[people.length][]);\n}",
+      "other_relevant_details": "Time Complexity: O(N^2) because inserting into an ArrayList at a specific index takes O(N) time. Space: O(N).",
+      "problems": [
+        {"name": "Queue Reconstruction by Height", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/queue-reconstruction-by-height/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Left-Right Pass Greedy (Candy Distribution)",
+      "description": "Problems where an element's value depends on both its left and right neighbors. Solved by doing one forward pass and one backward pass.",
+      "important_details": [
+        "Initialize an array (e.g., candies) with default values (1).",
+        "Forward Pass: Left to right. If `ratings[i] > ratings[i-1]`, `candies[i] = candies[i-1] + 1`.",
+        "Backward Pass: Right to left. If `ratings[i] > ratings[i+1]`, `candies[i] = max(candies[i], candies[i+1] + 1)`.",
+        "The max function ensures both neighbor constraints are satisfied simultaneously."
+      ],
+      "template_code": "public int candy(int[] ratings) {\n    int n = ratings.length;\n    int[] candies = new int[n];\n    Arrays.fill(candies, 1);\n    \n    for (int i = 1; i < n; i++) {\n        if (ratings[i] > ratings[i - 1]) {\n            candies[i] = candies[i - 1] + 1;\n        }\n    }\n    for (int i = n - 2; i >= 0; i--) {\n        if (ratings[i] > ratings[i + 1]) {\n            candies[i] = Math.max(candies[i], candies[i + 1] + 1);\n        }\n    }\n    int sum = 0;\n    for (int c : candies) sum += c;\n    return sum;\n}",
+      "other_relevant_details": "Time Complexity: O(N). Space Complexity: O(N). Excellent pattern for constraint-satisfaction problems on arrays.",
+      "problems": [
+        {"name": "Candy", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/candy/", "company_tags": null},
+        {"name": "Trapping Rain Water (Two Pointer Greedy)", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/trapping-rain-water/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Circular Array / Net Balance (Gas Station)",
+      "description": "Determining if a complete circuit is possible in a circular array where you gain and lose resources (gas/cost).",
+      "important_details": [
+        "If total gas < total cost, it is impossible. Return -1.",
+        "Track current tank balance. If tank drops below 0, the starting point cannot be anywhere up to the current index. Reset start to `i + 1` and tank to 0.",
+        "Because total gas >= total cost is guaranteed for a valid circuit, the surplus from earlier stations will carry over to help later stations."
+      ],
+      "template_code": "public int canCompleteCircuit(int[] gas, int[] cost) {\n    int totalTank = 0, currTank = 0, startStation = 0;\n    for (int i = 0; i < gas.length; i++) {\n        int netGain = gas[i] - cost[i];\n        totalTank += netGain;\n        currTank += netGain;\n        if (currTank < 0) {\n            startStation = i + 1; // Reset start\n            currTank = 0;         // Reset tank\n        }\n    }\n    return totalTank >= 0 ? startStation : -1;\n}",
+      "other_relevant_details": "Time Complexity: O(N). Space Complexity: O(1). A brilliant greedy optimization over the O(N^2) brute force.",
+      "problems": [
+        {"name": "Gas Station", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/gas-station/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Task Scheduler (Greedy + Math)",
+      "description": "Scheduling tasks with cooling periods to minimize total time. The optimal strategy focuses on the most frequent task.",
+      "important_details": [
+        "Count frequencies of each task. Find the maximum frequency `maxFreq`.",
+        "The minimum time is bounded by `(maxFreq - 1) * (n + 1) + count_of_tasks_with_maxFreq`.",
+        "However, if there are many unique tasks, the total time cannot be less than the total number of tasks. So, `Math.max(total_tasks, formula)`.",
+        "Heap or Simulation is possible but O(N) math is optimal."
+      ],
+      "template_code": "public int leastInterval(char[] tasks, int n) {\n    int[] freq = new int[26];\n    for (char c : tasks) freq[c - 'A']++;\n    int maxFreq = 0, countMax = 0;\n    for (int f : freq) {\n        if (f > maxFreq) {\n            maxFreq = f;\n            countMax = 1;\n        } else if (f == maxFreq) {\n            countMax++;\n        }\n    }\n    int partCount = maxFreq - 1;\n    int partLength = n - (countMax - 1);\n    int emptySlots = partCount * partLength;\n    int availableTasks = tasks.length - (maxFreq * countMax);\n    int idles = Math.max(0, emptySlots - availableTasks);\n    return tasks.length + idles;\n}",
+      "other_relevant_details": "Time Complexity: O(N). Space: O(1). The math formula essentially creates buckets of size `n+1` for the most frequent tasks.",
+      "problems": [
+        {"name": "Task Scheduler", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/task-scheduler/", "company_tags": null},
+        {"name": "Rearrange String k Distance Apart", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/rearrange-string-k-distance-apart/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Custom Comparator Greedy (Largest Number)",
+      "description": "Arranging numbers or strings to form the largest possible combined number or lexicographically smallest string.",
+      "important_details": [
+        "Convert numbers to strings.",
+        "Sort using a custom comparator: `(a, b) -> (b + a).compareTo(a + b)`. This checks which combination yields a larger number.",
+        "Edge case: If the largest number starts with '0' (e.g., array is `[0, 0]`), return \"0\"."
+      ],
+      "template_code": "public String largestNumber(int[] nums) {\n    String[] strs = new String[nums.length];\n    for (int i = 0; i < nums.length; i++) strs[i] = String.valueOf(nums[i]);\n    Arrays.sort(strs, (a, b) -> (b + a).compareTo(a + b));\n    if (strs[0].equals(\"0\")) return \"0\"; \n    StringBuilder sb = new StringBuilder();\n    for (String s : strs) sb.append(s);\n    return sb.toString();\n}",
+      "other_relevant_details": "Time Complexity: O(N log N * K) where K is the average string length. Space: O(N).",
+      "problems": [
+        {"name": "Largest Number", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/largest-number/", "company_tags": null},
+        {"name": "Maximum Swap", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-swap/", "company_tags": null},
+        {"name": "Smallest String With Swaps", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/smallest-string-with-swaps/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Minimum Platforms (Line Sweep)",
+      "description": "Finding the minimum number of resources (platforms, rooms) required to handle overlapping intervals (trains, meetings).",
+      "important_details": [
+        "Sort arrival and departure times separately.",
+        "Use two pointers: `i` for arrivals, `j` for departures.",
+        "If `arrivals[i] <= departures[j]`, a platform is needed (`count++`, `i++`). Else, a platform is freed (`count--`, `j++`). Track max count.",
+        "Alternative: Line sweep with a TreeMap or Difference Array if time bounds are small."
+      ],
+      "template_code": "public int minPlatforms(int[] arr, int[] dep) {\n    Arrays.sort(arr);\n    Arrays.sort(dep);\n    int platformsNeeded = 0, maxPlatforms = 0;\n    int i = 0, j = 0;\n    while (i < arr.length && j < dep.length) {\n        if (arr[i] <= dep[j]) {\n            platformsNeeded++;\n            i++;\n            maxPlatforms = Math.max(maxPlatforms, platformsNeeded);\n        } else {\n            platformsNeeded--;\n            j++;\n        }\n    }\n    return maxPlatforms;\n}",
+      "other_relevant_details": "Time Complexity: O(N log N). Space: O(1). This is a classic greedy approach frequently asked in SDE 1 interviews.",
+      "problems": [
+        {"name": "Minimum Number of Platforms Required for a Railway", "difficulty": "Medium", "platform": "gfg", "link": null, "company_tags": null},
+        {"name": "Meeting Rooms II", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/meeting-rooms-ii/", "company_tags": null}
+      ]
+    }
+  ]
+}
