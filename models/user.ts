@@ -18,7 +18,7 @@ const userSchema = new Schema(
 );
 
 // BetterAuth creates indexes itself, but defining them explicitly here for clarity
-userSchema.index({ email: 1 }, { unique: true });
+// Removed duplicate email index
 userSchema.index({ role: 1 });
 userSchema.index({ disabled: 1 });
 

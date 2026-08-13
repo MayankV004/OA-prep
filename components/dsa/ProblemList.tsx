@@ -13,53 +13,63 @@ interface ProblemListProps {
 export function ProblemList({ problems, onToggleComplete }: ProblemListProps) {
   if (!problems.length) {
     return (
-      <div className="p-4 text-sm text-muted-foreground italic border-t border-border">
-        No problems assigned to this variation.
+      <div className="p-6 text-sm text-muted-foreground italic text-center rounded-xl bg-muted/20 border border-border/50">
+        No problems assigned to this variation yet.
       </div>
     );
   }
 
   const difficultyColors = {
-    easy: "text-green-500 bg-green-500/10 border-green-500/20",
-    medium: "text-yellow-500 bg-yellow-500/10 border-yellow-500/20",
-    hard: "text-red-500 bg-red-500/10 border-red-500/20",
+    easy: "text-emerald-600 bg-emerald-500/10 border-emerald-500/20 dark:text-emerald-400 dark:bg-emerald-500/10 dark:border-emerald-500/20",
+    medium: "text-amber-600 bg-amber-500/10 border-amber-500/20 dark:text-amber-400 dark:bg-amber-500/10 dark:border-amber-500/20",
+    hard: "text-rose-600 bg-rose-500/10 border-rose-500/20 dark:text-rose-400 dark:bg-rose-500/10 dark:border-rose-500/20",
   };
 
   return (
-    <div className="flex flex-col border-t border-border divide-y divide-border">
-      {problems.map((p) => (
+    <div className="flex flex-col gap-1.5 p-1">
+      {problems.map((p, i) => (
         <div 
           key={p._id.toString()}
-          className="group flex items-center justify-between p-3 hover:bg-muted/50 transition-colors duration-200"
+          className="group relative flex items-center justify-between p-3.5 rounded-xl border border-transparent hover:border-border/50 hover:bg-muted/40 transition-all duration-300 overflow-hidden animate-in fade-in slide-in-from-bottom-2"
+          style={{ animationDelay: `${Math.min(i * 50, 500)}ms`, animationFillMode: 'both' }}
         >
-          <div className="flex items-center gap-3 overflow-hidden">
+          {/* Subtle gradient background on hover */}
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/0 to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+
+          <div className="flex items-center gap-4 overflow-hidden relative z-10 w-full">
             <button
               onClick={() => onToggleComplete?.(p._id.toString(), !p.completed)}
               className={cn(
-                "flex items-center justify-center h-4 w-4 shrink-0 rounded-none border transition-colors duration-200",
+                "relative flex items-center justify-center h-5 w-5 shrink-0 rounded-full border shadow-sm transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 focus-visible:ring-offset-background",
                 p.completed 
-                  ? "bg-primary border-primary text-primary-foreground" 
-                  : "border-input bg-background group-hover:border-primary/50"
+                  ? "bg-primary border-primary text-primary-foreground scale-100" 
+                  : "border-input bg-background/50 hover:border-primary/50 hover:bg-muted scale-95 hover:scale-100"
               )}
             >
-              {p.completed && <Check className="h-3 w-3" strokeWidth={3} />}
+              {p.completed && (
+                <Check className="h-3 w-3 animate-in zoom-in-50 duration-200" strokeWidth={3} />
+              )}
             </button>
-            <Link
-              href={p.url}
-              target="_blank"
-              className="text-sm font-medium hover:underline truncate flex items-center gap-1.5"
-            >
-              {p.title}
-              <ExternalLink className="h-3 w-3 text-muted-foreground" />
-            </Link>
-          </div>
-          <div className="flex items-center gap-2 shrink-0 ml-4">
-            <span className={cn(
-              "px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-none border",
-              difficultyColors[p.difficulty as keyof typeof difficultyColors] || "text-muted-foreground bg-muted border-border"
-            )}>
-              {p.difficulty}
-            </span>
+            
+            <div className="flex items-center justify-between w-full">
+              <Link
+                href={p.url}
+                target="_blank"
+                className="text-sm font-semibold text-foreground/90 hover:text-primary transition-colors truncate flex items-center gap-2 group/link"
+              >
+                {p.title}
+                <ExternalLink className="h-3 w-3 text-muted-foreground opacity-0 -translate-x-2 group-hover/link:opacity-100 group-hover/link:translate-x-0 transition-all duration-300" />
+              </Link>
+
+              <div className="flex items-center gap-3 shrink-0 ml-4">
+                <span className={cn(
+                  "px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest rounded-md border backdrop-blur-sm shadow-sm transition-colors duration-300",
+                  difficultyColors[p.difficulty.toLowerCase() as keyof typeof difficultyColors] || "text-muted-foreground bg-muted border-border"
+                )}>
+                  {p.difficulty}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       ))}

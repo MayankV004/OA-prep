@@ -3,6 +3,7 @@ export interface PatternVariation {
   title: string;
   concept: string;
   templateCode: string;
+  problems?: any[];
 }
 
 export interface PatternData {

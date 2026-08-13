@@ -7,25 +7,37 @@ import { TemplateCodeBlock } from '@/components/dsa/TemplateCodeBlock';
 import { ExplanationBlock } from '@/components/dsa/ExplanationBlock';
 import { PatternContentClient } from '@/components/dsa/PatternContentClient';
 import { highlightCode } from '@/lib/shiki';
-import * as allPatterns from '@/data/patterns';
 import { notFound } from 'next/navigation';
+import { client } from '@/sanity/lib/client';
+
+export const revalidate = 60; // revalidate this page every 60 seconds
 
 export default async function DSAPatternPage({ params }: { params: Promise<{ pattern: string }> }) {
   const { pattern: slug } = await params;
   
-  // Find the pattern by matching the slug
-  const pattern = Object.values(allPatterns).find(p => p.slug === slug);
+  // Find the pattern by matching the slug from Sanity and fetch its nested problems
+  const pattern = await client.fetch(`*[_type == "pattern" && slug.current == $slug][0]{
+    ...,
+    variations[]{
+      ...,
+      "problems": problems[]->
+    }
+  }`, { slug });
 
   if (!pattern) {
     notFound();
   }
 
   // Pre-render code highlighting on the server
-  const baseTemplateHtml = await highlightCode(pattern.templateCode, 'java');
+  const baseTemplateHtml = pattern.templateCode ? await highlightCode(pattern.templateCode, 'java') : '';
   
   const htmlBlocks: Record<string, string> = {};
-  for (const v of pattern.variations) {
-    htmlBlocks[v.id] = await highlightCode(v.templateCode, 'java');
+  if (pattern.variations) {
+    for (const v of pattern.variations) {
+      if (v.templateCode) {
+        htmlBlocks[v.id] = await highlightCode(v.templateCode, 'java');
+      }
+    }
   }
 
   return (
@@ -78,10 +90,13 @@ export default async function DSAPatternPage({ params }: { params: Promise<{ pat
 
         <ExplanationBlock text={pattern.explanation} />
         
-        {pattern.variations.length > 0 && (
+        {pattern.variations && pattern.variations.length > 0 && (
           <div className="pt-4 space-y-4">
             <h2 className="text-lg font-bold">Variations</h2>
-            <PatternContentClient pattern={pattern} htmlBlocks={htmlBlocks} />
+            <PatternContentClient 
+              pattern={pattern} 
+              htmlBlocks={htmlBlocks} 
+            />
           </div>
         )}
       </div>

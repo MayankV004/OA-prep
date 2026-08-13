@@ -7,3 +7,4 @@ export * from './cheatsheet';
 export * from './taxonomy';
 export * from './activity';
 export * from './invite';
+export * from './progress';

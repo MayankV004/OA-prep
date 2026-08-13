@@ -26,6 +26,12 @@ export const variationType = defineType({
       name: 'templateCode',
       title: 'Template Code (Java)',
       type: 'text'
+    }),
+    defineField({
+      name: 'problems',
+      title: 'Problems',
+      type: 'array',
+      of: [{ type: 'reference', to: [{ type: 'problem' }] }]
     })
   ]
 })

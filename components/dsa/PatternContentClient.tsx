@@ -6,19 +6,20 @@ import { VariationAccordionItem } from './VariationAccordionItem';
 import { Accordion } from '@/components/ui/accordion';
 
 interface PatternContentClientProps {
-  pattern: PatternData;
-  htmlBlocks: Record<string, string>; // Map of variation id -> html
+  pattern: PatternData & { variations?: any[] };
+  htmlBlocks: Record<string, string>;
 }
 
 export function PatternContentClient({ pattern, htmlBlocks }: PatternContentClientProps) {
   const queryClient = useQueryClient();
-  const queryKey = ['problems', { kind: 'pattern', group: pattern.title }];
+  const queryKey = ['problems', 'progress', { kind: 'pattern', group: pattern.title }];
 
-  const { data: problems = [] } = useQuery({
+  // Fetch only the array of completed sanityProblemIds from our Next.js API
+  const { data: completedIds = [] } = useQuery({
     queryKey,
     queryFn: async () => {
-      const res = await fetch(`/api/problems?kind=pattern&pattern=${encodeURIComponent(pattern.slug)}`);
-      if (!res.ok) throw new Error('Failed to load problems');
+      const res = await fetch(`/api/problems/progress?kind=pattern&returnType=ids`);
+      if (!res.ok) throw new Error('Failed to load progress');
       return res.json();
     },
   });
@@ -35,12 +36,12 @@ export function PatternContentClient({ pattern, htmlBlocks }: PatternContentClie
     },
     onMutate: async ({ problemId, completed }) => {
       await queryClient.cancelQueries({ queryKey });
-      const previous = queryClient.getQueryData<any[]>(queryKey);
+      const previous = queryClient.getQueryData<string[]>(queryKey);
       if (previous) {
-        queryClient.setQueryData(
-          queryKey,
-          previous.map((p) => (p._id === problemId ? { ...p, completed } : p))
-        );
+        const next = completed 
+          ? [...previous, problemId] 
+          : previous.filter(id => id !== problemId);
+        queryClient.setQueryData(queryKey, next);
       }
       return { previous };
     },
@@ -54,39 +55,29 @@ export function PatternContentClient({ pattern, htmlBlocks }: PatternContentClie
   };
 
   return (
-    <Accordion type="multiple" className="w-full space-y-4">
-      {(() => {
-        // Find all unique variations from problems
-        const problemVariations = Array.from(new Set(problems.map((p: any) => p.variation || 'General')));
-        
-        // Also include any variations defined in the pattern data that might not have problems yet
-        const definedVariations = pattern.variations.map(v => v.title);
-        
-        const allVariationTitles = Array.from(new Set([...definedVariations, ...problemVariations]));
-        
-        return allVariationTitles.map((variationTitle) => {
-          const variationProblems = problems.filter((p: any) => (p.variation || 'General') === variationTitle);
-          if (variationProblems.length === 0 && !definedVariations.includes(variationTitle)) return null;
+    <Accordion multiple className="w-full space-y-4">
+      {pattern.variations?.map((variationData) => {
+        // Map nested problems to include completed status
+        const variationProblems = (variationData.problems || []).filter(Boolean).map((p: any) => ({
+          ...p,
+          _id: p._id,
+          completed: completedIds.includes(p._id)
+        }));
 
-          // Try to find matching pattern data for this variation
-          const variationData = pattern.variations.find(v => v.title === variationTitle) || {
-            id: variationTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-            title: variationTitle,
-            concept: '',
-            templateCode: ''
-          };
+        if (variationProblems.length === 0 && !variationData.concept && !variationData.templateCode) {
+          return null;
+        }
 
-          return (
-            <VariationAccordionItem
-              key={variationData.id}
-              variation={variationData}
-              problems={variationProblems}
-              html={htmlBlocks[variationData.id]}
-              onToggleComplete={handleToggleComplete}
-            />
-          );
-        });
-      })()}
+        return (
+          <VariationAccordionItem
+            key={variationData.id}
+            variation={variationData}
+            problems={variationProblems}
+            html={htmlBlocks[variationData.id]}
+            onToggleComplete={handleToggleComplete}
+          />
+        );
+      })}
     </Accordion>
   );
 }
