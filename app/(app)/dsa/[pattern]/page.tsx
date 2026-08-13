@@ -1,8 +1,5 @@
-import { use, Suspense } from 'react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
 import { ArrowLeft, BookOpen, ChevronRight, Layers } from 'lucide-react';
-import { PatternConceptBlock } from '@/components/dsa/PatternConceptBlock';
 import { TemplateCodeBlock } from '@/components/dsa/TemplateCodeBlock';
 import { ExplanationBlock } from '@/components/dsa/ExplanationBlock';
 import { PatternContentClient } from '@/components/dsa/PatternContentClient';

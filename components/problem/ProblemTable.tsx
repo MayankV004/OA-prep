@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { ProblemRow, Problem } from './ProblemRow';
 import { NotesDrawer } from './NotesDrawer';
 import { Button } from '@/components/ui/button';

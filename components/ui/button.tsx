@@ -10,7 +10,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground shadow-e1 hover:bg-accent-600 hover:shadow-e2",
+          "bg-primary text-primary-foreground shadow-e1 hover:bg-accent-700 hover:shadow-e2",
         // Tertiary only — the borderless language prefers fills and tints.
         outline:
           "border-border bg-transparent hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground",
