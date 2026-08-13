@@ -1,92 +1,127 @@
 'use client';
 
-import { useState } from 'react';
-import { authClient } from '@/lib/auth-client';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+
+import { authClient } from '@/lib/auth-client';
+import { Button } from '@/components/ui/button';
+import { Heading, Text } from '@/components/ui/typography';
+import { AuthField, FormBanner, PasswordField } from '@/components/auth/AuthField';
 
 export default function SignInPage() {
+  const router = useRouter();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const [touched, setTouched] = useState<{ email?: boolean }>({});
 
-  const handleSignIn = async (e: React.FormEvent) => {
+  // The invite flow can redirect here with ?success=Account+created. Read it
+  // from location rather than useSearchParams to avoid a Suspense boundary.
+  useEffect(() => {
+    const success = new URLSearchParams(window.location.search).get('success');
+    if (success) setNotice(success);
+  }, []);
+
+  const emailError =
+    touched.email && email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+      ? 'Enter a valid email address'
+      : null;
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
-    
-    try {
-      const { error } = await authClient.signIn.email({
-        email,
-        password
-      });
 
-      if (error) {
-        setError(error.message || 'Invalid email or password');
-      } else {
-        router.push('/dashboard');
-      }
-    } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred');
-    } finally {
+    // Unchanged better-auth contract: same method, same field names.
+    const { error: signInError } = await authClient.signIn.email({
+      email,
+      password,
+    });
+
+    if (signInError) {
+      setError(signInError.message || 'Invalid email or password');
       setLoading(false);
+      return;
     }
+
+    router.push('/dashboard');
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-muted/40 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl font-bold">Sign In</CardTitle>
-          <CardDescription>
-            Enter your email and password to access your dashboard
-          </CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSignIn}>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="email">Email</label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="password">Password</label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            {error && <div className="text-sm text-destructive font-medium text-center">{error}</div>}
-          </CardContent>
-          <CardFooter className="flex-col gap-4">
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Sign In
-            </Button>
-            <p className="text-sm text-center text-muted-foreground">
-              Don&apos;t have an account?{' '}
-              <Link href="/sign-up" className="font-semibold text-primary hover:underline">
-                Sign up
-              </Link>
-            </p>
-          </CardFooter>
-        </form>
-      </Card>
+    <div className="animate-in-up">
+      <div className="space-y-1.5">
+        <Heading level="page">Welcome back</Heading>
+        <Text size="compact" tone="muted">
+          Sign in to pick up where you left off.
+        </Text>
+      </div>
+
+      <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+        {notice ? <FormBanner tone="success">{notice}</FormBanner> : null}
+        {error ? <FormBanner tone="error">{error}</FormBanner> : null}
+
+        <AuthField
+          id="email"
+          label="Email"
+          type="email"
+          inputMode="email"
+          autoComplete="email"
+          placeholder="you@college.edu"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          onBlur={() => setTouched((t) => ({ ...t, email: true }))}
+          error={emailError}
+          valid={Boolean(email) && !emailError}
+          disabled={loading}
+        />
+
+        <div className="space-y-1.5">
+          <PasswordField
+            id="password"
+            label="Password"
+            autoComplete="current-password"
+            placeholder="••••••••"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            disabled={loading}
+          />
+          <div className="flex justify-end">
+            {/* TODO: backend — no password reset route exists yet. */}
+            <Link
+              href="/sign-in"
+              className="rounded text-xs text-text-muted outline-none transition-colors hover:text-primary"
+            >
+              Forgot password?
+            </Link>
+          </div>
+        </div>
+
+        <Button
+          type="submit"
+          size="xl"
+          className="w-full"
+          loading={loading}
+          disabled={!email || !password}
+        >
+          Sign in
+        </Button>
+      </form>
+
+      <Text size="compact" tone="muted" className="mt-6 text-center">
+        New here?{' '}
+        <Link
+          href="/sign-up"
+          className="rounded font-medium text-primary outline-none hover:underline"
+        >
+          Create an account
+        </Link>
+      </Text>
     </div>
   );
 }
