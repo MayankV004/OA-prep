@@ -1,12 +1,23 @@
 'use client';
 
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Skeleton } from '@/components/ui/skeleton';
+import { PageHeading, Heading, Text } from '@/components/ui/typography';
 import { Plus, FileText } from 'lucide-react';
 import { formatDistanceToNow, parseISO } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 interface Cheatsheet { _id: string; title: string; slug: string; tags?: string[]; updatedAt: string }
+
+/** Filter pill — comfortable tap target on mobile, tighter on desktop. */
+const chipClass =
+  'press inline-flex min-h-11 items-center rounded-full px-3.5 text-xs font-medium transition-colors duration-150 ease-out-quart outline-none focus-visible:shadow-glow sm:min-h-8';
 
 export default function CheatsheetsPage() {
   const { data: cheatsheets = [], isLoading } = useQuery<Cheatsheet[]>({
@@ -23,32 +34,46 @@ export default function CheatsheetsPage() {
   const filtered = tagFilter ? cheatsheets.filter(c => c.tags?.includes(tagFilter)) : cheatsheets;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Cheat Sheets</h1>
-          <p className="text-muted-foreground text-sm mt-1">Quick reference Markdown documents</p>
-        </div>
-        <Button size="sm"><Plus className="h-4 w-4 mr-1.5" />New Cheat Sheet</Button>
-      </div>
+    <div className="space-y-8 pb-12">
+      <PageHeading
+        overline="Reference"
+        title="Cheat Sheets"
+        description="Quick reference Markdown documents you can edit inline."
+        actions={
+          <Button size="lg">
+            <Plus aria-hidden />
+            New Cheat Sheet
+          </Button>
+        }
+      />
 
       {allTags.length > 0 && (
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Filter by tag">
           <button
+            type="button"
             onClick={() => setTagFilter('')}
-            className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
-              !tagFilter ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'
-            }`}
+            aria-pressed={!tagFilter}
+            className={cn(
+              chipClass,
+              !tagFilter
+                ? 'bg-primary text-primary-foreground shadow-e1'
+                : 'bg-muted text-text-secondary hover:bg-surface-sunken hover:text-foreground'
+            )}
           >
             All
           </button>
           {allTags.map(tag => (
             <button
               key={tag}
+              type="button"
               onClick={() => setTagFilter(tag === tagFilter ? '' : tag)}
-              className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
-                tagFilter === tag ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'
-              }`}
+              aria-pressed={tagFilter === tag}
+              className={cn(
+                chipClass,
+                tagFilter === tag
+                  ? 'bg-primary text-primary-foreground shadow-e1'
+                  : 'bg-muted text-text-secondary hover:bg-surface-sunken hover:text-foreground'
+              )}
             >
               {tag}
             </button>
@@ -57,38 +82,91 @@ export default function CheatsheetsPage() {
       )}
 
       {isLoading ? (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {[...Array(6)].map((_, i) => <div key={i} className="h-28 bg-muted animate-pulse rounded-xl" />)}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className="space-y-4 rounded-xl bg-card p-4 shadow-e2"
+              style={{ animationDelay: `${i * 60}ms` }}
+            >
+              <div className="flex items-start gap-3">
+                <Skeleton className="size-10 shrink-0 rounded-xl" />
+                <div className="min-w-0 flex-1 space-y-2">
+                  <Skeleton className="h-4 w-4/5" />
+                  <Skeleton className="h-3 w-1/2" />
+                </div>
+              </div>
+              <div className="flex gap-1.5">
+                <Skeleton className="h-5 w-14 rounded-full" />
+                <Skeleton className="h-5 w-16 rounded-full" />
+              </div>
+              <Skeleton className="h-3 w-24" />
+            </div>
+          ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-16 text-muted-foreground">
-          <FileText className="h-10 w-10 mx-auto mb-3 opacity-30" />
-          <p className="text-sm">No cheat sheets yet. Create your first one.</p>
-        </div>
+        tagFilter ? (
+          <EmptyState
+            icon={FileText}
+            title={`No cheat sheets tagged “${tagFilter}”`}
+            description="Nothing matches this tag yet. Clear the filter to see everything."
+            action={
+              <Button variant="soft" size="lg" onClick={() => setTagFilter('')}>
+                Clear filter
+              </Button>
+            }
+          />
+        ) : (
+          <EmptyState
+            icon={FileText}
+            title="No cheat sheets yet"
+            description="Create your first quick-reference sheet and it will live here."
+            action={
+              <Button size="lg">
+                <Plus aria-hidden />
+                New Cheat Sheet
+              </Button>
+            }
+          />
+        )
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map(sheet => (
-            <Link key={sheet._id} href={`/cheatsheets/${sheet.slug}`}>
-              <div className="group rounded-xl border border-border bg-card p-4 hover:border-primary/50 hover:shadow-sm transition-all cursor-pointer h-full flex flex-col gap-3">
-                <div className="flex items-start gap-2.5">
-                  <div className="h-8 w-8 rounded-lg bg-orange-500/10 flex items-center justify-center flex-shrink-0">
-                    <FileText className="h-4 w-4 text-orange-600" />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {filtered.map((sheet, i) => (
+            <Link
+              key={sheet._id}
+              href={`/cheatsheets/${sheet.slug}`}
+              className="group block rounded-xl outline-none animate-in-up"
+              style={{ animationDelay: `${i * 40}ms` }}
+            >
+              <Card interactive className="h-full">
+                <CardContent className="flex flex-1 flex-col gap-3">
+                  <div className="flex items-start gap-3">
+                    <span
+                      aria-hidden
+                      className="grid size-10 shrink-0 place-items-center rounded-xl bg-accent text-accent-foreground"
+                    >
+                      <FileText className="size-4.5" />
+                    </span>
+                    <Heading level="card" className="min-w-0 flex-1 leading-snug">
+                      {sheet.title}
+                    </Heading>
                   </div>
-                  <h3 className="font-semibold text-sm leading-tight">{sheet.title}</h3>
-                </div>
-                {sheet.tags && sheet.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
-                    {sheet.tags.map(tag => (
-                      <span key={tag} className="text-xs bg-muted text-muted-foreground px-1.5 py-0.5 rounded">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
-                <p className="text-xs text-muted-foreground mt-auto">
-                  {formatDistanceToNow(parseISO(sheet.updatedAt), { addSuffix: true })}
-                </p>
-              </div>
+
+                  {sheet.tags && sheet.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {sheet.tags.map(tag => (
+                        <Badge key={tag} variant="secondary">{tag}</Badge>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+
+                <CardFooter>
+                  <Text size="caption" tone="muted">
+                    Updated {formatDistanceToNow(parseISO(sheet.updatedAt), { addSuffix: true })}
+                  </Text>
+                </CardFooter>
+              </Card>
             </Link>
           ))}
         </div>
@@ -96,5 +174,3 @@ export default function CheatsheetsPage() {
     </div>
   );
 }
-
-import { useState } from 'react';
