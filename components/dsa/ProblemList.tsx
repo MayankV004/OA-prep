@@ -1,99 +1,120 @@
 'use client';
 
-import { ExternalLink, Check } from "lucide-react";
+import { ExternalLink, Check, ListChecks } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Problem } from "@/components/problem/ProblemRow";
+import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Text } from "@/components/ui/typography";
 
 interface ProblemListProps {
   problems: Problem[];
   onToggleComplete?: (problemId: string, completed: boolean) => void;
 }
 
+/** Difficulty always carries its label — colour is reinforcement, never the signal. */
+const DIFFICULTY_TONE: Record<string, string> = {
+  easy: "bg-success-muted text-success",
+  medium: "bg-warning-muted text-warning",
+  hard: "bg-danger-muted text-destructive",
+};
+
 export function ProblemList({ problems, onToggleComplete }: ProblemListProps) {
   if (!problems.length) {
     return (
-      <div className="p-6 text-sm text-muted-foreground italic text-center rounded-xl bg-muted/20 border border-border/50">
-        No problems assigned to this variation yet.
-      </div>
+      <EmptyState
+        compact
+        icon={ListChecks}
+        title="No problems yet"
+        description="This variation has no practice problems assigned to it."
+        className="rounded-xl bg-card shadow-e1"
+      />
     );
   }
 
-  const difficultyColors = {
-    easy: "text-emerald-600 bg-emerald-500/10 border-emerald-500/20 dark:text-emerald-400 dark:bg-emerald-500/10 dark:border-emerald-500/20",
-    medium: "text-amber-600 bg-amber-500/10 border-amber-500/20 dark:text-amber-400 dark:bg-amber-500/10 dark:border-amber-500/20",
-    hard: "text-rose-600 bg-rose-500/10 border-rose-500/20 dark:text-rose-400 dark:bg-rose-500/10 dark:border-rose-500/20",
-  };
-
   return (
-    <div className="flex flex-col gap-1.5 p-1">
-      {problems.map((p, i) => (
-        <div 
-          key={p._id.toString()}
-          className="group relative flex items-center justify-between p-3.5 rounded-xl border border-transparent hover:border-border/50 hover:bg-muted/40 transition-all duration-300 overflow-hidden animate-in fade-in slide-in-from-bottom-2"
-          style={{ animationDelay: `${Math.min(i * 50, 500)}ms`, animationFillMode: 'both' }}
-        >
-          {/* Subtle gradient background on hover */}
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/0 to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+    <ul className="flex flex-col overflow-hidden rounded-xl bg-card shadow-e1">
+      {problems.map((p, i) => {
+        const label = p.name || p.title || 'problem';
+        const platform = p.platform || (p as any).source;
+        const tone =
+          DIFFICULTY_TONE[String(p.difficulty).toLowerCase()] ?? "bg-muted text-text-muted";
 
-          <div className="flex items-center gap-4 overflow-hidden relative z-10 w-full">
+        return (
+          <li
+            key={p._id.toString()}
+            className="group animate-in-up flex items-start gap-2 px-2 py-1.5 transition-colors duration-150 ease-out-quart odd:bg-surface-sunken/60 hover:bg-accent/50 sm:items-center sm:gap-3 sm:px-3"
+            style={{ animationDelay: `${Math.min(i * 40, 400)}ms` }}
+          >
+            {/* Completion toggle — 44px touch target on small screens */}
             <button
+              type="button"
               onClick={() => onToggleComplete?.(p._id.toString(), !p.completed)}
-              className={cn(
-                "relative flex items-center justify-center h-5 w-5 shrink-0 rounded-full border shadow-sm transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 focus-visible:ring-offset-background",
-                p.completed 
-                  ? "bg-primary border-primary text-primary-foreground scale-100" 
-                  : "border-input bg-background/50 hover:border-primary/50 hover:bg-muted scale-95 hover:scale-100"
-              )}
+              aria-pressed={p.completed}
+              aria-label={`Mark ${label} as ${p.completed ? 'incomplete' : 'complete'}`}
+              className="press -ml-1 grid size-11 shrink-0 place-items-center rounded-lg outline-none sm:size-9"
             >
-              {p.completed && (
-                <Check className="h-3 w-3 animate-in zoom-in-50 duration-200" strokeWidth={3} />
-              )}
+              <span
+                aria-hidden
+                className={cn(
+                  "grid size-5 place-items-center rounded-full transition-colors duration-150 ease-out-quart",
+                  p.completed
+                    ? "bg-primary text-primary-foreground shadow-e1"
+                    : "bg-muted text-transparent group-hover:bg-surface-sunken"
+                )}
+              >
+                <Check className="size-3" strokeWidth={3} />
+              </span>
             </button>
-            
-            <div className="flex items-center justify-between w-full">
+
+            <div className="flex min-w-0 flex-1 flex-col gap-1 py-1.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
               <Link
                 href={p.link || (p as any).url || '#'}
                 target="_blank"
-                className="text-sm font-semibold text-foreground/90 hover:text-primary transition-colors truncate flex items-center gap-2 group/link"
+                rel="noopener noreferrer"
+                className={cn(
+                  "group/link inline-flex min-w-0 items-center gap-1.5 text-sm font-medium transition-colors duration-150 ease-out-quart hover:text-primary",
+                  p.completed ? "text-text-muted" : "text-foreground"
+                )}
               >
-                {p.name || p.title}
-                <ExternalLink className="h-3 w-3 text-muted-foreground opacity-0 -translate-x-2 group-hover/link:opacity-100 group-hover/link:translate-x-0 transition-all duration-300" />
+                <span className="truncate">{p.name || p.title}</span>
+                <ExternalLink
+                  aria-hidden
+                  className="size-3 shrink-0 text-text-muted opacity-0 transition-opacity duration-150 group-hover/link:opacity-100"
+                />
               </Link>
 
-              <div className="flex items-center gap-3 shrink-0 ml-4">
-                {(p.platform || (p as any).source) && (
-                  <span className="px-2 py-0.5 text-[10px] font-semibold text-muted-foreground bg-muted rounded-md border border-border/50 uppercase tracking-wider hidden sm:inline-block">
-                    {p.platform || (p as any).source}
-                  </span>
+              <div className="flex shrink-0 flex-wrap items-center gap-1.5">
+                {platform && (
+                  <Text as="span" size="micro" tone="muted" weight="medium" className="uppercase tracking-[0.08em]">
+                    {platform}
+                  </Text>
                 )}
-                
+
                 {p.company_tags && p.company_tags.length > 0 && (
-                  <div className="hidden md:flex gap-1">
+                  <div className="hidden gap-1 md:flex">
                     {p.company_tags.slice(0, 2).map(tag => (
-                      <span key={tag} className="px-1.5 py-0.5 text-[10px] bg-primary/5 text-primary/80 border border-primary/10 rounded-sm truncate max-w-[60px]" title={tag}>
+                      <Badge key={tag} variant="ghost" className="max-w-[72px] truncate bg-muted text-text-secondary" title={tag}>
                         {tag}
-                      </span>
+                      </Badge>
                     ))}
                     {p.company_tags.length > 2 && (
-                      <span className="px-1.5 py-0.5 text-[10px] bg-primary/5 text-primary/80 border border-primary/10 rounded-sm">
+                      <Badge variant="ghost" className="bg-muted text-text-secondary tabular-nums">
                         +{p.company_tags.length - 2}
-                      </span>
+                      </Badge>
                     )}
                   </div>
                 )}
 
-                <span className={cn(
-                  "px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest rounded-md border backdrop-blur-sm shadow-sm transition-colors duration-300",
-                  difficultyColors[p.difficulty.toLowerCase() as keyof typeof difficultyColors] || "text-muted-foreground bg-muted border-border"
-                )}>
+                <Badge variant="secondary" className={cn("font-semibold", tone)}>
                   {p.difficulty}
-                </span>
+                </Badge>
               </div>
             </div>
-          </div>
-        </div>
-      ))}
-    </div>
+          </li>
+        );
+      })}
+    </ul>
   );
 }

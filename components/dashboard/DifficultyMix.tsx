@@ -1,11 +1,35 @@
 'use client';
 
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { Layers } from 'lucide-react';
+
+import { EmptyState } from '@/components/ui/empty-state';
+import { Text } from '@/components/ui/typography';
 
 interface DifficultyMixProps {
   data: { Easy?: number; Medium?: number; Hard?: number };
   groups?: string[];
 }
+
+/**
+ * One source of truth for the difficulty ramp so the legend swatches and the
+ * stacked bar can never drift apart. All values are design tokens.
+ */
+const DIFFICULTY_COLORS: Record<'Easy' | 'Medium' | 'Hard', string> = {
+  Easy: 'var(--chart-4)',
+  Medium: 'var(--chart-3)',
+  Hard: 'var(--destructive)',
+};
+
+/** Borderless popover styling, driven entirely by design tokens. */
+const TOOLTIP_STYLE = {
+  backgroundColor: 'var(--popover)',
+  color: 'var(--popover-foreground)',
+  border: 'none',
+  borderRadius: 'var(--radius-md)',
+  boxShadow: 'var(--elevation-3)',
+  fontSize: '12px',
+} as const;
 
 export function DifficultyMix({ data }: DifficultyMixProps) {
   const chartData = [
@@ -14,41 +38,53 @@ export function DifficultyMix({ data }: DifficultyMixProps) {
 
   const total = (data.Easy ?? 0) + (data.Medium ?? 0) + (data.Hard ?? 0);
   if (!total) return (
-    <div className="h-[120px] flex items-center justify-center text-muted-foreground text-sm">
-      No completed problems yet
+    <div className="flex h-[120px] items-center justify-center">
+      <EmptyState
+        compact
+        icon={Layers}
+        title="No completed problems yet"
+        description="Your Easy / Medium / Hard split shows up after your first completion."
+      />
     </div>
   );
 
   return (
-    <div className="space-y-3">
-      <div className="flex gap-4 text-sm">
+    <div className="min-w-0 space-y-3">
+      <dl className="flex flex-wrap gap-x-4 gap-y-2">
         {(['Easy', 'Medium', 'Hard'] as const).map(d => (
           <div key={d} className="flex items-center gap-1.5">
-            <span className={`h-2.5 w-2.5 rounded-full ${
-              d === 'Easy' ? 'bg-emerald-500' : d === 'Medium' ? 'bg-amber-500' : 'bg-red-500'
-            }`} />
-            <span className="text-muted-foreground">{d}</span>
-            <span className="font-medium">{data[d] ?? 0}</span>
+            <span
+              aria-hidden
+              className="size-2.5 shrink-0 rounded-full"
+              style={{ backgroundColor: DIFFICULTY_COLORS[d] }}
+            />
+            <Text as="span" size="caption" tone="muted">
+              {d}
+            </Text>
+            <Text as="span" size="caption" tone="primary" weight="semibold" numeric>
+              {data[d] ?? 0}
+            </Text>
           </div>
         ))}
+      </dl>
+
+      <div className="h-10 w-full min-w-0">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={chartData} layout="vertical" margin={{ left: 0, right: 0 }}>
+            <XAxis type="number" hide />
+            <YAxis type="category" hide />
+            <Tooltip
+              cursor={false}
+              contentStyle={TOOLTIP_STYLE}
+              labelStyle={{ color: 'var(--muted-foreground)', fontSize: '11px' }}
+              itemStyle={{ color: 'var(--popover-foreground)' }}
+            />
+            <Bar dataKey="Easy" stackId="d" fill={DIFFICULTY_COLORS.Easy} radius={[4, 0, 0, 4]} />
+            <Bar dataKey="Medium" stackId="d" fill={DIFFICULTY_COLORS.Medium} />
+            <Bar dataKey="Hard" stackId="d" fill={DIFFICULTY_COLORS.Hard} radius={[0, 4, 4, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
       </div>
-      <ResponsiveContainer width="100%" height={40}>
-        <BarChart data={chartData} layout="vertical" margin={{ left: 0, right: 0 }}>
-          <XAxis type="number" hide />
-          <YAxis type="category" hide />
-          <Tooltip
-            contentStyle={{
-              backgroundColor: 'hsl(var(--card))',
-              border: '1px solid hsl(var(--border))',
-              borderRadius: '8px',
-              fontSize: '12px',
-            }}
-          />
-          <Bar dataKey="Easy" stackId="d" fill="#10b981" radius={[4, 0, 0, 4]} />
-          <Bar dataKey="Medium" stackId="d" fill="#f59e0b" />
-          <Bar dataKey="Hard" stackId="d" fill="#ef4444" radius={[0, 4, 4, 0]} />
-        </BarChart>
-      </ResponsiveContainer>
     </div>
   );
 }

@@ -2,8 +2,11 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { X, Save, Loader2 } from 'lucide-react';
+import { X, Check, Loader2, NotebookPen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Heading, Text } from '@/components/ui/typography';
 import { MarkdownEditor } from '@/components/markdown/Editor';
 import { MarkdownView } from '@/components/markdown/View';
 import { Problem } from './ProblemRow';
@@ -59,45 +62,67 @@ export function NotesDrawer({ problem, queryKey, onClose }: NotesDrawerProps) {
     return () => window.removeEventListener('keydown', handler);
   }, [onClose]);
 
+  const label = problem.name || problem.title || 'this problem';
+
   return (
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
+        aria-hidden
+        className="animate-in-fade fixed inset-0 z-40 bg-foreground/35 backdrop-blur-sm"
         onClick={onClose}
       />
-      {/* Drawer */}
-      <div className="fixed right-0 top-0 z-50 h-full w-full max-w-xl bg-background border-l border-border shadow-2xl flex flex-col">
+      {/* Drawer — elevation, not a rule, separates it from the page */}
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Notes for ${label}`}
+        className="fixed top-0 right-0 z-50 flex h-full w-full max-w-xl flex-col bg-surface shadow-e4"
+      >
         {/* Header */}
-        <div className="flex items-center gap-3 px-5 py-4 border-b border-border">
-          <div className="flex-1 min-w-0">
-            <p className="text-xs text-muted-foreground font-medium mb-0.5">Notes</p>
-            <h3 className="font-semibold text-sm truncate">{problem.title}</h3>
+        <div className="flex items-center gap-3 bg-surface-sunken px-5 py-3.5">
+          <div className="min-w-0 flex-1">
+            <Heading level="overline">Notes</Heading>
+            <Heading level="card" as="h2" className="truncate">
+              {problem.name || problem.title}
+            </Heading>
           </div>
-          <div className="flex items-center gap-2">
+
+          <div className="flex shrink-0 items-center gap-2">
             {/* Save indicator */}
-            <span className="text-xs text-muted-foreground flex items-center gap-1">
-              {saveStatus === 'saving' && <Loader2 className="h-3 w-3 animate-spin" />}
-              {saveStatus === 'saving' && 'Saving...'}
-              {saveStatus === 'saved' && '✓ Saved'}
-            </span>
+            <Text as="span" size="micro" tone="muted" className="flex items-center gap-1" aria-live="polite">
+              {saveStatus === 'saving' && <Loader2 aria-hidden className="size-3 animate-spin" />}
+              {saveStatus === 'saving' && 'Saving…'}
+              {saveStatus === 'saved' && (
+                <>
+                  <Check aria-hidden className="size-3 text-success" />
+                  Saved
+                </>
+              )}
+            </Text>
+
             {/* Edit / Preview toggle */}
-            <div className="flex rounded-md border border-border overflow-hidden text-xs">
-              <button
+            <div className="flex items-center gap-0.5 rounded-lg bg-muted p-0.5" role="group" aria-label="Editor mode">
+              <Button
+                variant={!preview ? 'default' : 'ghost'}
+                size="xs"
+                aria-pressed={!preview}
                 onClick={() => setPreview(false)}
-                className={`px-2.5 py-1 ${!preview ? 'bg-primary text-primary-foreground' : 'bg-background text-muted-foreground hover:bg-muted'}`}
               >
                 Edit
-              </button>
-              <button
+              </Button>
+              <Button
+                variant={preview ? 'default' : 'ghost'}
+                size="xs"
+                aria-pressed={preview}
                 onClick={() => setPreview(true)}
-                className={`px-2.5 py-1 ${preview ? 'bg-primary text-primary-foreground' : 'bg-background text-muted-foreground hover:bg-muted'}`}
               >
                 Preview
-              </button>
+              </Button>
             </div>
-            <Button variant="ghost" size="icon-sm" onClick={onClose}>
-              <X className="h-4 w-4" />
+
+            <Button variant="ghost" size="icon-sm" onClick={onClose} aria-label="Close notes">
+              <X aria-hidden className="size-4" />
             </Button>
           </div>
         </div>
@@ -105,26 +130,46 @@ export function NotesDrawer({ problem, queryKey, onClose }: NotesDrawerProps) {
         {/* Body */}
         <div className="flex-1 overflow-auto p-4">
           {preview ? (
-            <MarkdownView content={notes} />
+            notes.trim() ? (
+              <MarkdownView content={notes} />
+            ) : (
+              <EmptyState
+                icon={NotebookPen}
+                title="No notes yet"
+                description="Switch to Edit and jot down the intuition, edge cases or the trick that unlocked this problem."
+                action={
+                  <Button variant="soft" size="sm" onClick={() => setPreview(false)}>
+                    Start writing
+                  </Button>
+                }
+              />
+            )
           ) : (
             <MarkdownEditor value={notes} onChange={handleChange} />
           )}
         </div>
 
         {/* Footer: problem metadata */}
-        <div className="px-5 py-3 border-t border-border bg-muted/30 flex items-center gap-3 text-xs text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-2 bg-surface-sunken px-5 py-3">
           <a
             href={problem.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-primary hover:underline"
+            className="text-xs font-medium text-primary underline-offset-4 hover:underline"
           >
             Open problem ↗
           </a>
-          <span>•</span>
-          <span>{problem.difficulty}</span>
-          {problem.pattern && <><span>•</span><span>{problem.pattern}</span></>}
-          {problem.platform && <><span>•</span><span>{problem.platform}</span></>}
+          <Badge variant="secondary">{problem.difficulty}</Badge>
+          {problem.pattern && (
+            <Text as="span" size="micro" tone="muted">
+              {problem.pattern}
+            </Text>
+          )}
+          {problem.platform && (
+            <Text as="span" size="micro" tone="muted" className="uppercase tracking-[0.08em]">
+              {problem.platform}
+            </Text>
+          )}
         </div>
       </div>
     </>

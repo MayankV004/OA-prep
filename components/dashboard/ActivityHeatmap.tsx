@@ -1,16 +1,21 @@
 'use client';
 
 import { useMemo } from 'react';
-import { format, parseISO, eachDayOfInterval, subDays, startOfDay } from 'date-fns';
+import { format, eachDayOfInterval, subDays, startOfDay } from 'date-fns';
+import { CalendarDays } from 'lucide-react';
+
+import { cn } from '@/lib/utils';
+import { Text } from '@/components/ui/typography';
+import { EmptyState } from '@/components/ui/empty-state';
 
 interface HeatmapCell { date: string; count: number }
 
 const INTENSITY_CLASSES = [
   'bg-muted',
-  'bg-primary/20',
-  'bg-primary/40',
-  'bg-primary/65',
-  'bg-primary',
+  'bg-accent-200',
+  'bg-accent-300',
+  'bg-accent-400',
+  'bg-accent-500',
 ];
 
 export function ActivityHeatmap({ data }: { data: HeatmapCell[] }) {
@@ -39,13 +44,22 @@ export function ActivityHeatmap({ data }: { data: HeatmapCell[] }) {
 
   const totalCount = data.reduce((s, d) => s + d.count, 0);
 
+  if (!data.length) return (
+    <EmptyState
+      compact
+      icon={CalendarDays}
+      title="No activity recorded"
+      description="Your last 90 days will fill in as you work through problems."
+    />
+  );
+
   return (
-    <div className="space-y-2">
-      <div className="flex gap-1 overflow-x-auto pb-1">
+    <div className="min-w-0 space-y-3">
+      <div className="-mx-1 flex gap-1 overflow-x-auto px-1 pb-1">
         {weeks.map((week, wi) => (
           <div key={wi} className="flex flex-col gap-1">
             {week.map((day, di) => {
-              if (!day) return <div key={di} className="h-3 w-3 rounded-sm" />;
+              if (!day) return <div key={di} className="size-3 rounded-sm" />;
               const dateStr = format(day, 'yyyy-MM-dd');
               const count = countByDate[dateStr] ?? 0;
               const intensity = Math.min(count, 4);
@@ -53,21 +67,31 @@ export function ActivityHeatmap({ data }: { data: HeatmapCell[] }) {
                 <div
                   key={di}
                   title={`${format(day, 'MMM d, yyyy')}: ${count} action${count !== 1 ? 's' : ''}`}
-                  className={`h-3 w-3 rounded-sm cursor-default transition-opacity hover:opacity-80 ${INTENSITY_CLASSES[intensity]}`}
+                  className={cn(
+                    'size-3 shrink-0 rounded-sm transition-opacity duration-200 ease-out-quart hover:opacity-70',
+                    INTENSITY_CLASSES[intensity]
+                  )}
                 />
               );
             })}
           </div>
         ))}
       </div>
-      <div className="flex items-center justify-between text-xs text-muted-foreground">
-        <span>{totalCount} actions in the last 90 days</span>
+
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <Text size="caption" tone="muted" numeric>
+          {totalCount} actions in the last 90 days
+        </Text>
         <div className="flex items-center gap-1">
-          <span>Less</span>
+          <Text as="span" size="micro" tone="muted">
+            Less
+          </Text>
           {INTENSITY_CLASSES.map((cls, i) => (
-            <div key={i} className={`h-2.5 w-2.5 rounded-sm ${cls}`} />
+            <div key={i} aria-hidden className={cn('size-2.5 rounded-sm', cls)} />
           ))}
-          <span>More</span>
+          <Text as="span" size="micro" tone="muted">
+            More
+          </Text>
         </div>
       </div>
     </div>

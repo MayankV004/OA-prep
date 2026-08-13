@@ -3,6 +3,7 @@
 import { Check, Copy } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 interface CodeBlockProps {
   code: string;
@@ -21,26 +22,39 @@ export function TemplateCodeBlock({ code, html, language = "java", className }: 
   };
 
   return (
-    <div className={cn("rounded-2xl border border-border/60 overflow-hidden bg-[#0d1117] flex flex-col shadow-lg shadow-black/20", className)}>
-      <div className="flex items-center justify-between px-4 py-2.5 border-b border-border/40 bg-white/[0.02]">
-        <div className="flex items-center gap-2">
-          <div className="flex gap-1.5">
-            <div className="h-3 w-3 rounded-full bg-rose-500/80" />
-            <div className="h-3 w-3 rounded-full bg-amber-500/80" />
-            <div className="h-3 w-3 rounded-full bg-emerald-500/80" />
-          </div>
-          <span className="ml-2 text-xs font-mono text-muted-foreground uppercase opacity-70">{language}</span>
-        </div>
-        <button
+    <div
+      className={cn(
+        "flex flex-col overflow-hidden rounded-xl bg-surface-sunken shadow-e1",
+        className
+      )}
+    >
+      {/* Toolbar — tone only, no rule line */}
+      <div className="flex items-center justify-between gap-2 px-4 py-2">
+        <span className="font-mono text-2xs uppercase tracking-[0.1em] text-text-muted">
+          {language}
+        </span>
+        <Button
+          variant="ghost"
+          size="icon-sm"
           onClick={handleCopy}
-          className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-white/10 rounded-md transition-colors"
-          title="Copy code"
+          aria-label={copied ? "Code copied to clipboard" : "Copy code to clipboard"}
         >
-          {copied ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
-        </button>
+          {copied ? (
+            <Check aria-hidden className="size-4 text-success" strokeWidth={3} />
+          ) : (
+            <Copy aria-hidden className="size-4" />
+          )}
+        </Button>
       </div>
+
+      {/*
+        Shiki output (lib/shiki.ts, theme `github-dark`) is injected verbatim.
+        In dark mode we drop its inline background so the block reads as one
+        surface; in light mode the highlighter keeps its own canvas so the
+        token colours stay legible.
+      */}
       <div
-        className="p-5 overflow-x-auto text-sm font-mono prose-pre:!m-0 prose-pre:!p-0 prose-pre:!bg-transparent [&_code]:!bg-transparent"
+        className="overflow-x-auto p-4 pt-0 font-mono text-sm [&_pre]:m-0 [&_pre]:overflow-x-auto [&_pre]:rounded-lg [&_pre]:p-4 dark:[&_pre]:bg-transparent! [&_code]:bg-transparent!"
         dangerouslySetInnerHTML={{ __html: html }}
       />
     </div>
