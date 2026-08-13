@@ -1,11 +1,15 @@
 'use client';
 
 import { use } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Plus, FileText } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Plus, FileText } from 'lucide-react';
 import { formatDistanceToNow, parseISO } from 'date-fns';
+
+import { EmptyState } from '@/components/ui/empty-state';
+import { Skeleton } from '@/components/ui/skeleton';
+import { PageHeading, Text } from '@/components/ui/typography';
 
 interface Group { _id: string; name: string; slug: string }
 interface Topic { _id: string; title: string; body?: string; updatedAt: string }
@@ -37,53 +41,101 @@ export default function SubjectPage({ params }: { params: Promise<{ subject: str
   });
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <Link href="/subjects">
-          <Button variant="ghost" size="icon-sm"><ArrowLeft className="h-4 w-4" /></Button>
-        </Link>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">{group?.name ?? slug}</h1>
-          <p className="text-muted-foreground text-sm mt-0.5">{topics.length} topics</p>
-        </div>
-      </div>
+    <div className="space-y-8">
+      <div className="flex items-start gap-3">
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Back to core subjects"
+          className="mt-1 shrink-0"
+          render={<Link href="/subjects" />}
+        >
+          <ArrowLeft aria-hidden />
+        </Button>
 
-      <div className="flex justify-end">
-        <Link href={`/subjects/${slug}/new`}>
-          <Button size="sm"><Plus className="h-4 w-4 mr-1.5" />New Topic</Button>
-        </Link>
+        <PageHeading
+          className="min-w-0 flex-1"
+          overline="Core subject"
+          title={group?.name ?? slug}
+          description={
+            isLoading
+              ? 'Loading topics…'
+              : `${topics.length} ${topics.length === 1 ? 'topic' : 'topics'} in this subject`
+          }
+          actions={
+            <Button size="lg" render={<Link href={`/subjects/${slug}/new`} />}>
+              <Plus aria-hidden />
+              New Topic
+            </Button>
+          }
+        />
       </div>
 
       {isLoading ? (
-        <div className="space-y-2">
-          {[...Array(4)].map((_, i) => <div key={i} className="h-16 rounded-lg bg-muted animate-pulse" />)}
+        <div
+          className="overflow-hidden rounded-xl bg-card shadow-e1"
+          aria-busy="true"
+          aria-label="Loading topics"
+        >
+          <div className="divide-y divide-divider">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-3 px-4 py-3.5">
+                <Skeleton className="size-8 shrink-0 rounded-lg" />
+                <div className="min-w-0 flex-1 space-y-2">
+                  <Skeleton className="h-3.5 w-56 max-w-full" />
+                  <Skeleton className="h-2.5 w-28" />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       ) : topics.length === 0 ? (
-        <div className="text-center py-16 text-muted-foreground">
-          <FileText className="h-10 w-10 mx-auto mb-3 opacity-30" />
-          <p className="text-sm">No topics yet. Add your first concept note.</p>
+        <div className="rounded-xl bg-card shadow-e1">
+          <EmptyState
+            icon={FileText}
+            title="No topics yet"
+            description="Concept notes you add to this subject will be listed here."
+            action={
+              <Button size="lg" render={<Link href={`/subjects/${slug}/new`} />}>
+                <Plus aria-hidden />
+                Add your first note
+              </Button>
+            }
+          />
         </div>
       ) : (
-        <div className="space-y-2">
-          {topics.map(topic => (
-            <Link key={topic._id} href={`/subjects/${slug}/${topic._id}`}>
-              <div className="group flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3.5 hover:border-primary/40 hover:bg-muted/30 transition-all cursor-pointer">
-                <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-sm truncate">{topic.title}</h3>
-                  <p className="text-xs text-muted-foreground">
-                    Updated {formatDistanceToNow(parseISO(topic.updatedAt), { addSuffix: true })}
-                  </p>
-                </div>
-                <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-              </div>
-            </Link>
-          ))}
-        </div>
+        <section aria-label="Topics" className="overflow-hidden rounded-xl bg-card shadow-e1">
+          <ul className="divide-y divide-divider">
+            {topics.map(topic => (
+              <li key={topic._id}>
+                <Link
+                  href={`/subjects/${slug}/${topic._id}`}
+                  className="group flex min-h-14 items-center gap-3 px-4 py-3 outline-none transition-colors duration-150 ease-out-quart hover:bg-surface-sunken focus-visible:bg-surface-sunken"
+                >
+                  <span
+                    aria-hidden
+                    className="grid size-8 shrink-0 place-items-center rounded-lg bg-accent text-primary"
+                  >
+                    <FileText className="size-4" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <Text as="span" size="compact" weight="medium" tone="primary" className="block truncate">
+                      {topic.title}
+                    </Text>
+                    <Text as="span" size="caption" tone="muted" className="block truncate">
+                      Updated {formatDistanceToNow(parseISO(topic.updatedAt), { addSuffix: true })}
+                    </Text>
+                  </span>
+                  <ArrowRight
+                    aria-hidden
+                    className="size-4 shrink-0 text-text-muted opacity-0 transition-opacity duration-150 ease-out-quart group-hover:opacity-100 group-focus-visible:opacity-100"
+                  />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
     </div>
   );
 }
-
-// Need to import ArrowRight
-import { ArrowRight } from 'lucide-react';

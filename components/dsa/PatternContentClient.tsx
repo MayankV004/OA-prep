@@ -38,8 +38,8 @@ export function PatternContentClient({ pattern, htmlBlocks }: PatternContentClie
       await queryClient.cancelQueries({ queryKey });
       const previous = queryClient.getQueryData<string[]>(queryKey);
       if (previous) {
-        const next = completed 
-          ? [...previous, problemId] 
+        const next = completed
+          ? [...previous, problemId]
           : previous.filter(id => id !== problemId);
         queryClient.setQueryData(queryKey, next);
       }
@@ -55,7 +55,7 @@ export function PatternContentClient({ pattern, htmlBlocks }: PatternContentClie
   };
 
   return (
-    <Accordion multiple className="w-full space-y-4">
+    <Accordion multiple className="w-full gap-3">
       {pattern.variations?.map((variationData) => {
         // Map nested problems to include completed status
         const variationProblems = (variationData.problems || []).filter(Boolean).map((p: any) => ({

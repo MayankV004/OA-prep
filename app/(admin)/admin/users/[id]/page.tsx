@@ -1,12 +1,29 @@
 'use client';
 
-import { use, useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { use, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft, Shield, ShieldOff, Trash2, Ban, CheckCircle } from 'lucide-react';
 import { formatDistanceToNow, parseISO } from 'date-fns';
+import {
+  ArrowLeft,
+  Ban,
+  CheckCircle,
+  Shield,
+  ShieldOff,
+  Trash2,
+  UserX,
+} from 'lucide-react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { ConfirmDialog } from '@/components/ui/alert-dialog';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Progress } from '@/components/ui/progress';
+import { Skeleton, SkeletonCard } from '@/components/ui/skeleton';
+import { useToast } from '@/components/ui/toast';
+import { Heading, Metric, PageHeading, Text } from '@/components/ui/typography';
 
 interface UserDetail {
   _id: string;
@@ -20,11 +37,36 @@ interface UserDetail {
   completedProblems: number;
 }
 
-export default function AdminUserDetailPage({ params }: { params: Promise<{ id: string }> }) {
+type PendingAction = 'demote' | 'disable' | 'delete';
+
+function DetailField({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-1">
+      <Text size="micro" tone="muted" weight="medium" className="uppercase tracking-[0.08em]">
+        {label}
+      </Text>
+      {children}
+    </div>
+  );
+}
+
+export default function AdminUserDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = use(params);
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [error, setError] = useState('');
+  const toast = useToast();
+
+  const [confirming, setConfirming] = useState<PendingAction | null>(null);
 
   const { data: user, isLoading } = useQuery<UserDetail>({
     queryKey: ['admin', 'users', id],
@@ -43,9 +85,23 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
         body: JSON.stringify({ role }),
       });
       if (!res.ok) throw new Error((await res.json()).error?.message || 'Failed to change role');
+      return role;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'users', id] }),
-    onError: (err: any) => setError(err.message),
+    onSuccess: (role) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'users', id] });
+      setConfirming(null);
+      toast.add(role === 'admin' ? 'Promoted to admin' : 'Demoted to user', {
+        description: `${user?.name ?? 'This account'} now has ${
+          role === 'admin' ? 'full admin access' : 'standard access'
+        }.`,
+        type: 'success',
+      });
+    },
+    onError: (err: any) =>
+      toast.add('Could not change role', {
+        description: err?.message ?? 'Please try again.',
+        type: 'error',
+      }),
   });
 
   const disableMutation = useMutation({
@@ -56,117 +112,364 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
         body: JSON.stringify({ disabled }),
       });
       if (!res.ok) throw new Error('Failed to update status');
+      return disabled;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'users', id] }),
-    onError: (err: any) => setError(err.message),
+    onSuccess: (disabled) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'users', id] });
+      setConfirming(null);
+      toast.add(disabled ? 'Account disabled' : 'Account enabled', {
+        description: disabled
+          ? `${user?.name ?? 'This account'} can no longer sign in.`
+          : `${user?.name ?? 'This account'} can sign in again.`,
+        type: 'success',
+      });
+    },
+    onError: (err: any) =>
+      toast.add('Could not update status', {
+        description: err?.message ?? 'Please try again.',
+        type: 'error',
+      }),
   });
 
   const deleteMutation = useMutation({
     mutationFn: async () => {
-      if (!confirm('Are you sure you want to completely delete this user? This cannot be undone.')) return;
+      // Confirmation is handled by ConfirmDialog before this runs.
       const res = await fetch(`/api/admin/users/${id}?wipe=true`, { method: 'DELETE' });
       if (!res.ok) throw new Error((await res.json()).error?.message || 'Failed to delete');
       router.push('/admin');
     },
-    onError: (err: any) => setError(err.message),
+    onSuccess: () => {
+      setConfirming(null);
+      toast.add('User deleted', {
+        description: `${user?.name ?? 'The account'} and all its data were removed.`,
+        type: 'success',
+      });
+    },
+    onError: (err: any) =>
+      toast.add('Could not delete user', {
+        description: err?.message ?? 'Please try again.',
+        type: 'error',
+      }),
   });
 
-  if (isLoading) return <div className="p-8"><div className="h-32 bg-muted animate-pulse rounded-xl" /></div>;
-  if (!user) return <div className="p-8 text-center text-muted-foreground">User not found</div>;
+  /* ── Loading ─────────────────────────────────────────────────── */
+
+  if (isLoading) {
+    return (
+      <div className="max-w-3xl space-y-6">
+        <div className="space-y-2">
+          <Skeleton className="h-3 w-16" />
+          <Skeleton className="h-8 w-56" />
+        </div>
+        <Skeleton className="h-40 w-full rounded-xl" />
+        <div className="grid gap-4 sm:grid-cols-3">
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+        </div>
+        <Skeleton className="h-32 w-full rounded-xl" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="max-w-3xl">
+        <div className="rounded-xl bg-card shadow-e2">
+          <EmptyState
+            icon={UserX}
+            title="User not found"
+            description="This account may have been deleted, or the link is out of date."
+            action={
+              <Button variant="soft" render={<Link href="/admin/users" />}>
+                <ArrowLeft aria-hidden />
+                Back to users
+              </Button>
+            }
+          />
+        </div>
+      </div>
+    );
+  }
+
+  const completionPct = user.totalProblems
+    ? Math.round((user.completedProblems / user.totalProblems) * 100)
+    : 0;
+
+  const isPending =
+    roleMutation.isPending || disableMutation.isPending || deleteMutation.isPending;
 
   return (
-    <div className="max-w-3xl space-y-8">
-      <div className="flex items-center gap-3">
-        <Link href="/admin">
-          <Button variant="ghost" size="icon-sm"><ArrowLeft className="h-4 w-4" /></Button>
-        </Link>
-        <h1 className="text-2xl font-bold">User Details</h1>
-      </div>
+    <div className="animate-in-fade max-w-3xl space-y-6">
+      <Button
+        variant="ghost"
+        size="sm"
+        className="-ml-2 h-11 sm:h-7"
+        render={<Link href="/admin/users" />}
+      >
+        <ArrowLeft aria-hidden />
+        All users
+      </Button>
 
-      {error && <div className="p-3 rounded-md bg-destructive/10 text-destructive text-sm">{error}</div>}
-
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Profile Card */}
-        <div className="rounded-xl border border-border bg-card p-6 space-y-4">
-          <div>
-            <h2 className="text-lg font-semibold">{user.name}</h2>
-            <p className="text-sm text-muted-foreground">{user.email}</p>
-          </div>
-          <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border">
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">Role</p>
-              <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${
-                user.role === 'admin' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
-              }`}>
-                {user.role}
-              </span>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">Status</p>
-              <span className={`text-xs font-medium ${user.disabled ? 'text-destructive' : 'text-emerald-600 dark:text-emerald-400'}`}>
-                {user.disabled ? 'Disabled' : 'Active'}
-              </span>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">Joined</p>
-              <p className="text-sm">{formatDistanceToNow(parseISO(user.createdAt), { addSuffix: true })}</p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">Last Seen</p>
-              <p className="text-sm">{user.lastSeenAt ? formatDistanceToNow(parseISO(user.lastSeenAt), { addSuffix: true }) : 'Never'}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Stats Card */}
-        <div className="rounded-xl border border-border bg-card p-6 space-y-4">
-          <h3 className="font-medium">Platform Stats</h3>
-          <div className="space-y-4">
-            <div>
-              <div className="flex justify-between text-sm mb-1.5">
-                <span className="text-muted-foreground">Problems Completed</span>
-                <span className="font-medium">{user.completedProblems} / {user.totalProblems}</span>
-              </div>
-              <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-primary" 
-                  style={{ width: `${user.totalProblems ? (user.completedProblems / user.totalProblems) * 100 : 0}%` }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Actions Card */}
-        <div className="rounded-xl border border-border bg-card p-6 space-y-4 md:col-span-2">
-          <h3 className="font-medium">Administrative Actions</h3>
-          <div className="flex flex-wrap gap-3">
-            {user.role === 'user' ? (
-              <Button variant="outline" onClick={() => roleMutation.mutate('admin')} disabled={roleMutation.isPending}>
-                <Shield className="h-4 w-4 mr-2" /> Promote to Admin
-              </Button>
+      {/* ── Identity ───────────────────────────────────────────── */}
+      <PageHeading
+        overline="User"
+        title={user.name}
+        description={user.email}
+        actions={
+          <div className="flex items-center gap-2">
+            {user.role === 'admin' ? (
+              <Badge variant="secondary" className="bg-accent text-accent-foreground">
+                <Shield aria-hidden />
+                Admin
+              </Badge>
             ) : (
-              <Button variant="outline" onClick={() => roleMutation.mutate('user')} disabled={roleMutation.isPending}>
-                <ShieldOff className="h-4 w-4 mr-2" /> Demote to User
-              </Button>
+              <Badge variant="secondary">User</Badge>
             )}
-
             {user.disabled ? (
-              <Button variant="outline" onClick={() => disableMutation.mutate(false)} disabled={disableMutation.isPending}>
-                <CheckCircle className="h-4 w-4 mr-2 text-emerald-500" /> Enable Account
-              </Button>
+              <Badge variant="destructive">Disabled</Badge>
             ) : (
-              <Button variant="outline" onClick={() => disableMutation.mutate(true)} disabled={disableMutation.isPending}>
-                <Ban className="h-4 w-4 mr-2 text-amber-500" /> Disable Account
-              </Button>
+              <Badge variant="secondary" className="bg-success-muted text-success">
+                Active
+              </Badge>
             )}
+          </div>
+        }
+      />
 
-            <Button variant="destructive" onClick={() => deleteMutation.mutate()} disabled={deleteMutation.isPending} className="ml-auto">
-              <Trash2 className="h-4 w-4 mr-2" /> Delete User
+      <Card>
+        <CardContent className="flex flex-col gap-5 sm:flex-row sm:items-center">
+          <span
+            aria-hidden
+            className="grid size-14 shrink-0 place-items-center rounded-full bg-accent text-lg font-semibold text-accent-foreground"
+          >
+            {user.name?.[0]?.toUpperCase() ?? '?'}
+          </span>
+
+          <div className="grid flex-1 grid-cols-2 gap-4 sm:grid-cols-3">
+            <DetailField label="Email">
+              <Text size="caption" tone="primary" className="break-all">
+                {user.email}
+              </Text>
+            </DetailField>
+            <DetailField label="Joined">
+              <Text size="caption" tone="primary" numeric>
+                {user.createdAt
+                  ? formatDistanceToNow(parseISO(user.createdAt), { addSuffix: true })
+                  : '—'}
+              </Text>
+            </DetailField>
+            <DetailField label="Last seen">
+              <Text size="caption" tone="primary" numeric>
+                {user.lastSeenAt
+                  ? formatDistanceToNow(parseISO(user.lastSeenAt), { addSuffix: true })
+                  : 'Never'}
+              </Text>
+            </DetailField>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ── Stats ──────────────────────────────────────────────── */}
+      <section className="space-y-3">
+        <Heading level="overline">Platform activity</Heading>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <Card size="sm">
+            <CardContent className="space-y-0.5">
+              <Text size="micro" tone="muted" weight="medium" className="uppercase tracking-[0.08em]">
+                Completed
+              </Text>
+              <Metric className="text-xl sm:text-2xl">{user.completedProblems}</Metric>
+            </CardContent>
+          </Card>
+
+          <Card size="sm">
+            <CardContent className="space-y-0.5">
+              <Text size="micro" tone="muted" weight="medium" className="uppercase tracking-[0.08em]">
+                Tracked problems
+              </Text>
+              <Metric className="text-xl sm:text-2xl">{user.totalProblems}</Metric>
+            </CardContent>
+          </Card>
+
+          <Card size="sm">
+            <CardContent className="space-y-2">
+              <Text size="micro" tone="muted" weight="medium" className="uppercase tracking-[0.08em]">
+                Completion
+              </Text>
+              <Metric className="text-xl sm:text-2xl">{completionPct}%</Metric>
+              <Progress value={completionPct} aria-label="Problem completion" />
+              <Text size="micro" tone="muted" numeric>
+                {user.completedProblems} of {user.totalProblems} problems
+              </Text>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      {/* ── Administrative actions ─────────────────────────────── */}
+      <section className="space-y-3">
+        <Heading level="overline">Administrative actions</Heading>
+
+        <div className="overflow-hidden rounded-xl bg-surface-sunken shadow-e1">
+          <div className="space-y-4 p-5">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="min-w-0">
+                <Text size="caption" tone="primary" weight="medium">
+                  {user.role === 'admin' ? 'Demote to user' : 'Promote to admin'}
+                </Text>
+                <Text size="micro" tone="muted">
+                  {user.role === 'admin'
+                    ? 'Removes access to every admin screen.'
+                    : 'Grants full access to every admin screen.'}
+                </Text>
+              </div>
+
+              {user.role === 'admin' ? (
+                <Button
+                  variant="soft"
+                  className="h-11 sm:h-8"
+                  disabled={isPending}
+                  onClick={() => setConfirming('demote')}
+                >
+                  <ShieldOff aria-hidden />
+                  Demote to user
+                </Button>
+              ) : (
+                <Button
+                  variant="soft"
+                  className="h-11 sm:h-8"
+                  loading={roleMutation.isPending}
+                  disabled={isPending}
+                  onClick={() => roleMutation.mutate('admin')}
+                >
+                  <Shield aria-hidden />
+                  Promote to admin
+                </Button>
+              )}
+            </div>
+
+            <div className="h-px bg-divider" />
+
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="min-w-0">
+                <Text size="caption" tone="primary" weight="medium">
+                  {user.disabled ? 'Enable account' : 'Disable account'}
+                </Text>
+                <Text size="micro" tone="muted">
+                  {user.disabled
+                    ? 'Restores sign-in for this account.'
+                    : 'Blocks sign-in without deleting any data.'}
+                </Text>
+              </div>
+
+              {user.disabled ? (
+                <Button
+                  variant="soft"
+                  className="h-11 sm:h-8"
+                  loading={disableMutation.isPending}
+                  disabled={isPending}
+                  onClick={() => disableMutation.mutate(false)}
+                >
+                  <CheckCircle aria-hidden />
+                  Enable account
+                </Button>
+              ) : (
+                <Button
+                  variant="soft"
+                  className="h-11 sm:h-8"
+                  disabled={isPending}
+                  onClick={() => setConfirming('disable')}
+                >
+                  <Ban aria-hidden />
+                  Disable account
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {/* Irreversible action, held apart from the reversible ones. */}
+          <div className="flex flex-wrap items-center justify-between gap-3 bg-danger-muted p-5">
+            <div className="min-w-0">
+              <Text size="caption" tone="danger" weight="semibold">
+                Delete this user
+              </Text>
+              <Text size="micro" tone="muted">
+                Permanently wipes the account and all of its tracked data.
+              </Text>
+            </div>
+
+            <Button
+              variant="destructive-solid"
+              className="h-11 sm:h-8"
+              disabled={isPending}
+              onClick={() => setConfirming('delete')}
+            >
+              <Trash2 aria-hidden />
+              Delete user
             </Button>
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* ── Confirmations ──────────────────────────────────────── */}
+      <ConfirmDialog
+        open={confirming === 'demote'}
+        onOpenChange={(open) => {
+          if (!open && !isPending) setConfirming(null);
+        }}
+        itemName={user.name}
+        action="demote"
+        confirmLabel="Yes, demote"
+        description={
+          <>
+            <span className="font-medium text-foreground">{user.name}</span> will
+            immediately lose access to every admin screen.
+          </>
+        }
+        pending={roleMutation.isPending}
+        onConfirm={() => roleMutation.mutate('user')}
+      />
+
+      <ConfirmDialog
+        open={confirming === 'disable'}
+        onOpenChange={(open) => {
+          if (!open && !isPending) setConfirming(null);
+        }}
+        itemName={user.name}
+        action="disable"
+        confirmLabel="Yes, disable"
+        description={
+          <>
+            <span className="font-medium text-foreground">{user.name}</span> will
+            no longer be able to sign in. No data is deleted and this can be
+            reversed.
+          </>
+        }
+        pending={disableMutation.isPending}
+        onConfirm={() => disableMutation.mutate(true)}
+      />
+
+      <ConfirmDialog
+        open={confirming === 'delete'}
+        onOpenChange={(open) => {
+          if (!open && !isPending) setConfirming(null);
+        }}
+        itemName={user.name}
+        action="delete"
+        confirmLabel="Yes, delete permanently"
+        description={
+          <>
+            This permanently deletes{' '}
+            <span className="font-medium text-foreground">{user.name}</span> (
+            {user.email}) and every problem they have tracked. This cannot be
+            undone.
+          </>
+        }
+        pending={deleteMutation.isPending}
+        onConfirm={() => deleteMutation.mutate()}
+      />
     </div>
   );
 }

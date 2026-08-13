@@ -1,11 +1,11 @@
-import { use, Suspense } from 'react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft, BookOpen, ChevronRight } from 'lucide-react';
-import { PatternConceptBlock } from '@/components/dsa/PatternConceptBlock';
+import { ArrowLeft, BookOpen, ChevronRight, Layers } from 'lucide-react';
 import { TemplateCodeBlock } from '@/components/dsa/TemplateCodeBlock';
 import { ExplanationBlock } from '@/components/dsa/ExplanationBlock';
 import { PatternContentClient } from '@/components/dsa/PatternContentClient';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Heading, PageHeading, Text } from '@/components/ui/typography';
+import { Separator } from '@/components/ui/separator';
 import { highlightCode } from '@/lib/shiki';
 import { notFound } from 'next/navigation';
 import dbConnect from '@/lib/db';
@@ -16,7 +16,7 @@ export const revalidate = 60;
 
 export default async function DSAPatternPage({ params }: { params: Promise<{ pattern: string }> }) {
   const { pattern: slug } = await params;
-  
+
   await dbConnect();
   const patternDoc = await Pattern.findOne({ slug }).lean();
   const pattern = patternDoc ? JSON.parse(JSON.stringify(patternDoc)) : null;
@@ -27,7 +27,7 @@ export default async function DSAPatternPage({ params }: { params: Promise<{ pat
 
   // Pre-render code highlighting on the server
   const baseTemplateHtml = pattern.templateCode ? await highlightCode(pattern.templateCode, 'java') : '';
-  
+
   const htmlBlocks: Record<string, string> = {};
   if (pattern.variations) {
     for (const v of pattern.variations) {
@@ -39,80 +39,114 @@ export default async function DSAPatternPage({ params }: { params: Promise<{ pat
 
   return (
     <div className="pb-24">
-      {/* Twitter-like Sticky Header */}
-      <div className="sticky top-0 z-40 bg-background/85 backdrop-blur-xl border-b border-border/40 w-full px-6 sm:px-10 py-6 sm:py-8 flex flex-col gap-2 transition-all duration-300">
-        <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground/80">
-          <Link href="/dsa" className="flex items-center hover:text-foreground transition-colors group">
-            <ArrowLeft className="h-4 w-4 mr-1.5 group-hover:-translate-x-1 transition-transform duration-300" />
-            Pattern DSA
-          </Link>
-          <ChevronRight className="h-3.5 w-3.5" />
-          <span className="text-foreground/90">{pattern.title}</span>
-        </div>
-        <div className="flex items-center gap-4 mt-1">
-          <div className="p-2.5 rounded-xl bg-primary/10 text-primary border border-primary/20 shadow-sm hidden sm:block">
-            <BookOpen className="h-6 w-6" />
-          </div>
-          <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-foreground">
-            {pattern.title}
-          </h1>
-        </div>
-      </div>
+      {/* Sticky page header — separated by elevation, not a border */}
+      <header className="surface-blur sticky top-0 z-40 flex w-full flex-col gap-3 px-6 py-5 shadow-e1 sm:px-10 sm:py-6">
+        <nav aria-label="Breadcrumb">
+          <ol className="flex items-center gap-1.5">
+            <li>
+              <Link
+                href="/dsa"
+                className="group inline-flex items-center gap-1.5 text-xs font-medium text-text-muted transition-colors duration-150 ease-out-quart hover:text-foreground"
+              >
+                <ArrowLeft
+                  aria-hidden
+                  className="size-3.5 transition-transform duration-200 ease-out-quart group-hover:-translate-x-0.5"
+                />
+                Pattern DSA
+              </Link>
+            </li>
+            <li aria-hidden className="flex items-center">
+              <ChevronRight className="size-3 text-text-muted" />
+            </li>
+            <li className="min-w-0">
+              <Text as="span" size="caption" tone="secondary" weight="medium" className="truncate">
+                {pattern.title}
+              </Text>
+            </li>
+          </ol>
+        </nav>
 
-      <div className=" mx-auto px-6 sm:px-10 pt-10 space-y-12">
-        <div className="space-y-10">
+        <div className="flex items-center gap-3">
+          <span
+            aria-hidden
+            className="hidden size-10 shrink-0 place-items-center rounded-xl bg-accent text-primary shadow-e1 sm:grid"
+          >
+            <BookOpen className="size-5" />
+          </span>
+          <PageHeading title={pattern.title} className="min-w-0 flex-1" />
+        </div>
+      </header>
+
+      <div className="mx-auto px-6 pt-8 sm:px-10">
+        <div className="space-y-8">
           {/* Concept / Description */}
           {(pattern.description || pattern.concept) && (
-            <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none text-foreground/90 leading-relaxed border-b border-border/50 pb-8">
-              <ReactMarkdown>{pattern.description || pattern.concept}</ReactMarkdown>
-            </div>
+            <section className="space-y-6">
+              <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none leading-relaxed text-text-secondary">
+                <ReactMarkdown>{pattern.description || pattern.concept}</ReactMarkdown>
+              </div>
+              <Separator />
+            </section>
           )}
 
           {pattern.important_details && pattern.important_details.length > 0 && (
-            <div className="bg-primary/5 rounded-2xl p-6 border border-primary/10 transition-colors duration-300 hover:bg-primary/10">
-              <h4 className="text-sm font-bold text-primary mb-4 flex items-center gap-2 uppercase tracking-wider">
-                <span className="h-2 w-2 rounded-full bg-primary" /> Key Details
-              </h4>
-              <ul className="space-y-2 text-sm text-foreground/80 list-disc list-inside">
-                {pattern.important_details.map((detail: string, idx: number) => (
-                  <li key={idx} className="leading-relaxed">
-                    <div className="inline prose prose-sm dark:prose-invert max-w-none">
-                      <ReactMarkdown>{detail}</ReactMarkdown>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <Card className="bg-accent shadow-e1">
+              <CardHeader>
+                <Heading level="overline" className="text-accent-foreground">
+                  Key details
+                </Heading>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2.5">
+                  {pattern.important_details.map((detail: string, idx: number) => (
+                    <li key={idx} className="flex gap-2.5">
+                      <span aria-hidden className="mt-2 size-1.5 shrink-0 rounded-full bg-primary" />
+                      <div className="prose prose-sm dark:prose-invert max-w-none leading-relaxed text-foreground [&_p]:my-0">
+                        <ReactMarkdown>{detail}</ReactMarkdown>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
           )}
 
           {pattern.other_relevant_details && (
-            <div className="text-sm text-muted-foreground bg-muted/30 rounded-xl p-5 border border-border/50">
-              <h4 className="text-sm font-semibold text-foreground/70 mb-2">Additional Information</h4>
-              <div className="prose prose-sm dark:prose-invert max-w-none">
-                <ReactMarkdown>{pattern.other_relevant_details}</ReactMarkdown>
-              </div>
-            </div>
+            <Card size="sm" className="bg-surface-sunken shadow-e1">
+              <CardHeader>
+                <Heading level="overline">Additional information</Heading>
+              </CardHeader>
+              <CardContent>
+                <div className="prose prose-sm dark:prose-invert max-w-none text-text-secondary">
+                  <ReactMarkdown>{pattern.other_relevant_details}</ReactMarkdown>
+                </div>
+              </CardContent>
+            </Card>
           )}
-          
+
           {pattern.templateCode && (
-            <div className="space-y-2">
-              <h2 className="text-sm font-semibold flex items-center gap-2 text-foreground/80 uppercase tracking-wider">
-                Template Code
-              </h2>
+            <section className="space-y-2.5">
+              <Heading level="overline">Template code</Heading>
               <TemplateCodeBlock code={pattern.templateCode} html={baseTemplateHtml} />
-            </div>
+            </section>
           )}
 
           <ExplanationBlock text={pattern.explanation} />
-          
+
           {pattern.variations && pattern.variations.length > 0 && (
-            <div className="pt-4 space-y-4">
-              <h2 className="text-lg font-bold">Variations</h2>
-              <PatternContentClient 
-                pattern={pattern} 
-                htmlBlocks={htmlBlocks} 
+            <section className="space-y-4 pt-2">
+              <div className="flex items-center gap-2">
+                <Layers aria-hidden className="size-4 text-primary" />
+                <Heading level="section">Variations</Heading>
+                <Text as="span" size="caption" tone="muted" numeric>
+                  {pattern.variations.length}
+                </Text>
+              </div>
+              <PatternContentClient
+                pattern={pattern}
+                htmlBlocks={htmlBlocks}
               />
-            </div>
+            </section>
           )}
         </div>
       </div>

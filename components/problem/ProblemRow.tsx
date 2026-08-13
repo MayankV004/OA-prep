@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Text } from '@/components/ui/typography';
 import { ExternalLink, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -32,10 +33,11 @@ interface ProblemRowProps {
   onNotesClick: (problem: Problem) => void;
 }
 
+/** Colour reinforces the written label; it never carries the meaning alone. */
 const DIFFICULTY_STYLES: Record<string, string> = {
-  Easy: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
-  Medium: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
-  Hard: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20',
+  Easy: 'bg-success-muted text-success',
+  Medium: 'bg-warning-muted text-warning',
+  Hard: 'bg-danger-muted text-destructive',
 };
 
 export function ProblemRow({ problem, queryKey, onNotesClick }: ProblemRowProps) {
@@ -65,61 +67,96 @@ export function ProblemRow({ problem, queryKey, onNotesClick }: ProblemRowProps)
     onSettled: () => queryClient.invalidateQueries({ queryKey }),
   });
 
+  const label = problem.name || problem.title || 'problem';
+
   return (
-    <tr className={cn(
-      'group border-b border-border/50 transition-colors hover:bg-muted/30',
-      problem.completed && 'opacity-60'
-    )}>
-      <td className="w-10 px-3 py-3">
+    /*
+      One row, two shapes: a stacked card below `md` (grid) and a real table
+      row from `md` up (zebra striping instead of rules).
+    */
+    <tr
+      className={cn(
+        'group transition-colors duration-150 ease-out-quart',
+        'max-md:grid max-md:grid-cols-[2.75rem_minmax(0,1fr)_2.5rem] max-md:items-start max-md:gap-x-2 max-md:rounded-xl max-md:bg-card max-md:p-2 max-md:shadow-e1',
+        'md:table-row md:odd:bg-surface-sunken/60 md:hover:bg-accent/50',
+        problem.completed && 'opacity-60'
+      )}
+    >
+      <td className="max-md:col-start-1 max-md:row-span-2 max-md:row-start-1 max-md:flex max-md:size-11 max-md:items-center max-md:justify-center md:table-cell md:w-10 md:px-3 md:py-3">
         <Checkbox
           checked={problem.completed}
           onCheckedChange={(val) => toggleMutation.mutate(val === true)}
-          aria-label={`Mark ${problem.title} as ${problem.completed ? 'incomplete' : 'complete'}`}
+          aria-label={`Mark ${label} as ${problem.completed ? 'incomplete' : 'complete'}`}
+          className="max-md:after:-inset-4"
         />
       </td>
-      <td className="px-3 py-3">
+
+      <td className="max-md:col-start-2 max-md:row-start-1 max-md:block max-md:py-1.5 md:table-cell md:px-3 md:py-3">
         <a
           href={problem.link || problem.url || '#'}
           target="_blank"
           rel="noopener noreferrer"
           className={cn(
-            'font-medium hover:underline flex items-center gap-1.5 max-w-sm',
-            problem.completed && 'line-through text-muted-foreground'
+            'flex max-w-sm items-center gap-1.5 text-sm font-medium transition-colors duration-150 ease-out-quart hover:text-primary',
+            problem.completed ? 'text-text-muted line-through' : 'text-foreground'
           )}
         >
-          {problem.name || problem.title}
-          <ExternalLink className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 flex-shrink-0" />
+          <span className="truncate">{problem.name || problem.title}</span>
+          <ExternalLink
+            aria-hidden
+            className="size-3 shrink-0 text-text-muted opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+          />
         </a>
         {problem.tags && problem.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-1">
+          <div className="mt-1 flex flex-wrap gap-1">
             {problem.tags.slice(0, 3).map(tag => (
-              <span key={tag} className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+              <Badge key={tag} variant="ghost" className="bg-muted text-text-muted">
                 {tag}
-              </span>
+              </Badge>
             ))}
           </div>
         )}
       </td>
-      <td className="px-3 py-3">
-        <span className={cn(
-          'inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium',
-          DIFFICULTY_STYLES[problem.difficulty]
-        )}>
-          {problem.difficulty}
+
+      <td className="max-md:col-start-2 max-md:row-start-2 max-md:block max-md:pb-1.5 md:table-cell md:px-3 md:py-3">
+        <span className="flex flex-wrap items-center gap-2">
+          <Badge
+            variant="secondary"
+            className={cn('font-semibold', DIFFICULTY_STYLES[problem.difficulty] ?? 'bg-muted text-text-muted')}
+          >
+            {problem.difficulty}
+          </Badge>
+          {problem.platform && (
+            <Text
+              as="span"
+              size="micro"
+              tone="muted"
+              weight="medium"
+              className="uppercase tracking-[0.08em] md:hidden"
+            >
+              {problem.platform}
+            </Text>
+          )}
         </span>
       </td>
+
       {problem.rating !== undefined && (
-        <td className="px-3 py-3 text-sm text-muted-foreground">{problem.rating}</td>
+        <td className="max-md:col-start-2 max-md:row-start-3 max-md:block max-md:pb-1.5 md:table-cell md:px-3 md:py-3">
+          <Text as="span" size="caption" tone="muted" numeric>
+            {problem.rating}
+          </Text>
+        </td>
       )}
-      <td className="w-16 px-3 py-3 text-right">
+
+      <td className="max-md:col-start-3 max-md:row-start-1 max-md:flex max-md:justify-end md:table-cell md:w-16 md:px-3 md:py-3 md:text-right">
         <Button
           variant="ghost"
           size="icon-sm"
           onClick={() => onNotesClick(problem)}
-          aria-label="Edit notes"
-          className={cn(problem.notes ? 'text-primary' : 'text-muted-foreground')}
+          aria-label={`${problem.notes ? 'Edit' : 'Add'} notes for ${label}`}
+          className={cn('max-md:size-10', problem.notes ? 'text-primary' : 'text-text-muted')}
         >
-          <FileText className="h-4 w-4" />
+          <FileText aria-hidden className="size-4" />
         </Button>
       </td>
     </tr>

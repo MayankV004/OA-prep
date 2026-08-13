@@ -4,6 +4,7 @@ import { use } from 'react';
 import Link from 'next/link';
 import { ProblemTable } from '@/components/problem/ProblemTable';
 import { Button } from '@/components/ui/button';
+import { PageHeading } from '@/components/ui/typography';
 import { ArrowLeft } from 'lucide-react';
 
 function slugToBucket(slug: string) {
@@ -20,16 +21,25 @@ export default function NonStandardBucketPage({ params }: { params: Promise<{ bu
   const bucketName = slugToBucket(slug);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <Link href="/non-standard">
-          <Button variant="ghost" size="icon-sm"><ArrowLeft className="h-4 w-4" /></Button>
-        </Link>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">{bucketName}</h1>
-          <p className="text-muted-foreground text-sm mt-0.5">Non-standard problems</p>
-        </div>
+    <div className="space-y-6 pb-12">
+      <div className="flex items-start gap-3">
+        <Button
+          render={<Link href="/non-standard" />}
+          variant="ghost"
+          size="icon-xl"
+          aria-label="Back to non-standard buckets"
+          className="mt-0.5 shrink-0 sm:size-9"
+        >
+          <ArrowLeft aria-hidden />
+        </Button>
+        <PageHeading
+          className="min-w-0 flex-1"
+          overline="Non-standard"
+          title={bucketName}
+          description="Ad-hoc, constructive and math problems in this bucket."
+        />
       </div>
+
       <ProblemTable kind="nonstandard" group={bucketName} groupLabel={bucketName} />
     </div>
   );

@@ -1,8 +1,10 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { Code2, BookOpen, Trophy, Activity, TrendingUp } from 'lucide-react';
+import { Code2, Trophy, Activity, TrendingUp, type LucideIcon } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Heading, Metric, PageHeading, Text } from '@/components/ui/typography';
+import { Skeleton, SkeletonRows } from '@/components/ui/skeleton';
 import { CompletionTrend } from '@/components/dashboard/CompletionTrend';
 import { GroupProgress } from '@/components/dashboard/GroupProgress';
 import { DifficultyMix } from '@/components/dashboard/DifficultyMix';
@@ -15,6 +17,52 @@ interface DashboardStats {
   trend: { date: string; completed: number }[];
   heatmap: { date: string; count: number }[];
   recent: any[];
+}
+
+/** Stat tile: label + icon, one hero figure, one line of supporting context. */
+function StatCard({
+  label,
+  icon: Icon,
+  value,
+  hint,
+  isLoading,
+}: {
+  label: string;
+  icon: LucideIcon;
+  value: React.ReactNode;
+  hint: React.ReactNode;
+  isLoading: boolean;
+}) {
+  return (
+    <Card className="min-w-0">
+      <CardHeader className="grid-cols-[1fr_auto] items-center gap-2">
+        <Heading level="overline" as="p">
+          {label}
+        </Heading>
+        <span
+          aria-hidden
+          className="grid size-8 place-items-center rounded-lg bg-muted text-text-muted"
+        >
+          <Icon className="size-4" />
+        </span>
+      </CardHeader>
+      <CardContent className="space-y-1">
+        {isLoading ? (
+          <>
+            <Skeleton className="h-8 w-20" />
+            <Skeleton className="mt-2 h-3 w-28" />
+          </>
+        ) : (
+          <>
+            <div className="flex items-baseline gap-1.5">{value}</div>
+            <Text size="caption" tone="muted" numeric>
+              {hint}
+            </Text>
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
 }
 
 export default function DashboardPage() {
@@ -45,92 +93,82 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground text-sm mt-1">Your placement prep at a glance</p>
-      </div>
+      <PageHeading
+        overline="Overview"
+        title="Dashboard"
+        description="Your placement prep at a glance"
+      />
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Problems Solved</CardTitle>
-            <Code2 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{isLoading ? '—' : totalCompleted}</div>
-            <p className="text-xs text-muted-foreground">of {totalProblems} total</p>
-          </CardContent>
-        </Card>
+      <div className="animate-in-up grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          label="Problems Solved"
+          icon={Code2}
+          isLoading={isLoading}
+          value={<Metric>{totalCompleted}</Metric>}
+          hint={`of ${totalProblems} total`}
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pattern DSA</CardTitle>
-            <Trophy className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {isLoading ? '—' : patternStats ? `${patternStats.completed}/${patternStats.total}` : '0/0'}
-            </div>
-            <p className="text-xs text-muted-foreground">completed</p>
-          </CardContent>
-        </Card>
+        <StatCard
+          label="Pattern DSA"
+          icon={Trophy}
+          isLoading={isLoading}
+          value={
+            <Metric>
+              {patternStats ? `${patternStats.completed}/${patternStats.total}` : '0/0'}
+            </Metric>
+          }
+          hint="completed"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Difficulty Mix</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {isLoading ? '—' : `${stats?.difficultyMix.Hard ?? 0} Hard`}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {stats?.difficultyMix.Easy ?? 0}E · {stats?.difficultyMix.Medium ?? 0}M · {stats?.difficultyMix.Hard ?? 0}H
-            </p>
-          </CardContent>
-        </Card>
+        <StatCard
+          label="Difficulty Mix"
+          icon={TrendingUp}
+          isLoading={isLoading}
+          value={
+            <>
+              <Metric>{stats?.difficultyMix.Hard ?? 0}</Metric>
+              <Text as="span" size="compact" tone="muted" weight="medium">
+                Hard
+              </Text>
+            </>
+          }
+          hint={`${stats?.difficultyMix.Easy ?? 0}E · ${stats?.difficultyMix.Medium ?? 0}M · ${stats?.difficultyMix.Hard ?? 0}H`}
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">90d Activity</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{isLoading ? '—' : actionsTotal}</div>
-            <p className="text-xs text-muted-foreground">total actions</p>
-          </CardContent>
-        </Card>
+        <StatCard
+          label="90d Activity"
+          icon={Activity}
+          isLoading={isLoading}
+          value={<Metric>{actionsTotal}</Metric>}
+          hint="total actions"
+        />
       </div>
 
       {/* Charts Row 1: Trend + Activity Feed */}
       <div className="grid gap-4 lg:grid-cols-7">
-        <Card className="lg:col-span-4">
+        <Card className="min-w-0 lg:col-span-4">
           <CardHeader>
             <CardTitle>Completion Trend</CardTitle>
             <CardDescription>Problems completed per day, last 90 days</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="min-w-0">
             {isLoading ? (
-              <div className="h-[200px] bg-muted animate-pulse rounded-lg" />
+              <Skeleton className="h-[200px] w-full" />
             ) : (
               <CompletionTrend data={stats?.trend ?? []} />
             )}
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-3">
+        <Card className="min-w-0 lg:col-span-3">
           <CardHeader>
             <CardTitle>Recent Activity</CardTitle>
             <CardDescription>Your last 10 actions</CardDescription>
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <div className="space-y-3">
-                {[...Array(5)].map((_, i) => (
-                  <div key={i} className="h-8 bg-muted animate-pulse rounded" />
-                ))}
-              </div>
+              <SkeletonRows rows={5} />
             ) : (
               <ActivityFeed events={stats?.recent ?? []} />
             )}
@@ -140,28 +178,28 @@ export default function DashboardPage() {
 
       {/* Charts Row 2: Group Progress + Difficulty Mix */}
       <div className="grid gap-4 lg:grid-cols-7">
-        <Card className="lg:col-span-4">
+        <Card className="min-w-0 lg:col-span-4">
           <CardHeader>
             <CardTitle>Pattern Progress</CardTitle>
             <CardDescription>Completed vs. remaining per pattern</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="min-w-0">
             {isLoading ? (
-              <div className="h-[200px] bg-muted animate-pulse rounded-lg" />
+              <Skeleton className="h-[200px] w-full" />
             ) : (
               <GroupProgress data={patternProgress ?? []} />
             )}
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-3">
+        <Card className="min-w-0 lg:col-span-3">
           <CardHeader>
             <CardTitle>Difficulty Mix</CardTitle>
             <CardDescription>Completed problems by difficulty</CardDescription>
           </CardHeader>
-          <CardContent className="pt-2">
+          <CardContent className="min-w-0">
             {isLoading ? (
-              <div className="h-[120px] bg-muted animate-pulse rounded-lg" />
+              <Skeleton className="h-[120px] w-full" />
             ) : (
               <DifficultyMix data={stats?.difficultyMix ?? {}} />
             )}
@@ -170,14 +208,14 @@ export default function DashboardPage() {
       </div>
 
       {/* Activity Heatmap */}
-      <Card>
+      <Card className="min-w-0">
         <CardHeader>
           <CardTitle>Activity Heatmap</CardTitle>
           <CardDescription>90-day activity grid</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="min-w-0">
           {isLoading ? (
-            <div className="h-16 bg-muted animate-pulse rounded-lg" />
+            <Skeleton className="h-24 w-full" />
           ) : (
             <ActivityHeatmap data={stats?.heatmap ?? []} />
           )}

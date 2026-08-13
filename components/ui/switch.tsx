@@ -22,7 +22,7 @@ function Switch({
         "press peer inline-flex h-5 w-9 shrink-0 items-center rounded-full p-0.5 outline-none",
         "bg-input-background transition-colors duration-200 ease-out-quart",
         "hover:bg-muted",
-        "data-checked:bg-primary data-checked:hover:bg-accent-600",
+        "data-checked:bg-primary data-checked:hover:bg-accent-700",
         "focus-visible:shadow-glow",
         "disabled:pointer-events-none disabled:opacity-50",
         className

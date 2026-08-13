@@ -2,10 +2,16 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Input } from '@/components/ui/input';
+import { format, formatDistanceToNow, parseISO } from 'date-fns';
+import { Activity } from 'lucide-react';
+
+import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import { formatDistanceToNow, parseISO } from 'date-fns';
-import { Activity, Filter, Clock } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Metric, PageHeading, Text } from '@/components/ui/typography';
+import { DataTable, type Column } from '@/components/admin/DataTable';
 
 interface ActivityRow {
   _id: string;
@@ -17,20 +23,41 @@ interface ActivityRow {
   createdAt: string;
 }
 
-const KIND_COLORS: Record<string, string> = {
-  'problem.completed': 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400',
-  'problem.added': 'bg-blue-500/10 text-blue-700 dark:text-blue-400',
-  'problem.deleted': 'bg-destructive/10 text-destructive',
-  'user.signin': 'bg-primary/10 text-primary',
-  'user.invite': 'bg-orange-500/10 text-orange-700 dark:text-orange-400',
-};
+/**
+ * Tone is a scanning aid only — the badge always carries the literal event
+ * kind as its label, so nothing here is communicated by colour alone.
+ */
+const KIND_TONES: { match: (kind: string) => boolean; className: string }[] = [
+  { match: (k) => k.endsWith('.completed'), className: 'bg-success-muted text-success' },
+  { match: (k) => k.endsWith('.deleted') || k.endsWith('.removed'), className: 'bg-danger-muted text-destructive' },
+  { match: (k) => k.endsWith('.added') || k.endsWith('.created'), className: 'bg-info-muted text-info' },
+  { match: (k) => k.startsWith('user.'), className: 'bg-accent text-accent-foreground' },
+];
+
+function kindClassName(kind: string) {
+  return KIND_TONES.find((t) => t.match(kind))?.className ?? 'bg-muted text-text-secondary';
+}
+
+function FilterField({
+  label,
+  ...props
+}: React.ComponentProps<typeof Input> & { label: string }) {
+  return (
+    <label className="flex items-center gap-2">
+      <Text size="micro" tone="muted" as="span" weight="medium">
+        {label}
+      </Text>
+      <Input className="h-11 w-36 sm:h-9" {...props} />
+    </label>
+  );
+}
 
 export default function AdminActivityPage() {
   const [kindFilter, setKindFilter] = useState('');
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
 
-  const { data, isLoading } = useQuery<{ data: ActivityRow[] }>({
+  const { data, isLoading, error } = useQuery<{ data: ActivityRow[] }>({
     queryKey: ['admin', 'activity', kindFilter, from, to],
     queryFn: async () => {
       const params = new URLSearchParams({ limit: '100' });
@@ -44,102 +71,174 @@ export default function AdminActivityPage() {
   });
 
   const rows = data?.data ?? [];
+  const distinctKinds = new Set(rows.map((row) => row.kind)).size;
+  const hasDateFilter = Boolean(from || to);
+
+  const columns: Column<ActivityRow>[] = [
+    {
+      id: 'kind',
+      header: 'Event',
+      primary: true,
+      sortValue: (row) => row.kind,
+      cell: (row) => (
+        <Badge
+          variant="secondary"
+          className={cn('font-mono', kindClassName(row.kind))}
+        >
+          {row.kind}
+        </Badge>
+      ),
+    },
+    {
+      id: 'createdAt',
+      header: 'Time',
+      sortValue: (row) => row.createdAt ?? null,
+      cell: (row) =>
+        row.createdAt ? (
+          <span
+            title={format(parseISO(row.createdAt), 'PPpp')}
+            className="whitespace-nowrap"
+          >
+            <Text size="caption" tone="muted" as="span" numeric>
+              {formatDistanceToNow(parseISO(row.createdAt), { addSuffix: true })}
+            </Text>
+          </span>
+        ) : (
+          <Text size="caption" tone="muted" as="span">
+            —
+          </Text>
+        ),
+    },
+    {
+      id: 'entity',
+      header: 'Entity',
+      hideBelow: 'md',
+      sortValue: (row) => row.entity?.type ?? null,
+      cell: (row) =>
+        row.entity ? (
+          <span className="block min-w-0">
+            <Text as="span" size="caption" tone="primary" weight="medium" className="block">
+              {row.entity.type}
+            </Text>
+            {row.entity.title ? (
+              <Text as="span" size="caption" tone="muted" className="block truncate">
+                {row.entity.title}
+              </Text>
+            ) : null}
+          </span>
+        ) : (
+          <Text size="caption" tone="muted" as="span">
+            —
+          </Text>
+        ),
+    },
+    {
+      id: 'actorId',
+      header: 'Actor',
+      hideBelow: 'lg',
+      sortValue: (row) => row.actorId ?? null,
+      cell: (row) => (
+        <Text size="micro" tone="muted" as="span" className="font-mono">
+          {row.actorId ? `${row.actorId.slice(-8)}` : '—'}
+        </Text>
+      ),
+    },
+    {
+      id: 'metadata',
+      header: 'Metadata',
+      hideBelow: 'lg',
+      className: 'max-w-xs',
+      cell: (row) =>
+        row.metadata ? (
+          <Text
+            size="micro"
+            tone="muted"
+            as="span"
+            className="block truncate font-mono"
+            title={JSON.stringify(row.metadata)}
+          >
+            {JSON.stringify(row.metadata)}
+          </Text>
+        ) : (
+          <Text size="micro" tone="muted" as="span">
+            —
+          </Text>
+        ),
+    },
+  ];
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-          <Activity className="h-6 w-6 text-primary" />
-          Activity Log
-        </h1>
-        <p className="text-muted-foreground text-sm mt-1">
-          Platform-wide event stream — {rows.length} events loaded
-        </p>
+    <div className="animate-in-fade space-y-6">
+      <PageHeading
+        overline="Admin"
+        title="Activity log"
+        description="Platform-wide event stream. Filter by event kind or date range, then sort any column."
+      />
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <Card size="sm">
+          <CardContent className="space-y-0.5">
+            <Text size="micro" tone="muted" weight="medium" className="uppercase tracking-[0.08em]">
+              Events loaded
+            </Text>
+            <Metric className="text-xl sm:text-2xl">{rows.length}</Metric>
+          </CardContent>
+        </Card>
+        <Card size="sm">
+          <CardContent className="space-y-0.5">
+            <Text size="micro" tone="muted" weight="medium" className="uppercase tracking-[0.08em]">
+              Distinct kinds
+            </Text>
+            <Metric className="text-xl sm:text-2xl">{distinctKinds}</Metric>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Filters */}
-      <div className="flex items-center gap-3 flex-wrap p-4 rounded-xl border border-border bg-muted/30">
-        <Filter className="h-4 w-4 text-muted-foreground shrink-0" />
-        <Input
-          placeholder="Filter by kind (e.g. problem.completed)"
-          value={kindFilter}
-          onChange={(e) => setKindFilter(e.target.value)}
-          className="max-w-xs h-8 text-sm"
-        />
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">From</span>
-          <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="w-36 h-8 text-sm" />
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">To</span>
-          <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="w-36 h-8 text-sm" />
-        </div>
-      </div>
-
-      {/* Table */}
-      <div className="rounded-xl border border-border overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-muted/40 border-b border-border">
-            <tr>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Time</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Event</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Entity</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Metadata</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border/50">
-            {isLoading ? (
-              [...Array(8)].map((_, i) => (
-                <tr key={i}>
-                  <td colSpan={4} className="px-4 py-3">
-                    <div className="h-4 bg-muted animate-pulse rounded" />
-                  </td>
-                </tr>
-              ))
-            ) : (
-              rows.map((row) => (
-                <tr key={row._id} className="hover:bg-muted/20 transition-colors">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground whitespace-nowrap">
-                      <Clock className="h-3 w-3" />
-                      {formatDistanceToNow(parseISO(row.createdAt), { addSuffix: true })}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium font-mono ${
-                        KIND_COLORS[row.kind] ?? 'bg-muted text-muted-foreground'
-                      }`}
-                    >
-                      {row.kind}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground">
-                    {row.entity ? (
-                      <span>
-                        <span className="font-medium text-foreground">{row.entity.type}</span>
-                        {row.entity.title ? `: ${row.entity.title}` : ''}
-                      </span>
-                    ) : (
-                      '—'
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground font-mono max-w-xs truncate">
-                    {row.metadata ? JSON.stringify(row.metadata) : '—'}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-        {!isLoading && rows.length === 0 && (
-          <div className="text-center py-16 text-muted-foreground text-sm">
-            <Activity className="h-8 w-8 mx-auto mb-3 opacity-30" />
-            No activity found for selected filters
+      <DataTable
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row._id}
+        loading={isLoading}
+        error={error}
+        search={kindFilter}
+        onSearchChange={setKindFilter}
+        searchPlaceholder="Filter by kind, e.g. problem.completed"
+        emptyTitle="No activity yet"
+        emptyDescription="Events appear here as people use the platform."
+        emptyIcon={Activity}
+        filters={
+          <div className="flex flex-wrap items-center gap-2">
+            <FilterField
+              label="From"
+              type="date"
+              value={from}
+              max={to || undefined}
+              onChange={(e) => setFrom(e.target.value)}
+            />
+            <FilterField
+              label="To"
+              type="date"
+              value={to}
+              min={from || undefined}
+              onChange={(e) => setTo(e.target.value)}
+            />
+            {hasDateFilter ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-11 sm:h-7"
+                onClick={() => {
+                  setFrom('');
+                  setTo('');
+                }}
+              >
+                Clear dates
+              </Button>
+            ) : null}
           </div>
-        )}
-      </div>
+        }
+        pageSize={20}
+      />
     </div>
   );
 }
