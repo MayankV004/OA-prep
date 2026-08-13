@@ -66,8 +66,8 @@ export function GroupProgress({ data }: { data: GroupStat[] }) {
             labelStyle={{ color: 'var(--muted-foreground)', fontSize: '11px' }}
             itemStyle={{ color: 'var(--popover-foreground)' }}
           />
-          <Bar dataKey="completed" stackId="a" fill="var(--chart-1)" radius={[0, 0, 0, 0]} />
-          <Bar dataKey="remaining" stackId="a" fill="var(--muted)" radius={[0, 4, 4, 0]} />
+          <Bar dataKey="completed" stackId="a" fill="var(--primary)" radius={[0, 0, 0, 0]} />
+          <Bar dataKey="remaining" stackId="a" fill="var(--primary)" fillOpacity={0.2} radius={[0, 4, 4, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>

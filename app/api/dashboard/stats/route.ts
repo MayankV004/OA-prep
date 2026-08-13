@@ -17,12 +17,57 @@ export async function GET(req: NextRequest) {
     const now = new Date();
     const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
 
-    const [totalsByKind, difficultyMix, trend, heatmap, recent] = await Promise.all([
-      // TODO: When fully migrated to Sanity, these stats should be calculated
-      // by combining UserProgress data with Sanity problem metadata.
-      Promise.resolve([]),
-      Promise.resolve({}),
-      Promise.resolve([]),
+    const [patternStats, trend, heatmap, recent] = await Promise.all([
+      (async () => {
+        const { Pattern, UserProgress } = await import('@/models');
+        const patterns = await Pattern.find().lean();
+        
+        const problemMap = new Map();
+        let totalPatternProblems = 0;
+        
+        patterns.forEach((p: any) => {
+          p.variations?.forEach((v: any) => {
+            v.problems?.forEach((prob: any) => {
+              if (prob._id) {
+                problemMap.set(prob._id.toString(), prob);
+                totalPatternProblems++;
+              }
+            });
+          });
+        });
+        
+        const userProgress = await UserProgress.find({ userId: uid, completed: true }).lean();
+        
+        let completedPatternProblems = 0;
+        const difficultyMix: any = { Easy: 0, Medium: 0, Hard: 0 };
+        
+        userProgress.forEach((up: any) => {
+          const prob = problemMap.get(up.problemId);
+          if (prob) {
+            completedPatternProblems++;
+            if (prob.difficulty) {
+              difficultyMix[prob.difficulty] = (difficultyMix[prob.difficulty] || 0) + 1;
+            }
+          }
+        });
+
+        const totalsByKind = [
+          { kind: 'pattern', total: totalPatternProblems, completed: completedPatternProblems }
+        ];
+
+        return { totalsByKind, difficultyMix };
+      })(),
+
+      // Trend (last 90 days completed problems)
+      (async () => {
+        const { UserProgress } = await import('@/models');
+        return UserProgress.aggregate([
+          { $match: { userId: uid, completed: true, completedAt: { $gte: ninetyDaysAgo } } },
+          { $group: { _id: { $dateToString: { format: '%Y-%m-%d', date: '$completedAt' } }, completed: { $sum: 1 } } },
+          { $project: { date: '$_id', completed: 1, _id: 0 } },
+          { $sort: { date: 1 } }
+        ]);
+      })(),
 
       // 90-day heatmap (any activity)
       Activity.aggregate([
@@ -41,6 +86,12 @@ export async function GET(req: NextRequest) {
       Activity.find({ targetUserId: uid }).sort({ createdAt: -1 }).limit(10).lean(),
     ]);
 
-    return { totalsByKind, difficultyMix, trend, heatmap, recent };
+    return { 
+      totalsByKind: patternStats.totalsByKind, 
+      difficultyMix: patternStats.difficultyMix, 
+      trend, 
+      heatmap, 
+      recent 
+    };
   });
 }

@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { withAuth } from '@/lib/auth';
-import { Topic, Cheatsheet, Question } from '@/models';
+import { Topic, Cheatsheet, Question, Problem, Pattern } from '@/models';
 import dbConnect from '@/lib/db';
 
 type Ctx = { params: Promise<{ type: string }> };
@@ -19,8 +19,38 @@ export async function GET(req: NextRequest, { params }: Ctx) {
     const query: any = {};
 
     switch (type) {
-      case 'problems':
-        return { data: [] }; // Problems are now managed via Sanity Studio
+      case 'problems': {
+        const patterns = await Pattern.find().lean();
+        const extracted: any[] = [];
+        patterns.forEach((p: any) => {
+          p.variations?.forEach((v: any) => {
+            v.problems?.forEach((prob: any) => {
+              if (!q || prob.name.toLowerCase().includes(q.toLowerCase())) {
+                extracted.push({
+                  _id: prob._id,
+                  title: prob.name,
+                  url: prob.link,
+                  difficulty: prob.difficulty,
+                  kind: 'pattern',
+                  pattern: p.title,
+                  createdAt: p.createdAt
+                });
+              }
+            });
+          });
+        });
+        
+        // If there's a kind filter, apply it
+        let filtered = extracted;
+        if (searchParams.get('kind')) {
+          const k = searchParams.get('kind');
+          if (k !== 'all') {
+            filtered = extracted.filter(prob => prob.kind === k);
+          }
+        }
+        
+        return { data: filtered.slice(0, limit) };
+      }
       case 'topics':
         Model = Topic;
         if (q) query.title = { $regex: q, $options: 'i' };

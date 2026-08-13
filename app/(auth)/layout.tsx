@@ -10,10 +10,10 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
     <div className="grid min-h-screen lg:grid-cols-[1.05fr_1fr]">
       {/* ── Brand panel ─────────────────────────────────────────── */}
-      <aside className="relative hidden overflow-hidden bg-accent-950 p-10 lg:flex lg:flex-col lg:justify-between">
+      <aside className="relative hidden overflow-hidden bg-accent-600 p-10 lg:flex lg:flex-col lg:justify-between">
         <div className="accent-mesh absolute inset-0 opacity-80" aria-hidden />
         <div
-          className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-accent-950/80"
+          className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-accent-950"
           aria-hidden
         />
 
@@ -21,13 +21,8 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           href="/"
           className="relative flex items-center gap-2.5 text-white outline-none"
         >
-          <span
-            aria-hidden
-            className="grid size-8 place-items-center rounded-lg bg-white/15 backdrop-blur-sm"
-          >
-            <Code2 className="size-4" />
-          </span>
-          <span className="font-display text-sm font-semibold tracking-tight">
+          
+          <span className="font-display text-3xl font-semibold tracking-tight">
             PlacementDeck
           </span>
         </Link>
