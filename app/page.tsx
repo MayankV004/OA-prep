@@ -5,6 +5,9 @@ import { useRef } from 'react';
 import Link from 'next/link';
 import { Code2, Server, BrainCircuit, BookOpen, ChevronRight, LayoutDashboard } from 'lucide-react';
 
+import { authClient } from '@/lib/auth-client';
+import { UserMenu } from '@/components/shell/UserMenu';
+
 const fadeIn: Variants = {
   hidden: { opacity: 0, y: 30 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: 'easeOut' } },
@@ -21,6 +24,7 @@ const staggerContainer: Variants = {
 export default function LandingPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: containerRef });
+  const { data: session } = authClient.useSession();
 
   // Parallax effects
   const y1 = useTransform(scrollYProgress, [0, 1], [0, -300]);
@@ -54,14 +58,22 @@ export default function LandingPage() {
           <a href="#progress" className="hover:text-foreground transition-colors">Progress</a>
         </div>
         <div className="flex items-center gap-4">
-          <Link href="/sign-in" className="hidden sm:block text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-            Log In
-          </Link>
-          <Link href="/sign-up">
-            <button className="h-10 px-6 rounded-full font-bold text-white bg-gradient-to-r from-accent-600 via-accent-500 to-accent-400 hover:shadow-[0_0_25px_rgba(236,72,153,0.6)] transition-all hover:scale-105 active:scale-95 border-none">
-              Get Started
-            </button>
-          </Link>
+          {session ? (
+            <div className="w-10 h-10 flex items-center justify-center">
+              <UserMenu collapsed={true} isAdmin={(session.user as { role?: string })?.role === 'admin'} />
+            </div>
+          ) : (
+            <>
+              <Link href="/sign-in" className="hidden sm:block text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                Log In
+              </Link>
+              <Link href="/sign-up">
+                <button className="h-10 px-6 rounded-full font-bold text-white bg-gradient-to-r from-accent-600 via-accent-500 to-accent-400 hover:shadow-[0_0_25px_rgba(236,72,153,0.6)] transition-all hover:scale-105 active:scale-95 border-none">
+                  Get Started
+                </button>
+              </Link>
+            </>
+          )}
         </div>
       </motion.nav>
 
@@ -94,9 +106,9 @@ export default function LandingPage() {
           </motion.p>
 
           <motion.div variants={fadeIn} className="flex flex-col sm:flex-row items-center justify-center gap-5 pt-4">
-            <Link href="/sign-up">
+            <Link href={session ? "/dashboard" : "/sign-up"}>
               <button className="flex items-center h-14 px-8 rounded-full text-lg font-bold text-white bg-gradient-to-r from-accent-600 via-accent-500 to-accent-400 hover:shadow-[0_0_40px_rgba(244,114,182,0.5)] transition-all hover:scale-105 active:scale-95 border-none">
-                Start Preparing <ChevronRight className="ml-2 h-5 w-5" />
+                {session ? 'Go to Dashboard' : 'Start Preparing'} <ChevronRight className="ml-2 h-5 w-5" />
               </button>
             </Link>
             <a href="#features">

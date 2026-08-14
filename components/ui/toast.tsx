@@ -17,7 +17,22 @@ import { cn } from "@/lib/utils"
 const ToastProvider = ToastPrimitive.Provider
 
 function useToast() {
-  return ToastPrimitive.useToastManager()
+  const manager = ToastPrimitive.useToastManager()
+
+  const add = React.useCallback(
+    (title: string, options?: any) => {
+      return manager.add({ title, ...options } as any)
+    },
+    [manager]
+  )
+
+  return React.useMemo(
+    () => ({
+      ...manager,
+      add,
+    }),
+    [manager, add]
+  )
 }
 
 const TYPE_ICON: Record<string, React.ComponentType<{ className?: string }>> = {

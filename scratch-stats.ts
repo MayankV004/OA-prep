@@ -6,7 +6,7 @@ import { Pattern, UserProgress } from './models/index.js';
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 
 async function run() {
-  await mongoose.connect(process.env.MONGODB_URI, { dbName: process.env.MONGODB_DB });
+  await mongoose.connect(process.env.MONGODB_URI as string, { dbName: process.env.MONGODB_DB });
 
   const uid = new mongoose.Types.ObjectId('6a7a0ea8d0497daed76370c2'); // arbitrary user
   const now = new Date();
