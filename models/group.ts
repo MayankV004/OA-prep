@@ -9,6 +9,8 @@ const groupSchema = new Schema(
     },
     name: { type: String, required: true },
     slug: { type: String, required: true },
+    body: { type: String, default: '' },
+    description: { type: String, default: '' },
     order: { type: Number, default: 0 },
   },
   { timestamps: true }

@@ -16,30 +16,27 @@ import type { NavSection } from './nav';
 const EXPANDED = 264;
 const COLLAPSED = 68;
 
+import { BigOIcon } from '@/components/ui/big-o-logo';
+
 function Brand({ collapsed, href }: { collapsed: boolean; href: string }) {
   return (
     <Link
       href={href}
       className={cn(
-        'flex h-9 items-center gap-2.5 rounded-lg px-2 outline-none',
+        'flex h-10 items-center gap-3 rounded-xl px-2 outline-none group transition-all duration-200',
         collapsed && 'justify-center px-0'
       )}
-      aria-label="PlacementDeck home"
+      aria-label="BigO home"
     >
-      <span
-        aria-hidden
-        className="grid size-7 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground shadow-e1"
-      >
-        <Code2 className="size-4" />
-      </span>
+      <BigOIcon className="size-8 shrink-0" />
       <span
         className={cn(
-          'truncate font-display text-sm font-semibold tracking-tight text-foreground',
+          'truncate font-display text-base font-black tracking-tight text-foreground',
           'transition-opacity duration-200 ease-out-quart',
           collapsed && 'w-0 opacity-0'
         )}
       >
-        PlacementDeck
+        Big<span className="text-rose-500">O</span>
       </span>
     </Link>
   );
@@ -119,14 +116,6 @@ function SidebarBody({
       </div>
 
       <div className="flex flex-col gap-1">
-        <div
-          className={cn(
-            'flex items-center gap-1',
-            collapsed ? 'flex-col' : 'justify-between'
-          )}
-        >
-          <ThemeToggle />
-        </div>
         <UserMenu collapsed={collapsed} isAdmin={isAdmin} />
       </div>
     </div>
@@ -158,7 +147,7 @@ function Sidebar({
       <aside
         style={{ width: collapsed ? COLLAPSED : EXPANDED }}
         className={cn(
-          'fixed inset-y-0 left-0 z-30 hidden bg-sidebar md:block',
+          'fixed inset-y-0 left-0 z-30 hidden bg-sidebar/80 backdrop-blur-xl border-r border-border/50 shadow-xl md:block',
           ready && 'transition-[width] duration-250 ease-out-quart'
         )}
       >

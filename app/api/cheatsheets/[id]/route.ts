@@ -58,6 +58,6 @@ export async function DELETE(req: NextRequest, { params }: Ctx) {
       entity: { type: 'cheatsheet', id: sheet._id.toString() },
       metadata: { slug: sheet.slug },
     });
-    return Response.json(null, { status: 204 });
+    return new Response(null, { status: 204 });
   });
 }

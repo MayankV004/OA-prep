@@ -9,6 +9,8 @@ const problemSchema = new Schema(
     completed: { type: Boolean, default: false, index: true },
     completedAt: { type: Date },
     notes: { type: String, default: '' },
+    revision: { type: Boolean, default: false },      // ⭐ Mark for revision
+    userNotes: { type: String, default: '' },          // 📝 Markdown notes per problem
     tags: [{ type: String }],
   },
   { timestamps: true, discriminatorKey: 'kind' }

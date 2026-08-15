@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Code2 } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
+import { BigOLogo } from '@/components/ui/big-o-logo';
 
 /**
  * Shared auth shell. Branded panel on the left at lg and up, form column on
@@ -21,10 +22,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           href="/"
           className="relative flex items-center gap-2.5 text-white outline-none"
         >
-          
-          <span className="font-display text-3xl font-semibold tracking-tight">
-            PlacementDeck
-          </span>
+          <BigOLogo size="lg" showBadge />
         </Link>
 
         <div className="relative max-w-md">
@@ -53,7 +51,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         </div>
 
         <p className="relative text-xs text-white/40">
-          Built for placement season.
+          Built for top tech interview prep.
         </p>
       </aside>
 
@@ -73,15 +71,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
             href="/"
             className="mb-8 inline-flex items-center gap-2.5 outline-none lg:hidden"
           >
-            <span
-              aria-hidden
-              className="grid size-8 place-items-center rounded-lg bg-primary text-primary-foreground shadow-e1"
-            >
-              <Code2 className="size-4" />
-            </span>
-            <span className="font-display text-sm font-semibold tracking-tight text-foreground">
-              PlacementDeck
-            </span>
+            <BigOLogo size="md" />
           </Link>
 
           {children}

@@ -7,6 +7,8 @@ const userProgressSchema = new Schema(
     completed: { type: Boolean, default: false },
     completedAt: { type: Date },
     notes: { type: String, default: '' },
+    revision: { type: Boolean, default: false },   // ⭐ Revision bookmark
+    userNotes: { type: String, default: '' },       // 📝 Per-problem markdown notes
   },
   { timestamps: true }
 );

@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { withAuth } from '@/lib/auth';
-import { Topic } from '@/models';
+import { Topic, Group } from '@/models';
 import { topicWriteSchema } from '@/lib/zod';
 import { recordActivity } from '@/lib/activity';
 import dbConnect from '@/lib/db';
@@ -10,20 +10,46 @@ export async function GET(req: NextRequest) {
     await dbConnect();
     const { searchParams } = new URL(req.url);
     const groupId = searchParams.get('groupId');
-    const targetUserId = searchParams.get('userId') === 'me' || !searchParams.get('userId')
-      ? userId
-      : searchParams.get('userId')!;
+    const targetUserIdParam = searchParams.get('userId');
 
-    if (targetUserId !== userId && role !== 'admin') throw { status: 403, message: 'Forbidden' };
+    const query: any = {};
 
-    const query: any = { userId: targetUserId };
-    if (groupId) query.groupId = groupId;
+    if (groupId) {
+      const isObjectId = Boolean(groupId.match(/^[0-9a-fA-F]{24}$/));
+      const matchingGroup = await Group.findOne({
+        $or: [
+          ...(isObjectId ? [{ _id: groupId }] : []),
+          { slug: groupId },
+        ],
+      }).lean();
 
-    const limit = Math.min(Number(searchParams.get('limit') ?? 50), 100);
+      const validGroupIds: any[] = [];
+      if (matchingGroup) {
+        validGroupIds.push(matchingGroup._id);
+      }
+      if (isObjectId && !validGroupIds.some(id => id.toString() === groupId)) {
+        validGroupIds.push(groupId);
+      }
+
+      if (validGroupIds.length > 0) {
+        query.groupId = { $in: validGroupIds };
+      } else {
+        return { data: [], nextCursor: null };
+      }
+    } else {
+      const targetUserId = targetUserIdParam === 'me' || !targetUserIdParam
+        ? userId
+        : targetUserIdParam;
+
+      if (targetUserId !== userId && role !== 'admin') throw { status: 403, message: 'Forbidden' };
+      query.userId = targetUserId;
+    }
+
+    const limit = Math.min(Number(searchParams.get('limit') ?? 100), 200);
     const cursor = searchParams.get('cursor');
     if (cursor) query._id = { $gt: cursor };
 
-    const topics = await Topic.find(query).sort({ updatedAt: -1 }).limit(limit + 1);
+    const topics = await Topic.find(query).sort({ createdAt: 1 }).limit(limit + 1).lean();
     const hasMore = topics.length > limit;
     const results = hasMore ? topics.slice(0, limit) : topics;
     return { data: results, nextCursor: hasMore ? results[results.length - 1]._id : null };

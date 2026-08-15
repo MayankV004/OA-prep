@@ -1,15 +1,30 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { Code2, Trophy, Activity, TrendingUp, type LucideIcon } from 'lucide-react';
+import Link from 'next/link';
+import {
+  Code2,
+  Trophy,
+  Activity,
+  TrendingUp,
+  ArrowRight,
+  Flame,
+  CheckCircle2,
+  Sparkles,
+  Terminal,
+  ChevronRight,
+  Target,
+  Clock,
+  Layers,
+} from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Heading, Metric, PageHeading, Text } from '@/components/ui/typography';
-import { Skeleton, SkeletonRows } from '@/components/ui/skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 import { CompletionTrend } from '@/components/dashboard/CompletionTrend';
 import { GroupProgress } from '@/components/dashboard/GroupProgress';
 import { DifficultyMix } from '@/components/dashboard/DifficultyMix';
 import { ActivityHeatmap } from '@/components/dashboard/ActivityHeatmap';
 import { ActivityFeed } from '@/components/dashboard/ActivityFeed';
+import { authClient } from '@/lib/auth-client';
 
 interface DashboardStats {
   totalsByKind: { kind: string; total: number; completed: number }[];
@@ -19,53 +34,10 @@ interface DashboardStats {
   recent: any[];
 }
 
-/** Stat tile: label + icon, one hero figure, one line of supporting context. */
-function StatCard({
-  label,
-  icon: Icon,
-  value,
-  hint,
-  isLoading,
-}: {
-  label: string;
-  icon: LucideIcon;
-  value: React.ReactNode;
-  hint: React.ReactNode;
-  isLoading: boolean;
-}) {
-  return (
-    <Card className="min-w-0">
-      <CardHeader className="grid-cols-[1fr_auto] items-center gap-2">
-        <Heading level="overline" as="p">
-          {label}
-        </Heading>
-        <span
-          aria-hidden
-          className="grid size-8 place-items-center rounded-lg bg-muted text-text-muted"
-        >
-          <Icon className="size-4" />
-        </span>
-      </CardHeader>
-      <CardContent className="space-y-1">
-        {isLoading ? (
-          <>
-            <Skeleton className="h-8 w-20" />
-            <Skeleton className="mt-2 h-3 w-28" />
-          </>
-        ) : (
-          <>
-            <div className="flex items-baseline gap-1.5">{value}</div>
-            <Text size="caption" tone="muted" numeric>
-              {hint}
-            </Text>
-          </>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
 export default function DashboardPage() {
+  const { data: session } = authClient.useSession();
+  const userName = session?.user?.name || 'Prep Warrior';
+
   const { data: stats, isLoading } = useQuery<DashboardStats>({
     queryKey: ['dashboard', 'me'],
     queryFn: async () => {
@@ -75,12 +47,12 @@ export default function DashboardPage() {
     },
   });
 
-  const patternStats = stats?.totalsByKind?.find(t => t.kind === 'pattern');
+  const patternStats = stats?.totalsByKind?.find((t) => t.kind === 'pattern');
   const totalCompleted = stats?.totalsByKind?.reduce((s, t) => s + t.completed, 0) ?? 0;
   const totalProblems = stats?.totalsByKind?.reduce((s, t) => s + t.total, 0) ?? 0;
   const actionsTotal = stats?.heatmap?.reduce((s, d) => s + d.count, 0) ?? 0;
+  const overallPct = totalProblems > 0 ? Math.round((totalCompleted / totalProblems) * 100) : 0;
 
-  // For group progress bars, we need per-group data from progress endpoint
   const { data: patternProgress } = useQuery({
     queryKey: ['problems', 'progress', 'pattern'],
     queryFn: async () => {
@@ -91,84 +63,216 @@ export default function DashboardPage() {
     enabled: !!stats,
   });
 
+  const topPatterns = [
+    { title: 'Two Pointers', slug: 'two-pointers', count: '12 problems' },
+    { title: 'Sliding Window', slug: 'sliding-window', count: '10 problems' },
+    { title: 'Dynamic Programming', slug: 'dynamic-programming', count: '25 problems' },
+    { title: 'Graph Traversals', slug: 'graph-traversals', count: '18 problems' },
+  ];
+
   return (
-    <div className="space-y-6">
-      <PageHeading
-        overline="Overview"
-        title="Dashboard"
-        description="Your placement prep at a glance"
-      />
+    <div className="space-y-8 pb-12">
+      {/* 1. Header Section with Tall Display Typography & Red Accents */}
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pt-2">
+        <div className="space-y-1.5">
+          <h1 className="font-display text-3xl sm:text-5xl font-black tracking-tight text-foreground leading-tight">
+            Welcome back, <span className="text-rose-500">{userName}</span> 👋
+          </h1>
+          <p className="text-sm sm:text-base text-muted-foreground max-w-xl font-light">
+            Track your DSA patterns, CS core fundamentals, and assessment readiness in real time.
+          </p>
+        </div>
 
-      {/* Stats Cards */}
-      <div className="animate-in-up grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          label="Problems Solved"
-          icon={Code2}
-          isLoading={isLoading}
-          value={<Metric>{totalCompleted}</Metric>}
-          hint={`of ${totalProblems} total`}
-        />
-
-        <StatCard
-          label="Pattern DSA"
-          icon={Trophy}
-          isLoading={isLoading}
-          value={
-            <Metric>
-              {patternStats ? `${patternStats.completed}/${patternStats.total}` : '0/0'}
-            </Metric>
-          }
-          hint="completed"
-        />
-
-        <StatCard
-          label="Difficulty Mix"
-          icon={TrendingUp}
-          isLoading={isLoading}
-          value={
-            <>
-              <Metric>{stats?.difficultyMix.Hard ?? 0}</Metric>
-              <Text as="span" size="compact" tone="muted" weight="medium">
-                Hard
-              </Text>
-            </>
-          }
-          hint={`${stats?.difficultyMix.Easy ?? 0}E · ${stats?.difficultyMix.Medium ?? 0}M · ${stats?.difficultyMix.Hard ?? 0}H`}
-        />
-
-        <StatCard
-          label="90d Activity"
-          icon={Activity}
-          isLoading={isLoading}
-          value={<Metric>{actionsTotal}</Metric>}
-          hint="total actions"
-        />
+        {/* Quick Action Buttons */}
+        <div className="flex flex-wrap items-center gap-3 shrink-0">
+          <Link href="/dsa">
+            <button className="flex items-center gap-2 h-11 px-5 rounded-2xl font-semibold text-xs text-white bg-gradient-to-r from-red-600 via-rose-600 to-red-500 shadow-[0_0_20px_rgba(225,29,72,0.35)] hover:shadow-[0_0_25px_rgba(225,29,72,0.6)] hover:scale-105 active:scale-95 transition-all border-none">
+              <Code2 className="h-4 w-4" />
+              <span>Practice DSA</span>
+              <ArrowRight className="h-3.5 w-3.5" />
+            </button>
+          </Link>
+          <Link href="/core">
+            <button className="flex items-center gap-2 h-11 px-5 rounded-2xl font-medium text-xs text-foreground bg-background hover:bg-accent/60 border border-border/40 hover:scale-105 active:scale-95 transition-all">
+              <Terminal className="h-4 w-4 text-rose-500" />
+              <span>CS Core</span>
+            </button>
+          </Link>
+        </div>
       </div>
 
-      {/* Charts Row 1: Trend + Activity Feed */}
-      <div className="grid gap-4 lg:grid-cols-7">
-        <Card className="min-w-0 lg:col-span-4">
-          <CardHeader>
-            <CardTitle>Completion Trend</CardTitle>
-            <CardDescription>Problems completed per day, last 90 days</CardDescription>
-          </CardHeader>
-          <CardContent className="min-w-0">
+      {/* 2. Glassmorphic Stat Metric Cards (Borderless, Consistent Red Theme) */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {/* Stat Card 1: Solved */}
+        <div className="group relative p-5 rounded-2xl bg-background/60 dark:bg-background/30 backdrop-blur-xl border-none shadow-sm hover:shadow-md transition-all duration-300">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground font-sans">Problems Solved</span>
+            <div className="h-9 w-9 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-500">
+              <CheckCircle2 className="h-4 w-4" />
+            </div>
+          </div>
+          <div className="mt-4">
             {isLoading ? (
-              <Skeleton className="h-[200px] w-full" />
+              <Skeleton className="h-8 w-24" />
+            ) : (
+              <div className="flex items-baseline gap-2">
+                <span className="font-display text-3xl sm:text-4xl font-black tracking-tight text-foreground">{totalCompleted}</span>
+                <span className="text-xs text-muted-foreground font-medium">/ {totalProblems} ({overallPct}%)</span>
+              </div>
+            )}
+            <div className="mt-3 h-1.5 w-full rounded-full bg-muted overflow-hidden">
+              <div
+                style={{ width: `${overallPct}%` }}
+                className="h-full rounded-full bg-gradient-to-r from-red-600 to-rose-500 transition-all duration-500"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Stat Card 2: Pattern DSA */}
+        <div className="group relative p-5 rounded-2xl bg-background/60 dark:bg-background/30 backdrop-blur-xl border-none shadow-sm hover:shadow-md transition-all duration-300">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground font-sans">Pattern DSA</span>
+            <div className="h-9 w-9 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-500">
+              <Trophy className="h-4 w-4" />
+            </div>
+          </div>
+          <div className="mt-4">
+            {isLoading ? (
+              <Skeleton className="h-8 w-24" />
+            ) : (
+              <div className="flex items-baseline gap-2">
+                <span className="font-display text-3xl sm:text-4xl font-black tracking-tight text-foreground">
+                  {patternStats ? patternStats.completed : 0}
+                </span>
+                <span className="text-xs text-muted-foreground font-medium">/ {patternStats?.total ?? 0} completed</span>
+              </div>
+            )}
+            <p className="mt-2 text-xs text-rose-500 font-medium flex items-center gap-1">
+              <Sparkles className="h-3 w-3 inline" /> Structured interview paths
+            </p>
+          </div>
+        </div>
+
+        {/* Stat Card 3: Difficulty Split */}
+        <div className="group relative p-5 rounded-2xl bg-background/60 dark:bg-background/30 backdrop-blur-xl border-none shadow-sm hover:shadow-md transition-all duration-300">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground font-sans">Difficulty Mix</span>
+            <div className="h-9 w-9 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-500">
+              <TrendingUp className="h-4 w-4" />
+            </div>
+          </div>
+          <div className="mt-4">
+            {isLoading ? (
+              <Skeleton className="h-8 w-24" />
+            ) : (
+              <div className="flex items-baseline gap-2">
+                <span className="font-display text-3xl sm:text-4xl font-black tracking-tight text-foreground">
+                  {stats?.difficultyMix?.Hard ?? 0}
+                </span>
+                <span className="text-xs font-semibold text-rose-500">Hard</span>
+              </div>
+            )}
+            <div className="mt-2 flex items-center gap-2 text-xs font-mono text-muted-foreground">
+              <span className="text-emerald-500 font-semibold">{stats?.difficultyMix?.Easy ?? 0}E</span> ·{' '}
+              <span className="text-amber-500 font-semibold">{stats?.difficultyMix?.Medium ?? 0}M</span> ·{' '}
+              <span className="text-rose-500 font-semibold">{stats?.difficultyMix?.Hard ?? 0}H</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Stat Card 4: 90d Activity */}
+        <div className="group relative p-5 rounded-2xl bg-background/60 dark:bg-background/30 backdrop-blur-xl border-none shadow-sm hover:shadow-md transition-all duration-300">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground font-sans">90d Activity</span>
+            <div className="h-9 w-9 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-500">
+              <Activity className="h-4 w-4" />
+            </div>
+          </div>
+          <div className="mt-4">
+            {isLoading ? (
+              <Skeleton className="h-8 w-24" />
+            ) : (
+              <div className="flex items-baseline gap-2">
+                <span className="font-display text-3xl sm:text-4xl font-black tracking-tight text-foreground">{actionsTotal}</span>
+                <span className="text-xs text-muted-foreground font-medium">actions logged</span>
+              </div>
+            )}
+            <p className="mt-2 text-xs text-rose-500 font-medium flex items-center gap-1">
+              <Flame className="h-3.5 w-3.5 text-rose-500 inline" /> Active prep streak
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. Quick Pattern Jump Shortcuts Bar (Borderless Glass Container) */}
+      <div className="p-5 rounded-3xl bg-background/60 dark:bg-background/30 border-none shadow-sm backdrop-blur-xl space-y-3">
+        <div className="flex items-center justify-between px-1">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground font-sans">
+            <Target className="h-4 w-4 text-rose-500" />
+            <span>Popular DSA Patterns</span>
+          </div>
+          <Link href="/dsa" className="text-xs font-semibold text-rose-500 hover:text-rose-400 flex items-center gap-1 transition-colors">
+            <span>View All</span>
+            <ChevronRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {topPatterns.map((pat) => (
+            <Link
+              key={pat.slug}
+              href={`/dsa/${pat.slug}`}
+              className="group flex items-center justify-between p-3.5 rounded-2xl bg-background/80 hover:bg-accent/40 border border-border/30 hover:border-rose-500/40 transition-all duration-200"
+            >
+              <div className="space-y-0.5">
+                <div className="font-display text-sm font-bold text-foreground group-hover:text-rose-500 transition-colors">
+                  {pat.title}
+                </div>
+                <div className="text-[10px] text-muted-foreground font-medium">{pat.count}</div>
+              </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-0.5 group-hover:text-rose-500 transition-all" />
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* 4. Analytics Grid Row 1 (Completion Trend + Activity Feed) */}
+      <div className="grid gap-6 lg:grid-cols-7">
+        {/* Completion Trend Card */}
+        <Card className="min-w-0 lg:col-span-4 rounded-3xl bg-background/60 dark:bg-background/30 backdrop-blur-xl border-none shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <div>
+              <CardTitle className="font-display text-lg font-bold tracking-tight">Completion Trend</CardTitle>
+              <CardDescription className="text-xs text-muted-foreground">Problems completed per day (Last 90 Days)</CardDescription>
+            </div>
+            <div className="h-8 w-8 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center">
+              <TrendingUp className="h-4 w-4" />
+            </div>
+          </CardHeader>
+          <CardContent className="min-w-0 pt-4">
+            {isLoading ? (
+              <Skeleton className="h-[240px] w-full rounded-2xl" />
             ) : (
               <CompletionTrend data={stats?.trend ?? []} />
             )}
           </CardContent>
         </Card>
 
-        <Card className="min-w-0 lg:col-span-3">
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>Your last 10 actions</CardDescription>
+        {/* Activity Feed Card */}
+        <Card className="min-w-0 lg:col-span-3 rounded-3xl bg-background/60 dark:bg-background/30 backdrop-blur-xl border-none shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <div>
+              <CardTitle className="font-display text-lg font-bold tracking-tight">Recent Activity</CardTitle>
+              <CardDescription className="text-xs text-muted-foreground">Your last 10 prep events</CardDescription>
+            </div>
+            <div className="h-8 w-8 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center">
+              <Clock className="h-4 w-4" />
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-4 max-h-[300px] overflow-y-auto pr-1">
             {isLoading ? (
-              <SkeletonRows rows={5} />
+              <Skeleton className="h-[240px] w-full rounded-2xl" />
             ) : (
               <ActivityFeed events={stats?.recent ?? []} />
             )}
@@ -176,30 +280,42 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Charts Row 2: Group Progress + Difficulty Mix */}
-      <div className="grid gap-4 lg:grid-cols-7">
-        <Card className="min-w-0 lg:col-span-4">
-          <CardHeader>
-            <CardTitle>Pattern Progress</CardTitle>
-            <CardDescription>Completed vs. remaining per pattern</CardDescription>
+      {/* 5. Analytics Grid Row 2 (Pattern Progress + Difficulty Mix) */}
+      <div className="grid gap-6 lg:grid-cols-7">
+        {/* Pattern Progress Card */}
+        <Card className="min-w-0 lg:col-span-4 rounded-3xl bg-background/60 dark:bg-background/30 backdrop-blur-xl border-none shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <div>
+              <CardTitle className="font-display text-lg font-bold tracking-tight">Pattern Progress</CardTitle>
+              <CardDescription className="text-xs text-muted-foreground">Completion breakdown across DSA patterns</CardDescription>
+            </div>
+            <div className="h-8 w-8 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center">
+              <Layers className="h-4 w-4" />
+            </div>
           </CardHeader>
-          <CardContent className="min-w-0">
+          <CardContent className="min-w-0 pt-4">
             {isLoading ? (
-              <Skeleton className="h-[200px] w-full" />
+              <Skeleton className="h-[240px] w-full rounded-2xl" />
             ) : (
               <GroupProgress data={patternProgress ?? []} />
             )}
           </CardContent>
         </Card>
 
-        <Card className="min-w-0 lg:col-span-3">
-          <CardHeader>
-            <CardTitle>Difficulty Mix</CardTitle>
-            <CardDescription>Completed problems by difficulty</CardDescription>
+        {/* Difficulty Mix Card */}
+        <Card className="min-w-0 lg:col-span-3 rounded-3xl bg-background/60 dark:bg-background/30 backdrop-blur-xl border-none shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <div>
+              <CardTitle className="font-display text-lg font-bold tracking-tight">Difficulty Mix</CardTitle>
+              <CardDescription className="text-xs text-muted-foreground">Easy vs. Medium vs. Hard distribution</CardDescription>
+            </div>
+            <div className="h-8 w-8 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center">
+              <Trophy className="h-4 w-4" />
+            </div>
           </CardHeader>
-          <CardContent className="min-w-0">
+          <CardContent className="min-w-0 pt-4">
             {isLoading ? (
-              <Skeleton className="h-[120px] w-full" />
+              <Skeleton className="h-[180px] w-full rounded-2xl" />
             ) : (
               <DifficultyMix data={stats?.difficultyMix ?? {}} />
             )}
@@ -207,15 +323,20 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Activity Heatmap */}
-      <Card className="min-w-0">
-        <CardHeader>
-          <CardTitle>Activity Heatmap</CardTitle>
-          <CardDescription>90-day activity grid</CardDescription>
+      {/* 6. Activity Heatmap Card */}
+      <Card className="min-w-0 rounded-3xl bg-background/60 dark:bg-background/30 backdrop-blur-xl border-none shadow-sm">
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <div>
+            <CardTitle className="font-display text-lg font-bold tracking-tight">Activity Heatmap</CardTitle>
+            <CardDescription className="text-xs text-muted-foreground">Daily problem solving activity over the last 90 days</CardDescription>
+          </div>
+          <div className="h-8 w-8 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center">
+            <Activity className="h-4 w-4" />
+          </div>
         </CardHeader>
-        <CardContent className="min-w-0">
+        <CardContent className="min-w-0 pt-4">
           {isLoading ? (
-            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-28 w-full rounded-2xl" />
           ) : (
             <ActivityHeatmap data={stats?.heatmap ?? []} />
           )}

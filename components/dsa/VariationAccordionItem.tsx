@@ -1,133 +1,89 @@
-import { AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
+'use client';
+
 import { TemplateCodeBlock } from "./TemplateCodeBlock";
-import { ProblemList } from "./ProblemList";
-import { Problem } from "@/components/problem/ProblemRow";
 import { PatternVariation } from "@/types/pattern";
 import ReactMarkdown from 'react-markdown';
-import { Layers } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Heading, Text } from "@/components/ui/typography";
+import Link from "next/link";
 
-interface VariationAccordionItemProps {
+interface VariationItemProps {
   variation: PatternVariation;
-  problems: Problem[];
-  html: string; // The HTML of the code block generated on the server
-  onToggleComplete?: (problemId: string, completed: boolean) => void;
+  patternSlug: string;
+  html: string;
 }
 
-export function VariationAccordionItem({ variation, problems, html, onToggleComplete }: VariationAccordionItemProps) {
-  const completedCount = problems.filter(p => p.completed).length;
-  const totalCount = problems.length;
-  const progressPercentage = totalCount === 0 ? 0 : Math.round((completedCount / totalCount) * 100);
+export function VariationAccordionItem({ variation, patternSlug, html }: VariationItemProps) {
+  const problemCount = (variation.problems || []).length;
+  const variationId = variation._id || variation.id || '';
+  const variationSlug = variationId;
 
   return (
-    <AccordionItem
-      value={variation._id || variation.id || ''}
-      className="group overflow-hidden rounded-xl border-b-0! bg-card shadow-e1"
-    >
-      {/* Tinted header — expanded state reads from background + chevron rotation */}
-      <AccordionTrigger className="items-center gap-3 rounded-xl bg-surface-sunken px-4 py-3.5 hover:bg-muted aria-expanded:rounded-b-none aria-expanded:bg-accent aria-expanded:text-accent-foreground sm:px-5">
-        <span className="flex min-w-0 flex-1 items-center gap-3">
-          <span
-            aria-hidden
-            className="grid size-9 shrink-0 place-items-center rounded-lg bg-card text-primary shadow-e1 transition-transform duration-200 ease-out-quart group-aria-expanded/accordion-trigger:scale-105 sm:size-10"
-          >
-            <Layers className="size-4 sm:size-5" />
-          </span>
-          <Heading level="card" as="span" className="min-w-0 truncate text-left sm:text-lg">
+    <div className="rounded-3xl border-none bg-background/60 dark:bg-background/30 backdrop-blur-xl shadow-sm p-6 sm:p-8 space-y-6 mb-6">
+      {/* Variation Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/30">
+        <div>
+          <h3 className="font-display text-xl sm:text-2xl font-black tracking-tight text-foreground">
             {variation.variation || variation.title}
-          </Heading>
-        </span>
-
-        {totalCount > 0 && (
-          <span className="mr-2 flex shrink-0 items-center gap-2">
-            <Text as="span" size="caption" tone="muted" numeric className="hidden sm:inline">
-              {progressPercentage}%
-            </Text>
-            <Badge variant="secondary" className="tabular-nums">
-              {completedCount}/{totalCount}
-            </Badge>
+          </h3>
+          <span className="text-xs text-muted-foreground font-medium">
+            {problemCount} practice problem{problemCount !== 1 ? 's' : ''} available
           </span>
+        </div>
+
+        {/* Practice CTA Button */}
+        {problemCount > 0 && (
+          <Link
+            href={`/dsa/${patternSlug}/${variationSlug}/practice`}
+            className="group/btn inline-flex items-center justify-center gap-2 h-11 px-6 rounded-2xl font-semibold text-xs text-white bg-gradient-to-r from-red-600 via-rose-600 to-red-500 shadow-[0_0_20px_rgba(225,29,72,0.35)] hover:shadow-[0_0_25px_rgba(225,29,72,0.6)] hover:scale-105 active:scale-95 transition-all border-none shrink-0"
+          >
+            <span>Practice Session</span>
+          </Link>
         )}
-      </AccordionTrigger>
+      </div>
 
-      <AccordionContent className="pt-0 pb-0">
-        <div className="space-y-6 px-4 py-5 sm:px-5">
-          {totalCount > 0 && (
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <Text as="span" size="micro" tone="muted" weight="medium">
-                  Progress
-                </Text>
-                <Text as="span" size="micro" tone={progressPercentage === 100 ? 'success' : 'secondary'} weight="medium" numeric>
-                  {completedCount} of {totalCount} solved
-                </Text>
-              </div>
-              <Progress value={progressPercentage} className="h-1.5" />
-            </div>
-          )}
+      {/* Variation Concept / Description */}
+      {(variation.description || variation.concept) && (
+        <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none leading-relaxed text-muted-foreground">
+          <ReactMarkdown>{variation.description || variation.concept || ''}</ReactMarkdown>
+        </div>
+      )}
 
-          {(variation.description || variation.concept) && (
-            <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none leading-relaxed text-text-secondary">
-              <ReactMarkdown>{variation.description || variation.concept || ''}</ReactMarkdown>
-            </div>
-          )}
-
-          {variation.important_details && variation.important_details.length > 0 && (
-            <Card size="sm" className="bg-accent shadow-e1">
-              <CardHeader>
-                <Heading level="overline" className="text-accent-foreground">
-                  Key details
-                </Heading>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2.5">
-                  {variation.important_details.map((detail, idx) => (
-                    <li key={idx} className="flex gap-2.5">
-                      <span aria-hidden className="mt-2 size-1.5 shrink-0 rounded-full bg-primary" />
-                      <div className="prose prose-sm dark:prose-invert max-w-none leading-relaxed text-foreground [&_p]:my-0">
-                        <ReactMarkdown>{detail}</ReactMarkdown>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-          )}
-
-          {variation.other_relevant_details && (
-            <Card size="sm" className="bg-surface-sunken shadow-e1">
-              <CardHeader>
-                <Heading level="overline">Additional information</Heading>
-              </CardHeader>
-              <CardContent>
-                <div className="prose prose-sm dark:prose-invert max-w-none text-text-secondary">
-                  <ReactMarkdown>{variation.other_relevant_details}</ReactMarkdown>
+      {/* Key Implementation Details */}
+      {variation.important_details && variation.important_details.length > 0 && (
+        <div className="p-5 rounded-2xl bg-background/50 space-y-3">
+          <span className="font-display text-xs font-bold uppercase tracking-wider text-rose-500">Key Implementation Details</span>
+          <ul className="space-y-2.5">
+            {variation.important_details.map((detail, idx) => (
+              <li key={idx} className="flex items-start gap-2.5 text-sm text-foreground">
+                <span className="mt-1.5 h-2 w-2 rounded-full bg-rose-500 shrink-0" />
+                <div className="prose prose-sm dark:prose-invert max-w-none leading-relaxed text-muted-foreground [&_p]:my-0">
+                  <ReactMarkdown>{detail}</ReactMarkdown>
                 </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {(variation.template_code || variation.templateCode) && html && (
-            <div className="space-y-2">
-              <Heading level="overline">Template</Heading>
-              <TemplateCodeBlock
-                code={variation.template_code || variation.templateCode || ''}
-                html={html}
-              />
-            </div>
-          )}
+              </li>
+            ))}
+          </ul>
         </div>
+      )}
 
-        <div className="bg-surface-sunken px-2 pb-2">
-          <div className="px-3 py-3">
-            <Heading level="overline">Practice problems</Heading>
+      {/* Additional Information */}
+      {variation.other_relevant_details && (
+        <div className="p-5 rounded-2xl bg-background/50 space-y-2">
+          <span className="font-display text-xs font-bold uppercase tracking-wider text-muted-foreground">Additional Information</span>
+          <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground leading-relaxed">
+            <ReactMarkdown>{variation.other_relevant_details}</ReactMarkdown>
           </div>
-          <ProblemList problems={problems} onToggleComplete={onToggleComplete} />
         </div>
-      </AccordionContent>
-    </AccordionItem>
+      )}
+
+      {/* Template Code Block */}
+      {(variation.template_code || variation.templateCode) && html && (
+        <div className="space-y-2 pt-2">
+          <span className="font-display text-xs font-bold uppercase tracking-wider text-muted-foreground">Variation Code Template</span>
+          <TemplateCodeBlock
+            code={variation.template_code || variation.templateCode || ''}
+            html={html}
+          />
+        </div>
+      )}
+    </div>
   );
 }

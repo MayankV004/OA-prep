@@ -2,20 +2,18 @@
 
 import { useMemo } from 'react';
 import { format, eachDayOfInterval, subDays, startOfDay } from 'date-fns';
-import { CalendarDays } from 'lucide-react';
-
+import { CalendarDays, Flame } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Text } from '@/components/ui/typography';
 import { EmptyState } from '@/components/ui/empty-state';
 
 interface HeatmapCell { date: string; count: number }
 
 const INTENSITY_CLASSES = [
-  'bg-muted',
-  'bg-accent-200',
-  'bg-accent-300',
-  'bg-accent-400',
-  'bg-accent-500',
+  'bg-muted/60 dark:bg-muted/30 border border-border/20',
+  'bg-rose-500/25 border border-rose-500/35',
+  'bg-rose-500/55 border border-rose-500/65',
+  'bg-rose-500/85 border border-rose-400',
+  'bg-red-600 border border-red-400 shadow-[0_0_10px_rgba(225,29,72,0.5)]',
 ];
 
 export function ActivityHeatmap({ data }: { data: HeatmapCell[] }) {
@@ -25,18 +23,16 @@ export function ActivityHeatmap({ data }: { data: HeatmapCell[] }) {
     return map;
   }, [data]);
 
-  // Build 90-day grid aligned to Sun–Sat weeks
   const today = startOfDay(new Date());
   const startDate = subDays(today, 89);
   const allDays = eachDayOfInterval({ start: startDate, end: today });
 
-  // Pad start to nearest Sunday
-  const firstDayOfWeek = allDays[0].getDay(); // 0=Sun
+  const firstDayOfWeek = allDays[0].getDay();
   const paddedDays: (Date | null)[] = [
     ...Array(firstDayOfWeek).fill(null),
     ...allDays,
   ];
-  // Build weeks (columns)
+
   const weeks: (Date | null)[][] = [];
   for (let i = 0; i < paddedDays.length; i += 7) {
     weeks.push(paddedDays.slice(i, i + 7));
@@ -49,17 +45,17 @@ export function ActivityHeatmap({ data }: { data: HeatmapCell[] }) {
       compact
       icon={CalendarDays}
       title="No activity recorded"
-      description="Your last 90 days will fill in as you work through problems."
+      description="Your 90-day activity grid will update as you solve problems."
     />
   );
 
   return (
-    <div className="min-w-0 space-y-3">
-      <div className="-mx-1 flex gap-1 overflow-x-auto px-1 pb-1">
+    <div className="min-w-0 space-y-4">
+      <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-2 scrollbar-none">
         {weeks.map((week, wi) => (
-          <div key={wi} className="flex flex-col gap-1">
+          <div key={wi} className="flex flex-col gap-1.5">
             {week.map((day, di) => {
-              if (!day) return <div key={di} className="size-3 rounded-sm" />;
+              if (!day) return <div key={di} className="size-3.5 rounded-md" />;
               const dateStr = format(day, 'yyyy-MM-dd');
               const count = countByDate[dateStr] ?? 0;
               const intensity = Math.min(count, 4);
@@ -68,7 +64,7 @@ export function ActivityHeatmap({ data }: { data: HeatmapCell[] }) {
                   key={di}
                   title={`${format(day, 'MMM d, yyyy')}: ${count} action${count !== 1 ? 's' : ''}`}
                   className={cn(
-                    'size-3 shrink-0 rounded-sm transition-opacity duration-200 ease-out-quart hover:opacity-70',
+                    'size-3.5 shrink-0 rounded-md transition-all duration-200 hover:scale-125 hover:z-10 cursor-pointer',
                     INTENSITY_CLASSES[intensity]
                   )}
                 />
@@ -78,20 +74,17 @@ export function ActivityHeatmap({ data }: { data: HeatmapCell[] }) {
         ))}
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <Text size="caption" tone="muted" numeric>
-          {totalCount} actions in the last 90 days
-        </Text>
-        <div className="flex items-center gap-1">
-          <Text as="span" size="micro" tone="muted">
-            Less
-          </Text>
+      <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-border/30">
+        <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+          <Flame className="h-4 w-4 text-rose-500 inline" />
+          <span><strong className="text-foreground">{totalCount}</strong> actions in the last 90 days</span>
+        </div>
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <span>Less</span>
           {INTENSITY_CLASSES.map((cls, i) => (
-            <div key={i} aria-hidden className={cn('size-2.5 rounded-sm', cls)} />
+            <div key={i} className={cn('size-3 rounded-md', cls)} />
           ))}
-          <Text as="span" size="micro" tone="muted">
-            More
-          </Text>
+          <span>More</span>
         </div>
       </div>
     </div>

@@ -24,8 +24,8 @@ import { Heading, PageHeading, Text } from '@/components/ui/typography';
  */
 
 const DEFAULTS = {
-  siteName: 'PlacementDeck',
-  tagline: 'Track your placement preparation progress',
+  siteName: 'BigO',
+  tagline: 'Master DSA Patterns & Core CS',
   supportEmail: '',
   announcementEnabled: false,
   announcementTone: 'info',

@@ -2,7 +2,7 @@ import { Body, Button, Container, Head, Html, Preview, Section, Text } from '@re
 
 export function InviteEmail({
   inviterName,
-  appName = 'PlacementDeck',
+  appName = 'BigO',
   url,
   expiresInHours,
 }: {

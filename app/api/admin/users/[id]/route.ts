@@ -69,6 +69,6 @@ export async function DELETE(req: NextRequest, { params }: Ctx) {
       kind: 'admin.user.deleted',
       metadata: { wipe },
     });
-    return Response.json(null, { status: 204 });
+    return new Response(null, { status: 204 });
   });
 }

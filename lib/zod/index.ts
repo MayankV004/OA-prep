@@ -17,6 +17,8 @@ export const groupWriteSchema = z.object({
   kind: z.enum(['subject', 'advanced']),
   name: z.string().min(1),
   slug: z.string().optional(),
+  body: z.string().optional(),
+  description: z.string().optional(),
 });
 
 export const groupUpdateSchema = groupWriteSchema.partial();

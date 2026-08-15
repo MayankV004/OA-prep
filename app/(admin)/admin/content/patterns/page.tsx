@@ -349,11 +349,12 @@ export default function AdminPatternsPage() {
             <Link href={`/admin/content/patterns/${row.slug}`}>
               <Button
                 variant="ghost"
-                size="icon"
-                aria-label={`Open the full editor for ${row.title}`}
-                className="size-11 text-text-muted hover:text-foreground md:size-8"
+                size="sm"
+                aria-label={`Manage variations and problems for ${row.title}`}
+                className="h-8 gap-1.5 text-text-muted hover:text-primary"
               >
-                <ExternalLink className="size-4" aria-hidden />
+                <ExternalLink className="size-3.5" aria-hidden />
+                Manage
               </Button>
             </Link>
             <Button

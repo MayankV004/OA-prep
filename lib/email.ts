@@ -23,7 +23,7 @@ export async function sendInviteEmail(args: {
     from: process.env.EMAIL_FROM!,
     replyTo: process.env.EMAIL_REPLY_TO,
     to: args.to,
-    subject: `${args.inviterName} invited you to PlacementDeck`,
+    subject: `${args.inviterName} invited you to BigO`,
     html,
   });
 }

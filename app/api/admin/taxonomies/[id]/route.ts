@@ -47,6 +47,6 @@ export async function DELETE(req: NextRequest, { params }: Ctx) {
       entity: { type: 'taxonomy', id: taxonomy._id.toString(), title: taxonomy.name },
       metadata: { kind: taxonomy.kind, name: taxonomy.name },
     });
-    return Response.json(null, { status: 204 });
+    return new Response(null, { status: 204 });
   });
 }

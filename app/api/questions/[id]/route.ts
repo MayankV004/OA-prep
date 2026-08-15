@@ -56,6 +56,6 @@ export async function DELETE(req: NextRequest, { params }: Ctx) {
       kind: 'question.deleted',
       entity: { type: 'question', id: q._id.toString() },
     });
-    return Response.json(null, { status: 204 });
+    return new Response(null, { status: 204 });
   });
 }

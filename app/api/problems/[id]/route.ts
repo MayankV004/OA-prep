@@ -71,6 +71,6 @@ export async function DELETE(req: NextRequest, { params }: Ctx) {
       entity: { type: 'problem', id: problem._id.toString(), title: problem.title },
       metadata: { title: problem.title },
     });
-    return Response.json(null, { status: 204 });
+    return new Response(null, { status: 204 });
   });
 }

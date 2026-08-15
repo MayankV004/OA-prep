@@ -27,8 +27,17 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PlacementDeck",
-  description: "Track your placement preparation progress",
+  title: "BigO - Master DSA Patterns & Core CS",
+  description: "Master algorithms, DSA patterns, and core Computer Science subjects for top tech interviews.",
+  icons: {
+    icon: [
+      { url: '/favicon.ico' },
+      { url: '/icon.png', type: 'image/png' },
+      { url: '/icon.svg', type: 'image/svg+xml' },
+    ],
+    shortcut: '/favicon.ico',
+    apple: '/icon.png',
+  },
 };
 
 export default function RootLayout({

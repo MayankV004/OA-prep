@@ -1,32 +1,32 @@
 'use client';
 
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
-import { Progress } from '@/components/ui/progress';
-import { ArrowRight, Check, Clock, Code2, Target, Zap } from 'lucide-react';
-import { motion, Variants } from 'framer-motion';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { motion } from 'framer-motion';
+import { Card, CardContent } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
-import { Badge } from '@/components/ui/badge';
-import { Heading, Metric, PageHeading, Text } from '@/components/ui/typography';
 import { cn } from '@/lib/utils';
 
 interface PatternStat { group: string; total: number; completed: number }
 
-const containerVariants: Variants = {
+const containerVariants: any = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
-    transition: { staggerChildren: 0.1 },
+    transition: { staggerChildren: 0.06 },
   },
 };
 
-const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } },
+const itemVariants: any = {
+  hidden: { opacity: 0, y: 16 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
 };
 
 export default function DSAPageClient({ initialPatterns }: { initialPatterns: any[] }) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedTag, setSelectedTag] = useState<string>('all');
+
   const { data: progress = [] } = useQuery<PatternStat[]>({
     queryKey: ['problems', 'progress', 'pattern'],
     queryFn: async () => {
@@ -41,44 +41,105 @@ export default function DSAPageClient({ initialPatterns }: { initialPatterns: an
   const totalProblems = progress.reduce((acc, curr) => acc + curr.total, 0);
   const overallProgress = totalProblems > 0 ? Math.round((totalCompleted / totalProblems) * 100) : 0;
 
-  return (
-    <div className="space-y-10 pb-12">
-      {/* Intro + overall mastery */}
-      <div className="flex flex-col gap-6 rounded-2xl bg-card p-6 shadow-e2 sm:p-8 md:flex-row md:items-end md:justify-between">
-        <PageHeading
-          className="w-full max-w-2xl"
-          overline="Practice"
-          title="Master DSA patterns"
-          description="Don't just grind random problems. Learn the underlying patterns, study the universal templates, and apply them to solve any variation with confidence."
-        />
+  // Filter patterns by search & tag
+  const filteredPatterns = initialPatterns.filter((pattern) => {
+    const matchesSearch =
+      pattern.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (pattern.useCases || []).some((tag: string) => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+    
+    if (selectedTag === 'all') return matchesSearch;
+    if (selectedTag === 'completed') {
+      const stat = statsMap[pattern.title];
+      return matchesSearch && stat && stat.completed > 0 && stat.completed === stat.total;
+    }
+    if (selectedTag === 'in-progress') {
+      const stat = statsMap[pattern.title];
+      return matchesSearch && stat && stat.completed > 0 && stat.completed < stat.total;
+    }
+    return matchesSearch;
+  });
 
-        <div className="w-full shrink-0 space-y-2.5 rounded-xl bg-surface-sunken p-5 md:w-56">
-          <div className="flex items-center gap-2">
-            <Target className="size-3.5 text-primary" aria-hidden />
-            <Heading level="overline">Overall mastery</Heading>
+  return (
+    <div className="space-y-8 pb-12">
+      {/* 1. Header Section */}
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pt-2">
+        <div className="space-y-1.5">
+          <h1 className="font-display text-3xl sm:text-5xl font-black tracking-tight text-foreground leading-tight">
+            Master <span className="text-rose-500">DSA Patterns</span>
+          </h1>
+          <p className="text-sm sm:text-base text-muted-foreground max-w-xl font-light">
+            Learn the underlying patterns, study universal templates, and apply them to solve any interview variation with confidence.
+          </p>
+        </div>
+
+        {/* Overall Mastery Meter Card */}
+        <div className="w-full sm:w-64 p-4 rounded-2xl bg-background/60 dark:bg-background/30 backdrop-blur-xl border-none shadow-sm space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-sans">
+              Overall Mastery
+            </span>
+            <span className="text-xs font-semibold text-rose-500 font-mono">{totalCompleted}/{totalProblems}</span>
           </div>
           <div className="flex items-baseline gap-2">
-            <Metric>{overallProgress}%</Metric>
-            <Text size="caption" tone="muted" numeric as="span">
-              {totalCompleted}/{totalProblems} solved
-            </Text>
+            <span className="font-display text-3xl font-black tracking-tight text-foreground">{overallProgress}%</span>
+            <span className="text-xs text-muted-foreground font-medium">completed</span>
           </div>
-          <Progress
-            value={overallProgress}
-            aria-label={`Overall mastery: ${overallProgress} percent`}
-            className="[&_[data-slot=progress-track]]:h-1.5"
-          />
+          <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+            <div
+              style={{ width: `${overallProgress}%` }}
+              className="h-full rounded-full bg-gradient-to-r from-red-600 via-rose-500 to-red-400 transition-all duration-500"
+            />
+          </div>
         </div>
       </div>
 
-      {/* Pattern grid */}
-      {initialPatterns.length === 0 ? (
-        <Card>
+      {/* 2. Search & Filter Controls */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-2 rounded-2xl bg-background/50 backdrop-blur-md border border-border/30">
+        {/* Search Bar */}
+        <div className="relative w-full sm:w-80">
+          <input
+            type="text"
+            placeholder="Search patterns or tags..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full h-10 px-4 text-sm font-medium bg-background/80 rounded-xl border border-border/40 focus:border-rose-500/50 focus:outline-none focus:ring-2 focus:ring-rose-500/20 transition-all"
+          />
+        </div>
+
+        {/* Filter Pills */}
+        <div className="flex items-center gap-1.5 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
+          {[
+            { id: 'all', label: 'All Patterns' },
+            { id: 'in-progress', label: 'In Progress' },
+            { id: 'completed', label: 'Completed' },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setSelectedTag(tab.id)}
+              className={cn(
+                'px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all whitespace-nowrap',
+                selectedTag === tab.id
+                  ? 'bg-rose-500/10 text-rose-500 border border-rose-500/30'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-accent/40'
+              )}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 3. Pattern Grid */}
+      {filteredPatterns.length === 0 ? (
+        <Card className="rounded-3xl border-none bg-background/50 p-8 text-center">
           <CardContent>
             <EmptyState
-              icon={Code2}
-              title="No patterns yet"
-              description="Patterns will show up here as soon as they are published to the content library."
+              title="No patterns found"
+              description={
+                searchQuery
+                  ? `No patterns match "${searchQuery}". Try a different keyword.`
+                  : 'Patterns will show up here as soon as they are added to the library.'
+              }
             />
           </CardContent>
         </Card>
@@ -87,95 +148,73 @@ export default function DSAPageClient({ initialPatterns }: { initialPatterns: an
           variants={containerVariants}
           initial="hidden"
           animate="show"
-          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+          className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
         >
-          {initialPatterns.map((pattern) => {
+          {filteredPatterns.map((pattern) => {
             const stat = statsMap[pattern.title] ?? { total: 0, completed: 0 };
             const pct = stat.total > 0 ? Math.round((stat.completed / stat.total) * 100) : 0;
-            const complete = pct === 100;
+            const complete = pct === 100 && stat.total > 0;
             const slug = pattern.slug;
 
             return (
               <motion.div key={pattern.title} variants={itemVariants} className="h-full">
                 <Link
                   href={`/dsa/${slug}`}
-                  className="group block h-full rounded-xl outline-none focus-visible:shadow-glow"
+                  className="group block h-full outline-none"
                 >
-                  <Card interactive className="h-full">
-                    <CardContent className="flex flex-1 flex-col gap-4">
-                      {/* Title row */}
+                  <Card className="h-full flex flex-col justify-between p-6 rounded-3xl bg-background/60 dark:bg-background/30 backdrop-blur-xl border-none shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1.5">
+                    <div className="space-y-4">
+                      {/* Top Header Row */}
                       <div className="flex items-start justify-between gap-3">
-                        <div className="flex min-w-0 items-center gap-3">
-                          <span
-                            aria-hidden
-                            className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary"
-                          >
-                            <Code2 className="size-5" />
-                          </span>
-                          <div className="min-w-0">
-                            <Heading level="card" className="truncate">
-                              {pattern.title}
-                            </Heading>
-                            <Text size="caption" tone="muted" numeric className="mt-0.5">
-                              {stat.completed} / {stat.total} solved
-                            </Text>
+                        <div className="min-w-0">
+                          <h3 className="font-display text-lg font-bold tracking-tight text-foreground group-hover:text-rose-500 transition-colors truncate">
+                            {pattern.title}
+                          </h3>
+                          <div className="text-xs text-muted-foreground font-mono mt-0.5">
+                            <span className="font-semibold text-foreground">{stat.completed}</span> / {stat.total} solved
                           </div>
                         </div>
-                        <span
-                          aria-hidden
-                          className="grid size-8 shrink-0 place-items-center rounded-full bg-surface-sunken text-text-muted transition-colors duration-150 ease-out-quart group-hover:bg-primary group-hover:text-primary-foreground"
-                        >
-                          <ArrowRight className="size-4" />
-                        </span>
                       </div>
 
-                      {/* Complexity + use cases */}
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <Badge variant="secondary" className="font-mono">
-                          <Clock aria-hidden />
-                          <span className="sr-only">Time complexity</span>
-                          {pattern.timeComplexity}
-                        </Badge>
-                        <Badge variant="secondary" className="font-mono">
-                          <Zap aria-hidden />
-                          <span className="sr-only">Space complexity</span>
-                          {pattern.spaceComplexity}
-                        </Badge>
+                      {/* Complexity Badges */}
+                      <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                        {pattern.timeComplexity && (
+                          <span className="px-2.5 py-1 rounded-lg bg-muted/60 text-muted-foreground font-mono text-[11px] font-medium border border-border/20">
+                            Time: {pattern.timeComplexity}
+                          </span>
+                        )}
+                        {pattern.spaceComplexity && (
+                          <span className="px-2.5 py-1 rounded-lg bg-muted/60 text-muted-foreground font-mono text-[11px] font-medium border border-border/20">
+                            Space: {pattern.spaceComplexity}
+                          </span>
+                        )}
                         {(pattern.useCases || []).slice(0, 2).map((tag: string) => (
-                          <Badge key={tag} variant="ghost" className="bg-accent text-accent-foreground">
+                          <span key={tag} className="px-2.5 py-1 rounded-lg bg-background/80 text-muted-foreground text-[11px] font-medium border border-border/20">
                             {tag}
-                          </Badge>
+                          </span>
                         ))}
                       </div>
-                    </CardContent>
+                    </div>
 
-                    {/* Progress */}
-                    <CardFooter className="mt-auto flex-col items-stretch gap-2">
-                      <div className="flex items-center justify-between gap-2">
-                        <Text size="caption" tone="muted" weight="medium" as="span">
-                          Progress
-                        </Text>
-                        <span className="inline-flex items-center gap-1">
-                          {complete ? (
-                            <Check className="size-3.5 text-success" aria-hidden />
-                          ) : null}
-                          <Text
-                            size="caption"
-                            weight="medium"
-                            numeric
-                            as="span"
-                            tone={complete ? 'success' : 'primary'}
-                          >
-                            {complete ? 'Complete' : `${pct}%`}
-                          </Text>
+                    {/* Progress Bar Footer */}
+                    <div className="pt-6 space-y-2 mt-auto">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-muted-foreground font-medium">Progress</span>
+                        <span className={cn('font-semibold', complete ? 'text-rose-500 font-bold' : 'text-foreground')}>
+                          {complete ? 'Complete' : `${pct}%`}
                         </span>
                       </div>
-                      <Progress
-                        value={pct}
-                        aria-label={`${pattern.title}: ${pct} percent complete`}
-                        className={cn('[&_[data-slot=progress-track]]:h-1.5')}
-                      />
-                    </CardFooter>
+                      <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+                        <div
+                          style={{ width: `${pct}%` }}
+                          className={`h-full rounded-full transition-all duration-500 ${
+                            complete
+                              ? 'bg-rose-500'
+                              : 'bg-gradient-to-r from-red-600 via-rose-500 to-red-400'
+                          }`}
+                        />
+                      </div>
+                    </div>
                   </Card>
                 </Link>
               </motion.div>

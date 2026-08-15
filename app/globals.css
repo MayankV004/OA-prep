@@ -13,7 +13,7 @@
   --font-display: var(--font-display);
   --font-heading: var(--font-display);
 
-  /* ── Pink accent scale ─────────────────────────────────────────── */
+  /* ── Orange accent scale ────────────────────────────────────────── */
   --color-accent-50: var(--accent-50);
   --color-accent-100: var(--accent-100);
   --color-accent-200: var(--accent-200);
@@ -136,52 +136,58 @@
 }
 
 :root {
-  /* Pink accent ramp — desaturated rose, hue 340 */
-  --accent-50: oklch(0.976 0.013 340);
-  --accent-100: oklch(0.945 0.03 340);
-  --accent-200: oklch(0.895 0.058 340);
-  --accent-300: oklch(0.825 0.1 340);
-  --accent-400: oklch(0.74 0.155 340);
-  --accent-500: oklch(0.65 0.2 340);
-  --accent-600: oklch(0.575 0.205 340);
-  --accent-700: oklch(0.495 0.185 340);
-  --accent-800: oklch(0.415 0.152 340);
-  --accent-900: oklch(0.345 0.122 340);
-  --accent-950: oklch(0.235 0.085 340);
+  /* Orange accent ramp — vibrant orange, hue 27 */
+  --accent-50: oklch(0.978 0.012 65);
+  --accent-100: oklch(0.952 0.032 57);
+  --accent-200: oklch(0.905 0.068 50);
+  --accent-300: oklch(0.84 0.118 43);
+  --accent-400: oklch(0.762 0.172 38);
+  --accent-500: oklch(0.69 0.21 32);
+  --accent-600: oklch(0.615 0.22 27);
+  --accent-700: oklch(0.525 0.195 25);
+  --accent-800: oklch(0.435 0.158 24);
+  --accent-900: oklch(0.355 0.125 23);
+  --accent-950: oklch(0.24 0.088 22);
 
   /* Layered surfaces — soft off-white base, white cards */
-  --background: oklch(0.982 0.002 320);
-  --surface-sunken: oklch(0.962 0.003 320);
+  --background: oklch(0.982 0.002 60);
+  --surface-sunken: oklch(0.964 0.004 60);
   --surface: oklch(1 0 0);
   --surface-elevated: oklch(1 0 0);
   --card: var(--surface);
   --popover: var(--surface-elevated);
 
-  --foreground: oklch(0.185 0.004 320);
-  --text-secondary: oklch(0.42 0.005 320);
-  --muted-foreground: oklch(0.542 0.006 320);
+  --foreground: oklch(0.185 0.005 40);
+  --text-secondary: oklch(0.42 0.006 40);
+  --muted-foreground: oklch(0.542 0.007 40);
   --card-foreground: var(--foreground);
   --popover-foreground: var(--foreground);
 
-  /* accent-600, not 500: the lighter step fails AA both as a
-     fill behind white text and as link text on white. */
+  /* accent-600: passes AA contrast on white backgrounds */
   --primary: var(--accent-600);
   --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.955 0.008 320);
-  --secondary-foreground: oklch(0.245 0.02 340);
-  --muted: oklch(0.962 0.003 320);
-  --accent: oklch(0.958 0.022 340);
+  --secondary: oklch(0.955 0.008 55);
+  --secondary-foreground: oklch(0.245 0.02 27);
+  --muted: oklch(0.964 0.004 60);
+  --accent: oklch(0.96 0.024 57);
   --accent-foreground: var(--accent-700);
 
-  /* Near-invisible hairlines — borderless by default */
-  --border: oklch(0.185 0.004 320 / 7%);
-  --divider: oklch(0.185 0.004 320 / 5%);
-  --input: oklch(0.185 0.004 320 / 8%);
-  --input-background: oklch(0.962 0.003 320);
-  --ring: var(--accent-600);
+  /* ── Red Accent & Button Variables ────────────────────────────── */
+  --accent-red: oklch(0.56 0.24 20);
+  --accent-red-hover: oklch(0.48 0.24 20);
+  --btn-red-gradient: linear-gradient(135deg, #f43f5e 0%, #e11d48 50%, #be123c 100%);
+  --btn-white-red-gradient: linear-gradient(135deg, #ffffff 0%, #fb7185 40%, #e11d48 100%);
+  --btn-shadow-red: 0 0 25px rgba(225, 29, 72, 0.4);
 
-  --destructive: oklch(0.55 0.22 27);
-  --destructive-muted: oklch(0.55 0.22 27 / 12%);
+  /* Near-invisible hairlines — borderless by default */
+  --border: oklch(0.185 0.005 40 / 7%);
+  --divider: oklch(0.185 0.005 40 / 5%);
+  --input: oklch(0.185 0.005 40 / 8%);
+  --input-background: oklch(0.964 0.004 60);
+  --ring: var(--accent-red);
+
+  --destructive: oklch(0.55 0.22 15);
+  --destructive-muted: oklch(0.55 0.22 15 / 12%);
   --success: oklch(0.538 0.14 155);
   --success-foreground: oklch(0.99 0 0);
   --success-muted: oklch(0.538 0.14 155 / 12%);
@@ -192,82 +198,82 @@
   --info-foreground: oklch(0.99 0 0);
   --info-muted: oklch(0.563 0.15 255 / 12%);
 
-  --chart-1: var(--accent-600);
+  --chart-1: #e11d48;
   --chart-2: oklch(0.6 0.16 255);
   --chart-3: oklch(0.66 0.15 75);
   --chart-4: oklch(0.56 0.14 155);
   --chart-5: oklch(0.55 0.18 295);
 
-  --radius: 0.75rem;
+  --radius: 0.875rem;
 
-  --sidebar: oklch(0.968 0.003 320);
+  --sidebar: oklch(0.98 0.002 60 / 85%);
   --sidebar-foreground: var(--foreground);
-  --sidebar-primary: var(--accent-600);
+  --sidebar-primary: #e11d48;
   --sidebar-primary-foreground: oklch(0.99 0 0);
-  --sidebar-accent: oklch(0.958 0.022 340);
-  --sidebar-accent-foreground: var(--accent-700);
-  --sidebar-border: transparent;
-  --sidebar-ring: var(--accent-600);
+  --sidebar-accent: oklch(0.55 0.22 15 / 10%);
+  --sidebar-accent-foreground: #e11d48;
+  --sidebar-border: oklch(0.185 0.005 40 / 7%);
+  --sidebar-ring: #e11d48;
 
-  --elevation-1: 0 1px 2px 0 oklch(0.185 0.004 320 / 5%);
-  --elevation-2: 0 1px 3px 0 oklch(0.185 0.004 320 / 7%), 0 4px 12px -2px oklch(0.185 0.004 320 / 6%);
-  --elevation-3: 0 2px 6px -1px oklch(0.185 0.004 320 / 8%), 0 12px 28px -6px oklch(0.185 0.004 320 / 10%);
-  --elevation-4: 0 4px 12px -2px oklch(0.185 0.004 320 / 10%), 0 24px 48px -12px oklch(0.185 0.004 320 / 14%);
-  --elevation-glow: 0 0 0 3px oklch(0.65 0.2 340 / 15%);
+  --elevation-1: 0 1px 2px 0 oklch(0.185 0.005 40 / 5%);
+  --elevation-2: 0 1px 3px 0 oklch(0.185 0.005 40 / 7%), 0 4px 12px -2px oklch(0.185 0.005 40 / 6%);
+  --elevation-3: 0 2px 6px -1px oklch(0.185 0.005 40 / 8%), 0 12px 28px -6px oklch(0.185 0.005 40 / 10%);
+  --elevation-4: 0 4px 12px -2px oklch(0.185 0.005 40 / 10%), 0 24px 48px -12px oklch(0.185 0.005 40 / 14%);
+  --elevation-glow: 0 0 0 3px rgba(225, 29, 72, 0.2);
 }
 
 .dark {
-  /* Lifted accents read better on dark surfaces */
-  --accent-50: oklch(0.235 0.085 340);
-  --accent-100: oklch(0.29 0.1 340);
-  --accent-200: oklch(0.35 0.125 340);
-  --accent-300: oklch(0.44 0.16 340);
-  --accent-400: oklch(0.56 0.19 340);
-  --accent-500: oklch(0.68 0.18 340);
-  --accent-600: oklch(0.75 0.155 340);
-  --accent-700: oklch(0.82 0.115 340);
-  --accent-800: oklch(0.885 0.075 340);
-  --accent-900: oklch(0.935 0.04 340);
-  --accent-950: oklch(0.972 0.018 340);
+  /* Lifted orange accents read better on dark surfaces */
+  --accent-50: oklch(0.24 0.088 22);
+  --accent-100: oklch(0.295 0.108 23);
+  --accent-200: oklch(0.362 0.138 24);
+  --accent-300: oklch(0.455 0.175 26);
+  --accent-400: oklch(0.572 0.205 29);
+  --accent-500: oklch(0.698 0.215 33);
+  --accent-600: oklch(0.775 0.185 38);
+  --accent-700: oklch(0.845 0.14 44);
+  --accent-800: oklch(0.9 0.092 52);
+  --accent-900: oklch(0.942 0.048 58);
+  --accent-950: oklch(0.974 0.022 63);
 
   /* True layered dark — base / card / popover */
-  --background: oklch(0.145 0.004 320);
-  --surface-sunken: oklch(0.122 0.004 320);
-  --surface: oklch(0.196 0.005 320);
-  --surface-elevated: oklch(0.238 0.006 320);
+  --background: oklch(0.142 0.005 40);
+  --surface-sunken: oklch(0.118 0.004 40);
+  --surface: oklch(0.195 0.006 40);
+  --surface-elevated: oklch(0.238 0.007 40);
   --card: var(--surface);
   --popover: var(--surface-elevated);
 
-  --foreground: oklch(0.975 0.002 320);
-  --text-secondary: oklch(0.79 0.004 320);
-  --muted-foreground: oklch(0.655 0.006 320);
+  --foreground: oklch(0.975 0.003 60);
+  --text-secondary: oklch(0.79 0.005 50);
+  --muted-foreground: oklch(0.655 0.007 45);
   --card-foreground: var(--foreground);
   --popover-foreground: var(--foreground);
 
   --primary: var(--accent-500);
-  --primary-foreground: oklch(0.145 0.004 320);
-  --secondary: oklch(0.262 0.008 320);
-  --secondary-foreground: oklch(0.975 0.002 320);
-  --muted: oklch(0.252 0.005 320);
-  --accent: oklch(0.3 0.055 340);
+  --primary-foreground: oklch(0.142 0.005 40);
+  --secondary: oklch(0.262 0.01 40);
+  --secondary-foreground: oklch(0.975 0.003 60);
+  --muted: oklch(0.252 0.006 40);
+  --accent: oklch(0.298 0.058 30);
   --accent-foreground: var(--accent-700);
 
   --border: oklch(1 0 0 / 7%);
   --divider: oklch(1 0 0 / 5%);
   --input: oklch(1 0 0 / 9%);
-  --input-background: oklch(0.252 0.005 320);
+  --input-background: oklch(0.252 0.006 40);
   --ring: var(--accent-500);
 
-  --destructive: oklch(0.68 0.2 27);
-  --destructive-muted: oklch(0.68 0.2 27 / 18%);
+  --destructive: oklch(0.68 0.2 15);
+  --destructive-muted: oklch(0.68 0.2 15 / 18%);
   --success: oklch(0.7 0.15 155);
-  --success-foreground: oklch(0.145 0.004 320);
+  --success-foreground: oklch(0.142 0.005 40);
   --success-muted: oklch(0.7 0.15 155 / 18%);
   --warning: oklch(0.79 0.15 75);
   --warning-foreground: oklch(0.16 0.03 75);
   --warning-muted: oklch(0.79 0.15 75 / 18%);
   --info: oklch(0.7 0.14 255);
-  --info-foreground: oklch(0.145 0.004 320);
+  --info-foreground: oklch(0.142 0.005 40);
   --info-muted: oklch(0.7 0.14 255 / 18%);
 
   --chart-1: var(--accent-500);
@@ -276,20 +282,20 @@
   --chart-4: oklch(0.72 0.14 155);
   --chart-5: oklch(0.68 0.16 295);
 
-  --sidebar: oklch(0.172 0.004 320);
+  --sidebar: oklch(0.14 0.005 40 / 85%);
   --sidebar-foreground: var(--foreground);
-  --sidebar-primary: var(--accent-500);
-  --sidebar-primary-foreground: oklch(0.145 0.004 320);
-  --sidebar-accent: oklch(0.3 0.055 340);
-  --sidebar-accent-foreground: var(--accent-700);
-  --sidebar-border: transparent;
-  --sidebar-ring: var(--accent-500);
+  --sidebar-primary: #f43f5e;
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.6 0.24 20 / 15%);
+  --sidebar-accent-foreground: #fb7185;
+  --sidebar-border: oklch(1 0 0 / 8%);
+  --sidebar-ring: #f43f5e;
 
   --elevation-1: 0 1px 2px 0 oklch(0 0 0 / 40%);
   --elevation-2: 0 1px 3px 0 oklch(0 0 0 / 45%), 0 4px 12px -2px oklch(0 0 0 / 35%);
   --elevation-3: 0 2px 6px -1px oklch(0 0 0 / 50%), 0 12px 28px -6px oklch(0 0 0 / 45%);
   --elevation-4: 0 4px 12px -2px oklch(0 0 0 / 55%), 0 24px 48px -12px oklch(0 0 0 / 55%);
-  --elevation-glow: 0 0 0 3px oklch(0.68 0.18 340 / 22%);
+  --elevation-glow: 0 0 0 3px oklch(0.698 0.215 33 / 25%);
 }
 
 @layer base {
@@ -521,3 +527,19 @@
   border-radius: 0.75rem 0.75rem 0 0;
   padding: 0.375rem 1rem;
 }
+
+/* ─── Circular View Transition Ripple Effect ─── */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 9999;
+}
+

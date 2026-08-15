@@ -48,6 +48,9 @@ export async function withAuth<T>(
   
   try {
     const result = await fn({ userId: session.user.id, role: (session.user as any).role });
+    if (result instanceof Response || (result && typeof result === 'object' && 'headers' in result && 'status' in result)) {
+      return result as Response;
+    }
     return Response.json(result);
   } catch (err: any) {
     console.error(err);
