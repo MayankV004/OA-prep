@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { recordRateLimitExceeded } from '@/lib/telemetry/metrics';
+import { logger } from '@/lib/telemetry/logger';
 
 interface RateLimitStore {
   count: number;
@@ -82,6 +84,15 @@ export function checkRateLimit(
     // Rate limit exceeded
     const resetInMs = record.resetAt - now;
     const retryAfterSec = Math.ceil(resetInMs / 1000);
+
+    // Record Telemetry Metric & Structured Log
+    recordRateLimitExceeded(keyPrefix, ip);
+    logger.warn('Authentication rate limit exceeded', {
+      ip,
+      keyPrefix,
+      limit: max,
+      retryAfterSec,
+    });
 
     return {
       success: false,

@@ -48,32 +48,62 @@ export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
 });
 
+import { traceSpan } from '@/lib/telemetry/tracer';
+import { recordHttpRequest } from '@/lib/telemetry/metrics';
+import { logger } from '@/lib/telemetry/logger';
+
 export async function withAuth<T>(
   req: Request,
   fn: (ctx: { userId: string; role: 'admin' | 'user' }) => Promise<T>
 ): Promise<Response> {
-  const session = await auth.api.getSession({ headers: req.headers });
-  
-  if (!session?.user?.id) {
-    return Response.json({ error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } }, { status: 401 });
-  }
-  
-  if ((session.user as any).disabled) {
-    return Response.json({ error: { code: 'FORBIDDEN', message: 'Account disabled' } }, { status: 403 });
-  }
-  
-  try {
-    const result = await fn({ userId: session.user.id, role: (session.user as any).role });
-    if (result instanceof Response || (result && typeof result === 'object' && 'headers' in result && 'status' in result)) {
-      return result as Response;
+  const url = new URL(req.url);
+  const startTime = Date.now();
+
+  return traceSpan(`api:${req.method} ${url.pathname}`, async (span) => {
+    span.setAttribute('http.method', req.method);
+    span.setAttribute('http.target', url.pathname);
+
+    const session = await auth.api.getSession({ headers: req.headers });
+    
+    if (!session?.user?.id) {
+      recordHttpRequest(req.method, url.pathname, 401, Date.now() - startTime);
+      return Response.json({ error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } }, { status: 401 });
     }
-    return Response.json(result);
-  } catch (err: any) {
-    console.error(err);
-    const status = err.status || 500;
-    const message = err.message || 'Internal server error';
-    return Response.json({ error: { code: status.toString(), message } }, { status });
-  }
+    
+    if ((session.user as any).disabled) {
+      recordHttpRequest(req.method, url.pathname, 403, Date.now() - startTime);
+      return Response.json({ error: { code: 'FORBIDDEN', message: 'Account disabled' } }, { status: 403 });
+    }
+
+    span.setAttribute('user.id', session.user.id);
+    span.setAttribute('user.role', (session.user as any).role || 'user');
+    
+    try {
+      const result = await fn({ userId: session.user.id, role: (session.user as any).role });
+      const durationMs = Date.now() - startTime;
+      recordHttpRequest(req.method, url.pathname, 200, durationMs);
+
+      if (result instanceof Response || (result && typeof result === 'object' && 'headers' in result && 'status' in result)) {
+        return result as Response;
+      }
+      return Response.json(result);
+    } catch (err: any) {
+      const status = err.status || 500;
+      const message = err.message || 'Internal server error';
+      const durationMs = Date.now() - startTime;
+
+      recordHttpRequest(req.method, url.pathname, status, durationMs);
+      logger.error('API request failed', {
+        method: req.method,
+        path: url.pathname,
+        status,
+        error: message,
+        userId: session.user.id,
+      });
+
+      return Response.json({ error: { code: status.toString(), message } }, { status });
+    }
+  });
 }
 
 export function withRole<T>(
