@@ -2,16 +2,20 @@
 
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
-import { ArrowRight, Cpu } from 'lucide-react';
+import { ArrowRight, Cpu, Edit } from 'lucide-react';
 
+import { authClient } from '@/lib/auth-client';
 import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageHeading, Text } from '@/components/ui/typography';
 
-interface Group { _id: string; name: string; slug: string }
+interface Group { _id: string; name: string; slug: string; description?: string }
 
 export default function AdvancedPage() {
+  const { data: session } = authClient.useSession();
+  const isAdmin = (session?.user as { role?: string })?.role === 'admin';
+
   const { data: groups = [], isLoading } = useQuery<Group[]>({
     queryKey: ['groups', 'advanced'],
     queryFn: async () => {
@@ -26,13 +30,24 @@ export default function AdvancedPage() {
       <PageHeading
         overline="Reference"
         title="Advanced Topics"
-        description="DevOps, System Design, GenAI, Cloud, and more. Deeper tracks that build on the core subjects."
+        description="DevOps, System Design, GenAI, Cloud, and more. Deeper tracks managed directly from the Admin Panel."
         actions={
-          !isLoading && groups.length > 0 ? (
-            <Text size="caption" tone="muted" numeric>
-              {groups.length} {groups.length === 1 ? 'track' : 'tracks'}
-            </Text>
-          ) : null
+          <div className="flex items-center gap-3">
+            {!isLoading && groups.length > 0 && (
+              <Text size="caption" tone="muted" numeric>
+                {groups.length} {groups.length === 1 ? 'track' : 'tracks'}
+              </Text>
+            )}
+            {isAdmin && (
+              <Link
+                href="/admin/content/topics"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-500 hover:underline px-3.5 py-1.5 rounded-xl bg-rose-500/10 border border-rose-500/20"
+              >
+                <Edit className="size-3.5" />
+                <span>Edit Content</span>
+              </Link>
+            )}
+          </div>
         }
       />
 
@@ -56,15 +71,18 @@ export default function AdvancedPage() {
         <div className="rounded-xl bg-card shadow-e1">
           <EmptyState
             icon={Cpu}
-            title="No advanced tracks yet"
-            description={
-              <>
-                Nothing has been seeded for this workspace. Run{' '}
-                <code className="rounded bg-surface-sunken px-1 py-0.5 font-mono text-2xs text-foreground">
-                  pnpm seed
-                </code>{' '}
-                to initialize the advanced tracks.
-              </>
+            title="No advanced tracks created yet"
+            description="Add your first advanced track and topic notes in the Admin Panel to display them here."
+            action={
+              isAdmin ? (
+                <Link
+                  href="/admin/content/topics"
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-500 bg-rose-500/10 px-4 py-2 rounded-xl border border-rose-500/20"
+                >
+                  <Edit className="size-3.5" />
+                  <span>Go to Admin Topics Manager</span>
+                </Link>
+              ) : undefined
             }
           />
         </div>
@@ -80,13 +98,15 @@ export default function AdvancedPage() {
                 <CardContent className="flex items-center gap-3">
                   <span
                     aria-hidden
-                    className="grid size-9 shrink-0 place-items-center rounded-lg bg-accent text-primary"
+                    className="grid size-9 shrink-0 place-items-center rounded-lg bg-rose-500/10 text-rose-500"
                   >
                     <Cpu className="size-4" />
                   </span>
                   <div className="min-w-0 flex-1">
                     <CardTitle className="truncate">{group.name}</CardTitle>
-                    <CardDescription className="text-xs">Advanced track</CardDescription>
+                    <CardDescription className="text-xs truncate">
+                      {group.description || 'Advanced track'}
+                    </CardDescription>
                   </div>
                   <ArrowRight
                     aria-hidden

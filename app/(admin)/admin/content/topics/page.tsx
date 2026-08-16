@@ -78,15 +78,16 @@ export default function AdminTopicsPage() {
   const [subjectFormData, setSubjectFormData] = useState({
     name: '',
     slug: '',
+    kind: 'subject',
     body: '',
   });
 
-  // 1. Fetch Subjects (Groups with kind=subject)
+  // 1. Fetch Groups (Subjects and Advanced Tracks)
   const { data: subjects = [] } = useQuery<SubjectGroup[]>({
-    queryKey: ['admin', 'groups', 'subject'],
+    queryKey: ['admin', 'groups'],
     queryFn: async () => {
-      const res = await fetch('/api/groups?kind=subject');
-      if (!res.ok) throw new Error('Failed to fetch subjects');
+      const res = await fetch('/api/groups');
+      if (!res.ok) throw new Error('Failed to fetch groups');
       return res.json();
     },
   });
@@ -160,9 +161,9 @@ export default function AdminTopicsPage() {
     },
   });
 
-  // Subject Save Mutation
+  // Subject / Track Save Mutation
   const saveSubjectMutation = useMutation({
-    mutationFn: async (payload: { id?: string; name: string; slug?: string; body?: string }) => {
+    mutationFn: async (payload: { id?: string; name: string; slug?: string; kind?: string; body?: string }) => {
       const isEdit = Boolean(payload.id);
       const url = isEdit ? `/api/groups/${payload.id}` : '/api/groups';
       const method = isEdit ? 'PATCH' : 'POST';
@@ -170,12 +171,12 @@ export default function AdminTopicsPage() {
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(isEdit ? payload : { ...payload, kind: 'subject' }),
+        body: JSON.stringify(isEdit ? payload : { ...payload, kind: payload.kind || 'subject' }),
       });
 
       if (!res.ok) {
         const errJson = await res.json().catch(() => null);
-        throw new Error(errJson?.error?.message || 'Failed to save subject');
+        throw new Error(errJson?.error?.message || 'Failed to save subject / track');
       }
 
       return res.json();
@@ -184,12 +185,12 @@ export default function AdminTopicsPage() {
       queryClient.invalidateQueries({ queryKey: ['admin', 'groups'] });
       queryClient.invalidateQueries({ queryKey: ['groups'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'taxonomies'] });
-      toast.add(editingSubject ? 'Subject updated' : 'Subject created', { type: 'success' });
+      toast.add(editingSubject ? 'Track/Subject updated' : 'Track/Subject created', { type: 'success' });
       setSubjectSlideOverOpen(false);
       resetSubjectForm();
     },
     onError: (err: any) => {
-      toast.add('Failed to save subject', { description: err.message, type: 'error' });
+      toast.add('Failed to save subject/track', { description: err.message, type: 'error' });
     },
   });
 
@@ -197,17 +198,17 @@ export default function AdminTopicsPage() {
   const deleteSubjectMutation = useMutation({
     mutationFn: async (id: string) => {
       const res = await fetch(`/api/groups/${id}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error('Failed to delete subject');
+      if (!res.ok) throw new Error('Failed to delete subject/track');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'groups'] });
       queryClient.invalidateQueries({ queryKey: ['groups'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'taxonomies'] });
-      toast.add('Subject deleted', { type: 'success' });
+      toast.add('Track/Subject deleted', { type: 'success' });
       setConfirmingDeleteSubject(null);
     },
     onError: (err: any) => {
-      toast.add("Couldn't delete subject", { description: err.message, type: 'error' });
+      toast.add("Couldn't delete subject/track", { description: err.message, type: 'error' });
     },
   });
 
@@ -219,7 +220,7 @@ export default function AdminTopicsPage() {
 
   const resetSubjectForm = () => {
     setEditingSubject(null);
-    setSubjectFormData({ name: '', slug: '', body: '' });
+    setSubjectFormData({ name: '', slug: '', kind: 'subject', body: '' });
     setEditorTab('edit');
   };
 
@@ -252,6 +253,7 @@ export default function AdminTopicsPage() {
     setSubjectFormData({
       name: subject.name,
       slug: subject.slug,
+      kind: subject.kind || 'subject',
       body: subject.body || '',
     });
     setEditorTab('edit');
@@ -627,7 +629,28 @@ export default function AdminTopicsPage() {
               />
             ) : (
               <div className="p-6 rounded-2xl bg-background/80 border border-border/30 min-h-[300px] max-h-[500px] overflow-y-auto">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>{topicFormData.body || 'No content written yet.'}</ReactMarkdown>
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    pre: ({ children }) => (
+                      <pre className="p-4 rounded-xl bg-zinc-950 text-zinc-100 font-mono text-xs overflow-x-auto my-4 border border-border/20 leading-relaxed whitespace-pre font-normal">
+                        {children}
+                      </pre>
+                    ),
+                    code: ({ inline, children, ...props }: any) => {
+                      if (inline) {
+                        return (
+                          <code className="px-1.5 py-0.5 rounded bg-muted text-rose-500 font-mono text-xs font-semibold" {...props}>
+                            {children}
+                          </code>
+                        );
+                      }
+                      return <code className="font-mono text-xs whitespace-pre" {...props}>{children}</code>;
+                    },
+                  }}
+                >
+                  {topicFormData.body || 'No content written yet.'}
+                </ReactMarkdown>
               </div>
             )}
           </div>
@@ -638,9 +661,9 @@ export default function AdminTopicsPage() {
       <SlideOver
         open={subjectSlideOverOpen}
         onOpenChange={setSubjectSlideOverOpen}
-        title={editingSubject ? `Edit ${editingSubject.name}` : 'Create New Subject'}
-        description="Manage subject category and slug."
-        width="md"
+        title={editingSubject ? `Edit ${editingSubject.name}` : 'Create New Subject / Track'}
+        description="Manage subject or advanced track category, slug, and overview Markdown content."
+        width="xl"
         footer={
           <div className="flex items-center justify-end gap-3 w-full">
             <Button variant="ghost" onClick={() => setSubjectSlideOverOpen(false)}>
@@ -656,23 +679,40 @@ export default function AdminTopicsPage() {
               }
               className="bg-gradient-to-r from-red-600 via-rose-600 to-red-500 text-white font-semibold border-none rounded-xl"
             >
-              {saveSubjectMutation.isPending ? 'Saving...' : editingSubject ? 'Update Subject' : 'Create Subject'}
+              {saveSubjectMutation.isPending ? 'Saving...' : editingSubject ? 'Update Track' : 'Create Track'}
             </Button>
           </div>
         }
       >
         <div className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="s-name" className="font-semibold text-foreground">
-              Subject Name
-            </Label>
-            <Input
-              id="s-name"
-              placeholder="e.g. Computer Networks"
-              value={subjectFormData.name}
-              onChange={(e) => setSubjectFormData({ ...subjectFormData, name: e.target.value })}
-              className="h-11 rounded-xl"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="s-kind" className="font-semibold text-foreground">
+                Category Type
+              </Label>
+              <select
+                id="s-kind"
+                value={subjectFormData.kind}
+                onChange={(e) => setSubjectFormData({ ...subjectFormData, kind: e.target.value })}
+                className="w-full h-11 rounded-xl bg-background border border-border/40 px-3 text-sm font-semibold text-foreground outline-none"
+              >
+                <option value="subject">Core Subject (/subjects)</option>
+                <option value="advanced">Advanced Topic Track (/advanced)</option>
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="s-name" className="font-semibold text-foreground">
+                Subject / Track Name
+              </Label>
+              <Input
+                id="s-name"
+                placeholder="e.g. System Design & Architecture"
+                value={subjectFormData.name}
+                onChange={(e) => setSubjectFormData({ ...subjectFormData, name: e.target.value })}
+                className="h-11 rounded-xl"
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -681,11 +721,92 @@ export default function AdminTopicsPage() {
             </Label>
             <Input
               id="s-slug"
-              placeholder="e.g. computer-networks"
+              placeholder="e.g. system-design"
               value={subjectFormData.slug}
               onChange={(e) => setSubjectFormData({ ...subjectFormData, slug: e.target.value })}
               className="h-11 rounded-xl font-mono text-sm"
             />
+          </div>
+
+          {/* Track Level Markdown Content */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 p-1 rounded-xl bg-muted/60 border border-border/20">
+                <button
+                  type="button"
+                  onClick={() => setEditorTab('edit')}
+                  className={cn(
+                    'px-3 py-1 rounded-lg text-xs font-semibold transition-all',
+                    editorTab === 'edit'
+                      ? 'bg-background text-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  Markdown Edit
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEditorTab('preview')}
+                  className={cn(
+                    'px-3 py-1 rounded-lg text-xs font-semibold transition-all',
+                    editorTab === 'preview'
+                      ? 'bg-background text-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  Live Preview
+                </button>
+              </div>
+
+              <div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={uploadingImage}
+                  onClick={() => fileInputRef.current?.click()}
+                  className="rounded-xl text-xs font-semibold gap-1.5 border-border/40"
+                >
+                  {uploadingImage ? <Upload className="size-3.5 animate-spin" /> : <ImageIcon className="size-3.5 text-rose-500" />}
+                  <span>{uploadingImage ? 'Uploading...' : 'Attach Image'}</span>
+                </Button>
+              </div>
+            </div>
+
+            {editorTab === 'edit' ? (
+              <Textarea
+                rows={14}
+                placeholder="Write Markdown track concept note content..."
+                value={subjectFormData.body}
+                onChange={(e) => setSubjectFormData({ ...subjectFormData, body: e.target.value })}
+                className="font-mono text-sm leading-relaxed rounded-2xl border-border/40"
+              />
+            ) : (
+              <div className="p-6 rounded-2xl bg-background/80 border border-border/30 min-h-[300px] max-h-[500px] overflow-y-auto">
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    pre: ({ children }) => (
+                      <pre className="p-4 rounded-xl bg-zinc-950 text-zinc-100 font-mono text-xs overflow-x-auto my-4 border border-border/20 leading-relaxed whitespace-pre font-normal">
+                        {children}
+                      </pre>
+                    ),
+                    code: ({ inline, children, ...props }: any) => {
+                      if (inline) {
+                        return (
+                          <code className="px-1.5 py-0.5 rounded bg-muted text-rose-500 font-mono text-xs font-semibold" {...props}>
+                            {children}
+                          </code>
+                        );
+                      }
+                      return <code className="font-mono text-xs whitespace-pre" {...props}>{children}</code>;
+                    },
+                  }}
+                >
+                  {subjectFormData.body || 'No track content written yet.'}
+                </ReactMarkdown>
+              </div>
+            )}
           </div>
         </div>
       </SlideOver>

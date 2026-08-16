@@ -26,8 +26,10 @@ export async function GET(req: NextRequest) {
       const validGroupIds: any[] = [];
       if (matchingGroup) {
         validGroupIds.push(matchingGroup._id);
+        validGroupIds.push(matchingGroup._id.toString());
+        if (matchingGroup.slug) validGroupIds.push(matchingGroup.slug);
       }
-      if (isObjectId && !validGroupIds.some(id => id.toString() === groupId)) {
+      if (isObjectId && !validGroupIds.includes(groupId)) {
         validGroupIds.push(groupId);
       }
 
