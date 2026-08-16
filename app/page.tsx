@@ -254,8 +254,8 @@ std::vector<int> twoSum(std::vector<int>& nums, int target) {
           </div>
           <div className="flex gap-6">
             <Link href="/dsa" className="hover:text-foreground transition-colors">DSA Patterns</Link>
-            <Link href="/core" className="hover:text-foreground transition-colors">CS Core</Link>
-            <Link href="/flashcards" className="hover:text-foreground transition-colors">Flashcards</Link>
+            <Link href="/subjects" className="hover:text-foreground transition-colors">CS Core</Link>
+            <Link href="/dashboard" className="hover:text-foreground transition-colors">Dashboard</Link>
           </div>
         </div>
       </footer>

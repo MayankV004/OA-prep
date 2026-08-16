@@ -92,7 +92,7 @@ export default function DashboardPage() {
               <ArrowRight className="h-3.5 w-3.5" />
             </button>
           </Link>
-          <Link href="/core">
+          <Link href="/subjects">
             <button className="flex items-center gap-2 h-11 px-5 rounded-2xl font-medium text-xs text-foreground bg-background hover:bg-accent/60 border border-border/40 hover:scale-105 active:scale-95 transition-all">
               <Terminal className="h-4 w-4 text-rose-500" />
               <span>CS Core</span>
@@ -202,38 +202,6 @@ export default function DashboardPage() {
               <Flame className="h-3.5 w-3.5 text-rose-500 inline" /> Active prep streak
             </p>
           </div>
-        </div>
-      </div>
-
-      {/* 3. Quick Pattern Jump Shortcuts Bar (Borderless Glass Container) */}
-      <div className="p-5 rounded-3xl bg-background/60 dark:bg-background/30 border-none shadow-sm backdrop-blur-xl space-y-3">
-        <div className="flex items-center justify-between px-1">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground font-sans">
-            <Target className="h-4 w-4 text-rose-500" />
-            <span>Popular DSA Patterns</span>
-          </div>
-          <Link href="/dsa" className="text-xs font-semibold text-rose-500 hover:text-rose-400 flex items-center gap-1 transition-colors">
-            <span>View All</span>
-            <ChevronRight className="h-3.5 w-3.5" />
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {topPatterns.map((pat) => (
-            <Link
-              key={pat.slug}
-              href={`/dsa/${pat.slug}`}
-              className="group flex items-center justify-between p-3.5 rounded-2xl bg-background/80 hover:bg-accent/40 border border-border/30 hover:border-rose-500/40 transition-all duration-200"
-            >
-              <div className="space-y-0.5">
-                <div className="font-display text-sm font-bold text-foreground group-hover:text-rose-500 transition-colors">
-                  {pat.title}
-                </div>
-                <div className="text-[10px] text-muted-foreground font-medium">{pat.count}</div>
-              </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-0.5 group-hover:text-rose-500 transition-all" />
-            </Link>
-          ))}
         </div>
       </div>
 

@@ -8,9 +8,24 @@ const rateLimit = new Map<string, { count: number; expires: number }>();
 const WINDOW_MS = 60 * 1000; // 1 minute
 const MAX_REQUESTS = 100; // 100 requests per minute
 
+const PROTECTED_PREFIXES = [
+  '/dashboard',
+  '/subjects',
+  '/dsa',
+  '/interview',
+  '/cheatsheets',
+  '/non-standard',
+  '/cp',
+  '/advanced',
+  '/search',
+  '/admin',
+];
+
 export function proxy(request: NextRequest) {
-  // Only apply to API routes
-  if (request.nextUrl.pathname.startsWith('/api/')) {
+  const pathname = request.nextUrl.pathname;
+
+  // Rate limiting for API routes
+  if (pathname.startsWith('/api/')) {
     const ip = request.headers.get('x-forwarded-for') ?? request.headers.get('x-real-ip') ?? '127.0.0.1';
     
     const now = Date.now();
@@ -29,9 +44,38 @@ export function proxy(request: NextRequest) {
     }
   }
 
+  // Server-side auth check for protected application routes
+  const isProtected = PROTECTED_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+  );
+
+  if (isProtected) {
+    const sessionToken =
+      request.cookies.get('better-auth.session_token')?.value ||
+      request.cookies.get('__Secure-better-auth.session_token')?.value;
+
+    if (!sessionToken) {
+      const signInUrl = new URL('/sign-in', request.url);
+      signInUrl.searchParams.set('redirectTo', pathname);
+      return NextResponse.redirect(signInUrl);
+    }
+  }
+
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/api/:path*'],
+  matcher: [
+    '/api/:path*',
+    '/dashboard/:path*',
+    '/subjects/:path*',
+    '/dsa/:path*',
+    '/interview/:path*',
+    '/cheatsheets/:path*',
+    '/non-standard/:path*',
+    '/cp/:path*',
+    '/advanced/:path*',
+    '/search/:path*',
+    '/admin/:path*',
+  ],
 };

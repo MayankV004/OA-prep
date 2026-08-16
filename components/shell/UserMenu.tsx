@@ -38,10 +38,13 @@ function UserMenu({
 }) {
   const router = useRouter();
   const { data: session } = authClient.useSession();
+  const [imgError, setImgError] = React.useState(false);
 
   const user = session?.user;
   const name = user?.name || user?.email || 'Account';
   const email = user?.email ?? '';
+  const avatarUrl = user?.image;
+  const hasAvatar = Boolean(avatarUrl && !imgError);
 
   const handleSignOut = async () => {
     await authClient.signOut();
@@ -58,12 +61,21 @@ function UserMenu({
           collapsed && 'justify-center'
         )}
       >
-        <span
-          aria-hidden
-          className="grid size-7 shrink-0 place-items-center rounded-full bg-primary text-2xs font-semibold text-primary-foreground"
-        >
-          {initialsOf(user?.name, user?.email)}
-        </span>
+        {hasAvatar ? (
+          <img
+            src={avatarUrl!}
+            alt={name}
+            onError={() => setImgError(true)}
+            className="size-7 shrink-0 rounded-full object-cover border border-rose-500/30 shadow-sm"
+          />
+        ) : (
+          <span
+            aria-hidden
+            className="grid size-7 shrink-0 place-items-center rounded-full bg-gradient-to-br from-red-600 to-rose-600 text-2xs font-semibold text-white shadow-sm"
+          >
+            {initialsOf(user?.name, user?.email)}
+          </span>
+        )}
 
         {!collapsed ? (
           <>
@@ -81,11 +93,28 @@ function UserMenu({
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" side="top" className="min-w-56">
-        <div className="px-2 py-1.5">
-          <p className="truncate text-sm font-medium text-foreground">{name}</p>
-          {email ? (
-            <p className="truncate text-2xs text-text-muted">{email}</p>
-          ) : null}
+        <div className="flex items-center gap-3 px-2 py-2">
+          {hasAvatar ? (
+            <img
+              src={avatarUrl!}
+              alt={name}
+              onError={() => setImgError(true)}
+              className="size-9 shrink-0 rounded-full object-cover border border-rose-500/30 shadow-sm"
+            />
+          ) : (
+            <span
+              aria-hidden
+              className="grid size-9 shrink-0 place-items-center rounded-full bg-gradient-to-br from-red-600 to-rose-600 text-xs font-bold text-white shadow-sm"
+            >
+              {initialsOf(user?.name, user?.email)}
+            </span>
+          )}
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold text-foreground">{name}</p>
+            {email ? (
+              <p className="truncate text-2xs text-text-muted">{email}</p>
+            ) : null}
+          </div>
         </div>
 
         <Separator className="my-1" />

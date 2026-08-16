@@ -104,7 +104,7 @@ export default function InvitePage({ params }: { params: Promise<{ token: string
         </Text>
         <Button
           size="xl"
-          className="mt-7 w-full"
+          className="mt-7 w-full bg-gradient-to-r from-red-600 via-rose-600 to-red-500 hover:from-red-700 hover:via-rose-700 hover:to-red-600 text-white shadow-[0_0_20px_rgba(225,29,72,0.4)] hover:shadow-[0_0_25px_rgba(225,29,72,0.6)] border-none font-semibold cursor-pointer"
           onClick={() => router.push('/sign-in')}
         >
           Go to sign in
@@ -117,7 +117,7 @@ export default function InvitePage({ params }: { params: Promise<{ token: string
     <div className="animate-in-up">
       <span
         aria-hidden
-        className="mb-5 grid size-11 place-items-center rounded-xl bg-accent text-primary"
+        className="mb-5 grid size-11 place-items-center rounded-xl bg-rose-500/10 text-rose-500 border border-rose-500/20"
       >
         <MailCheck className="size-5" />
       </span>
@@ -153,7 +153,7 @@ export default function InvitePage({ params }: { params: Promise<{ token: string
         <Button
           type="submit"
           size="xl"
-          className="w-full"
+          className="w-full bg-gradient-to-r from-red-600 via-rose-600 to-red-500 hover:from-red-700 hover:via-rose-700 hover:to-red-600 text-white shadow-[0_0_20px_rgba(225,29,72,0.4)] hover:shadow-[0_0_25px_rgba(225,29,72,0.6)] border-none font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           loading={isSubmitting}
           disabled={!password}
         >
