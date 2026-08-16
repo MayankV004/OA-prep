@@ -6,6 +6,22 @@ const client = new MongoClient(process.env.MONGODB_URI!);
 
 export const auth = betterAuth({
   database: mongodbAdapter(client.db(process.env.MONGODB_DB!)),
+  rateLimit: {
+    enabled: true,
+    window: 60,
+    max: 100,
+    storage: 'memory',
+    customRules: {
+      '/sign-in/email': {
+        window: 60,
+        max: 5,
+      },
+      '/sign-up/email': {
+        window: 60,
+        max: 5,
+      },
+    },
+  },
   emailAndPassword: { 
     enabled: true, 
     autoSignIn: true 
