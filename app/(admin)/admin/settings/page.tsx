@@ -32,7 +32,6 @@ const DEFAULTS = {
   announcementMessage: '',
   signupsOpen: true,
   inviteOnly: true,
-  studioLinkVisible: true,
   exportEnabled: true,
 };
 
@@ -211,13 +210,6 @@ export default function AdminSettingsPage() {
             title="Feature flags"
             description="Turn parts of the product on or off without a deploy."
           >
-            <ToggleRow
-              label="Studio link"
-              description="Surface the Sanity Studio link in admin navigation."
-              checked={values.studioLinkVisible}
-              onCheckedChange={(v) => set('studioLinkVisible', v)}
-            />
-            <Separator />
             <ToggleRow
               label="Data export"
               description="Let users download their progress from the account menu."
