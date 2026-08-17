@@ -1,35 +1,40 @@
 # Architecture
 
-## 1. Stack summary
+## 1. Stack Summary
 
 | Layer | Choice |
 | --- | --- |
-| Framework | Next.js 15 (App Router) + TypeScript |
+| Framework | Next.js 16 (App Router) + TypeScript |
+| Middleware | `proxy.ts` (Next.js request interceptor for auth & rate limiting) |
 | Auth | BetterAuth (email + password, MongoDB adapter) |
 | Database | MongoDB Atlas (M0 free tier for dev, M10 optional for prod) |
-| ODM | Mongoose |
+| ODM | Mongoose 9 |
 | API | Next.js Route Handlers under `app/api/**` |
 | Client data | TanStack Query v5 with `persistQueryClient` + `localStorage` |
 | Markdown edit | `@uiw/react-md-editor` (edit + preview toggle built in) |
 | Markdown read | `react-markdown` + `remark-gfm` + `rehype-sanitize` |
-| Styling | Tailwind CSS + shadcn/ui |
+| Styling | Tailwind CSS v4 + Base UI / shadcn |
 | Charts | Recharts |
-| Email | Resend + React Email templates |
-| Validation | Zod schemas shared between route handler and client form |
-| Hosting | Vercel (Node runtime for `/api/**`; Edge not used because Mongoose needs Node) |
+| Telemetry | OpenTelemetry (`instrumentation.ts` + `docker-compose.telemetry.yml`) |
+| Email | Resend + React Email templates (`emails/Invite.tsx`) |
+| Validation | Zod schemas shared between route handler and client forms |
+| Hosting | Vercel (Node runtime for `/api/**`) |
 
-The stack is locked. This doc describes how the pieces sit together.
-
-## 2. High-level shape
+## 2. High-Level Shape
 
 ```
                  ┌──────────────────────────┐
                  │      Browser (React)     │
-                 │  shadcn/ui + Tailwind    │
+                 │   shadcn / Base UI       │
                  │  TanStack Query cache    │
                  │  Recharts (dashboard)    │
                  └────────────┬─────────────┘
                               │  fetch(/api/*)
+                 ┌────────────▼─────────────┐
+                 │        proxy.ts          │
+                 │  Rate Limiting + Auth    │
+                 └────────────┬─────────────┘
+                              │
                  ┌────────────▼─────────────┐
                  │  Next.js Route Handlers  │
                  │  Zod → withAuth/withRole │
@@ -41,39 +46,40 @@ The stack is locked. This doc describes how the pieces sit together.
                  │  Collections + indexes   │   └────▲─────┘
                  └──────────────────────────┘        │
                                                      │ invites
-                              ┌──────────────────────┘
-                              │
-                     Invite route handler
+                               ┌──────────────────────┘
+                               │
+                      Invite route handler
 ```
 
 Every request path:
 1. Client component calls a typed `fetch` helper wrapped in a TanStack Query hook.
-2. Route handler runs `withAuth` (returns 401 on miss) or `withRole('admin')` for admin routes.
-3. Payload parses through a Zod schema shared with the client form.
-4. Service function talks to Mongoose. Every mutating service also appends an ActivityLog row.
+2. `proxy.ts` middleware intercepts incoming requests to enforce rate limits and protected route access.
+3. Route handler runs `withAuth` (returns 401 on miss) or `withRole('admin')` for admin routes.
+4. Payload parses through a Zod schema shared with the client form.
+5. Service function talks to Mongoose. Every mutating service also appends an `ActivityLog` row.
 
-## 3. The trackable-entity pattern
+## 3. The Trackable-Entity Pattern
 
 Three sections share the same "problem row" shape: Pattern DSA, Non-standard DSA, Competitive Programming. One `Problem` collection uses Mongoose discriminators keyed by `kind`.
 
 ```ts
 Problem (base)
-├── PatternProblem       { pattern: string }
+├── PatternProblem       { pattern: string, variation?: string }
 ├── NonStandardProblem   { bucket: string }
-└── CpProblem            { platform: string, contest?: string, rating?: number }
+└── CpProblem            { platform?: string, contest?: string, rating?: number }
 ```
 
-Base fields: `userId`, `title`, `url`, `difficulty`, `completed`, `notes`, `tags`, `createdAt`, `updatedAt`. All three surface through one `/api/problems` route with `kind` as a required filter or body field.
+Base fields: `userId`, `title`, `url`, `difficulty`, `completed`, `notes`, `tags`, `createdAt`, `updatedAt`. All three surface through `/api/problems` routes with `kind` as a required filter or body field.
+
+Additionally, user problem completion state and per-problem notes can be stored in the `UserProgress` collection (`userId`, `problemId`, `completed`, `completedAt`, `userNotes`, `revision`).
 
 `Subject` and `AdvancedTopicGroup` are two flavors of one `Group` entity discriminated by `kind`. A `Topic` belongs to any Group by ObjectId. Interview questions attach to a Subject.
 
-Result: five effective entities behind seven user-facing content sections, plus three system entities (User, Taxonomy, Activity, Invite).
+## 4. Shared Taxonomies
 
-## 4. Shared taxonomies
+Pattern names, non-standard buckets, CP platforms, subject names, advanced-group names, and difficulty tiers live in one `Taxonomy` collection keyed by `kind`:
 
-Pattern names, non-standard buckets, CP platforms, subject names, advanced-group names, and difficulty tiers were previously seed constants. They now live in one `Taxonomy` collection keyed by `kind`:
-
-```
+```ts
 Taxonomy {
   kind: "pattern" | "bucket" | "platform" | "subject" | "advanced" | "difficulty",
   name: string,
@@ -85,7 +91,7 @@ Taxonomy {
 
 Every write path validates the referenced taxonomy value exists and is not archived. Admin panel edits the collection; regular users see the values as read-only chips or dropdowns.
 
-## 5. Role-based route gate
+## 5. Role-Based Route Gate
 
 Two helpers in `lib/auth.ts`:
 
@@ -104,7 +110,7 @@ export async function withRole<T>(
 
 Every service function that reads or writes another user's data takes `actorRole` and enforces the rule: `if (actorRole !== "admin" && targetUserId !== actorUserId) throw 403`.
 
-## 6. Activity logging
+## 6. Activity Logging
 
 A single service helper writes activity rows. Every mutating service function calls it after the write commits:
 
@@ -116,14 +122,12 @@ await recordActivity({
 });
 ```
 
-`kind` values are enumerated in admin.md. `targetUserId` matters when an admin edits another user's content — the row shows both actor and target.
-
 Activity is queried three ways:
 - `/api/activity?scope=me` → user dashboard feed
 - `/api/dashboard/stats?userId=me` → aggregated stats + heatmap
 - `/api/admin/activity` → cross-user feed (admin only)
 
-## 7. Folder structure
+## 7. Folder Structure
 
 ```
 /
@@ -144,7 +148,7 @@ Activity is queried three ways:
 │  │  └─ search/page.tsx
 │  ├─ (admin)/
 │  │  └─ admin/
-│  │     ├─ layout.tsx                # withRole gate on server component
+│  │     ├─ layout.tsx                # role gate on server component
 │  │     ├─ page.tsx                  # users list
 │  │     ├─ users/[id]/page.tsx       # user detail + read-only dashboard
 │  │     ├─ invites/page.tsx
@@ -154,122 +158,81 @@ Activity is queried three ways:
 │  │     │  ├─ cheatsheets/page.tsx
 │  │     │  └─ questions/page.tsx
 │  │     ├─ taxonomies/page.tsx
-│  │     └─ activity/page.tsx
+│  │     ├─ activity/page.tsx
+│  │     └─ settings/page.tsx
 │  └─ api/
 │     ├─ auth/[...all]/route.ts
-│     ├─ problems/... (as before)
-│     ├─ topics/... (as before)
-│     ├─ groups/... (as before)
-│     ├─ cheatsheets/... (as before)
-│     ├─ questions/... (as before)
+│     ├─ problems/...
+│     ├─ topics/...
+│     ├─ groups/...
+│     ├─ cheatsheets/...
+│     ├─ questions/...
 │     ├─ tags/route.ts
 │     ├─ search/route.ts
 │     ├─ activity/route.ts
 │     ├─ dashboard/stats/route.ts
-│     ├─ invites/[token]/route.ts     # public GET/POST for accept
 │     └─ admin/
 │        ├─ users/route.ts
-│        ├─ users/[id]/route.ts
-│        ├─ users/[id]/role/route.ts
 │        ├─ invites/route.ts
-│        ├─ invites/[id]/route.ts
 │        ├─ taxonomies/route.ts
-│        ├─ taxonomies/[id]/route.ts
-│        ├─ activity/route.ts
-│        └─ export/route.ts
+│        ├─ settings/route.ts
+│        └─ activity/route.ts
 ├─ components/
 │  ├─ ui/
 │  ├─ markdown/{Editor.tsx,View.tsx}
-│  ├─ problem/{ProblemRow.tsx,ProblemTable.tsx,NotesDrawer.tsx}
+│  ├─ problem/
 │  ├─ dashboard/
-│  │  ├─ CompletionTrend.tsx          # Recharts LineChart
-│  │  ├─ GroupProgress.tsx            # Recharts BarChart
-│  │  ├─ DifficultyMix.tsx            # Recharts stacked bar
-│  │  ├─ ActivityHeatmap.tsx          # custom SVG
-│  │  └─ ActivityFeed.tsx
 │  ├─ admin/
-│  │  ├─ UsersTable.tsx
-│  │  ├─ TaxonomyEditor.tsx
-│  │  ├─ InviteForm.tsx
-│  │  └─ ContentTable.tsx
-│  └─ layout/Sidebar.tsx
+│  └─ shell/AppShell.tsx
 ├─ emails/                            # React Email templates
-│  ├─ Invite.tsx
-│  └─ PasswordReset.tsx
+│  └─ Invite.tsx
+├─ grafana/                           # Grafana & Prometheus config
 ├─ lib/
 │  ├─ auth.ts                         # withAuth, withRole, BetterAuth config
-│  ├─ db.ts
-│  ├─ query.ts
+│  ├─ auth-client.ts                  # BetterAuth React client
+│  ├─ db.ts                           # Mongoose cached connection
 │  ├─ email.ts                        # Resend client + render helpers
 │  ├─ activity.ts                     # recordActivity
-│  ├─ zod/
-│  ├─ services/
-│  └─ markdown/sanitize.ts
+│  └─ zod/
 ├─ models/
-│  ├─ user.ts                         # extends BetterAuth with role field
+│  ├─ user.ts
 │  ├─ group.ts
 │  ├─ topic.ts
 │  ├─ problem.ts
+│  ├─ pattern.ts                      # DSA Pattern + Variations schema
+│  ├─ progress.ts                     # UserProgress schema
 │  ├─ question.ts
 │  ├─ cheatsheet.ts
 │  ├─ taxonomy.ts
 │  ├─ activity.ts
 │  └─ invite.ts
 ├─ scripts/
-│  ├─ seed.ts
-│  ├─ export.ts
-│  └─ promote-admin.ts                # emergency escape hatch
+│  ├─ seed-mongo-patterns.ts
+│  ├─ seed-advanced-topics.ts
+│  ├─ promote-admin.ts
+│  └─ flush_data.ts
+├─ proxy.ts                           # Next.js middleware
+├─ instrumentation.ts                 # OpenTelemetry
 ├─ docs/
-├─ tailwind.config.ts
-├─ next.config.js
+├─ next.config.mjs
 ├─ tsconfig.json
 └─ package.json
 ```
 
-## 8. Markdown edit / preview toggle
+## 8. Observability & Telemetry
 
-- `components/markdown/Editor.tsx` wraps `@uiw/react-md-editor`, sets `preview="edit"` by default, exposes a toolbar toggle.
-- Preview HTML goes through the shared `View.tsx` render (`react-markdown` + `remark-gfm` + `rehype-sanitize`) so write-mode preview and read-only page produce identical HTML.
-- Auto-save fires 800ms after the last keystroke. Optimistic update on the notes field; rollback on error.
+- **OpenTelemetry**: Initialized in `instrumentation.ts` to capture system traces and performance metrics.
+- **Grafana & Prometheus**: Configured via `docker-compose.telemetry.yml` and provisioned files in `grafana/` for metric visualization.
 
-## 9. Sanitization schema
+## 9. State + Cache
 
-Default `rehype-sanitize` schema plus `className` on `code`/`span` for syntax highlighting, plus `target="_blank"` and `rel="noopener noreferrer nofollow"` on links. Reject `iframe`, `object`, `embed`, `style`, `link`, `form`, `input`, `button`. Details in security.md.
-
-## 10. State + cache
-
-- TanStack Query owns server state.
+- TanStack Query v5 owns server state.
 - Query key conventions: `["problems", { kind, group }]`, `["dashboard", userId]`, `["admin", "users"]`.
-- Persist to `localStorage` under a versioned key.
-- Optimistic updates on completion toggle and note edit.
-- Admin pages call the same hooks with `userId` param overrides.
+- Persist to `localStorage` under a versioned key via `persistQueryClient`.
+- Optimistic updates on completion toggle and note edits.
 
-## 11. Search
-
-- MongoDB text index across `Problem.title/notes`, `Topic.title/body`, `CheatSheet.title/body`, `Question.question/answer`.
-- `/api/search?q=...` runs parallel queries per collection, merges by `$meta: "textScore"`.
-- User search is scoped to their own userId; admin search adds a `?scope=all` flag that lifts the scope.
-
-## 12. Email
+## 10. Email
 
 - Resend SDK client in `lib/email.ts` reads `RESEND_API_KEY`.
-- Templates live in `/emails` as React Email components. Render to HTML at send time via `@react-email/render`.
-- Two templates in v1: `Invite.tsx` (invite link with 7-day expiry), `PasswordReset.tsx` (reserved; admin-triggered).
-- `From` uses `EMAIL_FROM` env — a verified sender on the domain.
-- Send failures do not roll back the invite record; a background retry job is out of scope for v1, so the admin sees a "resend" button on any invite older than 5 minutes with no accept.
-
-## 13. Testing posture
-
-Do write:
-- Zod schema tests for every API contract.
-- One integration test per route handler using `mongodb-memory-server`.
-- Snapshot test for the sanitizer on a fixture Markdown file with hostile inputs.
-- One E2E flow: admin invite → user accepts → user marks problem complete → admin sees the update in the user's dashboard.
-- Role gate tests: hitting `/api/admin/*` as a `user` returns 403.
-
-Do not write:
-- Component snapshot tests for shadcn primitives.
-- Unit tests for straightforward Mongoose CRUD.
-- Visual regression tests.
-
-Tools: Vitest + `mongodb-memory-server` + Playwright.
+- Templates live in `/emails` as React Email components (`Invite.tsx`). Rendered to HTML at send time.
+- `From` header uses `EMAIL_FROM` env var.

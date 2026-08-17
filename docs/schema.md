@@ -1,18 +1,20 @@
 # Database Schema
 
-MongoDB via Mongoose. Every user-owned collection carries `userId`. Cross-user reads and writes are gated in the service layer by role.
+MongoDB via Mongoose 9. User-owned collections carry `userId`. Cross-user reads and writes are gated in the service layer by role.
 
-Timestamps (`createdAt`, `updatedAt`) come from Mongoose's built-in `timestamps: true` on every schema and are omitted from the field tables below.
+Timestamps (`createdAt`, `updatedAt`) are managed by Mongoose's `timestamps: true` option on schemas.
 
-## Ownership model
+## Ownership Model
 
 | Collection | Scope |
 | --- | --- |
 | `users` | System |
+| `patterns` | Shared (DSA patterns, variations, and curated problems) |
 | `taxonomies` | Shared (admin-writable, everyone reads) |
 | `groups` | Shared (admin-writable, everyone reads) |
 | `topics` | Per user (`userId` required) |
 | `problems` | Per user |
+| `userprogress` | Per user (`userId` + `problemId`) |
 | `questions` | Per user |
 | `cheatsheets` | Per user |
 | `activities` | Per user (both `actorId` and `targetUserId`) |
@@ -22,7 +24,7 @@ Timestamps (`createdAt`, `updatedAt`) come from Mongoose's built-in `timestamps:
 
 ### `users`
 
-Managed by BetterAuth's MongoDB adapter. Extended with the fields below via the `additionalFields` config in `lib/auth.ts`.
+Managed by BetterAuth's MongoDB adapter. Extended with custom fields via `additionalFields` in `lib/auth.ts`.
 
 | Field | Type | Notes |
 | --- | --- | --- |
@@ -31,37 +33,71 @@ Managed by BetterAuth's MongoDB adapter. Extended with the fields below via the 
 | `emailVerified` | boolean | BetterAuth default |
 | `name` | string | BetterAuth default |
 | `image` | string? | BetterAuth default |
-| `role` | `"admin" \| "user"` | default `"user"`; first user via bootstrap is `"admin"` |
+| `role` | `"admin" \| "user"` | default `"user"`; bootstrap user is `"admin"` |
 | `disabled` | boolean | default `false`; disabled users cannot sign in |
 | `lastSeenAt` | Date? | updated on session issue |
-| `invitedBy` | ObjectId? | ref `users` — who invited them |
+| `invitedBy` | ObjectId? | ref `users` |
+
+### `patterns` (`models/pattern.ts`)
+
+Curated DSA patterns containing variations and problem sets.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `_id` | ObjectId | |
+| `title` | string | required |
+| `slug` | string | required, unique |
+| `description` | string | |
+| `timeComplexity` | string | |
+| `spaceComplexity` | string | |
+| `useCases` | string[] | |
+| `concept` | string | |
+| `templateCode` | string | |
+| `explanation` | string | |
+| `variations` | `IVariation[]` | array of variation subdocuments |
+
+Subdocument `IVariation`:
+- `variation`: string
+- `description`: string
+- `important_details`: string[]
+- `template_code`: string
+- `other_relevant_details`: string
+- `problems`: `IProblem[]` (`name`, `difficulty`, `platform`, `link`, `priority`, `company_tags`)
+
+### `userprogress` (`models/progress.ts`)
+
+Tracks individual user completion state, bookmarks, and notes per problem.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `_id` | ObjectId | |
+| `userId` | ObjectId | ref `User`, required, indexed |
+| `problemId` | string | required, indexed |
+| `completed` | boolean | default `false` |
+| `completedAt` | Date? | timestamp when completed |
+| `notes` | string | default `''` |
+| `revision` | boolean | default `false` (bookmark for revision) |
+| `userNotes` | string | Markdown notes per problem |
 
 Indexes:
-- `{ email: 1 }` unique (BetterAuth default)
-- `{ role: 1 }`
-- `{ disabled: 1 }`
+- `{ userId: 1, problemId: 1 }` unique
 
 ### `taxonomies`
 
-Admin-editable list values that used to live in seed constants.
+Admin-editable taxonomy values.
 
 | Field | Type | Notes |
 | --- | --- | --- |
 | `_id` | ObjectId | |
 | `kind` | `"pattern" \| "bucket" \| "platform" \| "subject" \| "advanced" \| "difficulty"` | required |
-| `name` | string | required, 1–80 chars |
+| `name` | string | required |
 | `slug` | string | required, unique within kind |
-| `order` | number | manual sort within kind |
-| `archived` | boolean | default `false`; content referencing an archived value stays valid but the value hides from write UIs |
-
-Indexes:
-- `{ kind: 1, slug: 1 }` unique
-- `{ kind: 1, order: 1 }`
-- `{ kind: 1, archived: 1 }`
+| `order` | number | manual sort order |
+| `archived` | boolean | default `false` |
 
 ### `groups`
 
-Concrete Subject and AdvancedTopicGroup rows, distinct from the underlying taxonomy label because each Group carries content (topics, questions).
+Concrete Subject and AdvancedTopicGroup rows.
 
 | Field | Type | Notes |
 | --- | --- | --- |
@@ -70,10 +106,6 @@ Concrete Subject and AdvancedTopicGroup rows, distinct from the underlying taxon
 | `name` | string | required |
 | `slug` | string | required, unique within kind |
 | `order` | number | |
-
-Indexes:
-- `{ kind: 1, slug: 1 }` unique
-- `{ kind: 1, order: 1 }`
 
 ### `topics`
 
@@ -86,13 +118,9 @@ Indexes:
 | `body` | string | Markdown |
 | `tags` | string[] | |
 
-Indexes:
-- `{ userId: 1, groupId: 1 }`
-- Text index `{ title: "text", body: "text" }` weights `{ title: 5, body: 1 }`
+### `problems` (`models/problem.ts`)
 
-### `problems`
-
-Base collection with three discriminators.
+Base collection with three discriminators (`PatternProblem`, `NonStandardProblem`, `CpProblem`).
 
 Base fields:
 
@@ -100,166 +128,70 @@ Base fields:
 | --- | --- | --- |
 | `_id` | ObjectId | |
 | `userId` | ObjectId | ref `users` |
-| `kind` | `"pattern" \| "nonstandard" \| "cp"` | discriminator |
+| `kind` | `"pattern" \| "nonstandard" \| "cp"` | discriminator key |
 | `title` | string | required |
-| `url` | string | required, URL-validated |
-| `difficulty` | `"Easy" \| "Medium" \| "Hard"` | validated against `taxonomies` where `kind = "difficulty"` |
+| `url` | string | required |
+| `difficulty` | `"Easy" \| "Medium" \| "Hard"` | required |
 | `completed` | boolean | default `false` |
-| `completedAt` | Date? | set on true, cleared on false |
+| `completedAt` | Date? | |
 | `notes` | string | Markdown |
+| `revision` | boolean | default `false` |
+| `userNotes` | string | Markdown |
 | `tags` | string[] | |
 
 Discriminator additions:
-
-| `kind` | Extra fields |
-| --- | --- |
-| `pattern` | `pattern: string` (validated against `taxonomies` kind `pattern`) |
-| `nonstandard` | `bucket: string` (validated against kind `bucket`) |
-| `cp` | `platform: string` (validated against kind `platform`), `contest?: string`, `rating?: number` |
-
-Indexes:
-- `{ userId: 1, kind: 1, pattern: 1 }` partial: `kind: "pattern"`
-- `{ userId: 1, kind: 1, bucket: 1 }` partial: `kind: "nonstandard"`
-- `{ userId: 1, kind: 1, platform: 1, contest: 1 }` partial: `kind: "cp"`
-- `{ userId: 1, kind: 1, completed: 1 }`
-- `{ userId: 1, completedAt: -1 }` — for dashboard trend / heatmap
-- `{ userId: 1, difficulty: 1 }`
-- `{ userId: 1, tags: 1 }` (multikey)
-- Text index `{ title: "text", notes: "text" }` weights `{ title: 5, notes: 1 }`
+- `pattern`: `{ pattern: string, variation?: string }`
+- `nonstandard`: `{ bucket: string }`
+- `cp`: `{ platform?: string, contest?: string, rating?: number }`
 
 ### `questions`
 
 | Field | Type | Notes |
 | --- | --- | --- |
 | `_id` | ObjectId | |
-| `userId` | ObjectId | |
-| `subjectId` | ObjectId | ref `groups` where `kind = "subject"` |
+| `userId` | ObjectId | ref `users` |
+| `subjectId` | ObjectId | ref `groups` |
 | `question` | string | required |
 | `answer` | string | Markdown |
 | `tags` | string[] | |
-
-Indexes:
-- `{ userId: 1, subjectId: 1 }`
-- Text index `{ question: "text", answer: "text" }`
 
 ### `cheatsheets`
 
 | Field | Type | Notes |
 | --- | --- | --- |
 | `_id` | ObjectId | |
-| `userId` | ObjectId | |
+| `userId` | ObjectId | ref `users` |
 | `title` | string | required |
 | `slug` | string | unique per user |
 | `body` | string | Markdown |
-| `subjectId` | ObjectId? | optional ref |
+| `subjectId` | ObjectId? | ref `groups` |
 | `tags` | string[] | |
-
-Indexes:
-- `{ userId: 1, slug: 1 }` unique
-- `{ userId: 1, tags: 1 }`
-- Text index `{ title: "text", body: "text" }`
 
 ### `activities`
 
-Single append-only stream for user + admin actions.
+Append-only log for user and admin actions.
 
 | Field | Type | Notes |
 | --- | --- | --- |
 | `_id` | ObjectId | |
-| `actorId` | ObjectId | ref `users` — who did it |
-| `targetUserId` | ObjectId | ref `users` — whose data was touched (equal to `actorId` when a user acts on themselves) |
-| `kind` | string | see the event catalogue in admin.md |
-| `entity` | `{ type: string, id: ObjectId, title?: string }` | optional |
-| `metadata` | Record<string, unknown> | small JSON payload (e.g. `{ difficulty, pattern }`) |
-| `ip` | string? | request IP, kept for security review only |
-
-Indexes:
-- `{ targetUserId: 1, createdAt: -1 }` — user dashboard feed + admin drilldown
-- `{ actorId: 1, createdAt: -1 }` — "everything I did"
-- `{ kind: 1, createdAt: -1 }` — admin filter
-- TTL: none. Activity is small and cheap; keep it.
+| `actorId` | ObjectId | ref `users` |
+| `targetUserId` | ObjectId | ref `users` |
+| `kind` | string | action type (e.g. `problem.completed`) |
+| `entity` | `{ type: string, id: ObjectId, title?: string }` | |
+| `metadata` | Record<string, unknown> | JSON payload |
+| `ip` | string? | client IP address |
 
 ### `invites`
 
 | Field | Type | Notes |
 | --- | --- | --- |
 | `_id` | ObjectId | |
-| `email` | string | required, lowercase |
-| `name` | string? | pre-fill on accept |
+| `email` | string | required |
+| `name` | string? | |
 | `role` | `"admin" \| "user"` | default `"user"` |
-| `tokenHash` | string | SHA-256 of the invite token; raw token only shipped in the email |
+| `tokenHash` | string | SHA-256 hash of invite token |
 | `invitedBy` | ObjectId | ref `users` |
 | `status` | `"pending" \| "accepted" \| "revoked" \| "expired"` | default `"pending"` |
-| `sentAt` | Date | updated by resend |
-| `expiresAt` | Date | 7 days after `sentAt` |
+| `sentAt` | Date | timestamp sent |
+| `expiresAt` | Date | token expiration date |
 | `acceptedAt` | Date? | |
-
-Indexes:
-- `{ email: 1, status: 1 }` — reject duplicate pending invites
-- `{ tokenHash: 1 }` unique
-- `{ expiresAt: 1 }` — cleanup query
-
-## Relationships
-
-```
-users 1 ── * topics
-users 1 ── * problems       (discriminated on kind)
-users 1 ── * questions
-users 1 ── * cheatsheets
-users 1 ── * activities     (as actorId AND targetUserId)
-users 1 ── * invites        (as invitedBy)
-
-groups 1 ── * topics
-groups (kind=subject) 1 ── * questions
-groups (kind=subject) 1 ── ? cheatsheets
-
-taxonomies (kind=pattern) ── name-ref ── problems.pattern
-taxonomies (kind=bucket)  ── name-ref ── problems.bucket
-taxonomies (kind=platform)── name-ref ── problems.platform
-taxonomies (kind=difficulty)── name-ref ── problems.difficulty
-```
-
-No hard foreign keys — Mongoose refs only. Cascade on user delete (`?wipe=true`) lives in the service layer; a soft delete flips `users.disabled = true` and leaves data in place.
-
-## Text search strategy
-
-MongoDB caps one text index per collection. Four collections have their own; `/api/search` fans out parallel queries and merges by `textScore`. Query is always scoped by `userId` unless the caller is admin and passed `scope=all`.
-
-## Mongoose model files
-
-```
-models/
-├─ index.ts
-├─ user.ts
-├─ group.ts
-├─ topic.ts
-├─ problem.ts        # base + three discriminators
-├─ question.ts
-├─ cheatsheet.ts
-├─ taxonomy.ts
-├─ activity.ts
-└─ invite.ts
-```
-
-`problem.ts` sketch:
-
-```ts
-const problemSchema = new Schema({
-  userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
-  title: { type: String, required: true },
-  url: { type: String, required: true },
-  difficulty: { type: String, enum: ["Easy", "Medium", "Hard"], required: true },
-  completed: { type: Boolean, default: false, index: true },
-  completedAt: Date,
-  notes: String,
-  tags: [String],
-}, { timestamps: true, discriminatorKey: "kind" });
-
-export const Problem = model("Problem", problemSchema);
-export const PatternProblem = Problem.discriminator("pattern",
-  new Schema({ pattern: { type: String, required: true } }));
-export const NonStandardProblem = Problem.discriminator("nonstandard",
-  new Schema({ bucket: { type: String, required: true } }));
-export const CpProblem = Problem.discriminator("cp",
-  new Schema({ platform: String, contest: String, rating: Number }));
-```
