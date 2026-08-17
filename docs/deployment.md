@@ -1,6 +1,6 @@
 # Production Deployment Guide
 
-This document covers deploying PlacementDeck to Vercel with MongoDB Atlas and Resend.
+This document covers deploying BigO to Vercel with MongoDB Atlas and Resend.
 
 ## 1. Production Setup
 
@@ -13,7 +13,7 @@ This document covers deploying PlacementDeck to Vercel with MongoDB Atlas and Re
 ### Resend Email
 1. Add and verify your sending domain (configure SPF, DKIM, and DMARC DNS records).
 2. Generate a production API key (`RESEND_API_KEY`).
-3. Set `EMAIL_FROM` to an address on your verified domain (e.g. `no-reply@placementdeck.app`).
+3. Set `EMAIL_FROM` to an address on your verified domain (e.g. `no-reply@bigo.app`).
 
 ### Vercel
 1. Import GitHub repository into Vercel. Next.js App Router preset is auto-detected.

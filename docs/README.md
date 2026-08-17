@@ -1,4 +1,4 @@
-# PlacementDeck — Documentation
+# BigO — Documentation
 
 Personal placement-prep tracker + knowledge base. Multi-user, invite-only, admin-controlled taxonomies and content, per-user dashboards, activity tracking.
 

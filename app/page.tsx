@@ -160,7 +160,7 @@ export default function LandingPage() {
               Master Variations, <br /> Not Just Single Problems
             </h2>
             <p className="text-muted-foreground text-base sm:text-lg leading-relaxed">
-              Companies rarely ask textbook questions. PlacementDeck categorizes problems into core variations so you can adapt your approach during live interviews.
+              Companies rarely ask textbook questions. BigO categorizes problems into core variations so you can adapt your approach during live interviews.
             </p>
 
             <ul className="space-y-3">
@@ -249,7 +249,7 @@ std::vector<int> twoSum(std::vector<int>& nums, int target) {
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <Code2 className="h-4 w-4 text-indigo-500" />
-            <span className="font-bold text-foreground">PlacementDeck</span>
+            <span className="font-bold text-foreground">BigO</span>
             <span>© {new Date().getFullYear()} All rights reserved.</span>
           </div>
           <div className="flex gap-6">

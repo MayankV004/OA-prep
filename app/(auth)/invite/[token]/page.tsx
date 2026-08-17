@@ -123,7 +123,7 @@ export default function InvitePage({ params }: { params: Promise<{ token: string
       </span>
 
       <div className="space-y-1.5">
-        <Heading level="page">Join PlacementDeck</Heading>
+        <Heading level="page">Join BigO</Heading>
         <Text size="compact" tone="muted">
           You&apos;ve been invited as{' '}
           <span className="font-medium text-foreground">{invite.email}</span>.

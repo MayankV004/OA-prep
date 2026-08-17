@@ -1,6 +1,6 @@
-# PlacementDeck 🚀
+# BigO 🚀
 
-**PlacementDeck** is a multi-user, invite-only placement preparation tracker and computer science knowledge base. It provides pattern-based Data Structures & Algorithms tracking, Core CS subject notes, system design & advanced topic guides, interview Q&A flashcards, cheat sheets, and per-user progress analytics.
+**BigO** is a multi-user, invite-only placement preparation tracker and computer science knowledge base. It provides pattern-based Data Structures & Algorithms tracking, Core CS subject notes, system design & advanced topic guides, interview Q&A flashcards, cheat sheets, and per-user progress analytics.
 
 ---
 
@@ -54,8 +54,8 @@
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/MayankV004/OA-prep.git placementdeck
-   cd placementdeck
+   git clone https://github.com/MayankV004/OA-prep.git bigo
+   cd bigo
    ```
 
 2. **Install dependencies:**

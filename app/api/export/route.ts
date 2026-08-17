@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
     return new Response(JSON.stringify(data, null, 2), {
       headers: {
         'Content-Type': 'application/json',
-        'Content-Disposition': 'attachment; filename="placementdeck-export.json"',
+        'Content-Disposition': 'attachment; filename="bigo-export.json"',
       },
     });
   });

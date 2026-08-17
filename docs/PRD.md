@@ -2,7 +2,7 @@
 
 ## 1. Product Overview
 
-**PlacementDeck** is an invite-only computer science placement preparation application. It combines pattern-oriented Data Structures & Algorithms tracking, Core Computer Science subject revision, system design & advanced CS topics, interview Q&A flashcards, cheat sheets, and analytics dashboards into a unified platform.
+**BigO** is an invite-only computer science placement preparation application. It combines pattern-oriented Data Structures & Algorithms tracking, Core Computer Science subject revision, system design & advanced CS topics, interview Q&A flashcards, cheat sheets, and analytics dashboards into a unified platform.
 
 ---
 

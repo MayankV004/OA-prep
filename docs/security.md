@@ -1,6 +1,6 @@
 # Security
 
-PlacementDeck handles private study notes, user progress, admin management, and email notifications. This document outlines the security controls, request sanitization, and authentication mechanisms in place.
+BigO handles private study notes, user progress, admin management, and email notifications. This document outlines the security controls, request sanitization, and authentication mechanisms in place.
 
 ## 1. Authentication
 

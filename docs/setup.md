@@ -12,8 +12,8 @@
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/MayankV004/OA-prep.git placementdeck
-   cd placementdeck
+   git clone https://github.com/MayankV004/OA-prep.git bigo
+   cd bigo
    ```
 
 2. **Install dependencies:**
@@ -50,7 +50,7 @@
 | `BETTER_AUTH_URL` | Base application URL | Yes | `http://localhost:3000` |
 | `NEXT_PUBLIC_APP_URL` | Application URL exposed to client | Yes | `http://localhost:3000` |
 | `RESEND_API_KEY` | Resend email API key | Yes | `re_xxx` |
-| `EMAIL_FROM` | Verified sender email address | Yes | `PlacementDeck <no-reply@domain.com>` |
+| `EMAIL_FROM` | Verified sender email address | Yes | `BigO <no-reply@domain.com>` |
 | `EMAIL_REPLY_TO` | Reply-to email address | No | `support@domain.com` |
 | `INVITE_TOKEN_TTL_HOURS` | Invite token validity window in hours | No | `168` (default 7 days) |
 | `ADMIN_BOOTSTRAP_EMAIL` | Bootstrap admin email address | First run | `admin@example.com` |

@@ -49,7 +49,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
 
             {/* Footer info */}
             <div className="flex items-center justify-between text-xs text-slate-400 font-medium border-t border-slate-800/60 pt-6">
-              <span>PlacementDeck © {new Date().getFullYear()}</span>
+              <span>BigO © {new Date().getFullYear()}</span>
               <span className="flex items-center gap-1 text-emerald-400">
                 <CheckCircle2 className="h-3.5 w-3.5" /> Battle-tested by 10k+ engineers
               </span>
