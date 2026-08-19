@@ -32,7 +32,7 @@ Unlike generic problem trackers, BigO organizes DSA problems by **core pattern v
 - **Category Progress**: Per-pattern and per-subject progress percentage bars.
 
 ### 🛡️ 5. Admin Panel & User Governance
-- **Invite-Only Registration**: Public registration is disabled; admins issue secure invite tokens dispatched via email.
+- **Invite-Only Registration & Automated Emails**: Public registration is disabled; admins issue secure invite tokens dispatched via email. Automated welcome emails are sent upon acceptance, and inviter notification emails alert admins when invites are accepted.
 - **User Management**: Admin controls to view user progress, change roles (`admin` / `user`), enable/disable accounts, or reset credentials.
 - **Taxonomy Management**: Dynamic editor for managing patterns, subjects, platforms, buckets, and difficulty tiers.
 - **Audit Activity Feed**: Global activity log recording user achievements, administrative actions, and system events.
@@ -51,7 +51,7 @@ Unlike generic problem trackers, BigO organizes DSA problems by **core pattern v
 | **Middleware** | `proxy.ts` | Next.js request interceptor for route protection and rate limiting |
 | **Styling** | Tailwind CSS v4 + Base UI + Shadcn | Modern UI primitives, dark mode, custom color ramps, and animations |
 | **Charts** | Recharts | Responsive completion trend charts and difficulty distribution bars |
-| **Email Service** | Resend + React Email | Transactional emails with React Email templates and dev-mode fallback |
+| **Email Service** | Resend + React Email | Transactional emails with React Email templates (`Invite`, `WelcomeConfirmation`, `InviteAccepted`, `PasswordReset`) and dev-mode fallback |
 | **Observability** | OpenTelemetry | Distributed tracing, instrumentation, Prometheus & Grafana support |
 | **Markdown** | React-Markdown + Rehype-Sanitize | Secure Markdown rendering with XSS containment and syntax highlighting |
 
@@ -91,7 +91,7 @@ Unlike generic problem trackers, BigO organizes DSA problems by **core pattern v
 │   ├── shell/                  # Navigation shell, sidebar, header, breadcrumbs
 │   └── ui/                     # Reusable Shadcn & Base UI primitives
 ├── docs/                       # Comprehensive System Architecture & Operations Docs
-├── emails/                     # React Email templates (Invite.tsx)
+├── emails/                     # React Email templates (Invite, WelcomeConfirmation, InviteAccepted, PasswordReset)
 ├── grafana/                    # Grafana dashboards and Prometheus datasource configs
 ├── lib/                        # Utility Modules
 │   ├── activity.ts             # Activity logging service
@@ -102,6 +102,14 @@ Unlike generic problem trackers, BigO organizes DSA problems by **core pattern v
 │   └── zod/                    # Zod validation schemas
 ├── models/                     # Mongoose Schemas (User, Pattern, UserProgress, Problem, etc.)
 ├── scripts/                    # Database Seeding & Maintenance CLI Tools
+│   ├── benchmark-email-capacity.ts # Email capacity & latency benchmark runner
+│   ├── check-contrast.py       # WCAG color contrast audit utility
+│   ├── clear-advanced-data.ts  # Advanced topics & cheatsheets reset script
+│   ├── flush_data.ts           # Non-user database collection reset
+│   ├── promote-admin.ts        # Admin role promotion utility
+│   ├── seed-advanced-topics.ts # System Design & Advanced CS topics seeder
+│   ├── seed-mongo-patterns.ts  # DSA patterns & variations seeder
+│   └── test-email.ts           # Email dispatch testing script
 ├── proxy.ts                    # Next.js Middleware (Auth check & Rate Limiting)
 ├── instrumentation.ts          # OpenTelemetry initialization
 └── docker-compose.telemetry.yml# Prometheus & Grafana docker telemetry stack
@@ -179,7 +187,10 @@ BigO includes dedicated CLI helper scripts in `scripts/`:
 - **Seed Advanced Topics**: `npx tsx scripts/seed-advanced-topics.ts` — Seeds System Design, DevOps, Docker, Kubernetes, and GenAI content.
 - **Promote Admin**: `npx tsx scripts/promote-admin.ts --email user@example.com` — Grants `admin` role to a registered user account directly in MongoDB.
 - **Test Email Dispatch**: `npx tsx scripts/test-email.ts --to user@example.com` — Tests invite email rendering and Resend API/dev-mock dispatch.
+- **Benchmark Email Capacity**: `npx tsx scripts/benchmark-email-capacity.ts` — Measures email throughput (RPS), latency percentiles (P50/P90/P99), and rate limits (`--requests`, `--concurrency`, `--to`, `--mock`).
+- **Clear Advanced Data**: `npx tsx scripts/clear-advanced-data.ts` — Resets advanced topic categories and cheatsheet collections.
 - **Flush Database**: `npx tsx scripts/flush_data.ts` — Resets non-user MongoDB collections during local environment resets.
+- **Check Contrast**: `python3 scripts/check-contrast.py` — Evaluates WCAG AA/AAA color contrast ratios across UI theme tokens.
 
 ---
 
