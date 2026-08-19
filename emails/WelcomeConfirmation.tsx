@@ -12,88 +12,72 @@ import {
 } from '@react-email/components';
 import React from 'react';
 
-interface InviteEmailProps {
-  inviterName: string;
-  role?: string;
+interface WelcomeEmailProps {
+  userName: string;
+  userEmail: string;
   appName?: string;
-  url: string;
-  expiresInHours: number;
+  dashboardUrl: string;
 }
 
-export function InviteEmail({
-  inviterName = 'OA Prep Admin',
-  role = 'User',
+export function WelcomeConfirmationEmail({
+  userName = 'Developer',
+  userEmail = 'user@example.com',
   appName = 'BigO',
-  url = 'http://localhost:3000/invite/sample-token',
-  expiresInHours = 168,
-}: InviteEmailProps) {
-  const isAdmin = role.toLowerCase() === 'admin';
-
+  dashboardUrl = 'http://localhost:3000/dashboard',
+}: WelcomeEmailProps) {
   return (
     <Html>
       <Head />
-      <Preview>{`Invitation from ${inviterName} to join ${appName}`}</Preview>
+      <Preview>{`Welcome to ${appName}, ${userName}`}</Preview>
       <Body style={mainStyle}>
         <Container style={containerStyle}>
           {/* Top Brand Bar */}
           <Section style={topBrandSection}>
             <Text style={brandLabel}>
-              <span style={redDotStyle}>●</span> {appName.toUpperCase()} &nbsp;•&nbsp; OA PREP
+              <span style={redDotStyle}>●</span> {appName.toUpperCase()} &nbsp;•&nbsp; ONBOARDING
             </Text>
-            <Text style={badgeStyle(isAdmin)}>
-              {role.toUpperCase()}
-            </Text>
+            <Text style={badgeStyle}>CONFIRMED</Text>
           </Section>
 
           {/* Heading */}
           <Heading style={headingStyle}>
-            You&apos;ve been invited to join {appName}
+            Welcome, {userName}.
           </Heading>
 
           {/* Core Body Text */}
           <Text style={paragraphStyle}>
-            <strong style={{ color: '#09090b' }}>{inviterName}</strong> has granted you <strong style={{ color: '#e11d48' }}>{role}</strong> access to {appName}.
-          </Text>
-
-          <Text style={paragraphStyle}>
-            Accelerate your technical interview preparation with pattern-based DSA problem decks, company-specific playbooks, and real-time skill analytics.
+            Your account (<strong style={{ color: '#e11d48' }}>{userEmail}</strong>) has been verified. You now have access to the complete placement preparation workspace.
           </Text>
 
           {/* Red Accent Borderless List */}
           <Section style={accentListSection}>
             <Section style={listItemStyle}>
-              <Text style={listHeadingStyle}>DSA Pattern Decks</Text>
-              <Text style={listBodyStyle}>Curated problem sets grouped by algorithmic patterns.</Text>
+              <Text style={listHeadingStyle}>01 / DSA Pattern Decks</Text>
+              <Text style={listBodyStyle}>Study core algorithmic patterns designed for speed and clarity.</Text>
             </Section>
             <Section style={listItemStyle}>
-              <Text style={listHeadingStyle}>Company Playbooks</Text>
-              <Text style={listBodyStyle}>Target questions asked in recent technical interviews.</Text>
+              <Text style={listHeadingStyle}>02 / Company Question Banks</Text>
+              <Text style={listBodyStyle}>Filter high-frequency questions by tier-1 tech companies.</Text>
+            </Section>
+            <Section style={listItemStyle}>
+              <Text style={listHeadingStyle}>03 / Timed OA Assessments</Text>
+              <Text style={listBodyStyle}>Practice under real online assessment time limits.</Text>
             </Section>
           </Section>
 
           {/* Primary Action */}
           <Section style={actionSection}>
-            <Button href={url} style={primaryButtonStyle}>
-              Accept invitation &nbsp;→
+            <Button href={dashboardUrl} style={primaryButtonStyle}>
+              Launch Dashboard &nbsp;→
             </Button>
           </Section>
 
-          <Text style={metaNoteStyle}>
-            Invite expires in {expiresInHours} hours. This link is private to your email.
-          </Text>
-
           <Hr style={dividerStyle} />
-
-          {/* Direct Link Section */}
-          <Text style={fallbackLabel}>Direct Link</Text>
-          <Section style={codeBlockStyle}>
-            <Text style={codeTextStyle}>{url}</Text>
-          </Section>
 
           {/* Footer */}
           <Section style={footerSection}>
             <Text style={footerTextStyle}>
-              {appName} Platform &nbsp;•&nbsp; Automated Access System
+              {appName} Workspace &nbsp;•&nbsp; Placement Preparation &amp; Analytics
             </Text>
           </Section>
         </Container>
@@ -102,7 +86,7 @@ export function InviteEmail({
   );
 }
 
-export default InviteEmail;
+export default WelcomeConfirmationEmail;
 
 // --- Minimalist Red Accent Styles ---
 const mainStyle: React.CSSProperties = {
@@ -139,17 +123,17 @@ const redDotStyle: React.CSSProperties = {
   marginRight: '4px',
 };
 
-const badgeStyle = (isAdmin: boolean): React.CSSProperties => ({
+const badgeStyle: React.CSSProperties = {
   fontSize: '10px',
   fontWeight: 700,
   letterSpacing: '0.08em',
-  color: isAdmin ? '#e11d48' : '#475569',
-  backgroundColor: isAdmin ? '#fff1f2' : '#f1f5f9',
+  color: '#e11d48',
+  backgroundColor: '#fff1f2',
   padding: '3px 9px',
   borderRadius: '9999px',
   display: 'inline-block',
   float: 'right',
-});
+};
 
 const headingStyle: React.CSSProperties = {
   fontSize: '24px',
@@ -191,7 +175,7 @@ const listBodyStyle: React.CSSProperties = {
 };
 
 const actionSection: React.CSSProperties = {
-  margin: '32px 0 20px 0',
+  margin: '32px 0 24px 0',
 };
 
 const primaryButtonStyle: React.CSSProperties = {
@@ -207,43 +191,13 @@ const primaryButtonStyle: React.CSSProperties = {
   boxShadow: '0 4px 14px rgba(225, 29, 72, 0.2)',
 };
 
-const metaNoteStyle: React.CSSProperties = {
-  fontSize: '12px',
-  color: '#a1a1aa',
-  margin: '0 0 28px 0',
-};
-
 const dividerStyle: React.CSSProperties = {
   borderColor: '#f4f4f5',
-  margin: '24px 0',
-};
-
-const fallbackLabel: React.CSSProperties = {
-  fontSize: '11px',
-  fontWeight: 600,
-  letterSpacing: '0.05em',
-  color: '#a1a1aa',
-  textTransform: 'uppercase' as const,
-  margin: '0 0 8px 0',
-};
-
-const codeBlockStyle: React.CSSProperties = {
-  backgroundColor: '#f4f4f5',
-  borderRadius: '8px',
-  padding: '12px 14px',
-  margin: '0 0 28px 0',
-};
-
-const codeTextStyle: React.CSSProperties = {
-  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
-  fontSize: '12px',
-  color: '#e11d48',
-  wordBreak: 'break-all',
-  margin: 0,
+  margin: '28px 0 20px 0',
 };
 
 const footerSection: React.CSSProperties = {
-  marginTop: '20px',
+  marginTop: '0px',
 };
 
 const footerTextStyle: React.CSSProperties = {

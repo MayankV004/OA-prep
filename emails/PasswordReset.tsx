@@ -12,88 +12,68 @@ import {
 } from '@react-email/components';
 import React from 'react';
 
-interface InviteEmailProps {
-  inviterName: string;
-  role?: string;
+interface PasswordResetEmailProps {
+  userName?: string;
+  resetUrl: string;
+  expiresInMinutes?: number;
   appName?: string;
-  url: string;
-  expiresInHours: number;
 }
 
-export function InviteEmail({
-  inviterName = 'OA Prep Admin',
-  role = 'User',
+export function PasswordResetEmail({
+  userName = 'User',
+  resetUrl = 'http://localhost:3000/reset-password?token=sample',
+  expiresInMinutes = 60,
   appName = 'BigO',
-  url = 'http://localhost:3000/invite/sample-token',
-  expiresInHours = 168,
-}: InviteEmailProps) {
-  const isAdmin = role.toLowerCase() === 'admin';
-
+}: PasswordResetEmailProps) {
   return (
     <Html>
       <Head />
-      <Preview>{`Invitation from ${inviterName} to join ${appName}`}</Preview>
+      <Preview>{`Password reset request for ${appName}`}</Preview>
       <Body style={mainStyle}>
         <Container style={containerStyle}>
           {/* Top Brand Bar */}
           <Section style={topBrandSection}>
             <Text style={brandLabel}>
-              <span style={redDotStyle}>●</span> {appName.toUpperCase()} &nbsp;•&nbsp; OA PREP
+              <span style={redDotStyle}>●</span> {appName.toUpperCase()} &nbsp;•&nbsp; SECURITY
             </Text>
-            <Text style={badgeStyle(isAdmin)}>
-              {role.toUpperCase()}
-            </Text>
+            <Text style={badgeStyle}>RESET</Text>
           </Section>
 
           {/* Heading */}
           <Heading style={headingStyle}>
-            You&apos;ve been invited to join {appName}
+            Reset your password
           </Heading>
 
-          {/* Core Body Text */}
           <Text style={paragraphStyle}>
-            <strong style={{ color: '#09090b' }}>{inviterName}</strong> has granted you <strong style={{ color: '#e11d48' }}>{role}</strong> access to {appName}.
+            Hello {userName}, we received a request to reset the password for your {appName} account. Click below to specify a new password.
           </Text>
-
-          <Text style={paragraphStyle}>
-            Accelerate your technical interview preparation with pattern-based DSA problem decks, company-specific playbooks, and real-time skill analytics.
-          </Text>
-
-          {/* Red Accent Borderless List */}
-          <Section style={accentListSection}>
-            <Section style={listItemStyle}>
-              <Text style={listHeadingStyle}>DSA Pattern Decks</Text>
-              <Text style={listBodyStyle}>Curated problem sets grouped by algorithmic patterns.</Text>
-            </Section>
-            <Section style={listItemStyle}>
-              <Text style={listHeadingStyle}>Company Playbooks</Text>
-              <Text style={listBodyStyle}>Target questions asked in recent technical interviews.</Text>
-            </Section>
-          </Section>
 
           {/* Primary Action */}
           <Section style={actionSection}>
-            <Button href={url} style={primaryButtonStyle}>
-              Accept invitation &nbsp;→
+            <Button href={resetUrl} style={primaryButtonStyle}>
+              Reset password &nbsp;→
             </Button>
           </Section>
 
-          <Text style={metaNoteStyle}>
-            Invite expires in {expiresInHours} hours. This link is private to your email.
-          </Text>
+          {/* Red Accent Security Note */}
+          <Section style={accentBlockSection}>
+            <Text style={noteTextStyle}>
+              Link expires in {expiresInMinutes} minutes. If you did not request this change, no action is required and your password remains unchanged.
+            </Text>
+          </Section>
 
           <Hr style={dividerStyle} />
 
           {/* Direct Link Section */}
           <Text style={fallbackLabel}>Direct Link</Text>
           <Section style={codeBlockStyle}>
-            <Text style={codeTextStyle}>{url}</Text>
+            <Text style={codeTextStyle}>{resetUrl}</Text>
           </Section>
 
           {/* Footer */}
           <Section style={footerSection}>
             <Text style={footerTextStyle}>
-              {appName} Platform &nbsp;•&nbsp; Automated Access System
+              {appName} Security &nbsp;•&nbsp; Account Protection
             </Text>
           </Section>
         </Container>
@@ -102,7 +82,7 @@ export function InviteEmail({
   );
 }
 
-export default InviteEmail;
+export default PasswordResetEmail;
 
 // --- Minimalist Red Accent Styles ---
 const mainStyle: React.CSSProperties = {
@@ -139,17 +119,17 @@ const redDotStyle: React.CSSProperties = {
   marginRight: '4px',
 };
 
-const badgeStyle = (isAdmin: boolean): React.CSSProperties => ({
+const badgeStyle: React.CSSProperties = {
   fontSize: '10px',
   fontWeight: 700,
   letterSpacing: '0.08em',
-  color: isAdmin ? '#e11d48' : '#475569',
-  backgroundColor: isAdmin ? '#fff1f2' : '#f1f5f9',
+  color: '#e11d48',
+  backgroundColor: '#fff1f2',
   padding: '3px 9px',
   borderRadius: '9999px',
   display: 'inline-block',
   float: 'right',
-});
+};
 
 const headingStyle: React.CSSProperties = {
   fontSize: '24px',
@@ -164,34 +144,11 @@ const paragraphStyle: React.CSSProperties = {
   fontSize: '14px',
   color: '#52525b',
   lineHeight: '1.7',
-  margin: '0 0 16px 0',
-};
-
-const accentListSection: React.CSSProperties = {
-  margin: '28px 0',
-  borderLeft: '2px solid #e11d48',
-  paddingLeft: '16px',
-};
-
-const listItemStyle: React.CSSProperties = {
-  marginBottom: '14px',
-};
-
-const listHeadingStyle: React.CSSProperties = {
-  fontSize: '13px',
-  fontWeight: 600,
-  color: '#09090b',
-  margin: '0 0 2px 0',
-};
-
-const listBodyStyle: React.CSSProperties = {
-  fontSize: '13px',
-  color: '#71717a',
-  margin: 0,
+  margin: '0 0 24px 0',
 };
 
 const actionSection: React.CSSProperties = {
-  margin: '32px 0 20px 0',
+  margin: '28px 0 24px 0',
 };
 
 const primaryButtonStyle: React.CSSProperties = {
@@ -207,10 +164,17 @@ const primaryButtonStyle: React.CSSProperties = {
   boxShadow: '0 4px 14px rgba(225, 29, 72, 0.2)',
 };
 
-const metaNoteStyle: React.CSSProperties = {
+const accentBlockSection: React.CSSProperties = {
+  margin: '24px 0 28px 0',
+  borderLeft: '2px solid #e11d48',
+  paddingLeft: '14px',
+};
+
+const noteTextStyle: React.CSSProperties = {
   fontSize: '12px',
-  color: '#a1a1aa',
-  margin: '0 0 28px 0',
+  color: '#71717a',
+  lineHeight: '1.6',
+  margin: 0,
 };
 
 const dividerStyle: React.CSSProperties = {

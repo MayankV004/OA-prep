@@ -5,6 +5,8 @@ import { auth } from '@/lib/auth';
 import { acceptInviteSchema } from '@/lib/zod';
 import dbConnect from '@/lib/db';
 
+import { sendWelcomeEmail, sendInviteAcceptedEmail } from '@/lib/email';
+
 // POST /api/invites/:token/accept — public, creates user account
 export async function POST(
   req: NextRequest,
@@ -25,11 +27,13 @@ export async function POST(
   const body = await req.json();
   const { password } = acceptInviteSchema.parse(body);
 
+  const userName = invite.name || invite.email.split('@')[0];
+
   // Create user via BetterAuth
   const signUpReq = new Request(`${process.env.BETTER_AUTH_URL}/api/auth/sign-up/email`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: invite.email, password, name: invite.name ?? invite.email }),
+    body: JSON.stringify({ email: invite.email, password, name: userName }),
   });
 
   const signUpRes = await auth.handler(signUpReq);
@@ -46,6 +50,31 @@ export async function POST(
 
   // Mark invite accepted
   await Invite.findByIdAndUpdate(invite._id, { status: 'accepted', acceptedAt: new Date() });
+
+  // Send Welcome Email to newly registered user
+  try {
+    await sendWelcomeEmail({ to: invite.email, userName });
+  } catch (err) {
+    console.error('Failed to send welcome email:', err);
+  }
+
+  // Send Notification Email to Inviter/Admin
+  if (invite.invitedBy) {
+    try {
+      const inviter = await User.findById(invite.invitedBy);
+      if (inviter && inviter.email) {
+        await sendInviteAcceptedEmail({
+          to: inviter.email,
+          adminName: inviter.name || 'Admin',
+          invitedEmail: invite.email,
+          invitedName: userName,
+          role: invite.role ?? 'user',
+        });
+      }
+    } catch (err) {
+      console.error('Failed to send invite accepted notification to admin:', err);
+    }
+  }
 
   return Response.json({ success: true, email: invite.email });
 }
