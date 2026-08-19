@@ -1,5 +1,5 @@
 import { Info } from "lucide-react";
-import ReactMarkdown from 'react-markdown';
+import { MarkdownView } from "@/components/markdown/View";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export function ExplanationBlock({ text }: { text: string }) {
@@ -13,7 +13,7 @@ export function ExplanationBlock({ text }: { text: string }) {
         </CardTitle>
       </CardHeader>
       <CardContent className="prose prose-sm dark:prose-invert max-w-none leading-relaxed text-text-secondary">
-        <ReactMarkdown>{text}</ReactMarkdown>
+        <MarkdownView content={text} />
       </CardContent>
     </Card>
   );

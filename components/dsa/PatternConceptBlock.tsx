@@ -1,5 +1,5 @@
 import { BookOpen } from "lucide-react";
-import ReactMarkdown from 'react-markdown';
+import { MarkdownView } from "@/components/markdown/View";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export function PatternConceptBlock({ concept }: { concept: string }) {
@@ -12,7 +12,7 @@ export function PatternConceptBlock({ concept }: { concept: string }) {
         </CardTitle>
       </CardHeader>
       <CardContent className="prose prose-sm dark:prose-invert max-w-none leading-relaxed text-text-secondary">
-        <ReactMarkdown>{concept}</ReactMarkdown>
+        <MarkdownView content={concept} />
       </CardContent>
     </Card>
   );

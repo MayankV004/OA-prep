@@ -15,7 +15,7 @@ import {
   StickyNote,
   Loader2,
 } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
+import { MarkdownView } from '@/components/markdown/View';
 import remarkGfm from 'remark-gfm';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -283,7 +283,7 @@ function ProblemRow({
             >
               {userNotes ? (
                 <div className="prose prose-sm dark:prose-invert max-w-none text-foreground [&_pre]:rounded-lg [&_pre]:bg-muted [&_pre]:p-3 [&_code]:rounded [&_code]:bg-muted [&_code]:px-1 [&_code]:py-0.5 [&_code]:text-xs">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{userNotes}</ReactMarkdown>
+                  <MarkdownView content={userNotes} />
                 </div>
               ) : (
                 <Text size="caption" tone="muted" className="text-center">

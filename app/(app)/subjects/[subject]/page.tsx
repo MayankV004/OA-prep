@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import { ArrowLeft, ArrowRight, BookOpen, Edit, FileText, Layers } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
+import { MarkdownView } from '@/components/markdown/View';
 import remarkGfm from 'remark-gfm';
 
 import { authClient } from '@/lib/auth-client';
@@ -133,7 +133,7 @@ export default function SubjectPage({ params }: { params: Promise<{ subject: str
         <div className="space-y-6">
           {subject.body ? (
             <div className="p-6 sm:p-10 rounded-3xl bg-background/80 dark:bg-background/30 backdrop-blur-xl border border-border/30 shadow-sm space-y-6">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{subject.body}</ReactMarkdown>
+              <MarkdownView content={subject.body} />
             </div>
           ) : (
             <Card className="rounded-3xl border-none bg-background/50 p-8 text-center">

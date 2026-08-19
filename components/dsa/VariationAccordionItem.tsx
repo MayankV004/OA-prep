@@ -2,7 +2,7 @@
 
 import { TemplateCodeBlock } from "./TemplateCodeBlock";
 import { PatternVariation } from "@/types/pattern";
-import ReactMarkdown from 'react-markdown';
+import { MarkdownView } from '@/components/markdown/View';
 import Link from "next/link";
 
 interface VariationItemProps {
@@ -43,7 +43,7 @@ export function VariationAccordionItem({ variation, patternSlug, html }: Variati
       {/* Variation Concept / Description */}
       {(variation.description || variation.concept) && (
         <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none leading-relaxed text-muted-foreground">
-          <ReactMarkdown>{variation.description || variation.concept || ''}</ReactMarkdown>
+          <MarkdownView content={variation.description || variation.concept || ''} />
         </div>
       )}
 
@@ -56,7 +56,7 @@ export function VariationAccordionItem({ variation, patternSlug, html }: Variati
               <li key={idx} className="flex items-start gap-2.5 text-sm text-foreground">
                 <span className="mt-1.5 h-2 w-2 rounded-full bg-rose-500 shrink-0" />
                 <div className="prose prose-sm dark:prose-invert max-w-none leading-relaxed text-muted-foreground [&_p]:my-0">
-                  <ReactMarkdown>{detail}</ReactMarkdown>
+                  <MarkdownView content={detail} />
                 </div>
               </li>
             ))}
@@ -69,7 +69,7 @@ export function VariationAccordionItem({ variation, patternSlug, html }: Variati
         <div className="p-5 rounded-2xl bg-background/50 space-y-2">
           <span className="font-display text-xs font-bold uppercase tracking-wider text-muted-foreground">Additional Information</span>
           <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground leading-relaxed">
-            <ReactMarkdown>{variation.other_relevant_details}</ReactMarkdown>
+            <MarkdownView content={variation.other_relevant_details} />
           </div>
         </div>
       )}

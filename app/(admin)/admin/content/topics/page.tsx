@@ -4,7 +4,7 @@ import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Trash2, Edit, Image as ImageIcon, FileText, Upload, BookOpen, Layers } from 'lucide-react';
 import { formatDistanceToNow, parseISO } from 'date-fns';
-import ReactMarkdown from 'react-markdown';
+import { MarkdownView } from '@/components/markdown/View';
 import remarkGfm from 'remark-gfm';
 
 import { DataTable, type Column } from '@/components/admin/DataTable';
@@ -629,28 +629,7 @@ export default function AdminTopicsPage() {
               />
             ) : (
               <div className="p-6 rounded-2xl bg-background/80 border border-border/30 min-h-[300px] max-h-[500px] overflow-y-auto">
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm]}
-                  components={{
-                    pre: ({ children }) => (
-                      <pre className="p-4 rounded-xl bg-zinc-950 text-zinc-100 font-mono text-xs overflow-x-auto my-4 border border-border/20 leading-relaxed whitespace-pre font-normal">
-                        {children}
-                      </pre>
-                    ),
-                    code: ({ inline, children, ...props }: any) => {
-                      if (inline) {
-                        return (
-                          <code className="px-1.5 py-0.5 rounded bg-muted text-rose-500 font-mono text-xs font-semibold" {...props}>
-                            {children}
-                          </code>
-                        );
-                      }
-                      return <code className="font-mono text-xs whitespace-pre" {...props}>{children}</code>;
-                    },
-                  }}
-                >
-                  {topicFormData.body || 'No content written yet.'}
-                </ReactMarkdown>
+                <MarkdownView content={topicFormData.body || 'No content written yet.'} />
               </div>
             )}
           </div>
@@ -783,28 +762,7 @@ export default function AdminTopicsPage() {
               />
             ) : (
               <div className="p-6 rounded-2xl bg-background/80 border border-border/30 min-h-[300px] max-h-[500px] overflow-y-auto">
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm]}
-                  components={{
-                    pre: ({ children }) => (
-                      <pre className="p-4 rounded-xl bg-zinc-950 text-zinc-100 font-mono text-xs overflow-x-auto my-4 border border-border/20 leading-relaxed whitespace-pre font-normal">
-                        {children}
-                      </pre>
-                    ),
-                    code: ({ inline, children, ...props }: any) => {
-                      if (inline) {
-                        return (
-                          <code className="px-1.5 py-0.5 rounded bg-muted text-rose-500 font-mono text-xs font-semibold" {...props}>
-                            {children}
-                          </code>
-                        );
-                      }
-                      return <code className="font-mono text-xs whitespace-pre" {...props}>{children}</code>;
-                    },
-                  }}
-                >
-                  {subjectFormData.body || 'No track content written yet.'}
-                </ReactMarkdown>
+                <MarkdownView content={subjectFormData.body || 'No track content written yet.'} />
               </div>
             )}
           </div>

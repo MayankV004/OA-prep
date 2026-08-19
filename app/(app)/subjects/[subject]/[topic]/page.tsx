@@ -7,6 +7,7 @@ import { formatDistanceToNow, parseISO } from 'date-fns';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { ArrowLeft, BookOpen, Edit, Layers } from 'lucide-react';
+import { Mermaid } from '@/components/markdown/Mermaid';
 
 import { authClient } from '@/lib/auth-client';
 import { Card, CardContent } from '@/components/ui/card';
@@ -43,6 +44,126 @@ function relative(value?: string) {
     return '—';
   }
 }
+
+const topicMarkdownComponents = {
+  h1: ({ children }: any) => {
+    const titleStr = String(children || '').replace(/[*_~`]/g, '');
+    const id = titleStr.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    return (
+      <h1 id={id} className="font-display text-3xl sm:text-4xl font-black tracking-tight text-foreground mt-10 mb-4 pb-2 border-b border-border/30 scroll-mt-24">
+        {children}
+      </h1>
+    );
+  },
+  h2: ({ children }: any) => {
+    const titleStr = String(children || '').replace(/[*_~`]/g, '');
+    const id = titleStr.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    return (
+      <h2 id={id} className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-foreground mt-8 mb-4 scroll-mt-24">
+        {children}
+      </h2>
+    );
+  },
+  h3: ({ children }: any) => {
+    const titleStr = String(children || '').replace(/[*_~`]/g, '');
+    const id = titleStr.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    return (
+      <h3 id={id} className="font-display text-xl font-bold tracking-tight text-foreground mt-6 mb-3 scroll-mt-24">
+        {children}
+      </h3>
+    );
+  },
+  h4: ({ children }: any) => (
+    <h4 className="font-display text-lg font-bold text-foreground mt-4 mb-2">
+      {children}
+    </h4>
+  ),
+  p: ({ children }: any) => (
+    <div className="text-base sm:text-lg text-muted-foreground leading-relaxed mb-4 font-light">
+      {children}
+    </div>
+  ),
+  ul: ({ children }: any) => (
+    <ul className="list-disc list-inside space-y-2.5 my-4 text-foreground pl-2">
+      {children}
+    </ul>
+  ),
+  ol: ({ children }: any) => (
+    <ol className="list-decimal list-inside space-y-2.5 my-4 text-foreground pl-2">
+      {children}
+    </ol>
+  ),
+  li: ({ children }: any) => (
+    <li className="text-muted-foreground text-sm sm:text-base leading-relaxed">
+      {children}
+    </li>
+  ),
+  blockquote: ({ children }: any) => (
+    <blockquote className="border-l-4 border-rose-500 bg-rose-500/10 p-4 rounded-r-2xl my-6 text-foreground font-medium italic">
+      {children}
+    </blockquote>
+  ),
+  pre: ({ children }: any) => {
+    const child = Array.isArray(children) ? children[0] : children;
+    if (
+      child &&
+      typeof child === 'object' &&
+      'props' in child &&
+      child.props?.className?.includes('language-mermaid')
+    ) {
+      return <>{children}</>;
+    }
+    return (
+      <pre className="p-5 rounded-2xl bg-zinc-950 text-zinc-100 font-mono text-xs sm:text-sm overflow-x-auto my-6 border border-border/20 shadow-sm leading-relaxed whitespace-pre font-normal">
+        {children}
+      </pre>
+    );
+  },
+  code: ({ inline, className, children, ...props }: any) => {
+    const match = /language-(\w+)/.exec(className || '');
+    if (!inline && match && match[1] === 'mermaid') {
+      return <Mermaid chart={String(children).replace(/\n$/, '')} />;
+    }
+    if (inline) {
+      return (
+        <code className="px-2 py-0.5 rounded-lg bg-muted text-rose-500 font-mono text-xs font-semibold border border-border/30" {...props}>
+          {children}
+        </code>
+      );
+    }
+    return <code className="font-mono text-xs sm:text-sm whitespace-pre" {...props}>{children}</code>;
+  },
+  img: ({ src, alt }: any) => (
+    <img
+      src={src}
+      alt={alt || 'Attached image'}
+      className="rounded-3xl shadow-lg max-h-[550px] w-full object-cover my-6 border border-border/30"
+    />
+  ),
+  table: ({ children }: any) => (
+    <div className="overflow-x-auto my-6 rounded-2xl border border-border/30 shadow-sm">
+      <table className="w-full text-left border-collapse text-sm">
+        {children}
+      </table>
+    </div>
+  ),
+  th: ({ children }: any) => (
+    <th className="bg-muted/80 p-3.5 font-bold text-foreground border-b border-border/30 font-display">
+      {children}
+    </th>
+  ),
+  td: ({ children }: any) => (
+    <td className="p-3.5 border-b border-border/20 text-muted-foreground">
+      {children}
+    </td>
+  ),
+  a: ({ href, children }: any) => (
+    <a href={href} target="_blank" rel="noopener noreferrer" className="text-rose-500 font-semibold underline hover:text-rose-400">
+      {children}
+    </a>
+  ),
+  hr: () => <hr className="my-8 border-border/30" />,
+};
 
 export default function SubjectTopicDetailPage({
   params,
@@ -254,110 +375,7 @@ export default function SubjectTopicDetailPage({
                 {activeBody ? (
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
-                    components={{
-                      h1: ({ children }) => {
-                        const titleStr = String(children || '').replace(/[*_~`]/g, '');
-                        const id = titleStr.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-                        return (
-                          <h1 id={id} className="font-display text-3xl sm:text-4xl font-black tracking-tight text-foreground mt-10 mb-4 pb-2 border-b border-border/30 scroll-mt-24">
-                            {children}
-                          </h1>
-                        );
-                      },
-                      h2: ({ children }) => {
-                        const titleStr = String(children || '').replace(/[*_~`]/g, '');
-                        const id = titleStr.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-                        return (
-                          <h2 id={id} className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-foreground mt-8 mb-4 scroll-mt-24">
-                            {children}
-                          </h2>
-                        );
-                      },
-                      h3: ({ children }) => {
-                        const titleStr = String(children || '').replace(/[*_~`]/g, '');
-                        const id = titleStr.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-                        return (
-                          <h3 id={id} className="font-display text-xl font-bold tracking-tight text-foreground mt-6 mb-3 scroll-mt-24">
-                            {children}
-                          </h3>
-                        );
-                      },
-                      h4: ({ children }) => (
-                        <h4 className="font-display text-lg font-bold text-foreground mt-4 mb-2">
-                          {children}
-                        </h4>
-                      ),
-                      p: ({ children }) => (
-                        <div className="text-base sm:text-lg text-muted-foreground leading-relaxed mb-4 font-light">
-                          {children}
-                        </div>
-                      ),
-                      ul: ({ children }) => (
-                        <ul className="list-disc list-inside space-y-2.5 my-4 text-foreground pl-2">
-                          {children}
-                        </ul>
-                      ),
-                      ol: ({ children }) => (
-                        <ol className="list-decimal list-inside space-y-2.5 my-4 text-foreground pl-2">
-                          {children}
-                        </ol>
-                      ),
-                      li: ({ children }) => (
-                        <li className="text-muted-foreground text-sm sm:text-base leading-relaxed">
-                          {children}
-                        </li>
-                      ),
-                      blockquote: ({ children }) => (
-                        <blockquote className="border-l-4 border-rose-500 bg-rose-500/10 p-4 rounded-r-2xl my-6 text-foreground font-medium italic">
-                          {children}
-                        </blockquote>
-                      ),
-                      pre: ({ children }) => (
-                        <pre className="p-5 rounded-2xl bg-zinc-950 text-zinc-100 font-mono text-xs sm:text-sm overflow-x-auto my-6 border border-border/20 shadow-sm leading-relaxed whitespace-pre font-normal">
-                          {children}
-                        </pre>
-                      ),
-                      code: ({ inline, className, children, ...props }: any) => {
-                        if (inline) {
-                          return (
-                            <code className="px-2 py-0.5 rounded-lg bg-muted text-rose-500 font-mono text-xs font-semibold border border-border/30" {...props}>
-                              {children}
-                            </code>
-                          );
-                        }
-                        return <code className="font-mono text-xs sm:text-sm whitespace-pre" {...props}>{children}</code>;
-                      },
-                      img: ({ src, alt }) => (
-                        <img
-                          src={src}
-                          alt={alt || 'Attached image'}
-                          className="rounded-3xl shadow-lg max-h-[550px] w-full object-cover my-6 border border-border/30"
-                        />
-                      ),
-                      table: ({ children }) => (
-                        <div className="overflow-x-auto my-6 rounded-2xl border border-border/30 shadow-sm">
-                          <table className="w-full text-left border-collapse text-sm">
-                            {children}
-                          </table>
-                        </div>
-                      ),
-                      th: ({ children }) => (
-                        <th className="bg-muted/80 p-3.5 font-bold text-foreground border-b border-border/30 font-display">
-                          {children}
-                        </th>
-                      ),
-                      td: ({ children }) => (
-                        <td className="p-3.5 border-b border-border/20 text-muted-foreground">
-                          {children}
-                        </td>
-                      ),
-                      a: ({ href, children }) => (
-                        <a href={href} target="_blank" rel="noopener noreferrer" className="text-rose-500 font-semibold underline hover:text-rose-400">
-                          {children}
-                        </a>
-                      ),
-                      hr: () => <hr className="my-8 border-border/30" />,
-                    }}
+                    components={topicMarkdownComponents}
                   >
                     {activeBody}
                   </ReactMarkdown>

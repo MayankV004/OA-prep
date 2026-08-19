@@ -5,7 +5,7 @@ import { highlightCode } from '@/lib/shiki';
 import { notFound } from 'next/navigation';
 import dbConnect from '@/lib/db';
 import { Pattern } from '@/models';
-import ReactMarkdown from 'react-markdown';
+import { MarkdownView } from '@/components/markdown/View';
 
 export const revalidate = 60;
 
@@ -83,7 +83,7 @@ export default async function DSAPatternPage({ params }: { params: Promise<{ pat
               Concept & Intuition
             </h2>
             <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none leading-relaxed text-muted-foreground">
-              <ReactMarkdown>{pattern.description || pattern.concept}</ReactMarkdown>
+              <MarkdownView content={pattern.description || pattern.concept} />
             </div>
           </section>
         )}
@@ -99,7 +99,7 @@ export default async function DSAPatternPage({ params }: { params: Promise<{ pat
                 <li key={idx} className="flex items-start gap-3 text-sm text-foreground">
                   <span className="mt-1.5 h-2 w-2 rounded-full bg-rose-500 shrink-0" />
                   <div className="prose prose-sm dark:prose-invert max-w-none leading-relaxed text-muted-foreground [&_p]:my-0">
-                    <ReactMarkdown>{detail}</ReactMarkdown>
+                    <MarkdownView content={detail} />
                   </div>
                 </li>
               ))}
@@ -112,7 +112,7 @@ export default async function DSAPatternPage({ params }: { params: Promise<{ pat
           <div className="p-6 rounded-3xl bg-background/60 dark:bg-background/30 backdrop-blur-xl border-none shadow-sm space-y-2">
             <h3 className="font-display text-sm font-bold text-foreground uppercase tracking-wider">Additional Information</h3>
             <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground leading-relaxed">
-              <ReactMarkdown>{pattern.other_relevant_details}</ReactMarkdown>
+              <MarkdownView content={pattern.other_relevant_details} />
             </div>
           </div>
         )}

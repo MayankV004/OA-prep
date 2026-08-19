@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react';
 import MDEditor from '@uiw/react-md-editor';
 import { useTheme } from 'next-themes';
+import rehypeSanitize from 'rehype-sanitize';
+import { sanitizeSchema } from '@/lib/markdown/sanitize';
+import { defaultMarkdownComponents } from './View';
 
 interface MarkdownEditorProps {
   value: string;
@@ -27,6 +30,10 @@ export function MarkdownEditor({ value, onChange }: MarkdownEditorProps) {
         onChange={onChange}
         preview="edit"
         height={400}
+        previewOptions={{
+          rehypePlugins: [[rehypeSanitize, sanitizeSchema]],
+          components: defaultMarkdownComponents,
+        }}
         textareaProps={{
           placeholder: 'Write your notes in Markdown...',
         }}
@@ -34,3 +41,4 @@ export function MarkdownEditor({ value, onChange }: MarkdownEditorProps) {
     </div>
   );
 }
+
