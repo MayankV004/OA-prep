@@ -13,7 +13,7 @@ const problemSchema = new Schema(
     userNotes: { type: String, default: '' },          // 📝 Markdown notes per problem
     tags: [{ type: String }],
   },
-  { timestamps: true, discriminatorKey: 'kind' }
+  { timestamps: true, strict: true, discriminatorKey: 'kind' }
 );
 
 // Indexes defined in schema.md

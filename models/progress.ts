@@ -10,7 +10,7 @@ const userProgressSchema = new Schema(
     revision: { type: Boolean, default: false },   // ⭐ Revision bookmark
     userNotes: { type: String, default: '' },       // 📝 Per-problem markdown notes
   },
-  { timestamps: true }
+  { timestamps: true, strict: true }
 );
 
 // Compound index for fast lookup of a user's progress on a specific problem

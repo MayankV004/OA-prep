@@ -13,11 +13,20 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: { message: 'No file provided' } }, { status: 400 });
       }
 
-      // Validate image mime type
-      const validMimeTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/gif', 'image/svg+xml'];
+      // Enforce 5 MB maximum file size limit
+      const MAX_FILE_SIZE = 5 * 1024 * 1024;
+      if (file.size > MAX_FILE_SIZE) {
+        return NextResponse.json(
+          { error: { message: 'File size exceeds maximum allowed limit of 5MB.' } },
+          { status: 413 }
+        );
+      }
+
+      // Validate image mime type (SVG excluded due to XSS risk)
+      const validMimeTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/gif'];
       if (!validMimeTypes.includes(file.type)) {
         return NextResponse.json(
-          { error: { message: 'Invalid file type. Only images (PNG, JPEG, WEBP, GIF, SVG) are allowed.' } },
+          { error: { message: 'Invalid file type. Only images (PNG, JPEG, WEBP, GIF) are allowed.' } },
           { status: 400 }
         );
       }

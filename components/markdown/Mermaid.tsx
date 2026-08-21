@@ -46,7 +46,7 @@ export function Mermaid({ chart }: MermaidProps) {
         mermaid.initialize({
           startOnLoad: false,
           theme,
-          securityLevel: 'loose',
+          securityLevel: 'strict',
           fontFamily: 'inherit',
         });
 

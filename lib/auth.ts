@@ -51,13 +51,17 @@ export const auth = betterAuth({
     ...(process.env.NEXT_PUBLIC_APP_URL ? [process.env.NEXT_PUBLIC_APP_URL] : []),
     ...(process.env.BETTER_AUTH_URL ? [process.env.BETTER_AUTH_URL] : []),
     ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []),
-    'https://*.vercel.app',
   ],
 });
 
 import { traceSpan } from '@/lib/telemetry/tracer';
 import { recordHttpRequest } from '@/lib/telemetry/metrics';
 import { logger } from '@/lib/telemetry/logger';
+import crypto from 'crypto';
+
+function hashUserRef(id: string): string {
+  return crypto.createHash('sha256').update(id).digest('hex').substring(0, 12);
+}
 
 export async function withAuth<T>(
   req: Request,
@@ -82,8 +86,8 @@ export async function withAuth<T>(
       return Response.json({ error: { code: 'FORBIDDEN', message: 'Account disabled' } }, { status: 403 });
     }
 
-    span.setAttribute('user.id', session.user.id);
-    span.setAttribute('user.role', (session.user as any).role || 'user');
+    const hashedUser = hashUserRef(session.user.id);
+    span.setAttribute('user.id_hash', hashedUser);
     
     try {
       const result = await fn({ userId: session.user.id, role: (session.user as any).role });
@@ -105,7 +109,7 @@ export async function withAuth<T>(
         path: url.pathname,
         status,
         error: message,
-        userId: session.user.id,
+        userHash: hashedUser,
       });
 
       return Response.json({ error: { code: status.toString(), message } }, { status });

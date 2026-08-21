@@ -15,7 +15,9 @@ export async function GET(req: NextRequest) {
     if (scope === 'all' && role !== 'admin') throw { status: 403, message: 'Forbidden' };
 
     const query: any = scope === 'all' ? {} : { targetUserId: new mongoose.Types.ObjectId(userId) };
-    if (cursor) query._id = { $lt: cursor };
+    if (cursor && mongoose.Types.ObjectId.isValid(cursor)) {
+      query._id = { $lt: new mongoose.Types.ObjectId(cursor) };
+    }
 
     const activities = await Activity.find(query)
       .sort({ createdAt: -1 })

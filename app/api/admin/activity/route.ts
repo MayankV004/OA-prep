@@ -12,12 +12,21 @@ export async function GET(req: NextRequest) {
     const cursor = searchParams.get('cursor');
 
     const query: any = {};
-    if (searchParams.get('actorId')) query.actorId = new mongoose.Types.ObjectId(searchParams.get('actorId')!);
-    if (searchParams.get('targetUserId')) query.targetUserId = new mongoose.Types.ObjectId(searchParams.get('targetUserId')!);
+    const actorIdParam = searchParams.get('actorId');
+    const targetUserIdParam = searchParams.get('targetUserId');
+
+    if (actorIdParam && mongoose.Types.ObjectId.isValid(actorIdParam)) {
+      query.actorId = new mongoose.Types.ObjectId(actorIdParam);
+    }
+    if (targetUserIdParam && mongoose.Types.ObjectId.isValid(targetUserIdParam)) {
+      query.targetUserId = new mongoose.Types.ObjectId(targetUserIdParam);
+    }
     if (searchParams.get('kind')) query.kind = searchParams.get('kind');
     if (searchParams.get('from')) query.createdAt = { $gte: new Date(searchParams.get('from')!) };
     if (searchParams.get('to')) query.createdAt = { ...query.createdAt, $lte: new Date(searchParams.get('to')!) };
-    if (cursor) query._id = { $lt: cursor };
+    if (cursor && mongoose.Types.ObjectId.isValid(cursor)) {
+      query._id = { $lt: new mongoose.Types.ObjectId(cursor) };
+    }
 
     const activities = await Activity.find(query).sort({ createdAt: -1 }).limit(limit + 1);
     const hasMore = activities.length > limit;

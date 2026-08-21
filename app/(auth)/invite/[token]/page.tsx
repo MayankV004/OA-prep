@@ -64,7 +64,7 @@ export default function InvitePage({ params }: { params: Promise<{ token: string
         // If sign in fails but account was created, redirect to sign in
         router.push('/sign-in?success=Account+created');
       } else {
-        router.push('/dashboard');
+        window.location.href = '/dashboard';
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Something went wrong');

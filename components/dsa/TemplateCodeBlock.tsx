@@ -21,6 +21,9 @@ export function TemplateCodeBlock({ code, html, language = "java", className }: 
     setTimeout(() => setCopied(false), 2000);
   };
 
+  // Defense-in-depth: strip script tags and inline event attributes (e.g. onerror=, onload=)
+  const safeHtml = (html || '').replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '').replace(/\s*on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '');
+
   return (
     <div
       className={cn(
@@ -55,7 +58,7 @@ export function TemplateCodeBlock({ code, html, language = "java", className }: 
       */}
       <div
         className="overflow-x-auto p-4 pt-0 font-mono text-sm [&_pre]:m-0 [&_pre]:overflow-x-auto [&_pre]:rounded-lg [&_pre]:p-4 dark:[&_pre]:bg-transparent! [&_code]:bg-transparent!"
-        dangerouslySetInnerHTML={{ __html: html }}
+        dangerouslySetInnerHTML={{ __html: safeHtml }}
       />
     </div>
   );

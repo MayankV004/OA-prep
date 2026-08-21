@@ -11,7 +11,7 @@ export async function GET(req: NextRequest, { params }: Ctx) {
   return withRole(req, 'admin', async () => {
     await dbConnect();
     const { id } = await params;
-    const user = await User.findById(id);
+    const user = await User.findById(id).select('-hashedPassword -__v -password -secret -token');
     if (!user) throw { status: 404, message: 'User not found' };
 
     const [totalProblems, completedProblems] = await Promise.all([
@@ -19,7 +19,12 @@ export async function GET(req: NextRequest, { params }: Ctx) {
       UserProgress.countDocuments({ userId: id, completed: true }),
     ]);
 
-    return { ...user.toObject(), totalProblems, completedProblems };
+    const userObj = user.toObject();
+    delete userObj.hashedPassword;
+    delete userObj.password;
+    delete userObj.__v;
+
+    return { ...userObj, totalProblems, completedProblems };
   });
 }
 
@@ -42,7 +47,11 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
         kind: parsed.disabled ? 'admin.user.disabled' : 'admin.user.enabled',
       });
     }
-    return user;
+    const userObj = user.toObject();
+    delete userObj.hashedPassword;
+    delete userObj.password;
+    delete userObj.__v;
+    return userObj;
   });
 }
 

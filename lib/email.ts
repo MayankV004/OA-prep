@@ -14,6 +14,11 @@ function getResendClient() {
 
 const APP_NAME = 'BigO';
 
+function sanitizeHeaderValue(val?: string): string {
+  if (!val) return '';
+  return val.replace(/[\r\n\t]/g, ' ').trim();
+}
+
 function getEmailHeaders() {
   const fromEmail = process.env.EMAIL_FROM || 'BigO <no-reply@bigo.app>';
   const replyTo = process.env.EMAIL_REPLY_TO;
@@ -33,10 +38,11 @@ export async function sendInviteEmail(args: {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
   const url = `${appUrl}/invite/${args.token}`;
   const role = args.role || 'User';
+  const cleanInviterName = sanitizeHeaderValue(args.inviterName) || 'Admin';
 
   const html = await render(
     React.createElement(InviteEmail, {
-      inviterName: args.inviterName,
+      inviterName: cleanInviterName,
       role,
       appName: APP_NAME,
       url,
@@ -45,7 +51,7 @@ export async function sendInviteEmail(args: {
   );
 
   const { fromEmail, replyTo } = getEmailHeaders();
-  const subject = `${args.inviterName} invited you to join ${APP_NAME}`;
+  const subject = `${cleanInviterName} invited you to join ${APP_NAME}`;
   const resend = getResendClient();
 
   if (!resend) {

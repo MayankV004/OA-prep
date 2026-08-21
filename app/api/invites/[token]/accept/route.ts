@@ -6,12 +6,22 @@ import { acceptInviteSchema } from '@/lib/zod';
 import dbConnect from '@/lib/db';
 
 import { sendWelcomeEmail, sendInviteAcceptedEmail } from '@/lib/email';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 // POST /api/invites/:token/accept — public, creates user account
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ token: string }> }
 ) {
+  const rateLimit = checkRateLimit(req, {
+    windowMs: 60 * 1000,
+    max: 5,
+    keyPrefix: 'invite-accept',
+  });
+  if (!rateLimit.success && rateLimit.response) {
+    return rateLimit.response;
+  }
+
   await dbConnect();
   const { token } = await params;
   const tokenHash = crypto.createHash('sha256').update(token).digest('hex');

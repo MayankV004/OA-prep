@@ -6,13 +6,21 @@ import { recordActivity } from '@/lib/activity';
 import dbConnect from '@/lib/db';
 import { z } from 'zod';
 
+import mongoose from 'mongoose';
+
 export async function GET(req: NextRequest) {
   return withAuth(req, async ({ userId, role }) => {
     await dbConnect();
     
     const { searchParams } = new URL(req.url);
     const kind = searchParams.get('kind');
-    const targetUserId = searchParams.get('userId') || userId;
+    const rawUserId = searchParams.get('userId');
+
+    if (rawUserId && rawUserId !== 'me' && !mongoose.Types.ObjectId.isValid(rawUserId)) {
+      throw { status: 400, message: 'Invalid userId parameter' };
+    }
+
+    const targetUserId = rawUserId && rawUserId !== 'me' ? rawUserId : userId;
     
     if (targetUserId !== userId && role !== 'admin') {
       throw { status: 403, message: 'Forbidden' };
@@ -41,9 +49,7 @@ export async function GET(req: NextRequest) {
       query.difficulty = searchParams.get('difficulty');
     }
     
-    console.log('Querying problems with:', query);
     const problems = await Problem.find(query).sort({ updatedAt: -1 });
-    console.log(`Found ${problems.length} problems for query`);
     return problems;
   });
 }

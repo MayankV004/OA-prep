@@ -5,6 +5,8 @@ import { userUpdateSchema } from '@/lib/zod';
 import { recordActivity } from '@/lib/activity';
 import dbConnect from '@/lib/db';
 
+import mongoose from 'mongoose';
+
 export async function GET(req: NextRequest) {
   return withRole(req, 'admin', async () => {
     await dbConnect();
@@ -15,11 +17,20 @@ export async function GET(req: NextRequest) {
     const cursor = searchParams.get('cursor');
 
     const query: any = {};
-    if (q) query.$or = [{ name: { $regex: q, $options: 'i' } }, { email: { $regex: q, $options: 'i' } }];
+    if (q) {
+      const safeQ = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      query.$or = [{ name: { $regex: safeQ, $options: 'i' } }, { email: { $regex: safeQ, $options: 'i' } }];
+    }
     if (role) query.role = role;
-    if (cursor) query._id = { $gt: cursor };
+    if (cursor && mongoose.Types.ObjectId.isValid(cursor)) {
+      query._id = { $gt: new mongoose.Types.ObjectId(cursor) };
+    }
 
-    const users = await User.find(query).sort({ createdAt: -1 }).limit(limit + 1);
+    const users = await User.find(query)
+      .select('name email role disabled createdAt lastSeenAt invitedBy emailVerified image')
+      .sort({ createdAt: -1 })
+      .limit(limit + 1);
+
     const hasMore = users.length > limit;
     const results = hasMore ? users.slice(0, limit) : users;
     return { data: results, nextCursor: hasMore ? results[results.length - 1]._id : null };

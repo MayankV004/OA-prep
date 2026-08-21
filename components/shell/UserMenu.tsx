@@ -7,6 +7,7 @@ import { ChevronsUpDown, Download, LogOut, Settings, Shield, User } from 'lucide
 
 import { cn } from '@/lib/utils';
 import { authClient } from '@/lib/auth-client';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,6 +38,7 @@ function UserMenu({
   isAdmin?: boolean;
 }) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { data: session } = authClient.useSession();
   const [imgError, setImgError] = React.useState(false);
 
@@ -47,6 +49,7 @@ function UserMenu({
   const hasAvatar = Boolean(avatarUrl && !imgError);
 
   const handleSignOut = async () => {
+    queryClient.clear();
     await authClient.signOut();
     router.push('/sign-in');
   };

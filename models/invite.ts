@@ -16,7 +16,7 @@ const inviteSchema = new Schema(
     expiresAt: { type: Date, required: true },
     acceptedAt: { type: Date },
   },
-  { timestamps: true }
+  { timestamps: true, strict: true }
 );
 
 inviteSchema.index({ email: 1, status: 1 });

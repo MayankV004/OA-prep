@@ -53,6 +53,16 @@ export default function SignUpPage() {
   const canSubmit =
     Boolean(name && email && password) && !emailError && !passwordError;
 
+function getSafeRedirectUrl(): string {
+  if (typeof window === 'undefined') return '/dashboard';
+  const searchParams = new URLSearchParams(window.location.search);
+  const redirectTo = searchParams.get('redirectTo');
+  if (redirectTo && redirectTo.startsWith('/') && !redirectTo.startsWith('//')) {
+    return redirectTo;
+  }
+  return '/dashboard';
+}
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -71,8 +81,8 @@ export default function SignUpPage() {
       return;
     }
 
-    router.push('/dashboard');
-    router.refresh();
+    const targetUrl = getSafeRedirectUrl();
+    window.location.href = targetUrl;
   };
 
   return (

@@ -26,8 +26,20 @@ export function proxy(request: NextRequest) {
 
   // Rate limiting for API routes
   if (pathname.startsWith('/api/')) {
-    const ip = request.headers.get('x-forwarded-for') ?? request.headers.get('x-real-ip') ?? '127.0.0.1';
+    const xForwardedFor = request.headers.get('x-forwarded-for');
+    const xRealIp = request.headers.get('x-real-ip');
+    const cfConnectingIp = request.headers.get('cf-connecting-ip');
     
+    let ip = '127.0.0.1';
+    if (cfConnectingIp) {
+      ip = cfConnectingIp.trim();
+    } else if (xRealIp) {
+      ip = xRealIp.trim();
+    } else if (xForwardedFor) {
+      const ips = xForwardedFor.split(',').map(s => s.trim());
+      ip = ips[ips.length - 1] || ips[0] || '127.0.0.1';
+    }
+
     const now = Date.now();
     const record = rateLimit.get(ip);
 

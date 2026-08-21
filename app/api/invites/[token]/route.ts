@@ -23,5 +23,6 @@ export async function GET(req: NextRequest, { params }: Ctx) {
     return Response.json({ error: { code: '410', message: 'Invite expired' } }, { status: 410 });
   }
 
-  return Response.json({ email: invite.email, name: invite.name, expiresAt: invite.expiresAt });
+  const maskedEmail = invite.email.replace(/^(.{2})(.*)(@.*)$/, (_: string, a: string, b: string, c: string) => `${a}${'*'.repeat(Math.min(b.length, 5))}${c}`);
+  return Response.json({ email: maskedEmail, name: invite.name, expiresAt: invite.expiresAt });
 }

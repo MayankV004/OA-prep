@@ -14,7 +14,7 @@ const userSchema = new Schema(
     lastSeenAt: { type: Date },
     invitedBy: { type: Schema.Types.ObjectId, ref: 'User' },
   },
-  { timestamps: true }
+  { timestamps: true, strict: true }
 );
 
 // BetterAuth creates indexes itself, but defining them explicitly here for clarity

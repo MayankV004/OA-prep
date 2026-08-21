@@ -51,18 +51,30 @@ export async function GET(req: NextRequest, { params }: Ctx) {
         
         return { data: filtered.slice(0, limit) };
       }
-      case 'topics':
+      case 'topics': {
         Model = Topic;
-        if (q) query.title = { $regex: q, $options: 'i' };
+        if (q) {
+          const safeQ = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          query.title = { $regex: safeQ, $options: 'i' };
+        }
         break;
-      case 'cheatsheets':
+      }
+      case 'cheatsheets': {
         Model = Cheatsheet;
-        if (q) query.title = { $regex: q, $options: 'i' };
+        if (q) {
+          const safeQ = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          query.title = { $regex: safeQ, $options: 'i' };
+        }
         break;
-      case 'questions':
+      }
+      case 'questions': {
         Model = Question;
-        if (q) query.question = { $regex: q, $options: 'i' };
+        if (q) {
+          const safeQ = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          query.question = { $regex: safeQ, $options: 'i' };
+        }
         break;
+      }
       default:
         throw { status: 400, message: 'Invalid content type' };
     }

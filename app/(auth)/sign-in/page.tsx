@@ -49,6 +49,16 @@ export default function SignInPage() {
       ? 'Enter a valid email address'
       : null;
 
+function getSafeRedirectUrl(): string {
+  if (typeof window === 'undefined') return '/dashboard';
+  const searchParams = new URLSearchParams(window.location.search);
+  const redirectTo = searchParams.get('redirectTo');
+  if (redirectTo && redirectTo.startsWith('/') && !redirectTo.startsWith('//')) {
+    return redirectTo;
+  }
+  return '/dashboard';
+}
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -67,7 +77,8 @@ export default function SignInPage() {
       return;
     }
 
-    router.push('/dashboard');
+    const targetUrl = getSafeRedirectUrl();
+    window.location.href = targetUrl;
   };
 
   return (
