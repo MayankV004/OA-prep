@@ -19,8 +19,21 @@ Timestamps (`createdAt`, `updatedAt`) are managed by Mongoose's `timestamps: tru
 | `cheatsheets` | Per user |
 | `activities` | Per user (both `actorId` and `targetUserId`) |
 | `invites` | System (admin-managed) |
+| `otpverifications` | System (OTP codes with TTL auto-deletion) |
 
 ## Collections
+
+### `otpverifications` (`models/otp.ts`)
+
+Stores temporary 6-digit OTP verification codes with 10-minute TTL expiration.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `_id` | ObjectId | Auto-generated |
+| `email` | string | User email address (indexed) |
+| `otpHash` | string | SHA-256 hashed 6-digit OTP code |
+| `expiresAt` | Date | MongoDB TTL index (`expireAfterSeconds: 0`) |
+| `attempts` | number | Failed verification count (max 5) |
 
 ### `users`
 

@@ -25,15 +25,14 @@ Unlike generic problem trackers, BigO organizes DSA problems by **core pattern v
 - **Flashcards**: Quick-flip interview Q&A lists grouped by subject for rapid pre-interview revision.
 - **Cheat Sheets**: Topic-wise reference sheets with code snippets, formula summaries, and quick commands.
 
-### 📊 4. Personal Dashboard & Analytics
-- **Activity Heatmap**: 90-day GitHub-style SVG contribution heatmap tracking daily problem completions and note updates.
-- **Completion Trends**: Recharts line charts tracking daily completion velocity over time.
-- **Difficulty Mix**: Visual stacked bar breakdown of Easy, Medium, and Hard problems solved.
-- **Category Progress**: Per-pattern and per-subject progress percentage bars.
+### 📊 4. Personal Profile & LeetCode-Style Heatmap
+- **User Profile Dashboard (`/profile`)**: Personal stats overview, avatar/name editing, overall completion progress, difficulty mix (`Easy`, `Medium`, `Hard`), starred revision items (⭐), and Markdown notes count (📝).
+- **LeetCode Monthwise Activity Heatmap**: 12-month block activity graph (`Aug` – `Aug`) matching LeetCode's exact layout, featuring active streak counters, 60s/1yr timefilters, and palette toggles (🟢 LeetCode Emerald / 🔴 BigO Rose).
+- **Pattern Mastery Grid**: Interactive per-pattern progress bars tracking DSA variation completion.
 
-### 🛡️ 5. Admin Panel & User Governance
-- **Invite-Only Registration & Automated Emails**: Public registration is disabled; admins issue secure invite tokens dispatched via email. Automated welcome emails are sent upon acceptance, and inviter notification emails alert admins when invites are accepted.
-- **User Management**: Admin controls to view user progress, change roles (`admin` / `user`), enable/disable accounts, or reset credentials.
+### 🛡️ 5. Security & Mandatory OTP Email Verification
+- **Mandatory OTP Verification**: 6-digit One-Time Password (OTP) dispatched via Resend (`BigO <no-reply@bigoprep.tech>`) on signup and unverified logins. Protected routes strictly require `emailVerified: true`.
+- **User Management & Invites**: Admin controls to view user progress, manage roles (`admin` / `user`), issue invite tokens, or reset credentials.
 - **Taxonomy Management**: Dynamic editor for managing patterns, subjects, platforms, buckets, and difficulty tiers.
 - **Audit Activity Feed**: Global activity log recording user achievements, administrative actions, and system events.
 
@@ -133,7 +132,7 @@ cp .env.example .env.local
 | `BETTER_AUTH_URL` | Base application URL for Auth | Yes | `http://localhost:3000` |
 | `NEXT_PUBLIC_APP_URL` | Application origin URL exposed to browser | Yes | `http://localhost:3000` |
 | `RESEND_API_KEY` | Resend API Key for transactional emails | Yes | `re_xxx` (or `re_dummy` for dev mock) |
-| `EMAIL_FROM` | Sender address verified on Resend domain | Yes | `BigO <no-reply@bigo.app>` |
+| `EMAIL_FROM` | Sender address verified on Resend domain | Yes | `BigO <no-reply@bigoprep.tech>` |
 | `EMAIL_REPLY_TO` | Reply-to address for emails | No | `support@yourdomain.com` |
 | `INVITE_TOKEN_TTL_HOURS` | Expiration window for invite links | No | `168` (default 7 days) |
 | `ADMIN_BOOTSTRAP_EMAIL` | Admin email created on first seed | Initial | `admin@example.com` |

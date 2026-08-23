@@ -7,7 +7,8 @@ BigO handles private study notes, user progress, admin management, and email not
 - **Better Auth** with MongoDB adapter.
 - Session cookie attributes: `HttpOnly`, `Secure`, `SameSite=Lax`.
 - Session lifetime: 30 days sliding expiry.
-- Sign-up mechanism: Public sign-up is disabled. Account creation requires an admin invite token or initial seed bootstrap.
+- **Mandatory OTP Email Verification**: 6-digit One-Time Password (OTP) code dispatched via Resend (`BigO <no-reply@bigoprep.tech>`) on signup and unverified login attempts.
+- **Route & API Gate (`EMAIL_NOT_VERIFIED`)**: Accounts with `emailVerified: false` are restricted from accessing protected app routes (`/dashboard`, `/dsa`, `/profile`, etc.) until verified via OTP code.
 - Disabled user control: Accounts marked `disabled: true` are rejected at authentication.
 
 ## 2. Role Gates & Authorization

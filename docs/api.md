@@ -23,8 +23,21 @@ REST API via Next.js Route Handlers under `/api/*`. Route handlers enforce authe
 | Method | Path | Auth | Purpose |
 | --- | --- | --- | --- |
 | ALL | `/api/auth/[...all]` | Public | BetterAuth handler catch-all |
+| POST | `/api/auth/otp/send` | Public | Body `{ email, name? }`. Generates 6-digit OTP and emails code |
+| POST | `/api/auth/otp/verify` | Public | Body `{ email, otp }`. Validates 6-digit code and marks `emailVerified = true` |
 | GET | `/api/invites/:token` | Public | Fetch invite by token (returns email and status) |
 | POST | `/api/invites/:token/accept` | Public | Body `{ password }`. Accepts invite and registers user |
+
+---
+
+## User Profile & Notes
+
+| Method | Path | Auth | Body / Query | Description |
+| --- | --- | --- | --- | --- |
+| GET | `/api/profile` | Auth | — | Fetch user details, 365-day heatmap, and pattern progress stats |
+| PATCH | `/api/profile` | Auth | `{ name?, image? }` | Update user display name and avatar URL |
+| GET | `/api/problems/notes` | Auth | `?problemId=...` | Get per-problem notes or map of all notes |
+| PUT | `/api/problems/notes` | Auth | `{ problemId, userNotes }` | Save per-problem Markdown notes |
 
 ---
 
