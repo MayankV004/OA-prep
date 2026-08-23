@@ -15,8 +15,12 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const isAdmin = (session?.user as { role?: string } | undefined)?.role === 'admin';
 
   useEffect(() => {
-    if (!isPending && !session) {
-      router.push(`/sign-in?redirectTo=${encodeURIComponent(pathname)}`);
+    if (!isPending) {
+      if (!session) {
+        router.push(`/sign-in?redirectTo=${encodeURIComponent(pathname)}`);
+      } else if (session?.user && !(session.user as any).emailVerified) {
+        router.push(`/verify-email?email=${encodeURIComponent(session.user.email || '')}&unverified=true`);
+      }
     }
   }, [session, isPending, router, pathname]);
 

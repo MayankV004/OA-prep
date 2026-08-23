@@ -86,6 +86,11 @@ export async function withAuth<T>(
       return Response.json({ error: { code: 'FORBIDDEN', message: 'Account disabled' } }, { status: 403 });
     }
 
+    if (!(session.user as any).emailVerified) {
+      recordHttpRequest(req.method, url.pathname, 403, Date.now() - startTime);
+      return Response.json({ error: { code: 'EMAIL_NOT_VERIFIED', message: 'Email address not verified. Please verify your email address to continue.' } }, { status: 403 });
+    }
+
     const hashedUser = hashUserRef(session.user.id);
     span.setAttribute('user.id_hash', hashedUser);
     

@@ -65,7 +65,7 @@ function getSafeRedirectUrl(): string {
     setError('');
 
     // Unchanged better-auth contract: same method, same field names.
-    const { error: signInError } = await authClient.signIn.email({
+    const { data: signInData, error: signInError } = await authClient.signIn.email({
       email,
       password,
       rememberMe,
@@ -74,6 +74,22 @@ function getSafeRedirectUrl(): string {
     if (signInError) {
       setError(signInError.message || 'Invalid email or password');
       setLoading(false);
+      return;
+    }
+
+    // Check if user email is verified
+    const user = signInData?.user as { emailVerified?: boolean } | undefined;
+    if (user && !user.emailVerified) {
+      try {
+        await fetch('/api/auth/otp/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+        });
+      } catch (e) {
+        console.error('Failed to trigger OTP on sign in:', e);
+      }
+      router.push(`/verify-email?email=${encodeURIComponent(email)}&unverified=true`);
       return;
     }
 

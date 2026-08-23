@@ -4,6 +4,7 @@ import { InviteEmail } from '@/emails/Invite';
 import { WelcomeConfirmationEmail } from '@/emails/WelcomeConfirmation';
 import { InviteAcceptedEmail } from '@/emails/InviteAccepted';
 import { PasswordResetEmail } from '@/emails/PasswordReset';
+import { OTPEmail } from '@/emails/OTPEmail';
 import React from 'react';
 
 function getResendClient() {
@@ -235,3 +236,54 @@ export async function sendPasswordResetEmail(args: {
     throw error;
   }
 }
+
+/**
+ * 5. Send 6-Digit OTP Email Verification
+ */
+export async function sendOTPEmail(args: {
+  to: string;
+  userName?: string;
+  otp: string;
+  expiresInMinutes?: number;
+}) {
+  const expiresInMinutes = args.expiresInMinutes || 10;
+
+  const html = await render(
+    React.createElement(OTPEmail, {
+      userName: args.userName || 'User',
+      otp: args.otp,
+      expiresInMinutes,
+      appName: APP_NAME,
+    })
+  );
+
+  const { fromEmail, replyTo } = getEmailHeaders();
+  const subject = `${args.otp} is your ${APP_NAME} verification code`;
+  const resend = getResendClient();
+
+  if (!resend) {
+    console.log('\n----------------------------------------------------');
+    console.log('[DEV EMAIL MOCK] OTP Verification Email Triggered');
+    console.log(`To: ${args.to}`);
+    console.log(`From: ${fromEmail}`);
+    console.log(`Subject: ${subject}`);
+    console.log(`OTP Code: ${args.otp}`);
+    console.log('----------------------------------------------------\n');
+    return { id: 'mock_email_id', mock: true };
+  }
+
+  try {
+    const data = await resend.emails.send({
+      from: fromEmail,
+      replyTo: replyTo || undefined,
+      to: args.to,
+      subject,
+      html,
+    });
+    return data;
+  } catch (error) {
+    console.error('Failed to send OTP email via Resend API:', error);
+    throw error;
+  }
+}
+

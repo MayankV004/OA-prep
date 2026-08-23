@@ -9,3 +9,5 @@ export * from './taxonomy';
 export * from './activity';
 export * from './invite';
 export * from './progress';
+export * from './otp';
+

@@ -81,8 +81,18 @@ function getSafeRedirectUrl(): string {
       return;
     }
 
-    const targetUrl = getSafeRedirectUrl();
-    window.location.href = targetUrl;
+    // Trigger OTP send and redirect to verify-email
+    try {
+      await fetch('/api/auth/otp/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, name }),
+      });
+    } catch (e) {
+      console.error('Failed to trigger initial OTP:', e);
+    }
+
+    router.push(`/verify-email?email=${encodeURIComponent(email)}`);
   };
 
   return (
