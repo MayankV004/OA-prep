@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import MDEditor from '@uiw/react-md-editor';
+import '@uiw/react-md-editor/markdown-editor.css';
 import { useTheme } from 'next-themes';
 import rehypeSanitize from 'rehype-sanitize';
 import { sanitizeSchema } from '@/lib/markdown/sanitize';

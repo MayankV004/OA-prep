@@ -282,7 +282,7 @@ function ProblemRow({
               onKeyDown={(e) => e.key === 'Enter' && setEditMode(true)}
             >
               {userNotes ? (
-                <div className="prose prose-sm dark:prose-invert max-w-none text-foreground [&_pre]:rounded-lg [&_pre]:bg-muted [&_pre]:p-3 [&_code]:rounded [&_code]:bg-muted [&_code]:px-1 [&_code]:py-0.5 [&_code]:text-xs">
+                <div className="prose prose-sm dark:prose-invert max-w-none text-foreground">
                   <MarkdownView content={userNotes} />
                 </div>
               ) : (
@@ -313,19 +313,21 @@ export default function PracticePageClient({
     queryFn: async () => {
       const ids = problems.map((p) => p._id).join(',');
       if (!ids) return {};
-      const [completedRes, revisionRes] = await Promise.all([
+      const [completedRes, revisionRes, notesRes] = await Promise.all([
         fetch(`/api/problems/progress?kind=pattern&returnType=ids`),
         fetch(`/api/problems/revision`),
+        fetch(`/api/problems/notes`),
       ]);
       const completedIds: string[] = completedRes.ok ? await completedRes.json() : [];
       const revisionIds: string[] = revisionRes.ok ? await revisionRes.json() : [];
+      const notesMap: Record<string, string> = notesRes.ok ? await notesRes.json() : {};
 
       const result: Record<string, { completed: boolean; revision: boolean; userNotes: string }> = {};
       for (const p of problems) {
         result[p._id] = {
           completed: completedIds.includes(p._id),
           revision: revisionIds.includes(p._id),
-          userNotes: '',
+          userNotes: notesMap[p._id] || '',
         };
       }
       return result;

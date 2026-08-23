@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { withAuth } from '@/lib/auth';
-import { Problem, PatternProblem, NonStandardProblem, CpProblem } from '@/models';
+import { Problem, PatternProblem, NonStandardProblem, CpProblem, UserProgress } from '@/models';
 import { problemWriteSchema } from '@/lib/zod';
 import { recordActivity } from '@/lib/activity';
 import dbConnect from '@/lib/db';
@@ -49,8 +49,24 @@ export async function GET(req: NextRequest) {
       query.difficulty = searchParams.get('difficulty');
     }
     
-    const problems = await Problem.find(query).sort({ updatedAt: -1 });
-    return problems;
+    const problems = await Problem.find(query).sort({ updatedAt: -1 }).lean();
+    const problemIds = problems.map((p: any) => p._id.toString());
+    const userProgressList = await UserProgress.find({ userId: targetUserId, problemId: { $in: problemIds } }).lean();
+    const progressMap = new Map(userProgressList.map((up: any) => [up.problemId, up]));
+
+    const enriched = problems.map((p: any) => {
+      const up = progressMap.get(p._id.toString());
+      const userNotes = up?.userNotes !== undefined ? up.userNotes : (p.userNotes || p.notes || '');
+      return {
+        ...p,
+        completed: up?.completed ?? p.completed ?? false,
+        notes: userNotes,
+        userNotes: userNotes,
+        revision: up?.revision ?? false,
+      };
+    });
+
+    return enriched;
   });
 }
 

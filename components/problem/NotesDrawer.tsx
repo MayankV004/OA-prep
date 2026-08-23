@@ -18,27 +18,43 @@ interface NotesDrawerProps {
 }
 
 export function NotesDrawer({ problem, queryKey, onClose }: NotesDrawerProps) {
-  const [notes, setNotes] = useState(problem.notes ?? '');
+  const [notes, setNotes] = useState(problem.notes || problem.userNotes || '');
   const [preview, setPreview] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const queryClient = useQueryClient();
 
+  // Fetch per-user note on mount
+  useEffect(() => {
+    let isMounted = true;
+    fetch(`/api/problems/notes?problemId=${problem._id}`)
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (isMounted && data && data.userNotes !== undefined) {
+          setNotes(data.userNotes);
+        }
+      })
+      .catch(() => {});
+    return () => { isMounted = false; };
+  }, [problem._id]);
+
   const saveMutation = useMutation({
     mutationFn: async (value: string) => {
-      const res = await fetch(`/api/problems/${problem._id}`, {
-        method: 'PATCH',
+      const res = await fetch('/api/problems/notes', {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ notes: value }),
+        body: JSON.stringify({ problemId: problem._id, userNotes: value }),
       });
       if (!res.ok) throw new Error('Save failed');
       return res.json();
     },
     onSuccess: (updated) => {
+      const newNote = updated.userNotes ?? updated.notes ?? '';
       // Update cache in-place
       queryClient.setQueryData(queryKey, (old: Problem[] | undefined) =>
-        old?.map(p => p._id === problem._id ? { ...p, notes: updated.notes } : p)
+        old?.map(p => p._id === problem._id ? { ...p, notes: newNote, userNotes: newNote } : p)
       );
+      queryClient.invalidateQueries({ queryKey: ['problems'] });
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 2000);
     },

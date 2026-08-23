@@ -17,6 +17,7 @@ export interface Problem {
   difficulty: 'Easy' | 'Medium' | 'Hard';
   completed: boolean;
   notes?: string;
+  userNotes?: string;
   tags?: string[];
   pattern?: string;
   variation?: string;
