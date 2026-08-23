@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
 
     const uid = new mongoose.Types.ObjectId(targetUserId);
     const now = new Date();
-    const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+    const oneYearAgo = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
 
     const [patternStats, trend, heatmap, recent] = await Promise.all([
       (async () => {
@@ -58,20 +58,20 @@ export async function GET(req: NextRequest) {
         return { totalsByKind, difficultyMix };
       })(),
 
-      // Trend (last 90 days completed problems)
+      // Trend (last 365 days completed problems)
       (async () => {
         const { UserProgress } = await import('@/models');
         return UserProgress.aggregate([
-          { $match: { userId: uid, completed: true, completedAt: { $gte: ninetyDaysAgo } } },
+          { $match: { userId: uid, completed: true, completedAt: { $gte: oneYearAgo } } },
           { $group: { _id: { $dateToString: { format: '%Y-%m-%d', date: '$completedAt' } }, completed: { $sum: 1 } } },
           { $project: { date: '$_id', completed: 1, _id: 0 } },
           { $sort: { date: 1 } }
         ]);
       })(),
 
-      // 90-day heatmap (any activity)
+      // 365-day heatmap (any activity)
       Activity.aggregate([
-        { $match: { targetUserId: uid, createdAt: { $gte: ninetyDaysAgo } } },
+        { $match: { targetUserId: uid, createdAt: { $gte: oneYearAgo } } },
         {
           $group: {
             _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },

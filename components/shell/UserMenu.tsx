@@ -122,7 +122,7 @@ function UserMenu({
 
         <Separator className="my-1" />
 
-        <DropdownMenuItem render={<Link href="/dashboard" />} className="gap-2">
+        <DropdownMenuItem render={<Link href="/profile" />} className="gap-2">
           <User className="size-4 text-text-muted" aria-hidden />
           Profile
         </DropdownMenuItem>
