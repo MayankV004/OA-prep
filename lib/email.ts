@@ -20,8 +20,8 @@ function sanitizeHeaderValue(val?: string): string {
 }
 
 function getEmailHeaders() {
-  const fromEmail = process.env.EMAIL_FROM || 'BigO <no-reply@bigo.app>';
-  const replyTo = process.env.EMAIL_REPLY_TO;
+  const fromEmail = process.env.EMAIL_FROM || 'BigO <no-reply@bigoprep.tech>';
+  const replyTo = process.env.EMAIL_REPLY_TO || 'BigO Support <support@bigoprep.tech>';
   return { fromEmail, replyTo };
 }
 
