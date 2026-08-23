@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { FileText, Plus, Trash2 } from 'lucide-react';
+import { FileText, Plus, Trash2, Loader2, Check } from 'lucide-react';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 
 import { DataTable, type Column } from '@/components/admin/DataTable';
@@ -39,6 +39,12 @@ export default function AdminCheatsheetsPage() {
   const toast = useToast();
   const [search, setSearch] = useState('');
   const [createOpen, setCreateOpen] = useState(false);
+
+  const [title, setTitle] = useState('');
+  const [slug, setSlug] = useState('');
+  const [tagsInput, setTagsInput] = useState('');
+  const [body, setBody] = useState('');
+
   const [confirming, setConfirming] = useState<Cheatsheet | null>(null);
   const [bulkConfirm, setBulkConfirm] = useState<{
     ids: string[];
@@ -58,12 +64,59 @@ export default function AdminCheatsheetsPage() {
 
   const cheatsheets = data?.data || [];
 
+  const createMutation = useMutation({
+    mutationFn: async (payload: { title: string; slug?: string; body?: string; tags?: string[] }) => {
+      const res = await fetch('/api/cheatsheets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const bodyRes = await res.json().catch(() => null);
+        throw new Error(bodyRes?.error?.message || 'Failed to create cheat sheet');
+      }
+      return res.json();
+    },
+    onSuccess: (created) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'cheatsheets'] });
+      toast.add('Cheat sheet created', { description: `"${created.title}" saved successfully`, type: 'success' });
+      setCreateOpen(false);
+      setTitle('');
+      setSlug('');
+      setTagsInput('');
+      setBody('');
+    },
+    onError: (err: unknown) => {
+      toast.add("Couldn't create cheat sheet", {
+        description: err instanceof Error ? err.message : undefined,
+        type: 'error',
+      });
+    },
+  });
+
+  const handleCreate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title.trim()) return;
+
+    const tags = tagsInput
+      .split(',')
+      .map((t) => t.trim())
+      .filter(Boolean);
+
+    createMutation.mutate({
+      title: title.trim(),
+      slug: slug.trim() || undefined,
+      body: body.trim() || undefined,
+      tags,
+    });
+  };
+
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const res = await fetch(`/api/cheatsheets/${id}`, { method: 'DELETE' });
       if (!res.ok) {
-        const body = await res.json().catch(() => null);
-        throw new Error(body?.error?.message ?? 'Failed to delete cheat sheet');
+        const bodyRes = await res.json().catch(() => null);
+        throw new Error(bodyRes?.error?.message ?? 'Failed to delete cheat sheet');
       }
     },
     onSuccess: () => {
@@ -79,7 +132,6 @@ export default function AdminCheatsheetsPage() {
     },
   });
 
-  // TODO: backend — bulk endpoint would replace this client-side loop
   const bulkDeleteMutation = useMutation({
     mutationFn: async (ids: string[]) => {
       const results = await Promise.allSettled(
@@ -235,47 +287,51 @@ export default function AdminCheatsheetsPage() {
         pageSize={15}
       />
 
-      {/* TODO: backend — POST endpoint needed before this form can submit */}
       <SlideOver
         open={createOpen}
         onOpenChange={setCreateOpen}
         title="New cheat sheet"
-        description="Form is ready — the create endpoint is not."
+        description="Create a new quick-reference sheet."
         width="lg"
         footer={
           <>
             <Button variant="ghost" onClick={() => setCreateOpen(false)}>
               Cancel
             </Button>
-            <Button disabled>Create cheat sheet</Button>
+            <Button
+              onClick={handleCreate}
+              disabled={createMutation.isPending || !title.trim()}
+              className="gap-1.5"
+            >
+              {createMutation.isPending ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <Check className="size-3.5" />
+              )}
+              Create cheat sheet
+            </Button>
           </>
         }
       >
-        <form
-          className="space-y-5"
-          onSubmit={(e) => {
-            // TODO: backend — POST endpoint needed before this form can submit
-            e.preventDefault();
-          }}
-        >
-          <div className="rounded-lg bg-warning-muted p-3">
-            <Text size="caption" className="text-warning">
-              Saving is disabled: there is no <code className="font-mono">POST</code>{' '}
-              /api/cheatsheets endpoint yet. The fields below are wired to local state only.
-            </Text>
-          </div>
-
+        <form className="space-y-5" onSubmit={handleCreate}>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="sheet-title">Title</Label>
-              <Input id="sheet-title" name="title" placeholder="e.g. Big-O Reference" />
+              <Label htmlFor="sheet-title">Title *</Label>
+              <Input
+                id="sheet-title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="e.g. Big-O Reference"
+                required
+              />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="sheet-slug">Slug</Label>
+              <Label htmlFor="sheet-slug">Custom Slug (Optional)</Label>
               <Input
                 id="sheet-slug"
-                name="slug"
+                value={slug}
+                onChange={(e) => setSlug(e.target.value)}
                 placeholder="e.g. big-o-reference"
                 className="font-mono"
               />
@@ -284,20 +340,26 @@ export default function AdminCheatsheetsPage() {
 
           <div className="space-y-2">
             <Label htmlFor="sheet-tags">Tags</Label>
-            <Input id="sheet-tags" name="tags" placeholder="complexity, dsa, interview" />
+            <Input
+              id="sheet-tags"
+              value={tagsInput}
+              onChange={(e) => setTagsInput(e.target.value)}
+              placeholder="complexity, dsa, interview"
+            />
             <Text size="micro" tone="muted">
               Comma separated.
             </Text>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="sheet-content">Content</Label>
+            <Label htmlFor="sheet-content">Initial Content (Markdown)</Label>
             <Textarea
               id="sheet-content"
-              name="content"
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
               rows={10}
               className="font-mono text-xs"
-              placeholder="Markdown…"
+              placeholder="# Markdown Reference…"
             />
           </div>
         </form>

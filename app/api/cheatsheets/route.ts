@@ -6,39 +6,37 @@ import { recordActivity } from '@/lib/activity';
 import dbConnect from '@/lib/db';
 
 export async function GET(req: NextRequest) {
-  return withAuth(req, async ({ userId, role }) => {
+  return withAuth(req, async () => {
     await dbConnect();
     const { searchParams } = new URL(req.url);
-    const targetUserId = searchParams.get('userId') === 'me' || !searchParams.get('userId')
-      ? userId
-      : searchParams.get('userId')!;
-    if (targetUserId !== userId && role !== 'admin') throw { status: 403, message: 'Forbidden' };
 
-    const query: any = { userId: targetUserId };
+    const query: any = {};
     if (searchParams.get('tag')) query.tags = searchParams.get('tag');
     if (searchParams.get('subjectId')) query.subjectId = searchParams.get('subjectId');
 
     const cheatsheets = await Cheatsheet.find(query).sort({ updatedAt: -1 });
-    return cheatsheets;
+    return Response.json(cheatsheets);
   });
 }
 
 export async function POST(req: NextRequest) {
   return withAuth(req, async ({ userId, role }) => {
     await dbConnect();
+    if (role !== 'admin') {
+      throw { status: 403, message: 'Forbidden: Only administrators can create cheat sheets' };
+    }
+
     const body = await req.json();
     const parsed = cheatSheetWriteSchema.parse(body);
-    const targetUserId = new URL(req.url).searchParams.get('userId') || userId;
-    if (targetUserId !== userId && role !== 'admin') throw { status: 403, message: 'Forbidden' };
 
     if (!parsed.slug) {
       (parsed as any).slug = parsed.title!.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now();
     }
 
-    const created = await Cheatsheet.create({ ...parsed, userId: targetUserId });
+    const created = await Cheatsheet.create({ ...parsed, userId });
     await recordActivity({
       actorId: userId,
-      targetUserId,
+      targetUserId: userId,
       kind: 'cheatsheet.created',
       entity: { type: 'cheatsheet', id: created._id.toString(), title: created.title },
       metadata: { slug: created.slug },

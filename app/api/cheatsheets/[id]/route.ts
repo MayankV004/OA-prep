@@ -8,12 +8,11 @@ import dbConnect from '@/lib/db';
 type Ctx = { params: Promise<{ id: string }> };
 
 export async function GET(req: NextRequest, { params }: Ctx) {
-  return withAuth(req, async ({ userId, role }) => {
+  return withAuth(req, async () => {
     await dbConnect();
     const { id } = await params;
     const sheet = await Cheatsheet.findById(id);
     if (!sheet) throw { status: 404, message: 'Cheatsheet not found' };
-    if (sheet.userId.toString() !== userId && role !== 'admin') throw { status: 403, message: 'Forbidden' };
     return sheet;
   });
 }
@@ -21,10 +20,10 @@ export async function GET(req: NextRequest, { params }: Ctx) {
 export async function PATCH(req: NextRequest, { params }: Ctx) {
   return withAuth(req, async ({ userId, role }) => {
     await dbConnect();
+    if (role !== 'admin') throw { status: 403, message: 'Forbidden: Only administrators can update cheat sheets' };
     const { id } = await params;
     const sheet = await Cheatsheet.findById(id);
     if (!sheet) throw { status: 404, message: 'Cheatsheet not found' };
-    if (sheet.userId.toString() !== userId && role !== 'admin') throw { status: 403, message: 'Forbidden' };
 
     const parsed = cheatSheetUpdateSchema.parse(await req.json());
     const changedFields = Object.keys(parsed);
@@ -45,10 +44,10 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
 export async function DELETE(req: NextRequest, { params }: Ctx) {
   return withAuth(req, async ({ userId, role }) => {
     await dbConnect();
+    if (role !== 'admin') throw { status: 403, message: 'Forbidden: Only administrators can delete cheat sheets' };
     const { id } = await params;
     const sheet = await Cheatsheet.findById(id);
     if (!sheet) throw { status: 404, message: 'Cheatsheet not found' };
-    if (sheet.userId.toString() !== userId && role !== 'admin') throw { status: 403, message: 'Forbidden' };
 
     await sheet.deleteOne();
     await recordActivity({
