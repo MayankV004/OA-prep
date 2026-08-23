@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { withAuth } from '@/lib/auth';
-import { Problem } from '@/models';
+import { Problem, UserProgress } from '@/models';
 import { recordActivity } from '@/lib/activity';
 import dbConnect from '@/lib/db';
 import { z } from 'zod';
@@ -14,27 +14,38 @@ export async function PATCH(
   return withAuth(req, async ({ userId, role }) => {
     await dbConnect();
     const { id } = await params;
-    const problem = await Problem.findById(id);
-    if (!problem) throw { status: 404, message: 'Problem not found' };
-    if (problem.userId.toString() !== userId && role !== 'admin') throw { status: 403, message: 'Forbidden' };
-
     const { completed } = completionSchema.parse(await req.json());
-    problem.completed = completed;
-    problem.completedAt = completed ? new Date() : undefined;
-    await problem.save();
 
+    // 1. Save per-user progress in UserProgress
+    const progress = await UserProgress.findOneAndUpdate(
+      { userId, problemId: id },
+      { completed, completedAt: completed ? new Date() : null },
+      { upsert: true, new: true }
+    );
+
+    // 2. Keep Problem document in sync if present
+    const problem = await Problem.findById(id);
+    if (problem && (problem.userId.toString() === userId || role === 'admin')) {
+      problem.completed = completed;
+      problem.completedAt = completed ? new Date() : undefined;
+      await problem.save();
+    }
+
+    // 3. Record activity entry for heatmaps & dashboard stats
     await recordActivity({
       actorId: userId,
-      targetUserId: problem.userId.toString(),
+      targetUserId: userId,
       kind: completed ? 'problem.completed' : 'problem.uncompleted',
-      entity: { type: 'problem', id: problem._id.toString(), title: problem.title },
+      entity: { type: 'problem', id, title: problem?.title || problem?.name || 'Problem' },
       metadata: {
-        difficulty: problem.difficulty,
-        pattern: (problem as any).pattern,
-        platform: (problem as any).platform,
-        bucket: (problem as any).bucket,
+        difficulty: problem?.difficulty,
+        pattern: (problem as any)?.pattern,
+        platform: (problem as any)?.platform,
+        bucket: (problem as any)?.bucket,
       },
     });
-    return problem;
+
+    return { _id: id, problemId: id, completed: progress.completed };
   });
 }
+

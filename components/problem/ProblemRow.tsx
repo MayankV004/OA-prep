@@ -65,7 +65,12 @@ export function ProblemRow({ problem, queryKey, onNotesClick }: ProblemRowProps)
     onError: (_err, _vars, ctx) => {
       queryClient.setQueryData(queryKey, ctx?.previous);
     },
-    onSettled: () => queryClient.invalidateQueries({ queryKey }),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['problems'] });
+      queryClient.invalidateQueries({ queryKey: ['variationProgress'] });
+      queryClient.invalidateQueries({ queryKey: ['patternProgress'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
+    },
   });
 
   const label = problem.name || problem.title || 'problem';

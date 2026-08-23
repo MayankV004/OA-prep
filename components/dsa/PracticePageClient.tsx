@@ -350,6 +350,12 @@ export default function PracticePageClient({
         [problemId]: { ...old[problemId], completed },
       }));
     },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['problems'] });
+      queryClient.invalidateQueries({ queryKey: ['variationProgress'] });
+      queryClient.invalidateQueries({ queryKey: ['patternProgress'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
+    },
   });
 
   /* Toggle revision */

@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { withAuth } from '@/lib/auth';
 import { Problem, UserProgress } from '@/models';
+import { recordActivity } from '@/lib/activity';
 import dbConnect from '@/lib/db';
 import mongoose from 'mongoose';
 import { z } from 'zod';
@@ -90,7 +91,7 @@ const toggleSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  return withAuth(req, async ({ userId }) => {
+  return withAuth(req, async ({ userId, role }) => {
     await dbConnect();
     const body = await req.json();
     const { problemId, completed } = toggleSchema.parse(body);
@@ -101,6 +102,25 @@ export async function POST(req: NextRequest) {
       { upsert: true, new: true }
     );
 
+    const problem = await Problem.findById(problemId);
+    if (problem && (problem.userId.toString() === userId || role === 'admin')) {
+      problem.completed = completed;
+      problem.completedAt = completed ? new Date() : undefined;
+      await problem.save();
+    }
+
+    await recordActivity({
+      actorId: userId,
+      targetUserId: userId,
+      kind: completed ? 'problem.completed' : 'problem.uncompleted',
+      entity: { type: 'problem', id: problemId, title: problem?.title || problem?.name || 'Problem' },
+      metadata: {
+        difficulty: problem?.difficulty,
+        pattern: (problem as any)?.pattern,
+      },
+    });
+
     return progress;
   });
 }
+
