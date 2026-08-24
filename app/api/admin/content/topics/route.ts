@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
       tags: body.tags || [],
     });
 
-    await recordActivity({
+    recordActivity({
       actorId: userId,
       targetUserId: userId,
       kind: 'topic.created',

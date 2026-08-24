@@ -1,12 +1,15 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { Redis } from '@upstash/redis';
 
-// Note: In a serverless environment (like Vercel), this in-memory map will reset 
-// per lambda instance. For production, consider using Redis (e.g., @upstash/redis).
-const rateLimit = new Map<string, { count: number; expires: number }>();
+// Edge-compatible Redis client (HTTP-based, no TCP — works in Edge runtime)
+function getRedis(): Redis | null {
+  if (!process.env.UPSTASH_REDIS_REST_URL) return null;
+  return Redis.fromEnv();
+}
 
 const WINDOW_MS = 60 * 1000; // 1 minute
-const MAX_REQUESTS = 100; // 100 requests per minute
+const MAX_REQUESTS = 100;    // 100 requests per minute per IP
 
 const PROTECTED_PREFIXES = [
   '/dashboard',
@@ -21,42 +24,41 @@ const PROTECTED_PREFIXES = [
   '/admin',
 ];
 
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  // Rate limiting for API routes
+  // ── Rate limiting for API routes ────────────────────────────────────────────
   if (pathname.startsWith('/api/')) {
-    const xForwardedFor = request.headers.get('x-forwarded-for');
-    const xRealIp = request.headers.get('x-real-ip');
     const cfConnectingIp = request.headers.get('cf-connecting-ip');
-    
+    const xRealIp = request.headers.get('x-real-ip');
+    const xForwardedFor = request.headers.get('x-forwarded-for');
+
     let ip = '127.0.0.1';
-    if (cfConnectingIp) {
-      ip = cfConnectingIp.trim();
-    } else if (xRealIp) {
-      ip = xRealIp.trim();
-    } else if (xForwardedFor) {
-      const ips = xForwardedFor.split(',').map(s => s.trim());
-      ip = ips[ips.length - 1] || ips[0] || '127.0.0.1';
-    }
+    if (cfConnectingIp) ip = cfConnectingIp.trim();
+    else if (xRealIp) ip = xRealIp.trim();
+    else if (xForwardedFor) ip = xForwardedFor.split(',').map((s) => s.trim()).at(-1) ?? '127.0.0.1';
 
-    const now = Date.now();
-    const record = rateLimit.get(ip);
+    const redis = getRedis();
 
-    if (!record || now > record.expires) {
-      rateLimit.set(ip, { count: 1, expires: now + WINDOW_MS });
-    } else {
-      record.count++;
-      if (record.count > MAX_REQUESTS) {
+    if (redis) {
+      // Redis-backed rate limit — shared across all Lambda invocations
+      const redisKey = `proxy:rl:${ip}`;
+      const count = await redis.incr(redisKey);
+      if (count === 1) await redis.pexpire(redisKey, WINDOW_MS);
+
+      if (count > MAX_REQUESTS) {
+        const ttlMs = await redis.pttl(redisKey);
+        const retryAfter = Math.ceil(Math.max(ttlMs, 0) / 1000);
         return NextResponse.json(
           { error: { message: 'Too many requests' } },
-          { status: 429, headers: { 'Retry-After': Math.ceil((record.expires - now) / 1000).toString() } }
+          { status: 429, headers: { 'Retry-After': retryAfter.toString() } }
         );
       }
     }
+    // No Redis in dev — skip rate limiting (per-route checks in lib/rate-limit.ts still run)
   }
 
-  // Server-side auth check for protected application routes
+  // ── Server-side auth check for protected application routes ─────────────────
   const isProtected = PROTECTED_PREFIXES.some(
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
   );

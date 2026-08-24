@@ -30,7 +30,7 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
     Object.assign(q, parsed);
     await q.save();
 
-    await recordActivity({
+    recordActivity({
       actorId: userId,
       targetUserId: q.userId.toString(),
       kind: 'question.updated',
@@ -50,7 +50,7 @@ export async function DELETE(req: NextRequest, { params }: Ctx) {
     if (q.userId.toString() !== userId && role !== 'admin') throw { status: 403, message: 'Forbidden' };
 
     await q.deleteOne();
-    await recordActivity({
+    recordActivity({
       actorId: userId,
       targetUserId: q.userId.toString(),
       kind: 'question.deleted',

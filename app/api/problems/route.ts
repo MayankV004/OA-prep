@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
       created = await CpProblem.create({ ...parsed, userId: targetUserId });
     }
 
-    await recordActivity({
+    recordActivity({
       actorId: userId,
       targetUserId,
       kind: 'problem.created',

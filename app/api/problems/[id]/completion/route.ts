@@ -32,7 +32,7 @@ export async function PATCH(
     }
 
     // 3. Record activity entry for heatmaps & dashboard stats
-    await recordActivity({
+    recordActivity({
       actorId: userId,
       targetUserId: userId,
       kind: completed ? 'problem.completed' : 'problem.uncompleted',

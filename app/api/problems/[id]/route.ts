@@ -35,7 +35,7 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
 
     // Check if body/notes field changed — emit note.updated
     if (changedFields.includes('notes')) {
-      await recordActivity({
+      recordActivity({
         actorId: userId,
         targetUserId: problem.userId.toString(),
         kind: 'note.updated',
@@ -43,7 +43,7 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
         metadata: { len: problem.notes?.length ?? 0 },
       });
     } else {
-      await recordActivity({
+      recordActivity({
         actorId: userId,
         targetUserId: problem.userId.toString(),
         kind: 'problem.updated',
@@ -64,7 +64,7 @@ export async function DELETE(req: NextRequest, { params }: Ctx) {
     if (problem.userId.toString() !== userId && role !== 'admin') throw { status: 403, message: 'Forbidden' };
 
     await problem.deleteOne();
-    await recordActivity({
+    recordActivity({
       actorId: userId,
       targetUserId: problem.userId.toString(),
       kind: 'problem.deleted',

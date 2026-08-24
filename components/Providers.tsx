@@ -12,7 +12,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 60 * 1000,
+            // staleTime is intentionally NOT set globally.
+            // Each query should declare its own via STALE_TIMES from lib/query-keys.ts
+            // to match how frequently that specific data actually changes.
+            retry: 1,
+            refetchOnWindowFocus: false, // prevents refetch spam when switching tabs
           },
         },
       })

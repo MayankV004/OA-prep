@@ -19,43 +19,52 @@ export async function GET(req: NextRequest) {
 
     const [patternStats, trend, heatmap, recent] = await Promise.all([
       (async () => {
-        const { Pattern, UserProgress } = await import('@/models');
-        const patterns = await Pattern.find().lean();
-        
-        const problemMap = new Map();
-        let totalPatternProblems = 0;
-        
-        patterns.forEach((p: any) => {
-          p.variations?.forEach((v: any) => {
-            v.problems?.forEach((prob: any) => {
-              if (prob._id) {
-                problemMap.set(prob._id.toString(), prob);
-                totalPatternProblems++;
-              }
-            });
-          });
-        });
-        
+        const { UserProgress } = await import('@/models');
+        const { withCache } = await import('@/lib/cache');
+
+        // Cached for 5 min — this map only changes when admin seeds new patterns
+        const problemDifficultyMap = await withCache<Record<string, string>>(
+          'global:problemDifficultyMap',
+          300,
+          async () => {
+            const { Pattern } = await import('@/models');
+            const flat = await Pattern.aggregate([
+              { $unwind: { path: '$variations', preserveNullAndEmptyArrays: false } },
+              { $unwind: { path: '$variations.problems', preserveNullAndEmptyArrays: false } },
+              {
+                $project: {
+                  _id: '$variations.problems._id',
+                  difficulty: '$variations.problems.difficulty',
+                },
+              },
+            ]);
+            return Object.fromEntries(
+              flat.map((p: any) => [p._id.toString(), p.difficulty])
+            );
+          }
+        );
+
+        const totalPatternProblems = Object.keys(problemDifficultyMap).length;
+
         const userProgress = await UserProgress.find({ userId: uid, completed: true }).lean();
-        
+
         let completedPatternProblems = 0;
-        const difficultyMix: any = { Easy: 0, Medium: 0, Hard: 0 };
-        
+        const difficultyMix: Record<string, number> = { Easy: 0, Medium: 0, Hard: 0 };
+
         userProgress.forEach((up: any) => {
-          const prob = problemMap.get(up.problemId);
-          if (prob) {
+          const difficulty = problemDifficultyMap[up.problemId];
+          if (difficulty !== undefined) {
             completedPatternProblems++;
-            if (prob.difficulty) {
-              difficultyMix[prob.difficulty] = (difficultyMix[prob.difficulty] || 0) + 1;
-            }
+            difficultyMix[difficulty] = (difficultyMix[difficulty] || 0) + 1;
           }
         });
 
-        const totalsByKind = [
-          { kind: 'pattern', total: totalPatternProblems, completed: completedPatternProblems }
-        ];
-
-        return { totalsByKind, difficultyMix };
+        return {
+          totalsByKind: [
+            { kind: 'pattern', total: totalPatternProblems, completed: completedPatternProblems },
+          ],
+          difficultyMix,
+        };
       })(),
 
       // Trend (last 365 days completed problems)

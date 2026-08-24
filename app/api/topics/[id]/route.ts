@@ -39,7 +39,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: { message: 'Topic not found' } }, { status: 404 });
     }
 
-    await recordActivity({
+    recordActivity({
       actorId: userId,
       targetUserId: userId,
       kind: 'topic.updated',
@@ -65,7 +65,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
       return NextResponse.json({ error: { message: 'Topic not found' } }, { status: 404 });
     }
 
-    await recordActivity({
+    recordActivity({
       actorId: userId,
       targetUserId: userId,
       kind: 'topic.deleted',

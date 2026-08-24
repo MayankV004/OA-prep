@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     }
 
     const created = await Cheatsheet.create({ ...parsed, userId });
-    await recordActivity({
+    recordActivity({
       actorId: userId,
       targetUserId: userId,
       kind: 'cheatsheet.created',

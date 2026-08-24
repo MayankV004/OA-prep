@@ -18,7 +18,7 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
     Object.assign(taxonomy, parsed);
     await taxonomy.save();
 
-    await recordActivity({
+    recordActivity({
       actorId: userId,
       targetUserId: userId,
       kind: 'admin.taxonomy.updated',
@@ -40,7 +40,7 @@ export async function DELETE(req: NextRequest, { params }: Ctx) {
     taxonomy.archived = true;
     await taxonomy.save();
 
-    await recordActivity({
+    recordActivity({
       actorId: userId,
       targetUserId: userId,
       kind: 'admin.taxonomy.archived',

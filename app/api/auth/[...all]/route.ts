@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
       pathname.includes('/forget-password') ||
       pathname.includes('/reset-password')
     ) {
-      const rateLimit = checkRateLimit(req, {
+      const rateLimit = await checkRateLimit(req, {
         windowMs: 60 * 1000, // 1 minute sliding window
         max: 5, // Max 5 authentication attempts per minute per IP
         keyPrefix: 'auth-strict',

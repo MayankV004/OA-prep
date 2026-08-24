@@ -5,7 +5,7 @@ import { auth } from '@/lib/auth';
 import { acceptInviteSchema } from '@/lib/zod';
 import dbConnect from '@/lib/db';
 
-import { sendWelcomeEmail, sendInviteAcceptedEmail } from '@/lib/email';
+import { enqueueEmail } from '@/lib/qstash';
 import { checkRateLimit } from '@/lib/rate-limit';
 
 // POST /api/invites/:token/accept — public, creates user account
@@ -13,7 +13,7 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ token: string }> }
 ) {
-  const rateLimit = checkRateLimit(req, {
+  const rateLimit = await checkRateLimit(req, {
     windowMs: 60 * 1000,
     max: 5,
     keyPrefix: 'invite-accept',
@@ -61,28 +61,21 @@ export async function POST(
   // Mark invite accepted
   await Invite.findByIdAndUpdate(invite._id, { status: 'accepted', acceptedAt: new Date() });
 
-  // Send Welcome Email to newly registered user
-  try {
-    await sendWelcomeEmail({ to: invite.email, userName });
-  } catch (err) {
-    console.error('Failed to send welcome email:', err);
-  }
+  // Send Welcome Email to newly registered user (async via QStash)
+  enqueueEmail({ type: 'welcome', to: invite.email, userName });
 
-  // Send Notification Email to Inviter/Admin
+  // Send Notification Email to Inviter/Admin (async via QStash)
   if (invite.invitedBy) {
-    try {
-      const inviter = await User.findById(invite.invitedBy);
-      if (inviter && inviter.email) {
-        await sendInviteAcceptedEmail({
-          to: inviter.email,
-          adminName: inviter.name || 'Admin',
-          invitedEmail: invite.email,
-          invitedName: userName,
-          role: invite.role ?? 'user',
-        });
-      }
-    } catch (err) {
-      console.error('Failed to send invite accepted notification to admin:', err);
+    const inviter = await User.findById(invite.invitedBy);
+    if (inviter?.email) {
+      enqueueEmail({
+        type: 'invite_accepted',
+        to: inviter.email,
+        adminName: inviter.name || 'Admin',
+        invitedEmail: invite.email,
+        invitedName: userName,
+        role: invite.role ?? 'user',
+      });
     }
   }
 

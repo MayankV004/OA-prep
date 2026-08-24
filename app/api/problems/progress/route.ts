@@ -109,7 +109,7 @@ export async function POST(req: NextRequest) {
       await problem.save();
     }
 
-    await recordActivity({
+    recordActivity({
       actorId: userId,
       targetUserId: userId,
       kind: completed ? 'problem.completed' : 'problem.uncompleted',

@@ -4,7 +4,7 @@ import { withRole } from '@/lib/auth';
 import { Invite, User } from '@/models';
 import { inviteWriteSchema } from '@/lib/zod';
 import { recordActivity } from '@/lib/activity';
-import { sendInviteEmail } from '@/lib/email';
+import { enqueueEmail } from '@/lib/qstash';
 import dbConnect from '@/lib/db';
 
 const TTL_HOURS = Number(process.env.INVITE_TOKEN_TTL_HOURS ?? 168);
@@ -39,7 +39,14 @@ export async function POST(req: NextRequest) {
       const token = crypto.randomBytes(32).toString('base64url');
       existing.tokenHash = crypto.createHash('sha256').update(token).digest('hex');
       await existing.save();
-      await sendInviteEmail({ to: parsed.email, inviterName: inviter?.name ?? 'Admin', role: existing.role ?? 'User', token, expiresInHours: TTL_HOURS });
+      await enqueueEmail({
+        type: 'invite',
+        to: parsed.email,
+        inviterName: inviter?.name ?? 'Admin',
+        role: existing.role ?? 'User',
+        token,
+        expiresInHours: TTL_HOURS,
+      });
       return existing;
     }
 
@@ -57,9 +64,16 @@ export async function POST(req: NextRequest) {
     });
 
     const inviter = await User.findById(userId);
-    await sendInviteEmail({ to: parsed.email, inviterName: inviter?.name ?? 'Admin', role: parsed.role ?? 'User', token, expiresInHours: TTL_HOURS });
+    await enqueueEmail({
+      type: 'invite',
+      to: parsed.email,
+      inviterName: inviter?.name ?? 'Admin',
+      role: parsed.role ?? 'User',
+      token,
+      expiresInHours: TTL_HOURS,
+    });
 
-    await recordActivity({
+    recordActivity({
       actorId: userId,
       targetUserId: userId,
       kind: 'admin.user.invited',

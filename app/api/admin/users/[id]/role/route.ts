@@ -27,7 +27,7 @@ export async function PATCH(
     user.role = role;
     await user.save();
 
-    await recordActivity({
+    recordActivity({
       actorId,
       targetUserId: id,
       kind: 'admin.user.role_changed',

@@ -10,7 +10,9 @@ export const auth = betterAuth({
     enabled: true,
     window: 60,
     max: 100,
-    storage: 'memory',
+    // 'database' uses MongoDB — shared across all Lambda invocations.
+    // Do NOT use 'memory': each cold-start Lambda gets a fresh counter.
+    storage: 'database',
     customRules: {
       '/sign-in/email': {
         window: 60,

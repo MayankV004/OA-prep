@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    await recordActivity({
+    recordActivity({
       actorId: userId,
       targetUserId: userId,
       kind: 'admin.taxonomy.created',

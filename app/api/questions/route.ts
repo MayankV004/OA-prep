@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     if (targetUserId !== userId && role !== 'admin') throw { status: 403, message: 'Forbidden' };
 
     const created = await Question.create({ ...parsed, userId: targetUserId });
-    await recordActivity({
+    recordActivity({
       actorId: userId,
       targetUserId,
       kind: 'question.created',

@@ -30,7 +30,7 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
     Object.assign(sheet, parsed);
     await sheet.save();
 
-    await recordActivity({
+    recordActivity({
       actorId: userId,
       targetUserId: sheet.userId.toString(),
       kind: 'cheatsheet.updated',
@@ -50,7 +50,7 @@ export async function DELETE(req: NextRequest, { params }: Ctx) {
     if (!sheet) throw { status: 404, message: 'Cheatsheet not found' };
 
     await sheet.deleteOne();
-    await recordActivity({
+    recordActivity({
       actorId: userId,
       targetUserId: sheet.userId.toString(),
       kind: 'cheatsheet.deleted',

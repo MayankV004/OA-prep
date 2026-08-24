@@ -41,7 +41,7 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
     await user.save();
 
     if (parsed.disabled !== undefined && parsed.disabled !== wasDisabled) {
-      await recordActivity({
+      recordActivity({
         actorId,
         targetUserId: id,
         kind: parsed.disabled ? 'admin.user.disabled' : 'admin.user.enabled',
@@ -72,7 +72,7 @@ export async function DELETE(req: NextRequest, { params }: Ctx) {
       await user.save();
     }
 
-    await recordActivity({
+    recordActivity({
       actorId,
       targetUserId: id,
       kind: 'admin.user.deleted',

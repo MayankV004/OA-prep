@@ -26,6 +26,12 @@ async function dbConnect() {
     const opts = {
       bufferCommands: false,
       dbName: process.env.MONGODB_DB,
+      // M0 free tier shares ~500 connections across all free clusters.
+      // Keep pool small so concurrent lambdas don't exhaust the cap.
+      maxPoolSize: 3,
+      minPoolSize: 1,
+      serverSelectionTimeoutMS: 5_000,
+      socketTimeoutMS: 45_000,
     };
 
     cached.promise = mongoose.connect(MONGODB_URI!, opts).then((mongoose) => {
