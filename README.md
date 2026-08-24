@@ -42,15 +42,17 @@ Unlike generic problem trackers, BigO organizes DSA problems by **core pattern v
 
 | Component | Technology | Description |
 | --- | --- | --- |
-| **Framework** | Next.js 16 (App Router) | React Server Components, Client Components & Route Handlers |
-| **Language** | TypeScript | Strict type safety across frontend and backend API layers |
-| **Authentication** | Better Auth | MongoDB adapter with session tokens and role-based access control |
-| **Database & ODM** | MongoDB Atlas + Mongoose 9 | Document database with discriminators for `Problem` and `Group` entities |
-| **Client State** | TanStack Query v5 | Server state caching with `localStorage` client persistence |
-| **Middleware** | `proxy.ts` | Next.js request interceptor for route protection and rate limiting |
+| **Framework** | Next.js 16 (App Router) | React Server Components, Server Functions & Route Handlers with `after()` post-response processing |
+| **Language** | TypeScript | Strict type safety across frontend, backend API layers, and domain types (`types/`) |
+| **Authentication** | Better Auth | MongoDB adapter with session tokens, role-based access control, and database-backed rate limiting |
+| **Database & ODM** | MongoDB Atlas + Mongoose 9 | Document database with discriminators for `Problem` and `Group` entities (configured connection pooling for M0) |
+| **Caching & Rate Limiting** | Upstash Redis | Serverless Redis for distributed rate limiting (`proxy.ts` / `lib/rate-limit.ts`) and database query aggregation caching (`lib/cache.ts`) |
+| **Async Job Queue** | Upstash QStash | Decoupled background task queue for transactional email dispatch (`lib/qstash.ts`) with automatic retries and signature verification |
+| **Client State & Queries** | TanStack Query v5 | Centralized query options (`queryOptions()`), typed API services (`lib/api/`), `STALE_TIMES`, and optimism |
+| **Middleware** | `proxy.ts` | Next.js request interceptor for route protection and Edge-compatible Redis rate limiting |
 | **Styling** | Tailwind CSS v4 + Base UI + Shadcn | Modern UI primitives, dark mode, custom color ramps, and animations |
-| **Charts** | Recharts | Responsive completion trend charts and difficulty distribution bars |
-| **Email Service** | Resend + React Email | Transactional emails with React Email templates (`Invite`, `WelcomeConfirmation`, `InviteAccepted`, `PasswordReset`) and dev-mode fallback |
+| **Charts** | Recharts | Responsive completion trend charts and difficulty mix charts (lazy loaded via `next/dynamic`) |
+| **Email Service** | Resend + React Email | Transactional emails with React Email templates (`Invite`, `WelcomeConfirmation`, `InviteAccepted`, `PasswordReset`) dispatched asynchronously via QStash |
 | **Observability** | OpenTelemetry | Distributed tracing, instrumentation, Prometheus & Grafana support |
 | **Markdown** | React-Markdown + Rehype-Sanitize | Secure Markdown rendering with XSS containment and syntax highlighting |
 
@@ -137,6 +139,11 @@ cp .env.example .env.local
 | `INVITE_TOKEN_TTL_HOURS` | Expiration window for invite links | No | `168` (default 7 days) |
 | `ADMIN_BOOTSTRAP_EMAIL` | Admin email created on first seed | Initial | `admin@example.com` |
 | `ADMIN_BOOTSTRAP_PASSWORD` | Admin password created on first seed | Initial | `strongpassword123` |
+| `UPSTASH_REDIS_REST_URL` | Upstash Redis REST URL | Optional (Dev) | `https://xxx.upstash.io` |
+| `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis REST Token | Optional (Dev) | `Axxx...` |
+| `QSTASH_TOKEN` | Upstash QStash Access Token | Optional (Dev) | `eyxxx...` |
+| `QSTASH_CURRENT_SIGNING_KEY` | Upstash QStash Signature Key | Optional (Dev) | `sig_xxx` |
+| `QSTASH_NEXT_SIGNING_KEY` | Upstash QStash Next Signature Key | Optional (Dev) | `sig_yyy` |
 
 ---
 

@@ -6,6 +6,7 @@
 - **Package Manager**: `npm` 10+
 - **MongoDB**: MongoDB Atlas cluster or local MongoDB instance
 - **Resend Account**: Account for email dispatch (optional for offline dev)
+- **Upstash Account**: Account for Redis caching and QStash job queue (optional for dev — app falls back to in-memory/after() processing)
 - **Git**
 
 ## 2. Setup Procedure
@@ -55,6 +56,11 @@
 | `INVITE_TOKEN_TTL_HOURS` | Invite token validity window in hours | No | `168` (default 7 days) |
 | `ADMIN_BOOTSTRAP_EMAIL` | Bootstrap admin email address | First run | `admin@example.com` |
 | `ADMIN_BOOTSTRAP_PASSWORD` | Bootstrap admin password | First run | `strongpassword123` |
+| `UPSTASH_REDIS_REST_URL` | Upstash Redis REST URL (rate limit & caching) | Optional (Dev) | `https://xxx.upstash.io` |
+| `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis REST Token | Optional (Dev) | `Axxx...` |
+| `QSTASH_TOKEN` | Upstash QStash Access Token (async email queue) | Optional (Dev) | `eyxxx...` |
+| `QSTASH_CURRENT_SIGNING_KEY` | Upstash QStash Signature Key | Optional (Dev) | `sig_xxx` |
+| `QSTASH_NEXT_SIGNING_KEY` | Upstash QStash Next Signature Key | Optional (Dev) | `sig_yyy` |
 
 ## 4. Emergency Admin Promotion
 
