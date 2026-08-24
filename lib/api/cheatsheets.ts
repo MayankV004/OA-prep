@@ -1,27 +1,5 @@
 import { apiFetch } from './client';
-
-export interface Cheatsheet {
-  _id: string;
-  title: string;
-  slug: string;
-  body?: string;
-  tags?: string[];
-  updatedAt: string;
-  createdAt: string;
-}
-
-export interface CreateCheatsheetPayload {
-  title: string;
-  slug?: string;
-  body?: string;
-  tags?: string[];
-}
-
-export interface UpdateCheatsheetPayload {
-  title?: string;
-  body?: string;
-  tags?: string[];
-}
+import type { Cheatsheet, CreateCheatsheetPayload, UpdateCheatsheetPayload } from '@/types/cheatsheet';
 
 export const cheatsheetsApi = {
   /** Fetch all cheat sheets (optionally filtered by tag or subjectId) */

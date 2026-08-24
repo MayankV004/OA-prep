@@ -12,8 +12,6 @@ import {
   CheckCircle2,
   Sparkles,
   Terminal,
-  ChevronRight,
-  Target,
   Clock,
   Layers,
 } from 'lucide-react';
@@ -21,6 +19,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import dynamic from 'next/dynamic';
 
+import { authClient } from '@/lib/auth-client';
+import { dashboardQueries } from '@/lib/queries/dashboard';
+import { problemQueries } from '@/lib/queries/problems';
+import { ActivityFeed } from '@/components/dashboard/ActivityFeed';
+
+// Dynamic lazy-loading for heavy Recharts visualization components
 const CompletionTrend = dynamic(
   () => import('@/components/dashboard/CompletionTrend').then((m) => m.CompletionTrend),
   {
@@ -53,29 +57,12 @@ const ActivityHeatmap = dynamic(
   }
 );
 
-import { ActivityFeed } from '@/components/dashboard/ActivityFeed';
-import { authClient } from '@/lib/auth-client';
-
-interface DashboardStats {
-  totalsByKind: { kind: string; total: number; completed: number }[];
-  difficultyMix: { Easy?: number; Medium?: number; Hard?: number };
-  trend: { date: string; completed: number }[];
-  heatmap: { date: string; count: number }[];
-  recent: any[];
-}
-
 export default function DashboardPage() {
   const { data: session } = authClient.useSession();
   const userName = session?.user?.name || 'Prep Warrior';
 
-  const { data: stats, isLoading } = useQuery<DashboardStats>({
-    queryKey: ['dashboard', 'me'],
-    queryFn: async () => {
-      const res = await fetch('/api/dashboard/stats?userId=me');
-      if (!res.ok) throw new Error('Failed to load dashboard stats');
-      return res.json();
-    },
-  });
+  // Centralized TanStack Query v5 queryOptions
+  const { data: stats, isLoading } = useQuery(dashboardQueries.stats('me'));
 
   const patternStats = stats?.totalsByKind?.find((t) => t.kind === 'pattern');
   const totalCompleted = stats?.totalsByKind?.reduce((s, t) => s + t.completed, 0) ?? 0;
@@ -83,26 +70,15 @@ export default function DashboardPage() {
   const actionsTotal = stats?.heatmap?.reduce((s, d) => s + d.count, 0) ?? 0;
   const overallPct = totalProblems > 0 ? Math.round((totalCompleted / totalProblems) * 100) : 0;
 
-  const { data: patternProgress } = useQuery({
-    queryKey: ['problems', 'progress', 'pattern'],
-    queryFn: async () => {
-      const res = await fetch('/api/problems/progress?kind=pattern');
-      if (!res.ok) return [];
-      return res.json();
-    },
-    enabled: !!stats,
+  // Centralized progress query
+  const { data: patternProgress = [] } = useQuery({
+    ...problemQueries.progressStats('pattern'),
+    enabled: Boolean(stats),
   });
-
-  const topPatterns = [
-    { title: 'Two Pointers', slug: 'two-pointers', count: '12 problems' },
-    { title: 'Sliding Window', slug: 'sliding-window', count: '10 problems' },
-    { title: 'Dynamic Programming', slug: 'dynamic-programming', count: '25 problems' },
-    { title: 'Graph Traversals', slug: 'graph-traversals', count: '18 problems' },
-  ];
 
   return (
     <div className="space-y-8 pb-12">
-      {/* 1. Header Section with Tall Display Typography & Red Accents */}
+      {/* 1. Header Section */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pt-2">
         <div className="space-y-1.5">
           <h1 className="font-display text-3xl sm:text-5xl font-black tracking-tight text-foreground leading-tight">
@@ -113,7 +89,6 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        {/* Quick Action Buttons */}
         <div className="flex flex-wrap items-center gap-3 shrink-0">
           <Link href="/dsa">
             <button className="flex items-center gap-2 h-11 px-5 rounded-2xl font-semibold text-xs text-white bg-gradient-to-r from-red-600 via-rose-600 to-red-500 shadow-[0_0_20px_rgba(225,29,72,0.35)] hover:shadow-[0_0_25px_rgba(225,29,72,0.6)] hover:scale-105 active:scale-95 transition-all border-none">
@@ -131,7 +106,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* 2. Glassmorphic Stat Metric Cards (Borderless, Consistent Red Theme) */}
+      {/* 2. Glassmorphic Stat Metric Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* Stat Card 1: Solved */}
         <div className="group relative p-5 rounded-2xl bg-background/60 dark:bg-background/30 backdrop-blur-xl border-none shadow-sm hover:shadow-md transition-all duration-300">
@@ -237,7 +212,6 @@ export default function DashboardPage() {
 
       {/* 4. Analytics Grid Row 1 (Completion Trend + Activity Feed) */}
       <div className="grid gap-6 lg:grid-cols-7">
-        {/* Completion Trend Card */}
         <Card className="min-w-0 lg:col-span-4 rounded-3xl bg-background/60 dark:bg-background/30 backdrop-blur-xl border-none shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <div>
@@ -257,7 +231,6 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Activity Feed Card */}
         <Card className="min-w-0 lg:col-span-3 rounded-3xl bg-background/60 dark:bg-background/30 backdrop-blur-xl border-none shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <div>
@@ -280,7 +253,6 @@ export default function DashboardPage() {
 
       {/* 5. Analytics Grid Row 2 (Pattern Progress + Difficulty Mix) */}
       <div className="grid gap-6 lg:grid-cols-7">
-        {/* Pattern Progress Card */}
         <Card className="min-w-0 lg:col-span-4 rounded-3xl bg-background/60 dark:bg-background/30 backdrop-blur-xl border-none shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <div>
@@ -300,7 +272,6 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Difficulty Mix Card */}
         <Card className="min-w-0 lg:col-span-3 rounded-3xl bg-background/60 dark:bg-background/30 backdrop-blur-xl border-none shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <div>
