@@ -9,7 +9,7 @@ import { CommandPalette } from './CommandPalette';
 import { Sidebar, SIDEBAR_COLLAPSED_WIDTH, SIDEBAR_WIDTH } from './Sidebar';
 import { Topbar } from './Topbar';
 import { SidebarProvider, useSidebar } from './use-sidebar';
-import type { NavSection } from './nav';
+import { APP_NAV, ADMIN_NAV, type NavSection } from './nav';
 
 function ShellFrame({
   sections,
@@ -93,25 +93,29 @@ function ShellFrame({
 
 /**
  * Single application shell used by both the app and admin route groups.
- * Callers supply their own nav sections; nothing else differs.
+ * Callers supply their own nav sections or specify variant ('app' | 'admin').
  */
 function AppShell({
+  variant = 'app',
   sections,
   isAdmin = false,
   homeHref = '/dashboard',
   idPrefix = 'nav',
   children,
 }: {
-  sections: NavSection[];
+  variant?: 'app' | 'admin';
+  sections?: NavSection[];
   isAdmin?: boolean;
   homeHref?: string;
   idPrefix?: string;
   children: React.ReactNode;
 }) {
+  const activeSections = sections ?? (variant === 'admin' ? ADMIN_NAV : APP_NAV);
+
   return (
     <SidebarProvider>
       <ShellFrame
-        sections={sections}
+        sections={activeSections}
         isAdmin={isAdmin}
         homeHref={homeHref}
         idPrefix={idPrefix}

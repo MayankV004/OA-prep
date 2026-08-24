@@ -19,10 +19,40 @@ import {
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CompletionTrend } from '@/components/dashboard/CompletionTrend';
-import { GroupProgress } from '@/components/dashboard/GroupProgress';
-import { DifficultyMix } from '@/components/dashboard/DifficultyMix';
-import { ActivityHeatmap } from '@/components/dashboard/ActivityHeatmap';
+import dynamic from 'next/dynamic';
+
+const CompletionTrend = dynamic(
+  () => import('@/components/dashboard/CompletionTrend').then((m) => m.CompletionTrend),
+  {
+    loading: () => <Skeleton className="h-[240px] w-full rounded-2xl" />,
+    ssr: false,
+  }
+);
+
+const GroupProgress = dynamic(
+  () => import('@/components/dashboard/GroupProgress').then((m) => m.GroupProgress),
+  {
+    loading: () => <Skeleton className="h-[240px] w-full rounded-2xl" />,
+    ssr: false,
+  }
+);
+
+const DifficultyMix = dynamic(
+  () => import('@/components/dashboard/DifficultyMix').then((m) => m.DifficultyMix),
+  {
+    loading: () => <Skeleton className="h-[180px] w-full rounded-2xl" />,
+    ssr: false,
+  }
+);
+
+const ActivityHeatmap = dynamic(
+  () => import('@/components/dashboard/ActivityHeatmap').then((m) => m.ActivityHeatmap),
+  {
+    loading: () => <Skeleton className="h-28 w-full rounded-2xl" />,
+    ssr: false,
+  }
+);
+
 import { ActivityFeed } from '@/components/dashboard/ActivityFeed';
 import { authClient } from '@/lib/auth-client';
 

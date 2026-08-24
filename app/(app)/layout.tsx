@@ -4,7 +4,6 @@ import { redirect } from 'next/navigation';
 
 import { auth } from '@/lib/auth';
 import { AppShell } from '@/components/shell/AppShell';
-import { APP_NAV } from '@/components/shell/nav';
 
 /**
  * Server Component layout — auth check runs on the server before rendering.
@@ -32,7 +31,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   const isAdmin = (session.user as any).role === 'admin';
 
   return (
-    <AppShell sections={APP_NAV} isAdmin={isAdmin} homeHref="/dashboard" idPrefix="app">
+    <AppShell variant="app" isAdmin={isAdmin} homeHref="/dashboard" idPrefix="app">
       {children}
     </AppShell>
   );
