@@ -51,7 +51,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
             <div className="flex items-center justify-between text-xs text-slate-400 font-medium border-t border-slate-800/60 pt-6">
               <span>BigO © {new Date().getFullYear()}</span>
               <span className="flex items-center gap-1 text-emerald-400">
-                <CheckCircle2 className="h-3.5 w-3.5" /> Battle-tested by 10k+ engineers
+                <CheckCircle2 className="h-3.5 w-3.5" /> Actively used for OA & interview prep
               </span>
             </div>
           </div>

@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import {
@@ -33,6 +34,27 @@ const staggerContainer: any = {
 };
 
 export default function LandingPage() {
+  const [liveStats, setLiveStats] = useState({
+    variations: '90+',
+    problems: '500+',
+    topics: '7',
+  });
+
+  useEffect(() => {
+    fetch('/api/stats')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data) {
+          setLiveStats({
+            variations: data.variationCount || '90+',
+            problems: data.problemCount || '500+',
+            topics: String(data.topicCount || 7),
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   const features = [
     {
       title: 'Pattern-Based DSA',
@@ -61,10 +83,9 @@ export default function LandingPage() {
   ];
 
   const stats = [
-    { label: 'DSA Patterns', value: '25+' },
-    { label: 'Curated Problems', value: '300+' },
-    { label: 'Core CS Topics', value: '50+' },
-    { label: 'Active Learners', value: '10K+' },
+    { label: 'Pattern Variations', value: liveStats.variations },
+    { label: 'Curated Problems', value: liveStats.problems },
+    { label: 'Core CS Topics', value: liveStats.topics },
   ];
 
   return (
@@ -81,8 +102,8 @@ export default function LandingPage() {
       />
 
       {/* 3. Stats Strip */}
-      <section className="relative z-10 max-w-6xl mx-auto px-4 -mt-8 mb-20">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-6 rounded-3xl bg-background/80 dark:bg-background/40 backdrop-blur-xl border border-border/60 shadow-xl">
+      <section className="relative z-10 max-w-5xl mx-auto px-4 -mt-8 mb-20">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-6 rounded-3xl bg-background/80 dark:bg-background/40 backdrop-blur-xl border border-border/60 shadow-xl">
           {stats.map((stat) => (
             <div key={stat.label} className="text-center p-4">
               <div className="text-3xl sm:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-rose-500">
