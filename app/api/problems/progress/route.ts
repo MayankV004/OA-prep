@@ -104,13 +104,21 @@ export async function GET(req: NextRequest) {
       });
     }
 
+    if (kind === 'nonstandard') {
+      const existingCount = await Problem.countDocuments({ userId: targetUserId, kind: 'nonstandard' });
+      if (existingCount === 0) {
+        const { seedNonStandardForUser } = await import('@/lib/seed-non-standard');
+        await seedNonStandardForUser(targetUserId);
+      }
+    }
+
     let groupField: string;
     if (kind === 'nonstandard') groupField = 'bucket';
     else if (kind === 'cp') groupField = 'platform';
     else throw { status: 400, message: 'Invalid kind' };
 
     const result = await Problem.aggregate([
-      { $match: { userId: new mongoose.Types.ObjectId(userId), kind } },
+      { $match: { userId: new mongoose.Types.ObjectId(targetUserId), kind } },
       {
         $group: {
           _id: `$${groupField}`,
@@ -121,6 +129,22 @@ export async function GET(req: NextRequest) {
       { $project: { group: '$_id', total: 1, completed: 1, _id: 0 } },
       { $sort: { group: 1 } },
     ]);
+
+    if (kind === 'nonstandard') {
+      const { getNonStandardCategories } = await import('@/lib/non-standard-dsa');
+      const categories = getNonStandardCategories();
+      const resultMap = new Map(result.map((r: any) => [r.group, r]));
+
+      return categories.map((cat) => {
+        const existing = resultMap.get(cat.category);
+        return {
+          group: cat.category,
+          slug: cat.slug,
+          total: existing?.total ?? cat.problemCount,
+          completed: existing?.completed ?? 0,
+        };
+      });
+    }
 
     return result;
   });

@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "seed:nonstandard": "ts-node scripts/seed-non-standard-problems.ts",
+    "seed:patterns": "ts-node scripts/seed-mongo-patterns.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

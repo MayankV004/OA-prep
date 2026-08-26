@@ -30,6 +30,14 @@ export async function GET(req: NextRequest) {
       throw { status: 400, message: 'Valid kind parameter is required' };
     }
 
+    if (kind === 'nonstandard') {
+      const existingCount = await Problem.countDocuments({ userId: targetUserId, kind: 'nonstandard' });
+      if (existingCount === 0) {
+        const { seedNonStandardForUser } = await import('@/lib/seed-non-standard');
+        await seedNonStandardForUser(targetUserId);
+      }
+    }
+
     const query: any = { userId: targetUserId, kind };
 
     if (searchParams.has('pattern')) {
