@@ -18,6 +18,7 @@ import { Navbar } from '@/components/ui/navbar';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { FeedbackModal } from '@/components/feedback/FeedbackModal';
+import { Footer } from '@/components/shell/Footer';
 import { useToast } from '@/components/ui/toast';
 
 const FAQS = [
@@ -331,22 +332,7 @@ export default function ContactPage() {
       </main>
 
       {/* Global Footer */}
-      <footer className="border-t border-border/40 py-8 bg-card/30">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
-          <p>© {new Date().getFullYear()} BigO Prep. All rights reserved.</p>
-          <div className="flex items-center gap-6">
-            <Link href="/terms" className="hover:text-foreground transition-colors">
-              Terms & Conditions
-            </Link>
-            <Link href="/privacy" className="hover:text-foreground transition-colors">
-              Privacy Policy
-            </Link>
-            <Link href="/contact" className="hover:text-foreground transition-colors font-medium text-foreground">
-              Contact Us
-            </Link>
-          </div>
-        </div>
-      </footer>
+      <Footer variant="public" />
 
       {/* Feedback Modal */}
       <FeedbackModal

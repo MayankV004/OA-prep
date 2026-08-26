@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ShieldCheck, FileText, ArrowLeft, Clock } from 'lucide-react';
 import { Navbar } from '@/components/ui/navbar';
 import { Badge } from '@/components/ui/badge';
+import { Footer } from '@/components/shell/Footer';
 
 export default function TermsPage() {
   const lastUpdated = 'August 26, 2026';
@@ -151,22 +152,7 @@ export default function TermsPage() {
       </main>
 
       {/* Global Footer */}
-      <footer className="border-t border-border/40 py-8 bg-card/30">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
-          <p>© {new Date().getFullYear()} BigO Prep. All rights reserved.</p>
-          <div className="flex items-center gap-6">
-            <Link href="/terms" className="hover:text-foreground transition-colors font-medium text-foreground">
-              Terms & Conditions
-            </Link>
-            <Link href="/privacy" className="hover:text-foreground transition-colors">
-              Privacy Policy
-            </Link>
-            <Link href="/contact" className="hover:text-foreground transition-colors">
-              Contact Us
-            </Link>
-          </div>
-        </div>
-      </footer>
+      <Footer variant="public" />
     </div>
   );
 }

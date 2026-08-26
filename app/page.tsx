@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { Footer } from '@/components/shell/Footer';
 import {
   Code2,
   Terminal,
@@ -266,20 +267,7 @@ std::vector<int> twoSum(std::vector<int>& nums, int target) {
       </section>
 
       {/* 7. Footer */}
-      <footer className="py-8 px-6 border-t border-border/40 text-center text-xs text-muted-foreground">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <Code2 className="h-4 w-4 text-indigo-500" />
-            <span className="font-bold text-foreground">BigO</span>
-            <span>© {new Date().getFullYear()} All rights reserved.</span>
-          </div>
-          <div className="flex gap-6">
-            <Link href="/dsa" className="hover:text-foreground transition-colors">DSA Patterns</Link>
-            <Link href="/subjects" className="hover:text-foreground transition-colors">CS Core</Link>
-            <Link href="/dashboard" className="hover:text-foreground transition-colors">Dashboard</Link>
-          </div>
-        </div>
-      </footer>
+      <Footer variant="public" />
     </div>
   );
 }

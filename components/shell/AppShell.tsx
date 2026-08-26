@@ -10,6 +10,7 @@ import { Sidebar, SIDEBAR_COLLAPSED_WIDTH, SIDEBAR_WIDTH } from './Sidebar';
 import { Topbar } from './Topbar';
 import { SidebarProvider, useSidebar } from './use-sidebar';
 import { APP_NAV, ADMIN_NAV, type NavSection } from './nav';
+import { Footer } from './Footer';
 
 function ShellFrame({
   sections,
@@ -80,6 +81,8 @@ function ShellFrame({
             </motion.div>
           </AnimatePresence>
         </main>
+
+        <Footer />
       </div>
 
       <CommandPalette
