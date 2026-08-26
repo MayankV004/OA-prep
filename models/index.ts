@@ -10,4 +10,5 @@ export * from './activity';
 export * from './invite';
 export * from './progress';
 export * from './otp';
+export * from './feedback';
 

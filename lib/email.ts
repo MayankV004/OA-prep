@@ -5,6 +5,7 @@ import { WelcomeConfirmationEmail } from '@/emails/WelcomeConfirmation';
 import { InviteAcceptedEmail } from '@/emails/InviteAccepted';
 import { PasswordResetEmail } from '@/emails/PasswordReset';
 import { OTPEmail } from '@/emails/OTPEmail';
+import { FeedbackNotificationEmail } from '@/emails/FeedbackNotification';
 import React from 'react';
 
 function getResendClient() {
@@ -284,6 +285,76 @@ export async function sendOTPEmail(args: {
   } catch (error) {
     console.error('Failed to send OTP email via Resend API:', error);
     throw error;
+  }
+}
+
+/**
+ * 6. Send Feedback / Bug Report Admin Notification Email
+ */
+export async function sendFeedbackNotificationEmail(args: {
+  type: 'bug' | 'feedback';
+  title: string;
+  description: string;
+  reporterEmail: string;
+  reporterName?: string;
+  category?: string;
+  severity?: string;
+  pageUrl?: string;
+}) {
+  const adminEmail =
+    process.env.ADMIN_BOOTSTRAP_EMAIL ||
+    process.env.EMAIL_REPLY_TO ||
+    'mayankcocspecial@gmail.com';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const adminFeedbackUrl = `${appUrl}/admin/feedback`;
+  const submittedAt = new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+
+  const html = await render(
+    React.createElement(FeedbackNotificationEmail, {
+      type: args.type,
+      title: args.title,
+      description: args.description,
+      reporterEmail: args.reporterEmail,
+      reporterName: args.reporterName,
+      category: args.category,
+      severity: args.severity,
+      pageUrl: args.pageUrl,
+      submittedAt,
+      appName: APP_NAME,
+      adminFeedbackUrl,
+    })
+  );
+
+  const { fromEmail } = getEmailHeaders();
+  const subject = `[${args.type.toUpperCase()}] ${args.title}`;
+  const resend = getResendClient();
+
+  if (!resend) {
+    console.log('\n----------------------------------------------------');
+    console.log('[DEV EMAIL MOCK] Feedback Notification Email Triggered');
+    console.log(`To Admin: ${adminEmail}`);
+    console.log(`From: ${fromEmail}`);
+    console.log(`Type: ${args.type.toUpperCase()}`);
+    console.log(`Title: ${args.title}`);
+    console.log(`Reporter: ${args.reporterEmail}`);
+    console.log(`Details: ${args.description}`);
+    console.log('----------------------------------------------------\n');
+    return { id: 'mock_email_id', mock: true };
+  }
+
+  try {
+    const data = await resend.emails.send({
+      from: fromEmail,
+      to: adminEmail,
+      replyTo: args.reporterEmail,
+      subject,
+      html,
+    });
+    return data;
+  } catch (error) {
+    console.error('Failed to send feedback notification email via Resend API:', error);
+    // Don't throw — keep submission successful even if email fails
+    return null;
   }
 }
 

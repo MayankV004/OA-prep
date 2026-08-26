@@ -221,6 +221,18 @@ function getSafeRedirectUrl(): string {
           Create an account
         </Link>
       </Text>
+
+      <p className="mt-6 text-center text-2xs text-text-muted leading-relaxed">
+        By signing in, you agree to BigO&apos;s{' '}
+        <Link href="/terms" className="underline hover:text-foreground transition-colors">
+          Terms of Service
+        </Link>{' '}
+        and{' '}
+        <Link href="/privacy" className="underline hover:text-foreground transition-colors">
+          Privacy Policy
+        </Link>
+        .
+      </p>
     </div>
   );
 }

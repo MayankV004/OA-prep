@@ -9,6 +9,7 @@ import {
   LayoutDashboard,
   ListChecks,
   Mail,
+  MessageSquare,
   Settings,
   Shield,
   Sparkles,
@@ -53,9 +54,10 @@ export const APP_NAV: NavSection[] = [
     ],
   },
   {
-    label: 'Account',
+    label: 'Support & Legal',
     items: [
       { name: 'Profile & Progress', href: '/profile', icon: User, exact: true },
+      { name: 'Contact Us', href: '/contact', icon: HelpCircle },
     ],
   },
 ];
@@ -64,7 +66,10 @@ export const APP_NAV: NavSection[] = [
 export const ADMIN_NAV: NavSection[] = [
   {
     label: 'Overview',
-    items: [{ name: 'Dashboard', href: '/admin', icon: LayoutDashboard, exact: true }],
+    items: [
+      { name: 'Dashboard', href: '/admin', icon: LayoutDashboard, exact: true },
+      { name: 'Feedback & Bugs', href: '/admin/feedback', icon: MessageSquare },
+    ],
   },
   {
     label: 'Users',

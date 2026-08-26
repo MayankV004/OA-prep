@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Code2, Menu, X, LayoutDashboard, Terminal, ChevronRight } from 'lucide-react';
+import { Code2, Menu, X, LayoutDashboard, Terminal, ChevronRight, HelpCircle } from 'lucide-react';
 import { authClient } from '@/lib/auth-client';
 import { UserMenu } from '@/components/shell/UserMenu';
 import { AnimatedThemeToggle } from '@/components/ui/animated-theme-toggle';
@@ -17,6 +17,7 @@ export function Navbar() {
     { name: 'DSA Patterns', href: '/dsa', icon: Code2 },
     { name: 'CS Core', href: '/subjects', icon: Terminal },
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+    { name: 'Contact Us', href: '/contact', icon: HelpCircle },
   ];
 
   return (

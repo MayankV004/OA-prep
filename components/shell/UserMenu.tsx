@@ -3,7 +3,8 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ChevronsUpDown, Download, LogOut, Settings, Shield, User } from 'lucide-react';
+import { ChevronsUpDown, Download, LogOut, Shield, User, MessageSquare, HelpCircle } from 'lucide-react';
+import { FeedbackModal } from '@/components/feedback/FeedbackModal';
 
 import { cn } from '@/lib/utils';
 import { authClient } from '@/lib/auth-client';
@@ -41,6 +42,7 @@ function UserMenu({
   const queryClient = useQueryClient();
   const { data: session } = authClient.useSession();
   const [imgError, setImgError] = React.useState(false);
+  const [feedbackOpen, setFeedbackOpen] = React.useState(false);
 
   const user = session?.user;
   const name = user?.name || user?.email || 'Account';
@@ -55,107 +57,122 @@ function UserMenu({
   };
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        aria-label="Account menu"
-        className={cn(
-          'press flex w-full items-center gap-2.5 rounded-lg p-2 text-left outline-none',
-          'hover:bg-muted data-[popup-open]:bg-muted',
-          collapsed && 'justify-center'
-        )}
-      >
-        {hasAvatar ? (
-          <img
-            src={avatarUrl!}
-            alt={name}
-            onError={() => setImgError(true)}
-            className="size-7 shrink-0 rounded-full object-cover border border-rose-500/30 shadow-sm"
-          />
-        ) : (
-          <span
-            aria-hidden
-            className="grid size-7 shrink-0 place-items-center rounded-full bg-gradient-to-br from-red-600 to-rose-600 text-2xs font-semibold text-white shadow-sm"
-          >
-            {initialsOf(user?.name, user?.email)}
-          </span>
-        )}
-
-        {!collapsed ? (
-          <>
-            <span className="min-w-0 flex-1">
-              <span className="block truncate text-sm font-medium text-foreground">
-                {name}
-              </span>
-              {email ? (
-                <span className="block truncate text-2xs text-text-muted">{email}</span>
-              ) : null}
-            </span>
-            <ChevronsUpDown className="size-3.5 shrink-0 text-text-muted" aria-hidden />
-          </>
-        ) : null}
-      </DropdownMenuTrigger>
-
-      <DropdownMenuContent align="end" side="top" className="min-w-56">
-        <div className="flex items-center gap-3 px-2 py-2">
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          aria-label="Account menu"
+          className={cn(
+            'press flex w-full items-center gap-2.5 rounded-lg p-2 text-left outline-none',
+            'hover:bg-muted data-[popup-open]:bg-muted',
+            collapsed && 'justify-center'
+          )}
+        >
           {hasAvatar ? (
             <img
               src={avatarUrl!}
               alt={name}
               onError={() => setImgError(true)}
-              className="size-9 shrink-0 rounded-full object-cover border border-rose-500/30 shadow-sm"
+              className="size-7 shrink-0 rounded-full object-cover border border-rose-500/30 shadow-sm"
             />
           ) : (
             <span
               aria-hidden
-              className="grid size-9 shrink-0 place-items-center rounded-full bg-gradient-to-br from-red-600 to-rose-600 text-xs font-bold text-white shadow-sm"
+              className="grid size-7 shrink-0 place-items-center rounded-full bg-gradient-to-br from-red-600 to-rose-600 text-2xs font-semibold text-white shadow-sm"
             >
               {initialsOf(user?.name, user?.email)}
             </span>
           )}
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold text-foreground">{name}</p>
-            {email ? (
-              <p className="truncate text-2xs text-text-muted">{email}</p>
-            ) : null}
+
+          {!collapsed ? (
+            <>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-medium text-foreground">
+                  {name}
+                </span>
+                {email ? (
+                  <span className="block truncate text-2xs text-text-muted">{email}</span>
+                ) : null}
+              </span>
+              <ChevronsUpDown className="size-3.5 shrink-0 text-text-muted" aria-hidden />
+            </>
+          ) : null}
+        </DropdownMenuTrigger>
+
+        <DropdownMenuContent align="end" side="top" className="min-w-56">
+          <div className="flex items-center gap-3 px-2 py-2">
+            {hasAvatar ? (
+              <img
+                src={avatarUrl!}
+                alt={name}
+                onError={() => setImgError(true)}
+                className="size-9 shrink-0 rounded-full object-cover border border-rose-500/30 shadow-sm"
+              />
+            ) : (
+              <span
+                aria-hidden
+                className="grid size-9 shrink-0 place-items-center rounded-full bg-gradient-to-br from-red-600 to-rose-600 text-xs font-bold text-white shadow-sm"
+              >
+                {initialsOf(user?.name, user?.email)}
+              </span>
+            )}
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold text-foreground">{name}</p>
+              {email ? (
+                <p className="truncate text-2xs text-text-muted">{email}</p>
+              ) : null}
+            </div>
           </div>
-        </div>
 
-        <Separator className="my-1" />
+          <Separator className="my-1" />
 
-        <DropdownMenuItem render={<Link href="/profile" />} className="gap-2">
-          <User className="size-4 text-text-muted" aria-hidden />
-          Profile
-        </DropdownMenuItem>
-
-        {/* TODO: backend — no user-facing settings route exists yet. */}
-        <DropdownMenuItem render={<Link href="/dashboard" />} className="gap-2">
-          <Settings className="size-4 text-text-muted" aria-hidden />
-          Preferences
-        </DropdownMenuItem>
-
-        <DropdownMenuItem render={<a href="/api/export" download />} className="gap-2">
-          <Download className="size-4 text-text-muted" aria-hidden />
-          Export data
-        </DropdownMenuItem>
-
-        {isAdmin ? (
-          <DropdownMenuItem render={<Link href="/admin" />} className="gap-2">
-            <Shield className="size-4 text-text-muted" aria-hidden />
-            Admin panel
+          <DropdownMenuItem render={<Link href="/profile" />} className="gap-2">
+            <User className="size-4 text-text-muted" aria-hidden />
+            Profile
           </DropdownMenuItem>
-        ) : null}
 
-        <Separator className="my-1" />
+          <DropdownMenuItem onClick={() => setFeedbackOpen(true)} className="gap-2">
+            <MessageSquare className="size-4 text-rose-500" aria-hidden />
+            Report Bug / Feedback
+          </DropdownMenuItem>
 
-        <DropdownMenuItem
-          onClick={handleSignOut}
-          className="gap-2 text-destructive"
-        >
-          <LogOut className="size-4" aria-hidden />
-          Sign out
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+          <DropdownMenuItem render={<Link href="/contact" />} className="gap-2">
+            <HelpCircle className="size-4 text-text-muted" aria-hidden />
+            Contact & Support
+          </DropdownMenuItem>
+
+          <DropdownMenuItem render={<a href="/api/export" download />} className="gap-2">
+            <Download className="size-4 text-text-muted" aria-hidden />
+            Export data
+          </DropdownMenuItem>
+
+          {isAdmin ? (
+            <>
+              <Separator className="my-1" />
+              <DropdownMenuItem render={<Link href="/admin" />} className="gap-2">
+                <Shield className="size-4 text-text-muted" aria-hidden />
+                Admin panel
+              </DropdownMenuItem>
+              <DropdownMenuItem render={<Link href="/admin/feedback" />} className="gap-2">
+                <MessageSquare className="size-4 text-amber-500" aria-hidden />
+                User Feedback Admin
+              </DropdownMenuItem>
+            </>
+          ) : null}
+
+          <Separator className="my-1" />
+
+          <DropdownMenuItem
+            onClick={handleSignOut}
+            className="gap-2 text-destructive"
+          >
+            <LogOut className="size-4" aria-hidden />
+            Sign out
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <FeedbackModal open={feedbackOpen} onOpenChange={setFeedbackOpen} />
+    </>
   );
 }
 
