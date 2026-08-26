@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -8,7 +8,15 @@ import { Card, CardContent } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { cn } from '@/lib/utils';
 
-interface PatternStat { group: string; total: number; completed: number }
+interface PatternStat { group: string; slug?: string; total: number; completed: number }
+
+interface LastPracticedInfo {
+  title: string;
+  slug: string;
+  completed: number;
+  total: number;
+  updatedAt?: string;
+}
 
 const containerVariants: any = {
   hidden: { opacity: 0 },
@@ -26,19 +34,40 @@ const itemVariants: any = {
 export default function DSAPageClient({ initialPatterns }: { initialPatterns: any[] }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTag, setSelectedTag] = useState<string>('all');
+  const [localLastPattern, setLocalLastPattern] = useState<LastPracticedInfo | null>(null);
 
-  const { data: progress = [] } = useQuery<PatternStat[]>({
+  // Read local fallback last pattern
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('bigo_last_pattern');
+        if (stored) {
+          setLocalLastPattern(JSON.parse(stored));
+        }
+      } catch {}
+    }
+  }, []);
+
+  const { data: progressResponse } = useQuery<any>({
     queryKey: ['problems', 'progress', 'pattern'],
     queryFn: async () => {
       const res = await fetch('/api/problems/progress?kind=pattern');
       if (!res.ok) return [];
       return res.json();
     },
+    staleTime: 15_000,
   });
 
-  const statsMap = Object.fromEntries(progress.map((p) => [p.group, p]));
-  const totalCompleted = progress.reduce((acc, curr) => acc + curr.completed, 0);
-  const totalProblems = progress.reduce((acc, curr) => acc + curr.total, 0);
+  const progressList: PatternStat[] = Array.isArray(progressResponse)
+    ? progressResponse
+    : progressResponse?.stats || [];
+
+  const apiLastPracticed: LastPracticedInfo | null = progressResponse?.lastPracticed || null;
+  const lastPracticed: LastPracticedInfo | null = apiLastPracticed || localLastPattern;
+
+  const statsMap = Object.fromEntries(progressList.map((p) => [p.group, p]));
+  const totalCompleted = progressList.reduce((acc, curr) => acc + curr.completed, 0);
+  const totalProblems = progressList.reduce((acc, curr) => acc + curr.total, 0);
   const overallProgress = totalProblems > 0 ? Math.round((totalCompleted / totalProblems) * 100) : 0;
 
   // Filter patterns by search & tag
@@ -73,7 +102,7 @@ export default function DSAPageClient({ initialPatterns }: { initialPatterns: an
         </div>
 
         {/* Overall Mastery Meter Card */}
-        <div className="w-full sm:w-64 p-4 rounded-2xl bg-background/60 dark:bg-background/30 backdrop-blur-xl border-none shadow-sm space-y-2">
+        <div className="w-full sm:w-64 p-4 rounded-2xl bg-background/60 dark:bg-background/30 backdrop-blur-xl border border-border/30 shadow-sm space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-sans">
               Overall Mastery
@@ -155,6 +184,14 @@ export default function DSAPageClient({ initialPatterns }: { initialPatterns: an
             const pct = stat.total > 0 ? Math.round((stat.completed / stat.total) * 100) : 0;
             const complete = pct === 100 && stat.total > 0;
             const slug = pattern.slug;
+            const variationsCount = pattern.variations?.length || 0;
+            const isLastPracticed =
+              Boolean(lastPracticed) &&
+              (lastPracticed?.slug === slug || lastPracticed?.title === pattern.title);
+
+            // Clean description snippet
+            const rawDesc = pattern.description || pattern.concept || '';
+            const cleanDesc = rawDesc.replace(/[#*`_]/g, '').trim();
 
             return (
               <motion.div key={pattern.title} variants={itemVariants} className="h-full">
@@ -162,34 +199,61 @@ export default function DSAPageClient({ initialPatterns }: { initialPatterns: an
                   href={`/dsa/${slug}`}
                   className="group block h-full outline-none"
                 >
-                  <Card className="h-full flex flex-col justify-between p-6 rounded-3xl bg-background/60 dark:bg-background/30 backdrop-blur-xl border-none shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1.5">
+                  <Card
+                    className={cn(
+                      'h-full flex flex-col justify-between p-6 rounded-3xl bg-background/60 dark:bg-background/30 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1.5 shadow-sm hover:shadow-xl',
+                      isLastPracticed
+                        ? 'border border-rose-500/40 ring-1 ring-rose-500/20 shadow-rose-500/10'
+                        : 'border border-border/30 hover:border-border/60'
+                    )}
+                  >
                     <div className="space-y-4">
                       {/* Top Header Row */}
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <h3 className="font-display text-lg font-bold tracking-tight text-foreground group-hover:text-rose-500 transition-colors truncate">
+                      <div className="space-y-2">
+                        <div className="flex items-start justify-between gap-2">
+                          <h3 className="font-display text-lg font-bold tracking-tight text-foreground group-hover:text-rose-500 transition-colors">
                             {pattern.title}
                           </h3>
-                          <div className="text-xs text-muted-foreground font-mono mt-0.5">
+                          {isLastPracticed && (
+                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30 shrink-0">
+                              Last Practiced
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Subheader info: Variations count & Solved counter */}
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium flex-wrap">
+                          <span className="px-2 py-0.5 rounded-md bg-muted/60 text-muted-foreground text-[11px] font-semibold">
+                            {variationsCount} variation{variationsCount !== 1 ? 's' : ''}
+                          </span>
+                          <span className="text-border">•</span>
+                          <span className="font-mono text-xs">
                             <span className="font-semibold text-foreground">{stat.completed}</span> / {stat.total} solved
-                          </div>
+                          </span>
                         </div>
                       </div>
 
-                      {/* Complexity Badges */}
+                      {/* Description Snippet */}
+                      {cleanDesc && (
+                        <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed font-light">
+                          {cleanDesc}
+                        </p>
+                      )}
+
+                      {/* Complexity Badges & Tags */}
                       <div className="flex flex-wrap items-center gap-1.5 pt-1">
                         {pattern.timeComplexity && (
-                          <span className="px-2.5 py-1 rounded-lg bg-muted/60 text-muted-foreground font-mono text-[11px] font-medium border border-border/20">
+                          <span className="px-2 py-0.5 rounded-lg bg-muted/60 text-muted-foreground font-mono text-[10px] font-medium border border-border/20">
                             Time: {pattern.timeComplexity}
                           </span>
                         )}
                         {pattern.spaceComplexity && (
-                          <span className="px-2.5 py-1 rounded-lg bg-muted/60 text-muted-foreground font-mono text-[11px] font-medium border border-border/20">
+                          <span className="px-2 py-0.5 rounded-lg bg-muted/60 text-muted-foreground font-mono text-[10px] font-medium border border-border/20">
                             Space: {pattern.spaceComplexity}
                           </span>
                         )}
                         {(pattern.useCases || []).slice(0, 2).map((tag: string) => (
-                          <span key={tag} className="px-2.5 py-1 rounded-lg bg-background/80 text-muted-foreground text-[11px] font-medium border border-border/20">
+                          <span key={tag} className="px-2 py-0.5 rounded-lg bg-background/80 text-muted-foreground text-[10px] font-medium border border-border/20">
                             {tag}
                           </span>
                         ))}
@@ -200,7 +264,7 @@ export default function DSAPageClient({ initialPatterns }: { initialPatterns: an
                     <div className="pt-6 space-y-2 mt-auto">
                       <div className="flex items-center justify-between text-xs">
                         <span className="text-muted-foreground font-medium">Progress</span>
-                        <span className={cn('font-semibold', complete ? 'text-rose-500 font-bold' : 'text-foreground')}>
+                        <span className={cn('font-semibold font-mono', complete ? 'text-rose-500 font-bold' : 'text-foreground')}>
                           {complete ? 'Complete' : `${pct}%`}
                         </span>
                       </div>

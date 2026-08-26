@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { withAuth } from '@/lib/auth';
 import { Problem, UserProgress } from '@/models';
 import { recordActivity } from '@/lib/activity';
+import { withCache, invalidateCache } from '@/lib/cache';
 import dbConnect from '@/lib/db';
 import mongoose from 'mongoose';
 import { z } from 'zod';
@@ -21,46 +22,86 @@ export async function GET(req: NextRequest) {
     const returnType = searchParams.get('returnType'); // 'ids' or 'stats'
 
     if (kind === 'pattern' && returnType === 'ids') {
-      const progress = await UserProgress.find({ 
-        userId: targetUserId,
-        completed: true 
-      }).select('problemId -_id');
-      return progress.map(p => p.problemId);
+      const cacheKey = `user:progress:${targetUserId}:pattern:ids`;
+      return withCache(cacheKey, 60, async () => {
+        const progress = await UserProgress.find({ 
+          userId: targetUserId,
+          completed: true 
+        }).select('problemId -_id');
+        return progress.map(p => p.problemId);
+      });
     }
 
     if (kind === 'pattern') {
-      const { Pattern } = await import('@/models');
-      const patterns = await Pattern.find().select('title variations').lean();
+      const cacheKey = `user:progress:${targetUserId}:pattern:stats`;
+      return withCache(cacheKey, 60, async () => {
+        const { Pattern } = await import('@/models');
+        const patterns = await Pattern.find().select('title slug variations').lean();
 
-      const completedProgress = await UserProgress.find({ 
-        userId: targetUserId,
-        completed: true 
-      }).select('problemId -_id');
-      const completedIds = new Set(completedProgress.map(p => p.problemId));
+        const completedProgress = await UserProgress.find({ 
+          userId: targetUserId,
+          completed: true 
+        }).select('problemId updatedAt').sort({ updatedAt: -1 }).lean();
 
-      const stats = patterns.map((p: any) => {
-        let completedCount = 0;
-        let total = 0;
-        
-        if (p.variations) {
-          p.variations.forEach((v: any) => {
-            if (v.problems) {
-              total += v.problems.length;
-              v.problems.forEach((prob: any) => {
-                if (completedIds.has(prob._id.toString())) completedCount++;
-              });
-            }
-          });
-        }
-        
+        const completedIds = new Set(completedProgress.map(p => p.problemId));
+
+        let lastPracticedPattern: {
+          title: string;
+          slug: string;
+          completed: number;
+          total: number;
+          updatedAt: string;
+        } | null = null;
+
+        const latestProgressItem = completedProgress[0];
+
+        const stats = patterns.map((p: any) => {
+          let completedCount = 0;
+          let total = 0;
+          let isMatchingLatest = false;
+          
+          if (p.variations) {
+            p.variations.forEach((v: any) => {
+              if (v.problems) {
+                total += v.problems.length;
+                v.problems.forEach((prob: any) => {
+                  const probIdStr = prob._id ? prob._id.toString() : prob.id;
+                  if (completedIds.has(probIdStr)) {
+                    completedCount++;
+                  }
+                  if (latestProgressItem && probIdStr === latestProgressItem.problemId) {
+                    isMatchingLatest = true;
+                  }
+                });
+              }
+            });
+          }
+
+          const patternStat = {
+            group: p.title,
+            slug: p.slug,
+            total,
+            completed: completedCount,
+          };
+
+          if (isMatchingLatest && !lastPracticedPattern) {
+            lastPracticedPattern = {
+              title: p.title,
+              slug: p.slug,
+              completed: completedCount,
+              total,
+              updatedAt: latestProgressItem.updatedAt ? new Date(latestProgressItem.updatedAt).toISOString() : new Date().toISOString(),
+            };
+          }
+
+          return patternStat;
+        });
+
         return {
-          group: p.title,
-          total,
-          completed: completedCount
+          stats,
+          lastPracticed: lastPracticedPattern,
         };
       });
-
-      return stats;
     }
 
     let groupField: string;
@@ -120,7 +161,12 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // Invalidate user progress caches on completion state change
+    await invalidateCache(
+      `user:progress:${userId}:pattern:stats`,
+      `user:progress:${userId}:pattern:ids`
+    );
+
     return progress;
   });
 }
-

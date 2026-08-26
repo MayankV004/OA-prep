@@ -4,38 +4,86 @@ import { TemplateCodeBlock } from "./TemplateCodeBlock";
 import { PatternVariation } from "@/types/pattern";
 import { MarkdownView } from '@/components/markdown/View';
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 interface VariationItemProps {
   variation: PatternVariation;
   patternSlug: string;
   html: string;
+  completedIds?: Set<string>;
 }
 
-export function VariationAccordionItem({ variation, patternSlug, html }: VariationItemProps) {
-  const problemCount = (variation.problems || []).length;
+export function VariationAccordionItem({ variation, patternSlug, html, completedIds }: VariationItemProps) {
+  const problems = variation.problems || [];
+  const problemCount = problems.length;
   const variationId = variation._id || variation.id || '';
   const variationSlug = variationId;
+
+  // Calculate solved problems count for this variation
+  const solvedCount = completedIds
+    ? problems.filter((p: any) => {
+        const idStr = p._id ? p._id.toString() : p.id;
+        return completedIds.has(idStr);
+      }).length
+    : 0;
+
+  const pct = problemCount > 0 ? Math.round((solvedCount / problemCount) * 100) : 0;
+  const isCompleted = problemCount > 0 && solvedCount === problemCount;
 
   return (
     <div className="rounded-3xl border-none bg-background/60 dark:bg-background/30 backdrop-blur-xl shadow-sm p-6 sm:p-8 space-y-6 mb-6">
       {/* Variation Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/30">
-        <div>
-          <h3 className="font-display text-xl sm:text-2xl font-black tracking-tight text-foreground">
-            {variation.variation || variation.title}
-          </h3>
-          <span className="text-xs text-muted-foreground font-medium">
-            {problemCount} practice problem{problemCount !== 1 ? 's' : ''} available
-          </span>
+        <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            <h3 className="font-display text-xl sm:text-2xl font-black tracking-tight text-foreground">
+              {variation.variation || variation.title}
+            </h3>
+            {isCompleted && (
+              <span className="px-2.5 py-0.5 rounded-full text-2xs font-extrabold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                Completed
+              </span>
+            )}
+          </div>
+
+          {/* Progress Bar & Counter */}
+          {problemCount > 0 && (
+            <div className="space-y-2 pt-1">
+              <div className="flex items-center gap-2 text-xs flex-wrap">
+                <span className="text-muted-foreground font-medium text-xs">
+                  Variation Progress:
+                </span>
+                <span className="font-mono text-xs text-foreground font-semibold">
+                  <span className={cn(solvedCount > 0 ? "text-rose-500 font-bold" : "text-foreground")}>
+                    {solvedCount}
+                  </span>
+                  <span className="text-muted-foreground font-normal mx-1">/</span>
+                  <span>{problemCount} solved</span>
+                  <span className="text-rose-500/90 font-mono ml-2">({pct}%)</span>
+                </span>
+              </div>
+              <div className="h-2 w-full sm:w-80 rounded-full bg-muted/60 overflow-hidden">
+                <div
+                  style={{ width: `${pct}%` }}
+                  className={cn(
+                    "h-full rounded-full transition-all duration-500",
+                    isCompleted
+                      ? "bg-emerald-500"
+                      : "bg-gradient-to-r from-red-600 via-rose-500 to-red-400"
+                  )}
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Practice CTA Button */}
         {problemCount > 0 && (
           <Link
             href={`/dsa/${patternSlug}/${variationSlug}/practice`}
-            className="group/btn inline-flex items-center justify-center gap-2 h-11 px-6 rounded-2xl font-semibold text-xs text-white bg-gradient-to-r from-red-600 via-rose-600 to-red-500 shadow-[0_0_20px_rgba(225,29,72,0.35)] hover:shadow-[0_0_25px_rgba(225,29,72,0.6)] hover:scale-105 active:scale-95 transition-all border-none shrink-0"
+            className="group/btn inline-flex items-center justify-center gap-2 h-11 px-6 rounded-2xl font-semibold text-xs text-white bg-gradient-to-r from-red-600 via-rose-600 to-red-500 shadow-[0_0_20px_rgba(225,29,72,0.35)] hover:shadow-[0_0_25px_rgba(225,29,72,0.6)] hover:scale-105 active:scale-95 transition-all border-none shrink-0 self-start sm:self-center"
           >
-            <span>Practice Session</span>
+            <span>Practice Session ({problemCount})</span>
           </Link>
         )}
       </div>

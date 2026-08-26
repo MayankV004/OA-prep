@@ -8,7 +8,7 @@ async function getPatterns() {
   try {
     await dbConnect();
     const patterns = await Pattern.find()
-      .select('title slug timeComplexity spaceComplexity useCases')
+      .select('title slug timeComplexity spaceComplexity useCases description concept variations')
       .sort({ title: 1 })
       .lean();
     
