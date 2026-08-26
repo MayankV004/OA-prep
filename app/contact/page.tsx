@@ -8,7 +8,6 @@ import {
   Bug,
   Clock,
   Sparkles,
-  Send,
   HelpCircle,
   ChevronDown,
   CheckCircle2,
@@ -16,9 +15,6 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { Navbar } from '@/components/ui/navbar';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { FeedbackModal } from '@/components/feedback/FeedbackModal';
@@ -114,7 +110,7 @@ export default function ContactPage() {
       <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 pt-28 pb-16 space-y-16">
         {/* Hero Section */}
         <div className="text-center space-y-4 max-w-3xl mx-auto animate-in-up">
-          <Badge variant="outline" className="px-3 py-1 rounded-full border-rose-500/30 text-rose-600 dark:text-rose-400 bg-rose-500/5 text-xs font-semibold gap-1.5">
+          <Badge variant="outline" className="px-4 py-1 rounded-full border-rose-500/30 text-rose-600 dark:text-rose-400 bg-rose-500/5 text-xs font-semibold gap-1.5">
             <Sparkles className="size-3.5" />
             We&apos;re here to help
           </Badge>
@@ -128,8 +124,8 @@ export default function ContactPage() {
 
         {/* Quick Contact Action Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="p-6 rounded-2xl border border-border/60 bg-card/60 backdrop-blur-md shadow-sm hover:border-rose-500/40 transition-all space-y-3">
-            <div className="size-11 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 grid place-items-center">
+          <div className="p-6 rounded-3xl border border-border/50 bg-card/60 backdrop-blur-md shadow-sm hover:border-rose-500/40 transition-all space-y-3">
+            <div className="size-11 rounded-2xl bg-rose-500/10 text-rose-600 dark:text-rose-400 grid place-items-center">
               <Mail className="size-5" />
             </div>
             <h3 className="text-lg font-display font-bold text-foreground">Direct Email</h3>
@@ -144,8 +140,8 @@ export default function ContactPage() {
             </a>
           </div>
 
-          <div className="p-6 rounded-2xl border border-border/60 bg-card/60 backdrop-blur-md shadow-sm hover:border-blue-500/40 transition-all space-y-3">
-            <div className="size-11 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 grid place-items-center">
+          <div className="p-6 rounded-3xl border border-border/50 bg-card/60 backdrop-blur-md shadow-sm hover:border-blue-500/40 transition-all space-y-3">
+            <div className="size-11 rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400 grid place-items-center">
               <MessageSquare className="size-5" />
             </div>
             <h3 className="text-lg font-display font-bold text-foreground">Submit Feedback</h3>
@@ -161,8 +157,8 @@ export default function ContactPage() {
             </button>
           </div>
 
-          <div className="p-6 rounded-2xl border border-border/60 bg-card/60 backdrop-blur-md shadow-sm hover:border-red-500/40 transition-all space-y-3">
-            <div className="size-11 rounded-xl bg-red-500/10 text-red-600 dark:text-red-400 grid place-items-center">
+          <div className="p-6 rounded-3xl border border-border/50 bg-card/60 backdrop-blur-md shadow-sm hover:border-red-500/40 transition-all space-y-3">
+            <div className="size-11 rounded-2xl bg-red-500/10 text-red-600 dark:text-red-400 grid place-items-center">
               <Bug className="size-5" />
             </div>
             <h3 className="text-lg font-display font-bold text-foreground">Report a Bug</h3>
@@ -182,8 +178,8 @@ export default function ContactPage() {
         {/* Main Grid: Form + Info / FAQs */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
           {/* Form Side */}
-          <div className="lg:col-span-7 p-6 sm:p-8 rounded-2xl border border-border/60 bg-card/80 backdrop-blur-xl shadow-xl space-y-6">
-            <div className="space-y-2">
+          <div className="lg:col-span-7 p-7 sm:p-9 rounded-3xl border-none bg-card/90 backdrop-blur-2xl shadow-xl space-y-6">
+            <div className="space-y-1.5">
               <h2 className="text-2xl font-display font-bold text-foreground">Send Us a Message</h2>
               <p className="text-sm text-muted-foreground">
                 Fill out the form below. Rate limit of 5 submissions per day applies.
@@ -191,25 +187,24 @@ export default function ContactPage() {
             </div>
 
             {submitted ? (
-              <div className="p-6 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-center space-y-3 animate-in-up">
-                <CheckCircle2 className="size-10 text-emerald-500 mx-auto" />
-                <h3 className="text-lg font-semibold text-foreground">Message Sent!</h3>
-                <p className="text-sm text-muted-foreground">
+              <div className="p-8 rounded-3xl bg-emerald-500/10 text-center space-y-3 animate-in-up">
+                <CheckCircle2 className="size-12 text-emerald-500 mx-auto" />
+                <h3 className="text-xl font-bold text-foreground">Message Sent!</h3>
+                <p className="text-sm text-muted-foreground max-w-sm mx-auto">
                   Thank you for reaching out. We have logged your request and will respond shortly.
                 </p>
-                <Button
-                  variant="outline"
-                  size="sm"
+                <button
+                  type="button"
                   onClick={() => setSubmitted(false)}
-                  className="mt-2"
+                  className="mt-2 px-6 h-11 rounded-full text-sm font-medium bg-background text-foreground shadow-sm hover:bg-muted transition-colors"
                 >
                   Send another message
-                </Button>
+                </button>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
                 {errorMsg && (
-                  <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-xs text-red-600 dark:text-red-400 flex items-center gap-2">
+                  <div className="p-3.5 rounded-2xl bg-red-500/10 text-xs text-red-600 dark:text-red-400 flex items-center gap-2">
                     <AlertCircle className="size-4 shrink-0" />
                     <span>{errorMsg}</span>
                   </div>
@@ -217,59 +212,62 @@ export default function ContactPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <Label htmlFor="contact-name">Your Name *</Label>
-                    <Input
+                    <Label htmlFor="contact-name" className="text-xs font-semibold px-2">Your Name *</Label>
+                    <input
                       id="contact-name"
                       required
                       placeholder="Mayank Verma"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
+                      className="w-full h-11 px-5 rounded-full bg-muted/40 border-none outline-none text-sm text-foreground focus:bg-background focus:ring-2 focus:ring-rose-500/30 transition-all duration-200 placeholder:text-muted-foreground/60"
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="contact-email">Email Address *</Label>
-                    <Input
+                    <Label htmlFor="contact-email" className="text-xs font-semibold px-2">Email Address *</Label>
+                    <input
                       id="contact-email"
                       type="email"
                       required
                       placeholder="you@college.edu"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
+                      className="w-full h-11 px-5 rounded-full bg-muted/40 border-none outline-none text-sm text-foreground focus:bg-background focus:ring-2 focus:ring-rose-500/30 transition-all duration-200 placeholder:text-muted-foreground/60"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="contact-subject">Subject *</Label>
-                  <Input
+                  <Label htmlFor="contact-subject" className="text-xs font-semibold px-2">Subject *</Label>
+                  <input
                     id="contact-subject"
                     required
                     placeholder="How can we help you?"
                     value={subject}
                     onChange={(e) => setSubject(e.target.value)}
+                    className="w-full h-11 px-5 rounded-full bg-muted/40 border-none outline-none text-sm text-foreground focus:bg-background focus:ring-2 focus:ring-rose-500/30 transition-all duration-200 placeholder:text-muted-foreground/60"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="contact-message">Message *</Label>
-                  <Textarea
+                  <Label htmlFor="contact-message" className="text-xs font-semibold px-2">Message *</Label>
+                  <textarea
                     id="contact-message"
                     required
                     rows={5}
                     placeholder="Provide details about your query..."
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
+                    className="w-full p-4 rounded-2xl bg-muted/40 border-none outline-none text-sm text-foreground focus:bg-background focus:ring-2 focus:ring-rose-500/30 transition-all duration-200 resize-none placeholder:text-muted-foreground/60"
                   />
                 </div>
 
-                <Button
+                <button
                   type="submit"
-                  loading={loading}
-                  className="w-full sm:w-auto bg-gradient-to-r from-red-600 via-rose-600 to-red-500 text-white font-semibold shadow-md px-8 h-11"
+                  disabled={loading}
+                  className="w-full sm:w-auto px-8 h-11 rounded-full text-sm font-semibold text-white bg-gradient-to-r from-red-600 via-rose-600 to-red-500 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed border-none"
                 >
-                  <Send className="mr-2 size-4" />
-                  Send Message
-                </Button>
+                  {loading ? 'Sending...' : 'Send Message'}
+                </button>
               </form>
             )}
           </div>
@@ -277,7 +275,7 @@ export default function ContactPage() {
           {/* FAQs & SLA Side */}
           <div className="lg:col-span-5 space-y-8">
             {/* SLA Card */}
-            <div className="p-6 rounded-2xl border border-border/60 bg-card/40 backdrop-blur-md space-y-4">
+            <div className="p-6 rounded-3xl border border-border/50 bg-card/40 backdrop-blur-md space-y-4">
               <div className="flex items-center gap-2 text-rose-600 dark:text-rose-400 font-semibold text-sm">
                 <Clock className="size-4" />
                 <span>Response Time SLA</span>
@@ -304,7 +302,7 @@ export default function ContactPage() {
                   return (
                     <div
                       key={idx}
-                      className="rounded-xl border border-border/60 bg-card/60 overflow-hidden transition-colors"
+                      className="rounded-2xl border border-border/50 bg-card/60 overflow-hidden transition-colors"
                     >
                       <button
                         type="button"
