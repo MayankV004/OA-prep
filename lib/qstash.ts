@@ -1,30 +1,9 @@
 import { Client } from '@upstash/qstash';
 import { after } from 'next/server';
+import { env } from '@/lib/config';
+import { EmailJob } from '@/types/qstash';
 
-// ── Job type definitions ─────────────────────────────────────────────────────
-
-export type EmailJob =
-  | {
-      type: 'invite';
-      to: string;
-      inviterName: string;
-      role: string;
-      token: string;
-      expiresInHours: number;
-    }
-  | {
-      type: 'welcome';
-      to: string;
-      userName: string;
-    }
-  | {
-      type: 'invite_accepted';
-      to: string;
-      adminName: string;
-      invitedEmail: string;
-      invitedName?: string;
-      role: string;
-    };
+export type { EmailJob };
 
 // ── Public API ───────────────────────────────────────────────────────────────
 
@@ -39,11 +18,8 @@ export type EmailJob =
  *     sent, no retry but no blocking either.
  */
 export async function enqueueEmail(job: EmailJob): Promise<void> {
-  const token = process.env.QSTASH_TOKEN;
-  const appUrl =
-    process.env.NEXT_PUBLIC_APP_URL ||
-    process.env.BETTER_AUTH_URL ||
-    'http://localhost:3000';
+  const token = env.QSTASH_TOKEN;
+  const appUrl = env.NEXT_PUBLIC_APP_URL || env.BETTER_AUTH_URL || 'http://localhost:3000';
 
   if (!token || token.startsWith('qstash_dummy')) {
     // Dev: fire-and-forget after the response is flushed

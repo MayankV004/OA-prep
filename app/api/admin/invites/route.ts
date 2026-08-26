@@ -6,8 +6,9 @@ import { inviteWriteSchema } from '@/lib/zod';
 import { recordActivity } from '@/lib/activity';
 import { enqueueEmail } from '@/lib/qstash';
 import dbConnect from '@/lib/db';
+import { env } from '@/lib/config';
 
-const TTL_HOURS = Number(process.env.INVITE_TOKEN_TTL_HOURS ?? 168);
+const TTL_HOURS = env.INVITE_TOKEN_TTL_HOURS;
 
 export async function GET(req: NextRequest) {
   return withRole(req, 'admin', async () => {

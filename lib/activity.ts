@@ -1,18 +1,6 @@
 import { after } from 'next/server';
 import dbConnect from '@/lib/db';
-
-interface RecordActivityArgs {
-  actorId: string;
-  targetUserId: string;
-  kind: string;
-  entity?: {
-    type: string;
-    id: string;
-    title?: string;
-  };
-  metadata?: Record<string, unknown>;
-  ip?: string;
-}
+import { RecordActivityArgs } from '@/types/activity';
 
 /**
  * Schedules an activity log write to run AFTER the response is sent.

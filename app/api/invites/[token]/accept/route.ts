@@ -7,6 +7,7 @@ import dbConnect from '@/lib/db';
 
 import { enqueueEmail } from '@/lib/qstash';
 import { checkRateLimit } from '@/lib/rate-limit';
+import { env } from '@/lib/config';
 
 // POST /api/invites/:token/accept — public, creates user account
 export async function POST(
@@ -40,7 +41,7 @@ export async function POST(
   const userName = invite.name || invite.email.split('@')[0];
 
   // Create user via BetterAuth
-  const signUpReq = new Request(`${process.env.BETTER_AUTH_URL}/api/auth/sign-up/email`, {
+  const signUpReq = new Request(`${env.BETTER_AUTH_URL}/api/auth/sign-up/email`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email: invite.email, password, name: userName }),

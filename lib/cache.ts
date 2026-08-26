@@ -1,9 +1,10 @@
 import { Redis } from '@upstash/redis';
+import { env } from '@/lib/config';
 
 let _redis: Redis | null = null;
 
 function getRedis(): Redis | null {
-  if (!process.env.UPSTASH_REDIS_REST_URL) return null;
+  if (!env.UPSTASH_REDIS_REST_URL) return null;
   return (_redis ??= Redis.fromEnv());
 }
 

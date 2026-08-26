@@ -1,5 +1,6 @@
 import { Receiver } from '@upstash/qstash';
 import { dispatchEmail, type EmailJob } from '@/lib/qstash';
+import { env } from '@/lib/config';
 
 /**
  * POST /api/workers/email
@@ -15,10 +16,10 @@ export async function POST(req: Request) {
   const bodyText = await req.text();
 
   // Verify QStash signature in production
-  if (process.env.QSTASH_CURRENT_SIGNING_KEY) {
+  if (env.QSTASH_CURRENT_SIGNING_KEY) {
     const receiver = new Receiver({
-      currentSigningKey: process.env.QSTASH_CURRENT_SIGNING_KEY,
-      nextSigningKey: process.env.QSTASH_NEXT_SIGNING_KEY!,
+      currentSigningKey: env.QSTASH_CURRENT_SIGNING_KEY,
+      nextSigningKey: env.QSTASH_NEXT_SIGNING_KEY,
     });
 
     const isValid = await receiver

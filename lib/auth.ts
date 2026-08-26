@@ -1,17 +1,16 @@
 import { betterAuth } from 'better-auth';
 import { mongodbAdapter } from 'better-auth/adapters/mongodb';
 import { MongoClient } from 'mongodb';
+import { env } from '@/lib/config';
 
-const client = new MongoClient(process.env.MONGODB_URI!);
+const client = new MongoClient(env.MONGODB_URI);
 
 export const auth = betterAuth({
-  database: mongodbAdapter(client.db(process.env.MONGODB_DB!)),
+  database: mongodbAdapter(client.db(env.MONGODB_DB)),
   rateLimit: {
     enabled: true,
     window: 60,
     max: 100,
-    // 'database' uses MongoDB — shared across all Lambda invocations.
-    // Do NOT use 'memory': each cold-start Lambda gets a fresh counter.
     storage: 'database',
     customRules: {
       '/sign-in/email': {
@@ -30,12 +29,12 @@ export const auth = betterAuth({
   },
   socialProviders: {
     github: {
-      clientId: process.env.GITHUB_CLIENT_ID as string,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
+      clientId: env.GITHUB_CLIENT_ID,
+      clientSecret: env.GITHUB_CLIENT_SECRET,
     },
     google: {
-      clientId: process.env.GOOGLE_CLIENT_ID as string,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+      clientId: env.GOOGLE_CLIENT_ID,
+      clientSecret: env.GOOGLE_CLIENT_SECRET,
     },
   },
   user: {
@@ -46,13 +45,12 @@ export const auth = betterAuth({
       invitedBy: { type: 'string', required: false, input: false },
     },
   },
-  secret: process.env.BETTER_AUTH_SECRET!,
-  baseURL: process.env.BETTER_AUTH_URL || process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'),
+  secret: env.BETTER_AUTH_SECRET,
+  baseURL: env.BETTER_AUTH_URL || env.NEXT_PUBLIC_APP_URL,
   trustedOrigins: [
     'http://localhost:3000',
-    ...(process.env.NEXT_PUBLIC_APP_URL ? [process.env.NEXT_PUBLIC_APP_URL] : []),
-    ...(process.env.BETTER_AUTH_URL ? [process.env.BETTER_AUTH_URL] : []),
-    ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []),
+    ...(env.NEXT_PUBLIC_APP_URL ? [env.NEXT_PUBLIC_APP_URL] : []),
+    ...(env.BETTER_AUTH_URL ? [env.BETTER_AUTH_URL] : []),
   ],
 });
 

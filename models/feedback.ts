@@ -1,23 +1,7 @@
 import { Schema, model, models } from 'mongoose';
+import { IFeedback } from '@/types/feedback';
 
-export interface IFeedback {
-  _id?: string;
-  userId?: Schema.Types.ObjectId | string;
-  email: string;
-  name?: string;
-  type: 'bug' | 'feedback';
-  title: string;
-  description: string;
-  category?: string;
-  severity?: 'low' | 'medium' | 'high' | 'critical';
-  pageUrl?: string;
-  userAgent?: string;
-  ip?: string;
-  status: 'pending' | 'in_review' | 'resolved' | 'dismissed';
-  adminNotes?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
+export type { IFeedback };
 
 const feedbackSchema = new Schema<IFeedback>(
   {

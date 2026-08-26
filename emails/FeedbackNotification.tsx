@@ -11,20 +11,30 @@ import {
   Text,
 } from '@react-email/components';
 import React from 'react';
-
-interface FeedbackNotificationEmailProps {
-  type: 'bug' | 'feedback';
-  title: string;
-  description: string;
-  reporterEmail: string;
-  reporterName?: string;
-  category?: string;
-  severity?: string;
-  pageUrl?: string;
-  submittedAt: string;
-  appName?: string;
-  adminFeedbackUrl: string;
-}
+import { FeedbackNotificationEmailProps } from '@/types/email';
+import {
+  mainStyle,
+  containerStyle,
+  topBrandSection,
+  brandLabel,
+  redDotStyle,
+  badgeStyle,
+  headingStyle,
+  actionSection,
+  primaryButtonStyle,
+  dividerStyle,
+  footerSection,
+  footerTextStyle,
+} from '@/emails/styles/common.styles';
+import {
+  titleStyle,
+  accentBlockSection,
+  metaRowStyle,
+  metaLabelStyle,
+  descSection,
+  descLabelStyle,
+  descTextStyle,
+} from '@/emails/styles/feedback.styles';
 
 export function FeedbackNotificationEmail({
   type = 'bug',
@@ -120,142 +130,3 @@ export function FeedbackNotificationEmail({
 }
 
 export default FeedbackNotificationEmail;
-
-// --- Styles ---
-const mainStyle: React.CSSProperties = {
-  backgroundColor: '#fafafa',
-  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-  padding: '48px 16px',
-  margin: 0,
-};
-
-const containerStyle: React.CSSProperties = {
-  backgroundColor: '#ffffff',
-  borderRadius: '20px',
-  maxWidth: '560px',
-  margin: '0 auto',
-  padding: '40px 36px',
-};
-
-const topBrandSection: React.CSSProperties = {
-  marginBottom: '28px',
-};
-
-const brandLabel: React.CSSProperties = {
-  fontSize: '11px',
-  fontWeight: 700,
-  letterSpacing: '0.14em',
-  color: '#71717a',
-  margin: 0,
-  display: 'inline-block',
-};
-
-const redDotStyle: React.CSSProperties = {
-  color: '#e11d48',
-  fontSize: '12px',
-  marginRight: '4px',
-};
-
-const badgeStyle: React.CSSProperties = {
-  fontSize: '10px',
-  fontWeight: 700,
-  letterSpacing: '0.08em',
-  padding: '4px 10px',
-  borderRadius: '9999px',
-  display: 'inline-block',
-  float: 'right',
-};
-
-const headingStyle: React.CSSProperties = {
-  fontSize: '22px',
-  fontWeight: 700,
-  color: '#09090b',
-  lineHeight: '1.25',
-  letterSpacing: '-0.03em',
-  margin: '0 0 8px 0',
-};
-
-const titleStyle: React.CSSProperties = {
-  fontSize: '16px',
-  fontWeight: 600,
-  color: '#27272a',
-  margin: '0 0 20px 0',
-};
-
-const accentBlockSection: React.CSSProperties = {
-  margin: '20px 0',
-  borderLeft: '3px solid #e11d48',
-  paddingLeft: '16px',
-  backgroundColor: '#fcfcfc',
-  paddingTop: '10px',
-  paddingBottom: '10px',
-  borderRadius: '0 8px 8px 0',
-};
-
-const metaRowStyle: React.CSSProperties = {
-  fontSize: '13px',
-  color: '#3f3f46',
-  lineHeight: '1.7',
-  margin: 0,
-};
-
-const metaLabelStyle: React.CSSProperties = {
-  color: '#71717a',
-  fontWeight: 500,
-  marginRight: '6px',
-};
-
-const descSection: React.CSSProperties = {
-  backgroundColor: '#f4f4f5',
-  borderRadius: '12px',
-  padding: '16px 20px',
-  margin: '24px 0',
-};
-
-const descLabelStyle: React.CSSProperties = {
-  fontSize: '11px',
-  fontWeight: 700,
-  color: '#71717a',
-  letterSpacing: '0.08em',
-  margin: '0 0 8px 0',
-};
-
-const descTextStyle: React.CSSProperties = {
-  fontSize: '14px',
-  color: '#18181b',
-  lineHeight: '1.6',
-  margin: 0,
-  whiteSpace: 'pre-wrap',
-};
-
-const actionSection: React.CSSProperties = {
-  margin: '32px 0 24px 0',
-};
-
-const primaryButtonStyle: React.CSSProperties = {
-  backgroundColor: '#e11d48',
-  color: '#ffffff',
-  fontSize: '13px',
-  fontWeight: 600,
-  letterSpacing: '-0.01em',
-  padding: '12px 26px',
-  borderRadius: '9999px',
-  textDecoration: 'none',
-  display: 'inline-block',
-  boxShadow: '0 4px 14px rgba(225, 29, 72, 0.2)',
-};
-
-const dividerStyle: React.CSSProperties = {
-  borderColor: '#f4f4f5',
-  margin: '28px 0 20px 0',
-};
-
-const footerSection: React.CSSProperties = {
-  marginTop: '0px',
-};
-
-const footerTextStyle: React.CSSProperties = {
-  fontSize: '11px',
-  color: '#a1a1aa',
-  margin: 0,
-};

@@ -27,11 +27,12 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/toast';
 import { authClient } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
+import { FeedbackType, FeedbackSeverity } from '@/types/feedback';
 
 interface FeedbackModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  defaultType?: 'bug' | 'feedback';
+  defaultType?: FeedbackType;
 }
 
 export function FeedbackModal({

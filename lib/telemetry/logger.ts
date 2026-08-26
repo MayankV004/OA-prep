@@ -1,10 +1,7 @@
 import { trace } from '@opentelemetry/api';
+import { LogLevel, LogMeta } from '@/types/telemetry';
 
-export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
-
-export interface LogMeta {
-  [key: string]: any;
-}
+export type { LogLevel, LogMeta };
 
 function getTraceContext() {
   const activeSpan = trace.getActiveSpan();

@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
+import { env } from '@/lib/config';
 
-const MONGODB_URI = process.env.MONGODB_URI;
+const MONGODB_URI = env.MONGODB_URI;
 
 if (!MONGODB_URI) {
   throw new Error('Please define the MONGODB_URI environment variable');
@@ -25,7 +26,7 @@ async function dbConnect() {
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
-      dbName: process.env.MONGODB_DB,
+      dbName: env.MONGODB_DB,
       // M0 free tier shares ~500 connections across all free clusters.
       // Keep pool small so concurrent lambdas don't exhaust the cap.
       maxPoolSize: 3,
@@ -34,11 +35,11 @@ async function dbConnect() {
       socketTimeoutMS: 45_000,
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI!, opts).then((mongoose) => {
-      return mongoose;
+    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongooseInstance) => {
+      return mongooseInstance;
     });
   }
-  
+
   try {
     cached.conn = await cached.promise;
   } catch (e) {

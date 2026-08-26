@@ -2,11 +2,13 @@ import { Redis } from '@upstash/redis';
 import { NextRequest, NextResponse } from 'next/server';
 import { recordRateLimitExceeded } from '@/lib/telemetry/metrics';
 import { logger } from '@/lib/telemetry/logger';
+import { env } from '@/lib/config';
+import { RateLimitOptions } from '@/types/rate-limit';
 
 let _redis: Redis | null = null;
 
 function getRedis(): Redis | null {
-  if (!process.env.UPSTASH_REDIS_REST_URL) return null;
+  if (!env.UPSTASH_REDIS_REST_URL) return null;
   return (_redis ??= Redis.fromEnv());
 }
 
@@ -19,12 +21,6 @@ export function getClientIp(req: Request | NextRequest): string {
   const xForwardedFor = headers.get('x-forwarded-for');
   if (xForwardedFor) return xForwardedFor.split(',')[0].trim();
   return '127.0.0.1';
-}
-
-export interface RateLimitOptions {
-  windowMs?: number; // Time window in ms (default: 60_000)
-  max?: number;      // Max requests per window (default: 60)
-  keyPrefix?: string;
 }
 
 /**

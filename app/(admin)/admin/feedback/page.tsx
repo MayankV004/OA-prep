@@ -30,23 +30,7 @@ import {
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-
-interface FeedbackItem {
-  _id: string;
-  type: 'bug' | 'feedback';
-  title: string;
-  description: string;
-  category?: string;
-  severity?: 'low' | 'medium' | 'high' | 'critical';
-  email: string;
-  name?: string;
-  pageUrl?: string;
-  userAgent?: string;
-  status: 'pending' | 'in_review' | 'resolved' | 'dismissed';
-  adminNotes?: string;
-  createdAt: string;
-  userId?: { _id: string; name: string; email: string };
-}
+import { FeedbackItemDTO as FeedbackItem, FeedbackStats } from '@/types/feedback';
 
 function SummaryCard({
   label,

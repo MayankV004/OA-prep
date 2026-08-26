@@ -7,9 +7,10 @@ import { PasswordResetEmail } from '@/emails/PasswordReset';
 import { OTPEmail } from '@/emails/OTPEmail';
 import { FeedbackNotificationEmail } from '@/emails/FeedbackNotification';
 import React from 'react';
+import { env } from '@/lib/config';
 
 function getResendClient() {
-  const resendApiKey = process.env.RESEND_API_KEY;
+  const resendApiKey = env.RESEND_API_KEY;
   const isDummyKey = !resendApiKey || resendApiKey === 're_dummy' || resendApiKey.startsWith('re_dummy');
   return resendApiKey && !isDummyKey ? new Resend(resendApiKey) : null;
 }
@@ -22,8 +23,8 @@ function sanitizeHeaderValue(val?: string): string {
 }
 
 function getEmailHeaders() {
-  const fromEmail = process.env.EMAIL_FROM || 'BigO <no-reply@bigoprep.tech>';
-  const replyTo = process.env.EMAIL_REPLY_TO || 'BigO Support <support@bigoprep.tech>';
+  const fromEmail = env.EMAIL_FROM;
+  const replyTo = env.EMAIL_REPLY_TO;
   return { fromEmail, replyTo };
 }
 
@@ -37,7 +38,7 @@ export async function sendInviteEmail(args: {
   token: string;
   expiresInHours: number;
 }) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const appUrl = env.NEXT_PUBLIC_APP_URL;
   const url = `${appUrl}/invite/${args.token}`;
   const role = args.role || 'User';
   const cleanInviterName = sanitizeHeaderValue(args.inviterName) || 'Admin';
@@ -90,7 +91,7 @@ export async function sendWelcomeEmail(args: {
   to: string;
   userName: string;
 }) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const appUrl = env.NEXT_PUBLIC_APP_URL;
   const dashboardUrl = `${appUrl}/dashboard`;
 
   const html = await render(
@@ -142,7 +143,7 @@ export async function sendInviteAcceptedEmail(args: {
   invitedName?: string;
   role: string;
 }) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const appUrl = env.NEXT_PUBLIC_APP_URL;
   const adminUsersUrl = `${appUrl}/admin/users`;
 
   const html = await render(
@@ -195,7 +196,7 @@ export async function sendPasswordResetEmail(args: {
   resetToken: string;
   expiresInMinutes?: number;
 }) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const appUrl = env.NEXT_PUBLIC_APP_URL;
   const resetUrl = `${appUrl}/reset-password?token=${args.resetToken}`;
   const expiresInMinutes = args.expiresInMinutes || 60;
 
@@ -305,7 +306,7 @@ export async function sendFeedbackNotificationEmail(args: {
     process.env.ADMIN_BOOTSTRAP_EMAIL ||
     process.env.EMAIL_REPLY_TO ||
     'mayankcocspecial@gmail.com';
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const appUrl = env.NEXT_PUBLIC_APP_URL;
   const adminFeedbackUrl = `${appUrl}/admin/feedback`;
   const submittedAt = new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
 
