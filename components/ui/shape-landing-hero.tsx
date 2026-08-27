@@ -1,7 +1,8 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { Circle, Sparkles, ArrowRight } from 'lucide-react';
+import { useRef } from 'react';
+import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
+import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
@@ -13,6 +14,7 @@ function ElegantShape({
   rotate = 0,
   y = 15,
   gradient = 'from-primary/[0.15]',
+  parallaxFactor = 1,
 }: {
   className?: string;
   delay?: number;
@@ -21,7 +23,13 @@ function ElegantShape({
   rotate?: number;
   y?: number;
   gradient?: string;
+  parallaxFactor?: number;
 }) {
+  const { scrollY } = useScroll();
+  const parallaxY = useTransform(scrollY, [0, 800], [0, 150 * parallaxFactor]);
+  const smoothParallaxY = useSpring(parallaxY, { stiffness: 100, damping: 20 });
+  const rotateParallax = useTransform(scrollY, [0, 800], [rotate, rotate + 25 * parallaxFactor]);
+
   return (
     <motion.div
       initial={{
@@ -40,7 +48,11 @@ function ElegantShape({
         ease: [0.23, 0.86, 0.39, 0.96],
         opacity: { duration: 1.2 },
       }}
-      className={cn('absolute pointer-events-none', className)}
+      style={{
+        y: smoothParallaxY,
+        rotate: rotateParallax,
+      }}
+      className={cn('absolute pointer-events-none z-0', className)}
     >
       <motion.div
         animate={{
@@ -74,16 +86,24 @@ function ElegantShape({
 }
 
 export function HeroGeometric({
-  badge = 'Next-Gen Placement Platform',
-  title1 = 'Master DSA & Systems',
+  title1 = 'Master DSA & Systems.',
   title2 = 'Zero Distractions.',
   description = 'Empower your placement preparation with structured problem paths, interactive flashcards, AI guidance, and real-time execution.',
 }: {
-  badge?: string;
   title1?: string;
   title2?: string;
   description?: string;
 }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ['start start', 'end start'],
+  });
+
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+  const heroScale = useTransform(scrollYProgress, [0, 0.8], [1, 0.92]);
+  const heroY = useTransform(scrollYProgress, [0, 0.8], [0, 80]);
+
   const fadeUpVariants: any = {
     hidden: { opacity: 0, y: 30 },
     visible: (i: number) => ({
@@ -91,18 +111,21 @@ export function HeroGeometric({
       y: 0,
       transition: {
         duration: 1,
-        delay: 0.3 + i * 0.2,
+        delay: 0.2 + i * 0.15,
         ease: [0.25, 0.4, 0.25, 1],
       },
     }),
   };
 
   return (
-    <div className="relative min-h-[90vh] w-full flex items-center justify-center overflow-hidden bg-background pt-24 pb-16 transition-colors duration-500">
+    <div
+      ref={containerRef}
+      className="relative min-h-[92vh] w-full flex items-center justify-center overflow-hidden bg-background pt-24 pb-16 transition-colors duration-500"
+    >
       {/* Dynamic Ambient Background Gradients */}
-      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/[0.07] via-transparent to-rose-500/[0.07] dark:from-indigo-500/[0.12] dark:to-rose-500/[0.12] blur-3xl pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-br from-red-500/[0.08] via-transparent to-rose-500/[0.08] dark:from-red-500/[0.14] dark:to-rose-500/[0.14] blur-3xl pointer-events-none" />
 
-      {/* Floating 3D Geometric Glassmorphic Shapes (21st.dev component style) */}
+      {/* Floating 3D Geometric Glassmorphic Shapes with Scroll Parallax */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <ElegantShape
           delay={0.3}
@@ -110,7 +133,8 @@ export function HeroGeometric({
           height={140}
           rotate={12}
           y={15}
-          gradient="from-indigo-500/[0.2] dark:from-indigo-400/[0.25]"
+          parallaxFactor={1.4}
+          gradient="from-red-500/[0.2] dark:from-red-400/[0.25]"
           className="left-[-10%] md:left-[-5%] top-[15%] md:top-[20%]"
         />
 
@@ -120,6 +144,7 @@ export function HeroGeometric({
           height={120}
           rotate={-15}
           y={15}
+          parallaxFactor={-1.2}
           gradient="from-rose-500/[0.2] dark:from-rose-400/[0.25]"
           className="right-[-5%] md:right-[0%] top-[65%] md:top-[70%]"
         />
@@ -130,7 +155,8 @@ export function HeroGeometric({
           height={80}
           rotate={-8}
           y={15}
-          gradient="from-violet-500/[0.2] dark:from-violet-400/[0.25]"
+          parallaxFactor={1.8}
+          gradient="from-pink-500/[0.2] dark:from-pink-400/[0.25]"
           className="left-[5%] md:left-[10%] bottom-[5%] md:bottom-[10%]"
         />
 
@@ -140,7 +166,8 @@ export function HeroGeometric({
           height={60}
           rotate={20}
           y={15}
-          gradient="from-amber-500/[0.2] dark:from-amber-400/[0.25]"
+          parallaxFactor={-0.8}
+          gradient="from-orange-500/[0.2] dark:from-orange-400/[0.25]"
           className="right-[15%] md:right-[20%] top-[10%] md:top-[15%]"
         />
 
@@ -150,43 +177,33 @@ export function HeroGeometric({
           height={40}
           rotate={-25}
           y={15}
-          gradient="from-cyan-500/[0.2] dark:from-cyan-400/[0.25]"
+          parallaxFactor={2.1}
+          gradient="from-red-600/[0.2] dark:from-red-500/[0.25]"
           className="left-[20%] md:left-[25%] top-[5%] md:top-[10%]"
         />
       </div>
 
-      {/* Main Content */}
-      <div className="relative z-10 container mx-auto px-4 md:px-6">
+      {/* Main Content with Scroll Transform */}
+      <motion.div
+        style={{ opacity: heroOpacity, scale: heroScale, y: heroY }}
+        className="relative z-10 container mx-auto px-4 md:px-6"
+      >
         <div className="max-w-4xl mx-auto text-center">
-          {/* Badge */}
-          <motion.div
-            custom={0}
-            variants={fadeUpVariants}
-            initial="hidden"
-            animate="visible"
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-foreground/[0.04] dark:bg-white/[0.05] border border-foreground/[0.08] dark:border-white/[0.1] backdrop-blur-md mb-8 shadow-sm"
-          >
-            <Sparkles className="h-3.5 w-3.5 text-rose-500 animate-pulse" />
-            <span className="text-xs sm:text-sm font-medium tracking-wide text-foreground/80 dark:text-white/80">
-              {badge}
-            </span>
-          </motion.div>
-
-          {/* Heading */}
-          <motion.div custom={1} variants={fadeUpVariants} initial="hidden" animate="visible">
+          {/* Heading (Badge removed completely) */}
+          <motion.div custom={0} variants={fadeUpVariants} initial="hidden" animate="visible">
             <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black mb-6 tracking-tight leading-[1.1]">
               <span className="bg-clip-text text-transparent bg-gradient-to-b from-foreground via-foreground/90 to-foreground/60 dark:from-white dark:via-white/90 dark:to-white/60">
                 {title1}
               </span>
               <br />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-rose-500 dark:from-indigo-300 dark:via-purple-200 dark:to-rose-300">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-600 via-rose-500 to-red-500 dark:from-red-400 dark:via-rose-400 dark:to-red-300">
                 {title2}
               </span>
             </h1>
           </motion.div>
 
           {/* Subtitle */}
-          <motion.div custom={2} variants={fadeUpVariants} initial="hidden" animate="visible">
+          <motion.div custom={1} variants={fadeUpVariants} initial="hidden" animate="visible">
             <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-10 leading-relaxed font-light tracking-wide max-w-2xl mx-auto px-4">
               {description}
             </p>
@@ -194,26 +211,26 @@ export function HeroGeometric({
 
           {/* CTA Buttons */}
           <motion.div
-            custom={3}
+            custom={2}
             variants={fadeUpVariants}
             initial="hidden"
             animate="visible"
             className="flex flex-col sm:flex-row items-center justify-center gap-4"
           >
             <Link href="/dsa">
-              <button className="group relative inline-flex items-center justify-center h-12 px-8 rounded-2xl font-semibold text-white bg-gradient-to-r from-red-600 via-rose-600 to-red-500 shadow-[0_0_30px_rgba(225,29,72,0.4)] hover:shadow-[0_0_40px_rgba(225,29,72,0.7)] transition-all duration-300 hover:scale-105 active:scale-95 border-0">
+              <button className="group relative inline-flex items-center justify-center h-12 px-8 rounded-2xl font-semibold text-white bg-gradient-to-r from-red-600 via-rose-600 to-red-500 shadow-[0_0_30px_rgba(225,29,72,0.4)] hover:shadow-[0_0_40px_rgba(225,29,72,0.7)] transition-all duration-300 hover:scale-105 active:scale-95 border-0 cursor-pointer">
                 <span>Start Practice</span>
                 <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
               </button>
             </Link>
             <a href="#features">
-              <button className="h-12 px-8 rounded-2xl font-medium text-foreground bg-foreground/[0.04] dark:bg-white/[0.06] hover:bg-foreground/[0.08] dark:hover:bg-white/[0.1] border border-foreground/[0.1] dark:border-white/[0.15] backdrop-blur-md transition-all duration-200 hover:scale-105 active:scale-95">
+              <button className="h-12 px-8 rounded-2xl font-medium text-foreground bg-foreground/[0.04] dark:bg-white/[0.06] hover:bg-foreground/[0.08] dark:hover:bg-white/[0.1] border border-foreground/[0.1] dark:border-white/[0.15] backdrop-blur-md transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer">
                 Explore Features
               </button>
             </a>
           </motion.div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Bottom Gradient Fade */}
       <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-background to-transparent pointer-events-none" />
