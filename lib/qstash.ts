@@ -21,18 +21,39 @@ export async function enqueueEmail(job: EmailJob): Promise<void> {
   const token = env.QSTASH_TOKEN;
   const appUrl = env.NEXT_PUBLIC_APP_URL || env.BETTER_AUTH_URL || 'http://localhost:3000';
 
-  if (!token || token.startsWith('qstash_dummy')) {
-    // Dev: fire-and-forget after the response is flushed
-    after(() => dispatchEmail(job));
+  const isLoopback =
+    !appUrl ||
+    appUrl.includes('localhost') ||
+    appUrl.includes('127.0.0.1') ||
+    appUrl.includes('::1') ||
+    appUrl.includes('0.0.0.0');
+
+  if (!token || token.startsWith('qstash_dummy') || isLoopback) {
+    // Dev / Localhost: fire directly via next/server after() — cloud QStash cannot reach loopback URLs
+    try {
+      after(() => dispatchEmail(job));
+    } catch {
+      // In non-request contexts where after() cannot be used, run directly
+      dispatchEmail(job).catch((err) => console.error('Failed to dispatch email in background:', err));
+    }
     return;
   }
 
-  const client = new Client({ token });
-  await client.publishJSON({
-    url: `${appUrl}/api/workers/email`,
-    body: job,
-    retries: 3,
-  });
+  try {
+    const client = new Client({ token });
+    await client.publishJSON({
+      url: `${appUrl}/api/workers/email`,
+      body: job,
+      retries: 3,
+    });
+  } catch (err: any) {
+    console.warn('QStash publishJSON failed, falling back to direct dispatch:', err?.message || err);
+    try {
+      after(() => dispatchEmail(job));
+    } catch {
+      await dispatchEmail(job);
+    }
+  }
 }
 
 /**
@@ -50,6 +71,12 @@ export async function dispatchEmail(job: EmailJob): Promise<void> {
       break;
     case 'invite_accepted':
       await email.sendInviteAcceptedEmail(job);
+      break;
+    case 'contest_alert':
+      await email.sendContestAlertEmail(job);
+      break;
+    case 'contest_weekly_digest':
+      await email.sendWeeklyContestDigestEmail(job);
       break;
     default: {
       const _exhaustive: never = job;

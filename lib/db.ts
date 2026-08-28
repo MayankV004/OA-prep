@@ -50,6 +50,7 @@ async function dbConnect() {
   return cached.conn;
 }
 
+export { dbConnect, dbConnect as connectDB };
 export default dbConnect;
 
 // Expose underlying mongo client for better-auth

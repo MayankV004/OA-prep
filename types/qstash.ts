@@ -1,3 +1,5 @@
+import { ContestAlertEmailProps, WeeklyContestDigestEmailProps } from './email';
+
 export type EmailJob =
   | {
       type: 'invite';
@@ -19,4 +21,12 @@ export type EmailJob =
       invitedEmail: string;
       invitedName?: string;
       role: string;
-    };
+    }
+  | ({
+      type: 'contest_alert';
+      to: string;
+    } & ContestAlertEmailProps)
+  | ({
+      type: 'contest_weekly_digest';
+      to: string;
+    } & WeeklyContestDigestEmailProps);

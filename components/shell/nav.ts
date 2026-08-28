@@ -1,6 +1,7 @@
 import {
   Activity,
   BookOpen,
+  Calendar,
   Code2,
   FileText,
   FolderTree,
@@ -41,7 +42,8 @@ export const APP_NAV: NavSection[] = [
       { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, exact: true },
       { name: 'Pattern DSA', href: '/dsa', icon: Code2 },
       { name: 'Non-standard', href: '/non-standard', icon: Layers },
-      { name: 'Comp. Prog.', href: '/cp', icon: Trophy },
+      { name: 'Comp. Prog.', href: '/cp', icon: Trophy, exact: true },
+      { name: 'Contest Radar', href: '/cp/contests', icon: Calendar },
     ],
   },
   {
@@ -113,6 +115,7 @@ export function isNavItemActive(pathname: string, item: NavItem): boolean {
 const LABEL_OVERRIDES: Record<string, string> = {
   dsa: 'Pattern DSA',
   cp: 'Competitive Programming',
+  contests: 'Contests Radar',
   'non-standard': 'Non-standard',
   admin: 'Admin',
   qa: 'Q&A',

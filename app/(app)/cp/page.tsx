@@ -31,6 +31,41 @@ export default function CPPage() {
         description="Track contest problems by platform and keep an eye on where the backlog is building up."
       />
 
+      {/* Contest Radar & Alert Subscription Callout */}
+      <Link
+        href="/cp/contests"
+        className="group block rounded-2xl border border-primary/30 bg-gradient-to-r from-primary/10 via-surface to-surface-sunken p-5 transition-all hover:border-primary/60 hover:shadow-md outline-none focus-visible:shadow-glow"
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-3.5">
+            <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground font-bold shadow-sm">
+              ⏰
+            </span>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-base text-text">Contest Radar & Email Alerts</span>
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 text-[10px] font-semibold text-emerald-500 font-mono">
+                  <span className="size-1.5 rounded-full bg-emerald-500 animate-ping" />
+                  LIVE SCHEDULE
+                </span>
+              </div>
+              <Text size="caption" tone="muted" className="text-xs max-w-xl">
+                Get automated email alerts before LeetCode, Codeforces, CodeChef, and AtCoder contests begin. Never miss rating rounds again.
+              </Text>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 self-start sm:self-center">
+            <span className="text-xs font-semibold text-primary group-hover:underline">
+              Open Contest Radar
+            </span>
+            <span className="grid size-8 shrink-0 place-items-center rounded-full bg-surface-sunken text-text-muted transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+              <ArrowRight className="size-4" />
+            </span>
+          </div>
+        </div>
+      </Link>
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {PLATFORMS.map(platform => {
           const stat = statsMap[platform] ?? { total: 0, completed: 0 };

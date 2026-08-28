@@ -6,6 +6,9 @@ import { InviteAcceptedEmail } from '@/emails/InviteAccepted';
 import { PasswordResetEmail } from '@/emails/PasswordReset';
 import { OTPEmail } from '@/emails/OTPEmail';
 import { FeedbackNotificationEmail } from '@/emails/FeedbackNotification';
+import { ContestAlertEmail } from '@/emails/ContestAlertEmail';
+import { WeeklyContestDigestEmail } from '@/emails/WeeklyContestDigestEmail';
+import { ContestAlertEmailProps, WeeklyContestDigestEmailProps } from '@/types/email';
 import React from 'react';
 import { env } from '@/lib/config';
 
@@ -358,4 +361,113 @@ export async function sendFeedbackNotificationEmail(args: {
     return null;
   }
 }
+
+/**
+ * 7. Send Contest Countdown Alert Email
+ */
+export async function sendContestAlertEmail(args: {
+  to: string;
+} & ContestAlertEmailProps) {
+  const appUrl = env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const preferencesUrl = `${appUrl}/cp/contests`;
+  const practiceUrl = `${appUrl}/cp`;
+
+  const html = await render(
+    React.createElement(ContestAlertEmail, {
+      ...args,
+      appName: APP_NAME,
+      preferencesUrl: args.preferencesUrl || preferencesUrl,
+      practiceUrl: args.practiceUrl || practiceUrl,
+    })
+  );
+
+  const { fromEmail, replyTo } = getEmailHeaders();
+  const subject = `🚨 [${args.platform.toUpperCase()}] ${args.contestName} ${args.startsInLabel}!`;
+  const resend = getResendClient();
+
+  if (!resend) {
+    console.log('\n----------------------------------------------------');
+    console.log('[DEV EMAIL MOCK] Contest Alert Email Triggered');
+    console.log(`To: ${args.to}`);
+    console.log(`From: ${fromEmail}`);
+    console.log(`Subject: ${subject}`);
+    console.log(`Contest: ${args.contestName} (${args.platform})`);
+    console.log(`Start Time: ${args.startTimeFormatted}`);
+    console.log(`URL: ${args.contestUrl}`);
+    console.log('----------------------------------------------------\n');
+    return { id: 'mock_contest_alert_id', mock: true };
+  }
+
+  try {
+    const data = await resend.emails.send({
+      from: fromEmail,
+      replyTo: replyTo || undefined,
+      to: args.to,
+      subject,
+      html,
+      headers: {
+        'List-Unsubscribe': `<${args.unsubscribeUrl}>`,
+        'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+      },
+    });
+    return data;
+  } catch (error) {
+    console.error('Failed to send contest alert email via Resend API:', error);
+    throw error;
+  }
+}
+
+/**
+ * 8. Send Weekly Contest Digest Email
+ */
+export async function sendWeeklyContestDigestEmail(args: {
+  to: string;
+} & WeeklyContestDigestEmailProps) {
+  const appUrl = env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const contestsHubUrl = `${appUrl}/cp/contests`;
+  const preferencesUrl = `${appUrl}/cp/contests`;
+
+  const html = await render(
+    React.createElement(WeeklyContestDigestEmail, {
+      ...args,
+      appName: APP_NAME,
+      contestsHubUrl: args.contestsHubUrl || contestsHubUrl,
+      preferencesUrl: args.preferencesUrl || preferencesUrl,
+    })
+  );
+
+  const { fromEmail, replyTo } = getEmailHeaders();
+  const subject = `📅 Your Coding Contest Schedule (${args.weekRangeLabel})`;
+  const resend = getResendClient();
+
+  if (!resend) {
+    console.log('\n----------------------------------------------------');
+    console.log('[DEV EMAIL MOCK] Weekly Contest Digest Email Triggered');
+    console.log(`To: ${args.to}`);
+    console.log(`From: ${fromEmail}`);
+    console.log(`Subject: ${subject}`);
+    console.log(`Contests Count: ${args.contests.length}`);
+    console.log('----------------------------------------------------\n');
+    return { id: 'mock_weekly_digest_id', mock: true };
+  }
+
+  try {
+    const data = await resend.emails.send({
+      from: fromEmail,
+      replyTo: replyTo || undefined,
+      to: args.to,
+      subject,
+      html,
+      headers: {
+        'List-Unsubscribe': `<${args.unsubscribeUrl}>`,
+        'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+      },
+    });
+    return data;
+  } catch (error) {
+    console.error('Failed to send weekly contest digest email via Resend API:', error);
+    throw error;
+  }
+}
+
 

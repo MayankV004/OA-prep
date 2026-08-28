@@ -29,6 +29,9 @@ const envSchema = z.object({
   QSTASH_CURRENT_SIGNING_KEY: z.string().optional().default(''),
   QSTASH_NEXT_SIGNING_KEY: z.string().optional().default(''),
 
+  // Cron Security
+  CRON_SECRET: z.string().optional().default(''),
+
   // Social OAuth Providers
   GITHUB_CLIENT_ID: z.string().optional().default(''),
   GITHUB_CLIENT_SECRET: z.string().optional().default(''),

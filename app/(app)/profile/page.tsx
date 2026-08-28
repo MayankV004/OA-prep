@@ -24,10 +24,12 @@ import {
   LogOut,
   X,
   Check,
+  BellRing,
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { ContestAlertPreferencesModal } from '@/components/contests/ContestAlertPreferencesModal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -502,7 +504,37 @@ export default function ProfilePage() {
         </CardContent>
       </Card>
 
-      {/* ── 5. Account Settings & Sign Out ────────────────────────────────── */}
+      {/* ── 5. Contest Email Alert Preferences ───────────────────────── */}
+      <Card className="shadow-e1 border-border/60">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <BellRing className="size-4 text-primary" />
+              <div>
+                <CardTitle className="text-base font-bold">Contest Email Alerts</CardTitle>
+                <CardDescription className="text-xs">
+                  Automated reminders before LeetCode, Codeforces, CodeChef, and AtCoder contests
+                </CardDescription>
+              </div>
+            </div>
+            <ContestAlertPreferencesModal
+              trigger={
+                <Button variant="outline" size="sm" className="gap-1.5 text-xs font-semibold">
+                  <BellRing className="size-3.5 text-primary" />
+                  <span>Configure Alerts</span>
+                </Button>
+              }
+            />
+          </div>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <p className="text-xs text-text-muted">
+            Receive reminders 2 hours and 30 minutes before contests with direct calendar links.
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* ── 6. Account Settings & Sign Out ────────────────────────────────── */}
       <Card className="shadow-e1 border-border/60">
         <CardHeader className="pb-3">
           <CardTitle className="text-base font-bold">Account Management</CardTitle>
