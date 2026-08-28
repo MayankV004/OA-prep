@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { withAuth } from '@/lib/auth';
-import { User, UserProgress, Activity, Pattern, Problem } from '@/models';
+import { UserProgress, Activity, Pattern, Problem } from '@/models';
 import dbConnect from '@/lib/db';
 import mongoose from 'mongoose';
 import { z } from 'zod';
@@ -8,11 +8,20 @@ import { z } from 'zod';
 export async function GET(req: NextRequest) {
   return withAuth(req, async ({ userId }) => {
     await dbConnect();
-    const uid = new mongoose.Types.ObjectId(userId);
+    const db = mongoose.connection.db;
+    if (!db) throw { status: 500, message: 'Database connection failed' };
 
-    // 1. Fetch User document
-    const userDoc = await User.findById(userId).lean();
+    // 1. Fetch User document using multi-format identifier resolution
+    const idQueries: any[] = [{ _id: userId }];
+    if (mongoose.Types.ObjectId.isValid(userId)) {
+      idQueries.push({ _id: new mongoose.Types.ObjectId(userId) });
+    }
+    idQueries.push({ id: userId });
+
+    const userDoc: any = await db.collection('user').findOne({ $or: idQueries });
     if (!userDoc) throw { status: 404, message: 'User not found' };
+
+    const uid = userDoc._id;
 
     // 2. Dates for 365 days (1 year) query
     const now = new Date();
@@ -21,11 +30,11 @@ export async function GET(req: NextRequest) {
     // 3. Compute stats in parallel
     const [patterns, userProgress, nonStandardProblems, cpProblems, heatmap, recentActivity, revisionCount, notesCount] = await Promise.all([
       Pattern.find().lean(),
-      UserProgress.find({ userId: uid }).lean(),
+      UserProgress.find({ $or: [{ userId: uid }, { userId: userId }] }).lean(),
       Problem.find({ kind: 'nonstandard' }).lean(),
       Problem.find({ kind: 'cp' }).lean(),
       Activity.aggregate([
-        { $match: { targetUserId: uid, createdAt: { $gte: oneYearAgo } } },
+        { $match: { $or: [{ targetUserId: uid }, { targetUserId: userId }], createdAt: { $gte: oneYearAgo } } },
         {
           $group: {
             _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
@@ -35,9 +44,9 @@ export async function GET(req: NextRequest) {
         { $project: { date: '$_id', count: 1, _id: 0 } },
         { $sort: { date: 1 } },
       ]),
-      Activity.find({ targetUserId: uid }).sort({ createdAt: -1 }).limit(15).lean(),
-      UserProgress.countDocuments({ userId: uid, revision: true }),
-      UserProgress.countDocuments({ userId: uid, userNotes: { $exists: true, $ne: '' } }),
+      Activity.find({ $or: [{ targetUserId: uid }, { targetUserId: userId }] }).sort({ createdAt: -1 }).limit(15).lean(),
+      UserProgress.countDocuments({ $or: [{ userId: uid }, { userId: userId }], revision: true }),
+      UserProgress.countDocuments({ $or: [{ userId: uid }, { userId: userId }], userNotes: { $exists: true, $ne: '' } }),
     ]);
 
     // Build completed problem maps
@@ -98,10 +107,15 @@ export async function GET(req: NextRequest) {
     return {
       user: {
         id: userDoc._id.toString(),
-        name: userDoc.name,
-        email: userDoc.email,
+        name: userDoc.name || '',
+        email: userDoc.email || '',
         image: userDoc.image || null,
         role: userDoc.role || 'user',
+        bio: userDoc.bio || '',
+        college: userDoc.college || '',
+        github: userDoc.github || '',
+        linkedin: userDoc.linkedin || '',
+        portfolio: userDoc.portfolio || '',
         createdAt: userDoc.createdAt,
         lastSeenAt: userDoc.lastSeenAt,
       },
@@ -126,29 +140,62 @@ export async function GET(req: NextRequest) {
 
 const updateProfileSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100).optional(),
-  image: z.string().url('Invalid image URL').or(z.literal('')).optional(),
+  image: z.string().optional().nullable(),
+  bio: z.string().max(300).optional().nullable(),
+  college: z.string().max(120).optional().nullable(),
+  github: z.string().max(120).optional().nullable(),
+  linkedin: z.string().max(120).optional().nullable(),
+  portfolio: z.string().max(120).optional().nullable(),
 });
 
 export async function PATCH(req: NextRequest) {
   return withAuth(req, async ({ userId }) => {
     await dbConnect();
+    const db = mongoose.connection.db;
+    if (!db) throw { status: 500, message: 'Database connection failed' };
+
     const body = await req.json();
     const parsed = updateProfileSchema.parse(body);
 
-    const user = await User.findById(userId);
-    if (!user) throw { status: 404, message: 'User not found' };
+    const updateFields: Record<string, any> = {};
+    if (parsed.name !== undefined) updateFields.name = parsed.name?.trim();
+    if (parsed.image !== undefined) updateFields.image = parsed.image || '';
+    if (parsed.bio !== undefined) updateFields.bio = parsed.bio || '';
+    if (parsed.college !== undefined) updateFields.college = parsed.college || '';
+    if (parsed.github !== undefined) updateFields.github = parsed.github || '';
+    if (parsed.linkedin !== undefined) updateFields.linkedin = parsed.linkedin || '';
+    if (parsed.portfolio !== undefined) updateFields.portfolio = parsed.portfolio || '';
 
-    if (parsed.name !== undefined) user.name = parsed.name;
-    if (parsed.image !== undefined) user.image = parsed.image || undefined;
+    const idQueries: any[] = [{ _id: userId }];
+    if (mongoose.Types.ObjectId.isValid(userId)) {
+      idQueries.push({ _id: new mongoose.Types.ObjectId(userId) });
+    }
+    idQueries.push({ id: userId });
 
-    await user.save();
+    const updatedUser: any = await db.collection('user').findOneAndUpdate(
+      { $or: idQueries },
+      { $set: updateFields },
+      { returnDocument: 'after' }
+    );
+
+    if (!updatedUser) {
+      throw { status: 404, message: 'User not found to update' };
+    }
 
     return {
-      id: user._id.toString(),
-      name: user.name,
-      email: user.email,
-      image: user.image || null,
-      role: user.role,
+      success: true,
+      user: {
+        id: updatedUser._id.toString(),
+        name: updatedUser.name,
+        email: updatedUser.email,
+        image: updatedUser.image || null,
+        role: updatedUser.role || 'user',
+        bio: updatedUser.bio || '',
+        college: updatedUser.college || '',
+        github: updatedUser.github || '',
+        linkedin: updatedUser.linkedin || '',
+        portfolio: updatedUser.portfolio || '',
+      },
     };
   });
 }

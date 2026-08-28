@@ -6,7 +6,14 @@ const userSchema = new Schema(
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     emailVerified: { type: Boolean, required: true, default: false },
-    image: { type: String },
+    image: { type: String, default: '' },
+
+    // Additional profile fields
+    bio: { type: String, default: '' },
+    college: { type: String, default: '' },
+    github: { type: String, default: '' },
+    linkedin: { type: String, default: '' },
+    portfolio: { type: String, default: '' },
 
     // Additional fields mapped via BetterAuth
     role: { type: String, enum: ['user', 'admin'], default: 'user' },
@@ -14,11 +21,10 @@ const userSchema = new Schema(
     lastSeenAt: { type: Date },
     invitedBy: { type: Schema.Types.ObjectId, ref: 'User' },
   },
-  { timestamps: true, strict: true }
+  { timestamps: true, strict: false }
 );
 
-// BetterAuth creates indexes itself, but defining them explicitly here for clarity
-// Removed duplicate email index
+// Indexes
 userSchema.index({ role: 1 });
 userSchema.index({ disabled: 1 });
 
