@@ -5,17 +5,16 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { PageHeading, Heading, Text } from '@/components/ui/typography';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ContestCountdownCard, ContestItemProps } from '@/components/contests/ContestCountdownCard';
 import { ContestAlertPreferencesModal } from '@/components/contests/ContestAlertPreferencesModal';
 import {
   ArrowLeft,
-  Bell,
   BellRing,
   RefreshCw,
   Search,
+  SlidersHorizontal,
 } from 'lucide-react';
 
 const PLATFORMS = [
@@ -52,16 +51,6 @@ export default function ContestsPage() {
     },
   });
 
-  // Fetch subscription status for the header banner
-  const { data: subData } = useQuery({
-    queryKey: ['contestSubscription'],
-    queryFn: async () => {
-      const res = await fetch('/api/contests/subscription');
-      if (!res.ok) return null;
-      return res.json();
-    },
-  });
-
   // Manual sync mutation
   const syncMutation = useMutation({
     mutationFn: async () => {
@@ -94,11 +83,9 @@ export default function ContestsPage() {
     (c) => new Date() >= new Date(c.startTime) && new Date() <= new Date(c.endTime)
   ).length;
 
-  const isAlertsActive = subData?.subscription?.enabled ?? true;
-
   return (
     <div className="space-y-8 pb-16">
-      {/* Top Navigation & Title */}
+      {/* ── Top Navigation & Header ─────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-start gap-3">
           <Button
@@ -106,7 +93,7 @@ export default function ContestsPage() {
             variant="ghost"
             size="icon-xl"
             aria-label="Back to CP Hub"
-            className="mt-0.5 shrink-0 sm:size-9"
+            className="mt-0.5 shrink-0 sm:size-9 hover:bg-rose-500/10 hover:text-rose-500"
           >
             <ArrowLeft aria-hidden />
           </Button>
@@ -114,7 +101,7 @@ export default function ContestsPage() {
             className="min-w-0 flex-1"
             overline="Live Radar"
             title="Contest Schedule & Email Alerts"
-            description="Track upcoming and ongoing coding contests across LeetCode, Codeforces, CodeChef, and AtCoder with automated email alerts."
+            description="Real-time schedule of upcoming and live coding contests with automated email reminders."
           />
         </div>
 
@@ -125,11 +112,11 @@ export default function ContestsPage() {
             size="sm"
             onClick={() => syncMutation.mutate()}
             disabled={syncMutation.isPending || isRefetching}
-            className="gap-1.5 text-xs"
+            className="gap-1.5 text-xs border-border/70 hover:border-rose-500/40 hover:bg-rose-500/5 shadow-xs"
           >
             <RefreshCw
               className={`size-3.5 ${
-                syncMutation.isPending || isRefetching ? 'animate-spin text-primary' : ''
+                syncMutation.isPending || isRefetching ? 'animate-spin text-rose-500' : ''
               }`}
             />
             <span>Refresh</span>
@@ -137,104 +124,65 @@ export default function ContestsPage() {
 
           <Button
             onClick={() => setModalOpen(true)}
-            className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold shadow-sm"
+            className="gap-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-sm hover:shadow-md"
           >
             <BellRing className="size-3.5" />
-            <span>Email Alert Settings</span>
+            <span>Alert Preferences</span>
           </Button>
         </div>
       </div>
 
-      {/* Subscription Callout Banner */}
-      <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/10 via-surface to-surface-sunken p-5 sm:p-6 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="space-y-1 max-w-2xl">
-            <div className="flex items-center gap-2">
-              <span className="grid size-6 place-items-center rounded-md bg-primary text-primary-foreground text-xs font-bold">
-                ⏰
-              </span>
-              <span className="font-semibold text-sm text-text">
-                Never Miss Another Contest
-              </span>
-              {isAlertsActive ? (
-                <Badge className="bg-emerald-500/15 text-emerald-500 border-emerald-500/30 text-[10px] py-0 px-2 font-mono">
-                  ● ALERTS ON
-                </Badge>
-              ) : (
-                <Badge className="bg-zinc-500/15 text-zinc-400 border-zinc-500/30 text-[10px] py-0 px-2 font-mono">
-                  PAUSED
-                </Badge>
-              )}
-            </div>
-            <Text size="caption" tone="muted" className="text-xs">
-              Get timely notifications <strong>2 hours</strong> and <strong>30 minutes</strong> before contest start
-              with direct calendar links and practice recommendations right in your inbox.
-            </Text>
-          </div>
-
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => setModalOpen(true)}
-            className="shrink-0 gap-1.5 font-medium border border-border/60 hover:bg-surface-sunken"
-          >
-            <Bell className="size-3.5 text-primary" />
-            <span>{isAlertsActive ? 'Customize Reminders' : 'Enable Email Alerts'}</span>
-          </Button>
-        </div>
-      </div>
-
-      {/* Search & Platform Filter Bar */}
-      <div className="space-y-4">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-          {/* Search Input */}
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-text-subtle" />
-            <Input
-              type="text"
-              placeholder="Search contest title or platform..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 text-xs bg-surface"
-            />
-          </div>
-
+      {/* ── Filter Controls Bar ─────────────────────────────────────────────── */}
+      <div className="space-y-3.5">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           {/* Status Tabs */}
-          <div className="flex items-center gap-1.5 p-1 rounded-xl bg-surface-sunken border border-border/60 self-start md:self-auto">
+          <div className="flex items-center rounded-xl bg-surface-sunken p-1 border border-border/60 self-start">
             <button
               type="button"
               onClick={() => setActiveTab('all')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 activeTab === 'all'
-                  ? 'bg-surface text-text font-semibold shadow-xs'
-                  : 'text-text-muted hover:text-text'
+                  ? 'bg-surface text-foreground shadow-xs'
+                  : 'text-text-muted hover:text-foreground'
               }`}
             >
-              All ({contests.length})
+              All Contests ({contests.length})
             </button>
             <button
               type="button"
               onClick={() => setActiveTab('live')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
                 activeTab === 'live'
-                  ? 'bg-surface text-emerald-500 font-semibold shadow-xs'
-                  : 'text-text-muted hover:text-emerald-500'
+                  ? 'bg-surface text-emerald-500 shadow-xs'
+                  : 'text-text-muted hover:text-foreground'
               }`}
             >
-              <span className="size-1.5 rounded-full bg-emerald-500 inline-block animate-pulse" />
+              <span className="size-1.5 rounded-full bg-emerald-500" />
               Live Now ({liveCount})
             </button>
             <button
               type="button"
               onClick={() => setActiveTab('upcoming')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 activeTab === 'upcoming'
-                  ? 'bg-surface text-text font-semibold shadow-xs'
-                  : 'text-text-muted hover:text-text'
+                  ? 'bg-surface text-foreground shadow-xs'
+                  : 'text-text-muted hover:text-foreground'
               }`}
             >
               Upcoming ({contests.length - liveCount})
             </button>
+          </div>
+
+          {/* Search Input */}
+          <div className="relative w-full sm:w-72">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-text-muted" />
+            <Input
+              type="text"
+              placeholder="Search contest name..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 h-9 text-xs bg-surface border-border/70 rounded-xl"
+            />
           </div>
         </div>
 
@@ -247,10 +195,10 @@ export default function ContestsPage() {
                 key={plat.id}
                 type="button"
                 onClick={() => setSelectedPlatform(plat.id)}
-                className={`inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all border ${
+                className={`inline-flex items-center px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border ${
                   isSelected
-                    ? 'bg-primary text-primary-foreground border-primary shadow-xs font-semibold'
-                    : 'bg-surface border-border/60 text-text-muted hover:text-text hover:border-border hover:bg-surface-sunken/40'
+                    ? 'bg-rose-600 text-white border-rose-600 shadow-sm'
+                    : 'bg-surface border-border/60 text-text-muted hover:text-foreground hover:border-border hover:bg-surface-sunken/40'
                 }`}
               >
                 {plat.label}
@@ -260,25 +208,23 @@ export default function ContestsPage() {
         </div>
       </div>
 
-      {/* Contests Grid */}
+      {/* ── Contests Grid ───────────────────────────────────────────────────── */}
       {isLoading ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {[...Array(6)].map((_, i) => (
-            <Skeleton key={i} className="h-64 rounded-2xl" />
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-64 rounded-2xl w-full" />
           ))}
         </div>
       ) : filteredContests.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 px-4 rounded-2xl border border-dashed border-border/80 bg-surface-sunken/30 text-center">
-          <div className="grid size-12 place-items-center rounded-2xl bg-surface-sunken text-2xl mb-3">
-            📅
+        <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-border bg-surface p-12 text-center shadow-sm">
+          <div className="grid size-12 place-items-center rounded-full bg-rose-500/10 text-rose-500 mb-3">
+            <SlidersHorizontal className="size-5" />
           </div>
-          <Heading level="card" className="font-semibold mb-1">
+          <Heading level="section" className="text-base font-bold">
             No Contests Found
           </Heading>
-          <Text size="caption" tone="muted" className="max-w-md mb-4">
-            {searchQuery
-              ? `No contests matching "${searchQuery}". Try searching for another platform or keyword.`
-              : `No upcoming contests found for ${selectedPlatform}. Click refresh to check for schedule updates.`}
+          <Text tone="muted" className="text-xs max-w-sm mt-1">
+            No upcoming or active contests matched your search criteria. Try switching platforms or refreshing the feed.
           </Text>
           <Button
             variant="outline"
@@ -288,6 +234,7 @@ export default function ContestsPage() {
               setSearchQuery('');
               setActiveTab('all');
             }}
+            className="mt-4 text-xs font-semibold"
           >
             Clear Filters
           </Button>
@@ -295,13 +242,19 @@ export default function ContestsPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filteredContests.map((contest) => (
-            <ContestCountdownCard key={contest.externalId || contest._id} contest={contest} />
+            <ContestCountdownCard
+              key={contest._id || `${contest.platform}-${contest.externalId}`}
+              contest={contest}
+            />
           ))}
         </div>
       )}
 
-      {/* Preferences Modal */}
-      <ContestAlertPreferencesModal open={modalOpen} onOpenChange={setModalOpen} />
+      {/* Preferences Modal Trigger */}
+      <ContestAlertPreferencesModal
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+      />
     </div>
   );
 }

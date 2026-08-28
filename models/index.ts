@@ -14,3 +14,5 @@ export * from './feedback';
 export * from './contest';
 export * from './contestSubscription';
 export * from './contestAlertLog';
+export * from './userCpProfile';
+export * from './userContestHistory';

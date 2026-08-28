@@ -30,6 +30,7 @@ import {
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ContestAlertPreferencesModal } from '@/components/contests/ContestAlertPreferencesModal';
+import { LinkedHandlesCard } from '@/components/cp/LinkedHandlesCard';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -504,7 +505,10 @@ export default function ProfilePage() {
         </CardContent>
       </Card>
 
-      {/* ── 5. Contest Email Alert Preferences ───────────────────────── */}
+      {/* ── 5. Connected CP Profiles & Verification ─────────────────── */}
+      <LinkedHandlesCard />
+
+      {/* ── 6. Contest Email Alert Preferences ───────────────────────── */}
       <Card className="shadow-e1 border-border/60">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
