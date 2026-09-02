@@ -37,6 +37,15 @@ const envSchema = z.object({
   GITHUB_CLIENT_SECRET: z.string().optional().default(''),
   GOOGLE_CLIENT_ID: z.string().optional().default(''),
   GOOGLE_CLIENT_SECRET: z.string().optional().default(''),
+
+  // Payment Configuration (Stripe)
+  STRIPE_SECRET_KEY: z.string().optional().default(''),
+  STRIPE_WEBHOOK_SECRET: z.string().optional().default(''),
+  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().optional().default(''),
+  STRIPE_PRO_MONTHLY_PRICE_ID: z.string().optional().default(''),
+  STRIPE_PRO_ANNUAL_PRICE_ID: z.string().optional().default(''),
+  STRIPE_OA_PASS_PRICE_ID: z.string().optional().default(''),
+  PAYMENT_PROVIDER: z.enum(['stripe', 'mock']).default('stripe'),
 });
 
 function parseEnv() {

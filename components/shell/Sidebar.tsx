@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Code2, PanelLeftClose, PanelLeftOpen, Search, X } from 'lucide-react';
+import { Code2, PanelLeftClose, PanelLeftOpen, Search, X, Sparkles, ArrowRight } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -11,6 +11,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { SidebarNav } from './SidebarNav';
 import { UserMenu } from './UserMenu';
 import { useSidebar } from './use-sidebar';
+import { useSubscription } from '@/hooks/useSubscription';
 import type { NavSection } from './nav';
 
 const EXPANDED = 264;
@@ -83,6 +84,30 @@ function SearchTrigger({
   );
 }
 
+function UpgradeBanner({ collapsed }: { collapsed: boolean }) {
+  const { isPro } = useSubscription();
+  if (isPro || collapsed) return null;
+
+  return (
+    <div className="rounded-xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-transparent p-3 text-left">
+      <div className="flex items-center gap-1.5 font-semibold text-xs text-amber-500 dark:text-amber-400">
+        <Sparkles className="h-3.5 w-3.5" />
+        <span>Upgrade to BigO Pro</span>
+      </div>
+      <p className="mt-1 text-[11px] text-muted-foreground leading-tight">
+        Unlock timed mock OAs & AI testcase debugger.
+      </p>
+      <Link
+        href="/pricing"
+        className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-amber-600 dark:text-amber-400 hover:underline"
+      >
+        <span>View Plans</span>
+        <ArrowRight className="h-3 w-3" />
+      </Link>
+    </div>
+  );
+}
+
 function SidebarBody({
   sections,
   collapsed,
@@ -115,7 +140,8 @@ function SidebarBody({
         />
       </div>
 
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-2">
+        <UpgradeBanner collapsed={collapsed} />
         <UserMenu collapsed={collapsed} isAdmin={isAdmin} />
       </div>
     </div>

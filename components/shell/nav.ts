@@ -56,8 +56,9 @@ export const APP_NAV: NavSection[] = [
     ],
   },
   {
-    label: 'Support & Legal',
+    label: 'Account & Plans',
     items: [
+      { name: 'Pricing & Pro', href: '/pricing', icon: Sparkles },
       { name: 'Profile & Progress', href: '/profile', icon: User, exact: true },
       { name: 'Contact Us', href: '/contact', icon: HelpCircle },
     ],

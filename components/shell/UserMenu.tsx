@@ -1,10 +1,10 @@
-'use client';
-
 import * as React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ChevronsUpDown, Download, LogOut, Shield, User, MessageSquare, HelpCircle } from 'lucide-react';
+import { ChevronsUpDown, Download, LogOut, Shield, User, MessageSquare, HelpCircle, Sparkles, CreditCard } from 'lucide-react';
 import { FeedbackModal } from '@/components/feedback/FeedbackModal';
+import { useSubscription } from '@/hooks/useSubscription';
+import { ProBadge } from '@/components/pricing/ProBadge';
 
 import { cn } from '@/lib/utils';
 import { authClient } from '@/lib/auth-client';
@@ -41,6 +41,7 @@ function UserMenu({
   const router = useRouter();
   const queryClient = useQueryClient();
   const { data: session } = authClient.useSession();
+  const { isPro, openPortal } = useSubscription();
   const [imgError, setImgError] = React.useState(false);
   const [feedbackOpen, setFeedbackOpen] = React.useState(false);
 
@@ -86,8 +87,9 @@ function UserMenu({
           {!collapsed ? (
             <>
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-medium text-foreground">
-                  {name}
+                <span className="flex items-center gap-1.5 truncate text-sm font-medium text-foreground">
+                  <span className="truncate">{name}</span>
+                  {isPro ? <ProBadge size="sm" /> : null}
                 </span>
                 {email ? (
                   <span className="block truncate text-2xs text-text-muted">{email}</span>
@@ -116,7 +118,10 @@ function UserMenu({
               </span>
             )}
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-foreground">{name}</p>
+              <div className="flex items-center gap-1.5">
+                <p className="truncate text-sm font-semibold text-foreground">{name}</p>
+                {isPro && <ProBadge size="sm" />}
+              </div>
               {email ? (
                 <p className="truncate text-2xs text-text-muted">{email}</p>
               ) : null}
@@ -124,6 +129,18 @@ function UserMenu({
           </div>
 
           <Separator className="my-1" />
+
+          {!isPro ? (
+            <DropdownMenuItem render={<Link href="/pricing" />} className="gap-2 font-semibold text-amber-600 dark:text-amber-400">
+              <Sparkles className="size-4 text-amber-500" aria-hidden />
+              Upgrade to BigO Pro
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem onClick={() => openPortal()} className="gap-2">
+              <CreditCard className="size-4 text-amber-500" aria-hidden />
+              Manage Subscription
+            </DropdownMenuItem>
+          )}
 
           <DropdownMenuItem render={<Link href="/profile" />} className="gap-2">
             <User className="size-4 text-text-muted" aria-hidden />

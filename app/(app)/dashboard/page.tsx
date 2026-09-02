@@ -1,7 +1,11 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useRef } from 'react';
+import { toast } from 'sonner';
+import { subscriptionApi } from '@/lib/api/subscription';
 import {
   Code2,
   Trophy,
@@ -58,8 +62,39 @@ const ActivityHeatmap = dynamic(
 );
 
 export default function DashboardPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const queryClient = useQueryClient();
+  const verifiedRef = useRef(false);
+
+  const sessionId = searchParams.get('session_id');
+  const paymentStatus = searchParams.get('payment');
+
   const { data: session } = authClient.useSession();
   const userName = session?.user?.name || 'Prep Warrior';
+
+  // Instant session verification when redirected back from Stripe
+  useEffect(() => {
+    if (paymentStatus === 'success' && sessionId && !verifiedRef.current) {
+      verifiedRef.current = true;
+      subscriptionApi
+        .verifySession(sessionId)
+        .then((res) => {
+          if (res.success) {
+            toast.success('Subscription Activated! ⚡', {
+              description: 'Welcome to BigO Pro! All company mock tests and AI features are now unlocked.',
+            });
+            queryClient.invalidateQueries({ queryKey: ['subscription'] });
+          }
+        })
+        .catch((err) => {
+          console.error('Session verification error:', err);
+        })
+        .finally(() => {
+          router.replace('/dashboard');
+        });
+    }
+  }, [sessionId, paymentStatus, queryClient, router]);
 
   // Centralized TanStack Query v5 queryOptions
   const { data: stats, isLoading } = useQuery(dashboardQueries.stats('me'));
