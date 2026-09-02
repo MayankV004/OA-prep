@@ -16,5 +16,6 @@ Personal placement-prep tracker + knowledge base. Multi-user, invite-only, admin
 | [deployment.md](./deployment.md) | Vercel + Atlas + Resend prod path, first-admin bootstrap, backups, smoke test |
 | [security.md](./security.md) | Auth, role gate, invite tokens, Markdown XSS containment, CSP, rate limits |
 | [admin.md](./admin.md) | Permission matrix, admin panel UX, user dashboard components, activity event catalogue |
+| [monetization.md](./monetization.md) | Monetization strategy, tier matrix, OA simulator, AI engine, and B2B campus rollout |
 
-Start with **[PRD.md](./PRD.md)**. Then **[architecture.md](./architecture.md)** for the architectural shape. Use **[schema.md](./schema.md)** and **[api.md](./api.md)** as reference while developing.
+Start with **[PRD.md](./PRD.md)**. Then **[architecture.md](./architecture.md)** for the architectural shape. Use **[schema.md](./schema.md)** and **[api.md](./api.md)** as reference while developing. For commercialization, see **[monetization.md](./monetization.md)**.
