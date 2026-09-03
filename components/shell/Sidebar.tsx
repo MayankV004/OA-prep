@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Code2, PanelLeftClose, PanelLeftOpen, Search, X, Sparkles, ArrowRight } from 'lucide-react';
+import { Code2, PanelLeftClose, PanelLeftOpen, Search, X, ArrowRight } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -90,9 +90,8 @@ function UpgradeBanner({ collapsed }: { collapsed: boolean }) {
 
   return (
     <div className="rounded-xl border border-warning/30 bg-warning/10 p-3 text-left">
-      <div className="flex items-center gap-1.5 font-semibold text-xs text-warning">
-        <Sparkles className="h-3.5 w-3.5" />
-        <span>Upgrade to BigO Pro</span>
+      <div className="font-semibold text-xs text-warning">
+        Upgrade to BigO Pro
       </div>
       <p className="mt-1 text-[11px] text-muted-foreground leading-tight">
         Unlock timed mock OAs & AI testcase debugger.

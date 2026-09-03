@@ -342,9 +342,7 @@ export default function ProfilePage() {
                       <Shield className="size-3" /> Admin
                     </span>
                   ) : (
-                    <span className="flex items-center gap-1">
-                      <Sparkles className="size-3 text-rose-500" /> Candidate Pro
-                    </span>
+                    <span>Candidate Pro</span>
                   )}
                 </Badge>
               </div>

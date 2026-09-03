@@ -1,7 +1,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ChevronsUpDown, Download, LogOut, Shield, User, MessageSquare, HelpCircle, Sparkles, CreditCard } from 'lucide-react';
+import { ChevronsUpDown, Download, LogOut, Shield, User, MessageSquare, HelpCircle, CreditCard } from 'lucide-react';
 import { FeedbackModal } from '@/components/feedback/FeedbackModal';
 import { useSubscription } from '@/hooks/useSubscription';
 import { ProBadge } from '@/components/pricing/ProBadge';
@@ -131,8 +131,7 @@ function UserMenu({
           <Separator className="my-1" />
 
           {!isPro ? (
-            <DropdownMenuItem render={<Link href="/pricing" />} className="gap-2 font-semibold text-amber-600 dark:text-amber-400">
-              <Sparkles className="size-4 text-amber-500" aria-hidden />
+            <DropdownMenuItem render={<Link href="/pricing" />} className="font-semibold text-amber-600 dark:text-amber-400">
               Upgrade to BigO Pro
             </DropdownMenuItem>
           ) : (

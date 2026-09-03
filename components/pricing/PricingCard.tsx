@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Check, Sparkles, ArrowRight, Loader2 } from 'lucide-react';
+import { Check, ArrowRight, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { PlanPricingDetail, CheckoutPlanKey } from '@/lib/payments/types';
 
@@ -33,8 +33,7 @@ export function PricingCard({
       {/* Top badges */}
       {plan.badge && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-0.5 text-xs font-bold text-primary-foreground shadow-xs">
-            <Sparkles className="h-3 w-3" />
+          <span className="inline-flex items-center rounded-full bg-primary px-3 py-0.5 text-xs font-bold text-primary-foreground shadow-xs uppercase tracking-wider">
             {plan.badge}
           </span>
         </div>

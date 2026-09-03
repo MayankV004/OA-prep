@@ -94,7 +94,7 @@ export default function DSAPageClient({ initialPatterns }: { initialPatterns: an
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pt-2">
         <div className="space-y-1.5">
           <h1 className="font-display text-3xl sm:text-5xl font-black tracking-tight text-foreground leading-tight">
-            Master <span className="text-rose-500">DSA Patterns</span>
+            Master <span className="text-primary">DSA Patterns</span>
           </h1>
           <p className="text-sm sm:text-base text-muted-foreground max-w-xl font-light">
             Learn the underlying patterns, study universal templates, and apply them to solve any interview variation with confidence.
@@ -102,7 +102,7 @@ export default function DSAPageClient({ initialPatterns }: { initialPatterns: an
         </div>
 
         {/* Overall Mastery Meter Card */}
-        <div className="w-full sm:w-64 p-4 rounded-2xl bg-background/60 dark:bg-background/30 backdrop-blur-xl border border-border/30 shadow-sm space-y-2">
+        <div className="w-full sm:w-64 p-4 rounded-2xl bg-card border border-border shadow-xs space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-sans">
               Overall Mastery
@@ -113,7 +113,7 @@ export default function DSAPageClient({ initialPatterns }: { initialPatterns: an
             <span className="font-display text-3xl font-black tracking-tight text-foreground">{overallProgress}%</span>
             <span className="text-xs text-muted-foreground font-medium">completed</span>
           </div>
-          <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+          <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
             <div
               style={{ width: `${overallProgress}%` }}
               className="h-full rounded-full bg-primary transition-all duration-500"
@@ -123,7 +123,7 @@ export default function DSAPageClient({ initialPatterns }: { initialPatterns: an
       </div>
 
       {/* 2. Search & Filter Controls */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-2 rounded-2xl bg-background/50 backdrop-blur-md border border-border/30">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-2 rounded-2xl bg-card border border-border shadow-xs">
         {/* Search Bar */}
         <div className="relative w-full sm:w-80">
           <input
@@ -131,7 +131,7 @@ export default function DSAPageClient({ initialPatterns }: { initialPatterns: an
             placeholder="Search patterns or tags..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-10 px-4 text-sm font-medium bg-background/80 rounded-xl border border-border/40 focus:border-rose-500/50 focus:outline-none focus:ring-2 focus:ring-rose-500/20 transition-all"
+            className="w-full h-10 px-4 text-sm font-medium bg-background rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
           />
         </div>
 

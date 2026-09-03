@@ -6,19 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { subscriptionApi } from '@/lib/api/subscription';
-import {
-  Code2,
-  Trophy,
-  Activity,
-  TrendingUp,
-  ArrowRight,
-  Flame,
-  CheckCircle2,
-  Sparkles,
-  Terminal,
-  Clock,
-  Layers,
-} from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import dynamic from 'next/dynamic';
@@ -124,34 +112,27 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 shrink-0">
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
           <Link href="/dsa">
-            <button className="flex items-center gap-2 h-11 px-5 rounded-2xl font-bold text-xs bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95 transition-all shadow-xs border-none cursor-pointer">
-              <Code2 className="h-4 w-4" />
+            <button className="flex items-center gap-1.5 h-10 px-5 rounded-xl font-bold text-xs bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95 transition-all shadow-xs border-none cursor-pointer">
               <span>Practice DSA</span>
-              <ArrowRight className="h-3.5 w-3.5" />
+              <ArrowRight className="size-3.5" />
             </button>
           </Link>
           <Link href="/subjects">
-            <button className="flex items-center gap-2 h-11 px-5 rounded-2xl font-medium text-xs text-foreground bg-card hover:bg-muted border border-border active:scale-95 transition-all cursor-pointer">
-              <Terminal className="h-4 w-4 text-primary" />
+            <button className="flex items-center h-10 px-5 rounded-xl font-semibold text-xs text-foreground bg-card hover:bg-muted border border-border active:scale-95 transition-all cursor-pointer">
               <span>CS Core</span>
             </button>
           </Link>
         </div>
       </div>
 
-      {/* 2. Solid Stat Metric Cards */}
+      {/* 2. Solid Stat Metric Cards — Clean & Minimalist */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* Stat Card 1: Solved */}
-        <div className="group relative p-5 rounded-2xl bg-card border border-border shadow-xs hover:border-border/80 transition-all duration-200">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground font-sans">Problems Solved</span>
-            <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-              <CheckCircle2 className="h-4 w-4" />
-            </div>
-          </div>
-          <div className="mt-4">
+        <div className="p-5 rounded-2xl bg-card border border-border shadow-xs hover:border-border/80 transition-all duration-200">
+          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground font-sans">Problems Solved</span>
+          <div className="mt-3">
             {isLoading ? (
               <Skeleton className="h-8 w-24" />
             ) : (
@@ -160,7 +141,7 @@ export default function DashboardPage() {
                 <span className="text-xs text-muted-foreground font-medium">/ {totalProblems} ({overallPct}%)</span>
               </div>
             )}
-            <div className="mt-3 h-2 w-full rounded-full bg-muted overflow-hidden">
+            <div className="mt-3 h-1.5 w-full rounded-full bg-muted overflow-hidden">
               <div
                 style={{ width: `${overallPct}%` }}
                 className="h-full rounded-full bg-primary transition-all duration-500"
@@ -170,14 +151,9 @@ export default function DashboardPage() {
         </div>
 
         {/* Stat Card 2: Pattern DSA */}
-        <div className="group relative p-5 rounded-2xl bg-card border border-border shadow-xs hover:border-border/80 transition-all duration-200">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground font-sans">Pattern DSA</span>
-            <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-              <Trophy className="h-4 w-4" />
-            </div>
-          </div>
-          <div className="mt-4">
+        <div className="p-5 rounded-2xl bg-card border border-border shadow-xs hover:border-border/80 transition-all duration-200">
+          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground font-sans">Pattern DSA</span>
+          <div className="mt-3">
             {isLoading ? (
               <Skeleton className="h-8 w-24" />
             ) : (
@@ -188,21 +164,16 @@ export default function DashboardPage() {
                 <span className="text-xs text-muted-foreground font-medium">/ {patternStats?.total ?? 0} completed</span>
               </div>
             )}
-            <p className="mt-2 text-xs text-primary font-semibold flex items-center gap-1">
-              <Sparkles className="h-3 w-3 inline" /> Structured interview paths
+            <p className="mt-2.5 text-xs text-primary font-semibold">
+              Structured interview paths
             </p>
           </div>
         </div>
 
         {/* Stat Card 3: Difficulty Split */}
-        <div className="group relative p-5 rounded-2xl bg-card border border-border shadow-xs hover:border-border/80 transition-all duration-200">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground font-sans">Difficulty Mix</span>
-            <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-              <TrendingUp className="h-4 w-4" />
-            </div>
-          </div>
-          <div className="mt-4">
+        <div className="p-5 rounded-2xl bg-card border border-border shadow-xs hover:border-border/80 transition-all duration-200">
+          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground font-sans">Difficulty Mix</span>
+          <div className="mt-3">
             {isLoading ? (
               <Skeleton className="h-8 w-24" />
             ) : (
@@ -213,7 +184,7 @@ export default function DashboardPage() {
                 <span className="text-xs font-bold text-destructive">Hard</span>
               </div>
             )}
-            <div className="mt-2 flex items-center gap-2 text-xs font-mono text-muted-foreground">
+            <div className="mt-2.5 flex items-center gap-2 text-xs font-mono text-muted-foreground">
               <span className="text-primary font-bold">{stats?.difficultyMix?.Easy ?? 0}E</span> ·{' '}
               <span className="text-warning font-bold">{stats?.difficultyMix?.Medium ?? 0}M</span> ·{' '}
               <span className="text-destructive font-bold">{stats?.difficultyMix?.Hard ?? 0}H</span>
@@ -222,14 +193,9 @@ export default function DashboardPage() {
         </div>
 
         {/* Stat Card 4: 90d Activity */}
-        <div className="group relative p-5 rounded-2xl bg-card border border-border shadow-xs hover:border-border/80 transition-all duration-200">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground font-sans">90d Activity</span>
-            <div className="h-9 w-9 rounded-xl bg-warning/10 flex items-center justify-center text-warning">
-              <Activity className="h-4 w-4" />
-            </div>
-          </div>
-          <div className="mt-4">
+        <div className="p-5 rounded-2xl bg-card border border-border shadow-xs hover:border-border/80 transition-all duration-200">
+          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground font-sans">90d Activity</span>
+          <div className="mt-3">
             {isLoading ? (
               <Skeleton className="h-8 w-24" />
             ) : (
@@ -238,8 +204,8 @@ export default function DashboardPage() {
                 <span className="text-xs text-muted-foreground font-medium">actions logged</span>
               </div>
             )}
-            <p className="mt-2 text-xs text-warning font-semibold flex items-center gap-1">
-              <Flame className="h-3.5 w-3.5 text-warning inline fill-warning" /> Active prep streak
+            <p className="mt-2.5 text-xs text-warning font-semibold">
+              Active prep streak
             </p>
           </div>
         </div>
@@ -248,14 +214,9 @@ export default function DashboardPage() {
       {/* 4. Analytics Grid Row 1 (Completion Trend + Activity Feed) */}
       <div className="grid gap-6 lg:grid-cols-7">
         <Card className="min-w-0 lg:col-span-4 rounded-2xl bg-card border border-border shadow-xs">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <div>
-              <CardTitle className="font-display text-lg font-bold tracking-tight">Completion Trend</CardTitle>
-              <CardDescription className="text-xs text-muted-foreground">Problems completed per day (Last 90 Days)</CardDescription>
-            </div>
-            <div className="h-8 w-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-              <TrendingUp className="h-4 w-4" />
-            </div>
+          <CardHeader className="pb-2">
+            <CardTitle className="font-display text-base font-bold tracking-tight">Completion Trend</CardTitle>
+            <CardDescription className="text-xs text-muted-foreground">Problems completed per day (Last 90 Days)</CardDescription>
           </CardHeader>
           <CardContent className="min-w-0 pt-4">
             {isLoading ? (
@@ -267,14 +228,9 @@ export default function DashboardPage() {
         </Card>
 
         <Card className="min-w-0 lg:col-span-3 rounded-2xl bg-card border border-border shadow-xs">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <div>
-              <CardTitle className="font-display text-lg font-bold tracking-tight">Recent Activity</CardTitle>
-              <CardDescription className="text-xs text-muted-foreground">Your last 10 prep events</CardDescription>
-            </div>
-            <div className="h-8 w-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-              <Clock className="h-4 w-4" />
-            </div>
+          <CardHeader className="pb-2">
+            <CardTitle className="font-display text-base font-bold tracking-tight">Recent Activity</CardTitle>
+            <CardDescription className="text-xs text-muted-foreground">Your last 10 prep events</CardDescription>
           </CardHeader>
           <CardContent className="pt-4 max-h-[300px] overflow-y-auto pr-1">
             {isLoading ? (
@@ -289,14 +245,9 @@ export default function DashboardPage() {
       {/* 5. Analytics Grid Row 2 (Pattern Progress + Difficulty Mix) */}
       <div className="grid gap-6 lg:grid-cols-7">
         <Card className="min-w-0 lg:col-span-4 rounded-2xl bg-card border border-border shadow-xs">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <div>
-              <CardTitle className="font-display text-lg font-bold tracking-tight">Pattern Progress</CardTitle>
-              <CardDescription className="text-xs text-muted-foreground">Completion breakdown across DSA patterns</CardDescription>
-            </div>
-            <div className="h-8 w-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-              <Layers className="h-4 w-4" />
-            </div>
+          <CardHeader className="pb-2">
+            <CardTitle className="font-display text-base font-bold tracking-tight">Pattern Progress</CardTitle>
+            <CardDescription className="text-xs text-muted-foreground">Completion breakdown across DSA patterns</CardDescription>
           </CardHeader>
           <CardContent className="min-w-0 pt-4">
             {isLoading ? (
@@ -308,14 +259,9 @@ export default function DashboardPage() {
         </Card>
 
         <Card className="min-w-0 lg:col-span-3 rounded-2xl bg-card border border-border shadow-xs">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <div>
-              <CardTitle className="font-display text-lg font-bold tracking-tight">Difficulty Mix</CardTitle>
-              <CardDescription className="text-xs text-muted-foreground">Easy vs. Medium vs. Hard distribution</CardDescription>
-            </div>
-            <div className="h-8 w-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-              <Trophy className="h-4 w-4" />
-            </div>
+          <CardHeader className="pb-2">
+            <CardTitle className="font-display text-base font-bold tracking-tight">Difficulty Mix</CardTitle>
+            <CardDescription className="text-xs text-muted-foreground">Easy vs. Medium vs. Hard distribution</CardDescription>
           </CardHeader>
           <CardContent className="min-w-0 pt-4">
             {isLoading ? (
@@ -329,14 +275,9 @@ export default function DashboardPage() {
 
       {/* 6. Activity Heatmap Card */}
       <Card className="min-w-0 rounded-2xl bg-card border border-border shadow-xs">
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <div>
-            <CardTitle className="font-display text-lg font-bold tracking-tight">Activity Heatmap</CardTitle>
-            <CardDescription className="text-xs text-muted-foreground">Daily problem solving activity over the last 90 days</CardDescription>
-          </div>
-          <div className="h-8 w-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-            <Activity className="h-4 w-4" />
-          </div>
+        <CardHeader className="pb-2">
+          <CardTitle className="font-display text-base font-bold tracking-tight">Activity Heatmap</CardTitle>
+          <CardDescription className="text-xs text-muted-foreground">Daily problem solving activity over the last 90 days</CardDescription>
         </CardHeader>
         <CardContent className="min-w-0 pt-4">
           {isLoading ? (

@@ -5,8 +5,8 @@ import { useQuery } from '@tanstack/react-query';
 import { ProblemRow, Problem } from './ProblemRow';
 import { NotesDrawer } from './NotesDrawer';
 import { Button } from '@/components/ui/button';
-import { Check, Search, SearchX, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Search, SearchX } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton, SkeletonRows } from '@/components/ui/skeleton';
@@ -83,28 +83,18 @@ export function ProblemTable({ kind, group, groupLabel, showRating }: ProblemTab
 
   return (
     <div className="space-y-6">
-      {/* 1. Practice Stats Bar (Matches /dsa practice UI) */}
-      <div className="flex flex-wrap items-center gap-3 rounded-2xl bg-card border border-border p-4 shadow-xs sm:gap-6">
-        <div className="flex items-center gap-2.5">
-          <span className="grid size-8 place-items-center rounded-xl bg-primary/10 text-primary">
-            <Check className="size-4" strokeWidth={2.5} />
-          </span>
-          <div>
-            <p className="text-xs text-text-muted">Solved</p>
-            <p className="text-sm font-semibold tabular-nums text-foreground">
-              {completed} / {total}
-            </p>
-          </div>
+      {/* 1. Practice Stats Bar */}
+      <div className="flex flex-wrap items-center gap-4 rounded-2xl bg-card border border-border p-4 shadow-xs sm:gap-8">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Solved</p>
+          <p className="text-base font-bold tabular-nums text-foreground">
+            {completed} <span className="text-xs text-muted-foreground font-normal">/ {total}</span>
+          </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
-          <span className="grid size-8 place-items-center rounded-xl bg-warning/10 text-warning">
-            <Star className="size-4" />
-          </span>
-          <div>
-            <p className="text-xs text-text-muted">Revision</p>
-            <p className="text-sm font-semibold tabular-nums text-foreground">{revisionCount}</p>
-          </div>
+        <div className="border-l border-border/60 pl-4 sm:pl-8">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Revision</p>
+          <p className="text-base font-bold tabular-nums text-foreground">{revisionCount}</p>
         </div>
 
         <div className="ml-auto flex items-center gap-3">

@@ -9,7 +9,6 @@ import { cn } from '@/lib/utils';
 import { buildCrumbs } from './nav';
 import { useSidebar } from './use-sidebar';
 import { AnimatedThemeToggle } from '@/components/ui/animated-theme-toggle';
-import { BigOIcon } from '@/components/ui/big-o-logo';
 
 /** Sticky header. The shadow appears only once the page has actually scrolled. */
 function Topbar({ onSearch }: { onSearch: () => void }) {
@@ -39,15 +38,10 @@ function Topbar({ onSearch }: { onSearch: () => void }) {
           type="button"
           onClick={() => setMobileOpen(true)}
           aria-label="Open navigation"
-          className="press grid size-11 shrink-0 place-items-center rounded-lg text-text-secondary outline-none hover:bg-muted hover:text-foreground md:hidden cursor-pointer"
+          className="press grid size-10 shrink-0 place-items-center rounded-lg text-text-secondary outline-none hover:bg-muted hover:text-foreground md:hidden cursor-pointer"
         >
           <Menu className="size-5" />
         </button>
-
-        {/* Mobile Header Logo */}
-        <Link href="/" className="md:hidden flex items-center shrink-0 mr-1" aria-label="BigO home">
-          <BigOIcon className="size-7" />
-        </Link>
 
         <nav aria-label="Breadcrumb" className="min-w-0 flex-1">
           <ol className="flex items-center gap-1 overflow-hidden">
