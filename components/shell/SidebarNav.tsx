@@ -88,14 +88,14 @@ function SidebarNavLink({
         'transition-colors duration-150 ease-out-quart',
         collapsed && 'justify-center px-0',
         active
-          ? 'text-red-500 font-semibold'
+          ? 'text-primary font-bold'
           : 'text-text-secondary hover:bg-muted/60 hover:text-foreground'
       )}
     >
       {active ? (
         <motion.span
           layoutId={layoutId}
-          className="absolute inset-0 rounded-xl bg-red-500/10 border border-red-500/30 shadow-[0_0_12px_rgba(225,29,72,0.15)]"
+          className="absolute inset-0 rounded-xl bg-primary/10 border border-primary/25 shadow-xs"
           transition={{ type: 'spring', stiffness: 380, damping: 32 }}
           aria-hidden
         />
@@ -104,7 +104,7 @@ function SidebarNavLink({
       <Icon
         className={cn(
           'relative z-10 size-4 shrink-0 transition-colors',
-          active ? 'text-red-500' : 'text-text-muted group-hover:text-foreground'
+          active ? 'text-primary' : 'text-text-muted group-hover:text-foreground'
         )}
       />
 

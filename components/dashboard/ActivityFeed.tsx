@@ -16,20 +16,20 @@ interface ActivityEvent {
 }
 
 const KIND_CONFIG: Record<string, { icon: React.ComponentType<{ className?: string }>; color: string; label: (e: ActivityEvent) => string }> = {
-  'problem.completed':   { icon: CheckSquare, color: 'text-rose-500 bg-rose-500/10 border-rose-500/20', label: e => `Completed: ${e.entity?.title ?? 'a problem'}` },
-  'problem.uncompleted': { icon: CheckSquare, color: 'text-slate-400 bg-slate-500/10 border-slate-500/20', label: e => `Uncompleted: ${e.entity?.title ?? 'a problem'}` },
-  'problem.created':     { icon: Plus, color: 'text-red-500 bg-red-500/10 border-red-500/20', label: e => `Added problem: ${e.entity?.title ?? ''}` },
-  'problem.updated':     { icon: Pencil, color: 'text-rose-400 bg-rose-400/10 border-rose-400/20', label: e => `Updated: ${e.entity?.title ?? 'a problem'}` },
-  'problem.deleted':     { icon: Trash2, color: 'text-red-600 bg-red-600/10 border-red-600/20', label: e => `Deleted: ${e.entity?.title ?? 'a problem'}` },
-  'note.updated':        { icon: FileText, color: 'text-rose-500 bg-rose-500/10 border-rose-500/20', label: e => `Updated notes: ${e.entity?.title ?? ''}` },
-  'topic.created':       { icon: Plus, color: 'text-red-500 bg-red-500/10 border-red-500/20', label: e => `Created topic: ${e.entity?.title ?? ''}` },
-  'topic.updated':       { icon: Pencil, color: 'text-rose-400 bg-rose-400/10 border-rose-400/20', label: e => `Updated topic: ${e.entity?.title ?? ''}` },
-  'topic.deleted':       { icon: Trash2, color: 'text-red-600 bg-red-600/10 border-red-600/20', label: e => `Deleted topic: ${e.entity?.title ?? ''}` },
-  'cheatsheet.created':  { icon: Plus, color: 'text-red-500 bg-red-500/10 border-red-500/20', label: e => `Created cheatsheet: ${e.entity?.title ?? ''}` },
-  'cheatsheet.updated':  { icon: Pencil, color: 'text-rose-400 bg-rose-400/10 border-rose-400/20', label: e => `Updated cheatsheet: ${e.entity?.title ?? ''}` },
-  'question.created':    { icon: Plus, color: 'text-red-500 bg-red-500/10 border-red-500/20', label: e => `Added interview question` },
-  'session.signed_in':   { icon: LogIn, color: 'text-rose-500 bg-rose-500/10 border-rose-500/20', label: () => 'Signed in' },
-  'session.signed_out':  { icon: LogOut, color: 'text-slate-400 bg-slate-500/10 border-slate-500/20', label: () => 'Signed out' },
+  'problem.completed':   { icon: CheckSquare, color: 'text-primary bg-primary/10 border-primary/20', label: e => `Completed: ${e.entity?.title ?? 'a problem'}` },
+  'problem.uncompleted': { icon: CheckSquare, color: 'text-muted-foreground bg-muted border-border', label: e => `Uncompleted: ${e.entity?.title ?? 'a problem'}` },
+  'problem.created':     { icon: Plus, color: 'text-primary bg-primary/10 border-primary/20', label: e => `Added problem: ${e.entity?.title ?? ''}` },
+  'problem.updated':     { icon: Pencil, color: 'text-warning bg-warning/10 border-warning/20', label: e => `Updated: ${e.entity?.title ?? 'a problem'}` },
+  'problem.deleted':     { icon: Trash2, color: 'text-destructive bg-destructive/10 border-destructive/20', label: e => `Deleted: ${e.entity?.title ?? 'a problem'}` },
+  'note.updated':        { icon: FileText, color: 'text-primary bg-primary/10 border-primary/20', label: e => `Updated notes: ${e.entity?.title ?? ''}` },
+  'topic.created':       { icon: Plus, color: 'text-primary bg-primary/10 border-primary/20', label: e => `Created topic: ${e.entity?.title ?? ''}` },
+  'topic.updated':       { icon: Pencil, color: 'text-warning bg-warning/10 border-warning/20', label: e => `Updated topic: ${e.entity?.title ?? ''}` },
+  'topic.deleted':       { icon: Trash2, color: 'text-destructive bg-destructive/10 border-destructive/20', label: e => `Deleted topic: ${e.entity?.title ?? ''}` },
+  'cheatsheet.created':  { icon: Plus, color: 'text-primary bg-primary/10 border-primary/20', label: e => `Created cheatsheet: ${e.entity?.title ?? ''}` },
+  'cheatsheet.updated':  { icon: Pencil, color: 'text-warning bg-warning/10 border-warning/20', label: e => `Updated cheatsheet: ${e.entity?.title ?? ''}` },
+  'question.created':    { icon: Plus, color: 'text-primary bg-primary/10 border-primary/20', label: e => `Added interview question` },
+  'session.signed_in':   { icon: LogIn, color: 'text-primary bg-primary/10 border-primary/20', label: () => 'Signed in' },
+  'session.signed_out':  { icon: LogOut, color: 'text-muted-foreground bg-muted border-border', label: () => 'Signed out' },
 };
 
 export function ActivityFeed({ events }: { events: ActivityEvent[] }) {

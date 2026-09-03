@@ -73,12 +73,12 @@ function UserMenu({
               src={avatarUrl!}
               alt={name}
               onError={() => setImgError(true)}
-              className="size-7 shrink-0 rounded-full object-cover border border-rose-500/30 shadow-sm"
+              className="size-7 shrink-0 rounded-full object-cover border border-primary/30 shadow-xs"
             />
           ) : (
             <span
               aria-hidden
-              className="grid size-7 shrink-0 place-items-center rounded-full bg-gradient-to-br from-red-600 to-rose-600 text-2xs font-semibold text-white shadow-sm"
+              className="grid size-7 shrink-0 place-items-center rounded-full bg-primary text-2xs font-bold text-primary-foreground shadow-xs"
             >
               {initialsOf(user?.name, user?.email)}
             </span>
@@ -107,12 +107,12 @@ function UserMenu({
                 src={avatarUrl!}
                 alt={name}
                 onError={() => setImgError(true)}
-                className="size-9 shrink-0 rounded-full object-cover border border-rose-500/30 shadow-sm"
+                className="size-9 shrink-0 rounded-full object-cover border border-primary/30 shadow-xs"
               />
             ) : (
               <span
                 aria-hidden
-                className="grid size-9 shrink-0 place-items-center rounded-full bg-gradient-to-br from-red-600 to-rose-600 text-xs font-bold text-white shadow-sm"
+                className="grid size-9 shrink-0 place-items-center rounded-full bg-primary text-xs font-bold text-primary-foreground shadow-xs"
               >
                 {initialsOf(user?.name, user?.email)}
               </span>

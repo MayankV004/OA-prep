@@ -107,7 +107,7 @@ export default function DSAPageClient({ initialPatterns }: { initialPatterns: an
             <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-sans">
               Overall Mastery
             </span>
-            <span className="text-xs font-semibold text-rose-500 font-mono">{totalCompleted}/{totalProblems}</span>
+            <span className="text-xs font-semibold text-primary font-mono">{totalCompleted}/{totalProblems}</span>
           </div>
           <div className="flex items-baseline gap-2">
             <span className="font-display text-3xl font-black tracking-tight text-foreground">{overallProgress}%</span>
@@ -116,7 +116,7 @@ export default function DSAPageClient({ initialPatterns }: { initialPatterns: an
           <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
             <div
               style={{ width: `${overallProgress}%` }}
-              className="h-full rounded-full bg-gradient-to-r from-red-600 via-rose-500 to-red-400 transition-all duration-500"
+              className="h-full rounded-full bg-primary transition-all duration-500"
             />
           </div>
         </div>
@@ -264,18 +264,14 @@ export default function DSAPageClient({ initialPatterns }: { initialPatterns: an
                     <div className="pt-6 space-y-2 mt-auto">
                       <div className="flex items-center justify-between text-xs">
                         <span className="text-muted-foreground font-medium">Progress</span>
-                        <span className={cn('font-semibold font-mono', complete ? 'text-rose-500 font-bold' : 'text-foreground')}>
+                        <span className={cn('font-semibold font-mono', complete ? 'text-primary font-bold' : 'text-foreground')}>
                           {complete ? 'Complete' : `${pct}%`}
                         </span>
                       </div>
                       <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
                         <div
                           style={{ width: `${pct}%` }}
-                          className={`h-full rounded-full transition-all duration-500 ${
-                            complete
-                              ? 'bg-rose-500'
-                              : 'bg-gradient-to-r from-red-600 via-rose-500 to-red-400'
-                          }`}
+                          className="h-full rounded-full transition-all duration-500 bg-primary"
                         />
                       </div>
                     </div>

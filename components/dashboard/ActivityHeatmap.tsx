@@ -29,22 +29,13 @@ interface HeatmapCell {
 }
 
 type TimeRange = 'year' | '6months' | '3months';
-type ColorTheme = 'emerald' | 'rose';
 
 const EMERALD_CLASSES = [
-  'bg-neutral-200/80 dark:bg-neutral-800/80 border border-border/30',
+  'bg-muted border border-border',
   'bg-emerald-950/40 border border-emerald-800/50 dark:bg-emerald-950/70 text-emerald-300',
   'bg-emerald-800/70 border border-emerald-600/60 dark:bg-emerald-800/90 text-emerald-200',
   'bg-emerald-600 border border-emerald-500 dark:bg-emerald-600 text-white',
-  'bg-emerald-500 border border-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.5)] dark:bg-emerald-400 text-black font-bold',
-];
-
-const ROSE_CLASSES = [
-  'bg-neutral-200/80 dark:bg-neutral-800/80 border border-border/30',
-  'bg-rose-950/40 border border-rose-800/50 dark:bg-rose-950/70',
-  'bg-rose-800/70 border border-rose-600/60 dark:bg-rose-800/90',
-  'bg-rose-600 border border-rose-500 dark:bg-rose-600',
-  'bg-rose-500 border border-rose-400 shadow-[0_0_8px_rgba(225,29,72,0.5)] dark:bg-rose-400',
+  'bg-emerald-500 border border-emerald-400 dark:bg-emerald-400 text-black font-bold',
 ];
 
 const MONTH_NAMES = [
@@ -54,7 +45,6 @@ const MONTH_NAMES = [
 
 export function ActivityHeatmap({ data = [] }: { data?: HeatmapCell[] }) {
   const [timeRange, setTimeRange] = useState<TimeRange>('year');
-  const [colorTheme, setColorTheme] = useState<ColorTheme>('emerald');
 
   const countByDate = useMemo(() => {
     const map: Record<string, number> = {};
@@ -157,7 +147,7 @@ export function ActivityHeatmap({ data = [] }: { data?: HeatmapCell[] }) {
     };
   }, [countByDate, today]);
 
-  const intensityClasses = colorTheme === 'emerald' ? EMERALD_CLASSES : ROSE_CLASSES;
+  const intensityClasses = EMERALD_CLASSES;
 
   return (
     <div className="space-y-4">
@@ -189,13 +179,13 @@ export function ActivityHeatmap({ data = [] }: { data?: HeatmapCell[] }) {
             Max streak: <strong className="text-foreground font-semibold">{maxStreak}</strong>
           </span>
           <span className="text-text-muted hidden sm:inline">
-            Current: <strong className="text-emerald-500 font-semibold">{currentStreak} d</strong>
+            Current: <strong className="text-primary font-semibold">{currentStreak} d</strong>
           </span>
 
           {/* Time range dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger render={
-              <Button variant="outline" size="xs" className="gap-1 text-2xs font-semibold bg-muted/40">
+              <Button variant="outline" size="xs" className="gap-1 text-2xs font-semibold bg-card border-border">
                 {timeRange === 'year' ? '1 Year' : timeRange === '6months' ? '6 Months' : '90 Days'}
                 <ChevronDown className="size-3 text-text-muted" />
               </Button>
@@ -206,17 +196,6 @@ export function ActivityHeatmap({ data = [] }: { data?: HeatmapCell[] }) {
               <DropdownMenuItem onClick={() => setTimeRange('3months')}>90 Days</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-
-          {/* Theme toggle button */}
-          <Button
-            variant="ghost"
-            size="xs"
-            onClick={() => setColorTheme((t) => (t === 'emerald' ? 'rose' : 'emerald'))}
-            className="text-2xs font-medium text-text-muted hover:text-foreground"
-            title="Toggle theme"
-          >
-            {colorTheme === 'emerald' ? '🟢 LeetCode' : '🔴 BigO'}
-          </Button>
         </div>
       </div>
 
@@ -278,7 +257,7 @@ export function ActivityHeatmap({ data = [] }: { data?: HeatmapCell[] }) {
       {/* ── Footer Legend ──────────────────────────────────────────────── */}
       <div className="flex flex-wrap items-center justify-between gap-3 pt-2 text-2xs text-text-muted border-t border-border/30">
         <div className="flex items-center gap-2 font-medium">
-          <Flame className="size-3.5 text-amber-500" />
+          <Flame className="size-3.5 text-warning fill-warning" />
           <span>Active Streak: <strong className="text-foreground">{currentStreak} days</strong></span>
         </div>
 

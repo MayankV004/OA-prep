@@ -24,17 +24,17 @@ export function PricingCard({
 
   return (
     <div
-      className={`relative flex flex-col justify-between rounded-2xl border p-6 sm:p-8 transition-all duration-300 hover:shadow-xl ${
+      className={`relative flex flex-col justify-between rounded-2xl border p-6 sm:p-8 transition-all duration-200 ${
         isPopular
-          ? 'border-amber-500/50 bg-gradient-to-b from-amber-500/[0.07] via-background to-background shadow-lg shadow-amber-500/5 ring-1 ring-amber-500/40'
-          : 'border-border/60 bg-card/50 backdrop-blur-xs hover:border-border'
+          ? 'border-2 border-primary bg-card shadow-lg ring-1 ring-primary/20'
+          : 'border-border bg-card hover:border-border/80'
       }`}
     >
       {/* Top badges */}
       {plan.badge && (
-        <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-3 py-1 text-xs font-semibold text-white shadow-md">
-            <Sparkles className="h-3 w-3 fill-white/20" />
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-0.5 text-xs font-bold text-primary-foreground shadow-xs">
+            <Sparkles className="h-3 w-3" />
             {plan.badge}
           </span>
         </div>
@@ -56,33 +56,31 @@ export function PricingCard({
         </div>
 
         {plan.period === 'year' && (
-          <p className="mt-1 text-xs font-medium text-emerald-500">
+          <p className="mt-1 text-xs font-semibold text-primary">
             Equivalent to only ~$7.40/month
           </p>
         )}
 
-        <hr className="my-6 border-border/50" />
-
-        {/* Feature List */}
-        <ul className="space-y-3 text-sm text-muted-foreground">
-          {plan.features.map((feature, i) => (
-            <li key={i} className="flex items-start gap-2.5">
-              <div className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-500">
-                <Check className="h-3 w-3 stroke-[3]" />
-              </div>
-              <span className="text-foreground/90">{feature}</span>
-            </li>
-          ))}
-        </ul>
+        {/* Feature list */}
+        <div className="mt-8 space-y-3 border-t border-border pt-6">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Included features</p>
+          <ul className="space-y-2.5 text-sm">
+            {plan.features.map((feature, i) => (
+              <li key={i} className="flex items-start gap-2.5">
+                <Check className="h-4 w-4 shrink-0 text-primary mt-0.5" />
+                <span className="text-foreground/90">{feature}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
 
-      {/* Action CTA */}
       <div className="mt-8 pt-4">
         {isCurrentPlan ? (
           <Button
             variant="outline"
             disabled
-            className="w-full border-emerald-500/30 text-emerald-500 font-semibold"
+            className="w-full border-primary/40 text-primary bg-primary/10 font-bold"
           >
             Current Plan
           </Button>
@@ -90,11 +88,7 @@ export function PricingCard({
           <Button
             onClick={() => onSelect(plan.id)}
             disabled={isLoading}
-            className={`w-full font-semibold transition-all duration-200 ${
-              isPopular
-                ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md hover:from-amber-600 hover:to-orange-600'
-                : 'bg-primary text-primary-foreground hover:bg-primary/90'
-            }`}
+            className="w-full font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs transition-all cursor-pointer"
           >
             {isLoading ? (
               <>

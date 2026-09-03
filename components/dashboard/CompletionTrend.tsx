@@ -33,12 +33,6 @@ export function CompletionTrend({ data }: { data: TrendPoint[] }) {
     <div className="h-[240px] w-full min-w-0">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 12, right: 12, left: -20, bottom: 0 }}>
-          <defs>
-            <linearGradient id="completionRedGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#e11d48" stopOpacity={0.35} />
-              <stop offset="95%" stopColor="#e11d48" stopOpacity={0.0} />
-            </linearGradient>
-          </defs>
           <CartesianGrid
             strokeDasharray="3 3"
             stroke="var(--border)"
@@ -66,7 +60,7 @@ export function CompletionTrend({ data }: { data: TrendPoint[] }) {
             width={32}
           />
           <Tooltip
-            cursor={{ stroke: '#e11d48', strokeWidth: 1.5, strokeDasharray: '4 4' }}
+            cursor={{ stroke: 'var(--primary)', strokeWidth: 1.5, strokeDasharray: '4 4' }}
             contentStyle={TOOLTIP_STYLE}
             labelFormatter={d => {
               try { return format(parseISO(d as string), 'MMM d, yyyy'); } catch { return d; }
@@ -75,11 +69,11 @@ export function CompletionTrend({ data }: { data: TrendPoint[] }) {
           <Area
             type="monotone"
             dataKey="completed"
-            stroke="#e11d48"
+            stroke="var(--primary)"
             strokeWidth={2.5}
-            fillOpacity={1}
-            fill="url(#completionRedGradient)"
-            activeDot={{ r: 5, fill: '#e11d48', stroke: 'var(--background)', strokeWidth: 3 }}
+            fill="var(--primary)"
+            fillOpacity={0.12}
+            activeDot={{ r: 5, fill: 'var(--primary)', stroke: 'var(--background)', strokeWidth: 3 }}
           />
         </AreaChart>
       </ResponsiveContainer>

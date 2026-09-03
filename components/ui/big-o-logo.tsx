@@ -13,7 +13,7 @@ export function BigOIcon({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        'relative grid place-items-center rounded-xl bg-gradient-to-br from-red-600 via-rose-600 to-red-700 text-white shadow-[0_0_20px_rgba(225,29,72,0.4)] group-hover:scale-105 transition-transform duration-300',
+        'relative grid place-items-center rounded-xl bg-primary text-primary-foreground shadow-sm group-hover:scale-105 transition-transform duration-200',
         className
       )}
     >
@@ -21,7 +21,7 @@ export function BigOIcon({ className }: { className?: string }) {
         viewBox="0 0 24 24"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="size-5 text-white stroke-[2.5]"
+        className="size-5 stroke-[2.5]"
       >
         {/* Outer Big O Circle with asymptotic gap */}
         <circle
@@ -73,11 +73,11 @@ export function BigOLogo({
       {!iconOnly && (
         <div className="flex items-center gap-1.5 leading-none">
           <span className={cn('font-display font-black tracking-tight text-foreground', textSizes[size])}>
-            Big<span className="text-rose-500 font-extrabold">O</span>
+            Big<span className="text-primary font-extrabold">O</span>
           </span>
 
           {showBadge && (
-            <span className="px-1.5 py-0.5 rounded-md bg-rose-500/10 text-rose-500 font-mono text-[10px] font-bold border border-rose-500/20">
+            <span className="px-1.5 py-0.5 rounded-md bg-primary/10 text-primary font-mono text-[10px] font-bold border border-primary/20">
               O(1)
             </span>
           )}

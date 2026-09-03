@@ -162,7 +162,7 @@ function getSafeRedirectUrl(): string {
         <Button
           type="submit"
           size="xl"
-          className="w-full bg-gradient-to-r from-red-600 via-rose-600 to-red-500 hover:from-red-700 hover:via-rose-700 hover:to-red-600 text-white shadow-[0_0_20px_rgba(225,29,72,0.4)] hover:shadow-[0_0_25px_rgba(225,29,72,0.6)] border-none font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-bold shadow-xs border-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           loading={loading}
           disabled={!email || !password}
         >
@@ -172,17 +172,17 @@ function getSafeRedirectUrl(): string {
 
       <div className="relative mt-6">
         <div className="absolute inset-0 flex items-center" aria-hidden="true">
-          <div className="w-full border-t border-border/60"></div>
+          <div className="w-full border-t border-border"></div>
         </div>
         <div className="relative flex justify-center text-sm font-medium leading-6">
-          <span className="bg-background dark:bg-slate-950 px-6 text-text-muted transition-colors duration-300">Or continue with</span>
+          <span className="bg-background px-6 text-muted-foreground transition-colors duration-200">Or continue with</span>
         </div>
       </div>
 
       <div className="mt-6 grid grid-cols-2 gap-4">
         <Button
           variant="outline"
-          className="w-full border-border bg-background hover:bg-rose-500/10 hover:border-rose-500/50 hover:text-rose-600 dark:hover:text-rose-400 transition-colors text-foreground"
+          className="w-full border-border bg-card hover:bg-muted text-foreground transition-colors cursor-pointer"
           onClick={async () => {
             await authClient.signIn.social({
               provider: "google",
@@ -197,7 +197,7 @@ function getSafeRedirectUrl(): string {
         </Button>
         <Button
           variant="outline"
-          className="w-full border-border bg-background hover:bg-rose-500/10 hover:border-rose-500/50 hover:text-rose-600 dark:hover:text-rose-400 transition-colors text-foreground"
+          className="w-full border-border bg-card hover:bg-muted text-foreground transition-colors cursor-pointer"
           onClick={async () => {
             await authClient.signIn.social({
               provider: "github",
@@ -216,7 +216,7 @@ function getSafeRedirectUrl(): string {
         New here?{' '}
         <Link
           href="/sign-up"
-          className="rounded font-medium text-rose-600 hover:text-rose-500 dark:text-rose-400 dark:hover:text-rose-300 outline-none hover:underline"
+          className="rounded font-bold text-primary hover:underline outline-none"
         >
           Create an account
         </Link>

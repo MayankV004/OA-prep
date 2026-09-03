@@ -28,9 +28,9 @@ export function PaywallModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[480px] p-6 border-amber-500/20 bg-background/95 backdrop-blur-md">
+      <DialogContent className="sm:max-w-[480px] p-6 border-border bg-card shadow-lg">
         <DialogHeader className="text-center sm:text-left">
-          <div className="mx-auto sm:mx-0 flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-500 border border-amber-500/20 shadow-sm">
+          <div className="mx-auto sm:mx-0 flex h-12 w-12 items-center justify-center rounded-2xl bg-warning/10 text-warning border border-warning/25 shadow-xs">
             <Sparkles className="h-6 w-6" />
           </div>
           <DialogTitle className="mt-4 text-xl font-bold tracking-tight">
@@ -41,14 +41,14 @@ export function PaywallModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="mt-4 rounded-xl border border-border/60 bg-muted/30 p-4">
+        <div className="mt-4 rounded-xl border border-border bg-muted/40 p-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
             What you get with Pro:
           </p>
           <ul className="space-y-2.5">
             {perks.map((perk, i) => (
               <li key={i} className="flex items-start gap-2 text-xs text-foreground/90">
-                <div className="mt-0.5 flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-500">
+                <div className="mt-0.5 flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
                   <Check className="h-2.5 w-2.5 stroke-[3]" />
                 </div>
                 <span>{perk}</span>
@@ -67,7 +67,7 @@ export function PaywallModal({
           </Button>
           <Button
             render={<Link href="/pricing" onClick={() => onOpenChange(false)} />}
-            className="sm:w-2/3 bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600 font-semibold shadow-md"
+            className="sm:w-2/3 bg-primary text-primary-foreground hover:bg-primary/90 font-bold shadow-xs transition-all cursor-pointer"
           >
             <span>View Plans</span>
             <ArrowRight className="ml-2 h-4 w-4" />

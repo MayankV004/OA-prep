@@ -224,7 +224,7 @@ export function FeedbackModal({
             </div>
 
             {errorMessage && (
-              <div className="p-3 text-xs rounded-2xl bg-red-500/10 text-red-600 dark:text-red-400">
+              <div className="p-3 text-xs rounded-2xl bg-destructive/10 text-destructive border border-destructive/20">
                 {errorMessage}
               </div>
             )}
@@ -354,7 +354,7 @@ export function FeedbackModal({
                 <button
                   type="submit"
                   disabled={loading || remainingToday === 0}
-                  className="px-7 h-11 rounded-full text-sm font-semibold text-white bg-gradient-to-r from-red-600 via-rose-600 to-red-500 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed border-none"
+                  className="px-7 h-11 rounded-full text-sm font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed border-none cursor-pointer"
                 >
                   {loading ? 'Submitting...' : `Submit ${type === 'bug' ? 'Report' : 'Feedback'}`}
                 </button>

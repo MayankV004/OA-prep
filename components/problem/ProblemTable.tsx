@@ -84,9 +84,9 @@ export function ProblemTable({ kind, group, groupLabel, showRating }: ProblemTab
   return (
     <div className="space-y-6">
       {/* 1. Practice Stats Bar (Matches /dsa practice UI) */}
-      <div className="flex flex-wrap items-center gap-3 rounded-2xl bg-card/60 backdrop-blur-xl border border-border/30 p-4 shadow-sm sm:gap-6">
+      <div className="flex flex-wrap items-center gap-3 rounded-2xl bg-card border border-border p-4 shadow-xs sm:gap-6">
         <div className="flex items-center gap-2.5">
-          <span className="grid size-8 place-items-center rounded-xl bg-rose-500/10 text-rose-500">
+          <span className="grid size-8 place-items-center rounded-xl bg-primary/10 text-primary">
             <Check className="size-4" strokeWidth={2.5} />
           </span>
           <div>
@@ -110,7 +110,7 @@ export function ProblemTable({ kind, group, groupLabel, showRating }: ProblemTab
         <div className="ml-auto flex items-center gap-3">
           <div className="h-2 w-32 sm:w-48 overflow-hidden rounded-full bg-muted">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-red-600 via-rose-500 to-red-400 transition-all duration-500"
+              className="h-full rounded-full bg-primary transition-all duration-500"
               style={{ width: `${pct}%` }}
               role="progressbar"
               aria-valuenow={pct}
@@ -118,7 +118,7 @@ export function ProblemTable({ kind, group, groupLabel, showRating }: ProblemTab
               aria-valuemax={100}
             />
           </div>
-          <span className={cn('text-sm font-bold font-mono', pct === 100 ? 'text-rose-500' : 'text-foreground')}>
+          <span className={cn('text-sm font-bold font-mono', pct === 100 ? 'text-primary' : 'text-foreground')}>
             {pct}%
           </span>
         </div>
@@ -134,7 +134,7 @@ export function ProblemTable({ kind, group, groupLabel, showRating }: ProblemTab
             aria-label={`Search ${groupLabel} problems`}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full h-10 pl-9 pr-4 text-sm font-medium bg-background/80 rounded-xl border border-border/40 focus:border-rose-500/50 focus:outline-none focus:ring-2 focus:ring-rose-500/20 transition-all"
+            className="w-full h-10 pl-9 pr-4 text-sm font-medium bg-card rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
           />
         </div>
         <div className="flex flex-wrap gap-1.5" role="group" aria-label="Filter by difficulty">
@@ -143,10 +143,10 @@ export function ProblemTable({ kind, group, groupLabel, showRating }: ProblemTab
               key={d}
               onClick={() => setDiffFilter(d)}
               className={cn(
-                'px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all whitespace-nowrap',
+                'px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all whitespace-nowrap cursor-pointer',
                 diffFilter === d
-                  ? 'bg-rose-500/10 text-rose-500 border border-rose-500/30'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-accent/40'
+                  ? 'bg-primary/10 text-primary border border-primary/30'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
               )}
             >
               {d === 'all' ? 'All Difficulties' : d}
@@ -179,15 +179,15 @@ export function ProblemTable({ kind, group, groupLabel, showRating }: ProblemTab
               </Button>
             )
           }
-          className="rounded-2xl bg-card shadow-sm border border-border/30 p-8"
+          className="rounded-2xl bg-card shadow-xs border border-border p-8"
         />
       ) : (
-        <div className="overflow-hidden rounded-2xl bg-card/60 backdrop-blur-xl border border-border/30 shadow-sm">
+        <div className="overflow-hidden rounded-2xl bg-card border border-border shadow-xs">
           <Accordion defaultValue={Object.keys(groupedByVariation)} className="w-full gap-2 md:gap-0">
             {Object.entries(groupedByVariation).map(([variation, groupProblems]) => (
-              <AccordionItem key={variation} value={variation} className="overflow-hidden border-b border-border/20 last:border-0">
+              <AccordionItem key={variation} value={variation} className="overflow-hidden border-b border-border/40 last:border-0">
                 {Object.keys(groupedByVariation).length > 1 && (
-                  <AccordionTrigger className="items-center bg-muted/40 px-4 py-3 hover:bg-muted/70 aria-expanded:bg-rose-500/10 aria-expanded:text-rose-500">
+                  <AccordionTrigger className="items-center bg-muted/40 px-4 py-3 hover:bg-muted/70 aria-expanded:bg-primary/10 aria-expanded:text-primary">
                     <span className="flex items-center gap-2">
                       <Heading level="card" as="span">{variation}</Heading>
                       <Badge variant="secondary" className="tabular-nums font-mono">

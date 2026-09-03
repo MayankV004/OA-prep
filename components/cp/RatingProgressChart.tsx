@@ -39,7 +39,7 @@ export function RatingProgressChart({ data }: { data: ChartPoint[] }) {
       <Card className="border border-border/60 bg-surface shadow-e1">
         <CardHeader className="pb-2 border-b border-border/40 bg-surface-sunken/30 px-6 py-4">
           <div className="flex items-center gap-2.5">
-            <span className="grid size-8 place-items-center rounded-lg bg-rose-500/10 text-rose-500 border border-rose-500/20">
+            <span className="grid size-8 place-items-center rounded-lg bg-primary/10 text-primary border border-primary/20">
               <TrendingUp className="size-4" />
             </span>
             <div>
@@ -88,7 +88,7 @@ export function RatingProgressChart({ data }: { data: ChartPoint[] }) {
       <CardHeader className="border-b border-border/40 bg-surface-sunken/30 px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <span className="grid size-8 place-items-center rounded-lg bg-rose-500/10 text-rose-500 border border-rose-500/20">
+            <span className="grid size-8 place-items-center rounded-lg bg-primary/10 text-primary border border-primary/20">
               <TrendingUp className="size-4" />
             </span>
             <div>
@@ -173,9 +173,9 @@ export function RatingProgressChart({ data }: { data: ChartPoint[] }) {
                 type="monotone"
                 dataKey="codechef"
                 name="CodeChef"
-                stroke="#e11d48"
+                stroke="#a855f7"
                 strokeWidth={2.5}
-                dot={{ r: 3, fill: '#e11d48' }}
+                dot={{ r: 3, fill: '#a855f7' }}
                 activeDot={{ r: 5, stroke: 'var(--background)', strokeWidth: 2 }}
                 connectNulls
               />

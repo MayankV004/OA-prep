@@ -37,7 +37,7 @@ function Brand({ collapsed, href }: { collapsed: boolean; href: string }) {
           collapsed && 'w-0 opacity-0'
         )}
       >
-        Big<span className="text-rose-500">O</span>
+        Big<span className="text-primary">O</span>
       </span>
     </Link>
   );
@@ -89,8 +89,8 @@ function UpgradeBanner({ collapsed }: { collapsed: boolean }) {
   if (isPro || collapsed) return null;
 
   return (
-    <div className="rounded-xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-transparent p-3 text-left">
-      <div className="flex items-center gap-1.5 font-semibold text-xs text-amber-500 dark:text-amber-400">
+    <div className="rounded-xl border border-warning/30 bg-warning/10 p-3 text-left">
+      <div className="flex items-center gap-1.5 font-semibold text-xs text-warning">
         <Sparkles className="h-3.5 w-3.5" />
         <span>Upgrade to BigO Pro</span>
       </div>
@@ -99,7 +99,7 @@ function UpgradeBanner({ collapsed }: { collapsed: boolean }) {
       </p>
       <Link
         href="/pricing"
-        className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-amber-600 dark:text-amber-400 hover:underline"
+        className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-warning hover:underline"
       >
         <span>View Plans</span>
         <ArrowRight className="h-3 w-3" />

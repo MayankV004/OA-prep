@@ -117,37 +117,37 @@ export default function DashboardPage() {
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pt-2">
         <div className="space-y-1.5">
           <h1 className="font-display text-3xl sm:text-5xl font-black tracking-tight text-foreground leading-tight">
-            Welcome back, <span className="text-rose-500">{userName}</span> 👋
+            Welcome back, <span className="text-primary">{userName}</span> 👋
           </h1>
-          <p className="text-sm sm:text-base text-muted-foreground max-w-xl font-light">
+          <p className="text-sm sm:text-base text-muted-foreground max-w-xl font-normal">
             Track your DSA patterns, CS core fundamentals, and assessment readiness in real time.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3 shrink-0">
           <Link href="/dsa">
-            <button className="flex items-center gap-2 h-11 px-5 rounded-2xl font-semibold text-xs text-white bg-gradient-to-r from-red-600 via-rose-600 to-red-500 shadow-[0_0_20px_rgba(225,29,72,0.35)] hover:shadow-[0_0_25px_rgba(225,29,72,0.6)] hover:scale-105 active:scale-95 transition-all border-none">
+            <button className="flex items-center gap-2 h-11 px-5 rounded-2xl font-bold text-xs bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95 transition-all shadow-xs border-none cursor-pointer">
               <Code2 className="h-4 w-4" />
               <span>Practice DSA</span>
               <ArrowRight className="h-3.5 w-3.5" />
             </button>
           </Link>
           <Link href="/subjects">
-            <button className="flex items-center gap-2 h-11 px-5 rounded-2xl font-medium text-xs text-foreground bg-background hover:bg-accent/60 border border-border/40 hover:scale-105 active:scale-95 transition-all">
-              <Terminal className="h-4 w-4 text-rose-500" />
+            <button className="flex items-center gap-2 h-11 px-5 rounded-2xl font-medium text-xs text-foreground bg-card hover:bg-muted border border-border active:scale-95 transition-all cursor-pointer">
+              <Terminal className="h-4 w-4 text-primary" />
               <span>CS Core</span>
             </button>
           </Link>
         </div>
       </div>
 
-      {/* 2. Glassmorphic Stat Metric Cards */}
+      {/* 2. Solid Stat Metric Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* Stat Card 1: Solved */}
-        <div className="group relative p-5 rounded-2xl bg-background/60 dark:bg-background/30 backdrop-blur-xl border-none shadow-sm hover:shadow-md transition-all duration-300">
+        <div className="group relative p-5 rounded-2xl bg-card border border-border shadow-xs hover:border-border/80 transition-all duration-200">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground font-sans">Problems Solved</span>
-            <div className="h-9 w-9 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-500">
+            <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
               <CheckCircle2 className="h-4 w-4" />
             </div>
           </div>
@@ -160,20 +160,20 @@ export default function DashboardPage() {
                 <span className="text-xs text-muted-foreground font-medium">/ {totalProblems} ({overallPct}%)</span>
               </div>
             )}
-            <div className="mt-3 h-1.5 w-full rounded-full bg-muted overflow-hidden">
+            <div className="mt-3 h-2 w-full rounded-full bg-muted overflow-hidden">
               <div
                 style={{ width: `${overallPct}%` }}
-                className="h-full rounded-full bg-gradient-to-r from-red-600 to-rose-500 transition-all duration-500"
+                className="h-full rounded-full bg-primary transition-all duration-500"
               />
             </div>
           </div>
         </div>
 
         {/* Stat Card 2: Pattern DSA */}
-        <div className="group relative p-5 rounded-2xl bg-background/60 dark:bg-background/30 backdrop-blur-xl border-none shadow-sm hover:shadow-md transition-all duration-300">
+        <div className="group relative p-5 rounded-2xl bg-card border border-border shadow-xs hover:border-border/80 transition-all duration-200">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground font-sans">Pattern DSA</span>
-            <div className="h-9 w-9 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-500">
+            <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
               <Trophy className="h-4 w-4" />
             </div>
           </div>
@@ -188,17 +188,17 @@ export default function DashboardPage() {
                 <span className="text-xs text-muted-foreground font-medium">/ {patternStats?.total ?? 0} completed</span>
               </div>
             )}
-            <p className="mt-2 text-xs text-rose-500 font-medium flex items-center gap-1">
+            <p className="mt-2 text-xs text-primary font-semibold flex items-center gap-1">
               <Sparkles className="h-3 w-3 inline" /> Structured interview paths
             </p>
           </div>
         </div>
 
         {/* Stat Card 3: Difficulty Split */}
-        <div className="group relative p-5 rounded-2xl bg-background/60 dark:bg-background/30 backdrop-blur-xl border-none shadow-sm hover:shadow-md transition-all duration-300">
+        <div className="group relative p-5 rounded-2xl bg-card border border-border shadow-xs hover:border-border/80 transition-all duration-200">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground font-sans">Difficulty Mix</span>
-            <div className="h-9 w-9 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-500">
+            <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
               <TrendingUp className="h-4 w-4" />
             </div>
           </div>
@@ -210,22 +210,22 @@ export default function DashboardPage() {
                 <span className="font-display text-3xl sm:text-4xl font-black tracking-tight text-foreground">
                   {stats?.difficultyMix?.Hard ?? 0}
                 </span>
-                <span className="text-xs font-semibold text-rose-500">Hard</span>
+                <span className="text-xs font-bold text-destructive">Hard</span>
               </div>
             )}
             <div className="mt-2 flex items-center gap-2 text-xs font-mono text-muted-foreground">
-              <span className="text-emerald-500 font-semibold">{stats?.difficultyMix?.Easy ?? 0}E</span> ·{' '}
-              <span className="text-amber-500 font-semibold">{stats?.difficultyMix?.Medium ?? 0}M</span> ·{' '}
-              <span className="text-rose-500 font-semibold">{stats?.difficultyMix?.Hard ?? 0}H</span>
+              <span className="text-primary font-bold">{stats?.difficultyMix?.Easy ?? 0}E</span> ·{' '}
+              <span className="text-warning font-bold">{stats?.difficultyMix?.Medium ?? 0}M</span> ·{' '}
+              <span className="text-destructive font-bold">{stats?.difficultyMix?.Hard ?? 0}H</span>
             </div>
           </div>
         </div>
 
         {/* Stat Card 4: 90d Activity */}
-        <div className="group relative p-5 rounded-2xl bg-background/60 dark:bg-background/30 backdrop-blur-xl border-none shadow-sm hover:shadow-md transition-all duration-300">
+        <div className="group relative p-5 rounded-2xl bg-card border border-border shadow-xs hover:border-border/80 transition-all duration-200">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground font-sans">90d Activity</span>
-            <div className="h-9 w-9 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-500">
+            <div className="h-9 w-9 rounded-xl bg-warning/10 flex items-center justify-center text-warning">
               <Activity className="h-4 w-4" />
             </div>
           </div>
@@ -238,8 +238,8 @@ export default function DashboardPage() {
                 <span className="text-xs text-muted-foreground font-medium">actions logged</span>
               </div>
             )}
-            <p className="mt-2 text-xs text-rose-500 font-medium flex items-center gap-1">
-              <Flame className="h-3.5 w-3.5 text-rose-500 inline" /> Active prep streak
+            <p className="mt-2 text-xs text-warning font-semibold flex items-center gap-1">
+              <Flame className="h-3.5 w-3.5 text-warning inline fill-warning" /> Active prep streak
             </p>
           </div>
         </div>
@@ -247,13 +247,13 @@ export default function DashboardPage() {
 
       {/* 4. Analytics Grid Row 1 (Completion Trend + Activity Feed) */}
       <div className="grid gap-6 lg:grid-cols-7">
-        <Card className="min-w-0 lg:col-span-4 rounded-3xl bg-background/60 dark:bg-background/30 backdrop-blur-xl border-none shadow-sm">
+        <Card className="min-w-0 lg:col-span-4 rounded-2xl bg-card border border-border shadow-xs">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <div>
               <CardTitle className="font-display text-lg font-bold tracking-tight">Completion Trend</CardTitle>
               <CardDescription className="text-xs text-muted-foreground">Problems completed per day (Last 90 Days)</CardDescription>
             </div>
-            <div className="h-8 w-8 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center">
+            <div className="h-8 w-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
               <TrendingUp className="h-4 w-4" />
             </div>
           </CardHeader>
@@ -266,13 +266,13 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="min-w-0 lg:col-span-3 rounded-3xl bg-background/60 dark:bg-background/30 backdrop-blur-xl border-none shadow-sm">
+        <Card className="min-w-0 lg:col-span-3 rounded-2xl bg-card border border-border shadow-xs">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <div>
               <CardTitle className="font-display text-lg font-bold tracking-tight">Recent Activity</CardTitle>
               <CardDescription className="text-xs text-muted-foreground">Your last 10 prep events</CardDescription>
             </div>
-            <div className="h-8 w-8 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center">
+            <div className="h-8 w-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
               <Clock className="h-4 w-4" />
             </div>
           </CardHeader>
@@ -288,13 +288,13 @@ export default function DashboardPage() {
 
       {/* 5. Analytics Grid Row 2 (Pattern Progress + Difficulty Mix) */}
       <div className="grid gap-6 lg:grid-cols-7">
-        <Card className="min-w-0 lg:col-span-4 rounded-3xl bg-background/60 dark:bg-background/30 backdrop-blur-xl border-none shadow-sm">
+        <Card className="min-w-0 lg:col-span-4 rounded-2xl bg-card border border-border shadow-xs">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <div>
               <CardTitle className="font-display text-lg font-bold tracking-tight">Pattern Progress</CardTitle>
               <CardDescription className="text-xs text-muted-foreground">Completion breakdown across DSA patterns</CardDescription>
             </div>
-            <div className="h-8 w-8 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center">
+            <div className="h-8 w-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
               <Layers className="h-4 w-4" />
             </div>
           </CardHeader>
@@ -307,13 +307,13 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="min-w-0 lg:col-span-3 rounded-3xl bg-background/60 dark:bg-background/30 backdrop-blur-xl border-none shadow-sm">
+        <Card className="min-w-0 lg:col-span-3 rounded-2xl bg-card border border-border shadow-xs">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <div>
               <CardTitle className="font-display text-lg font-bold tracking-tight">Difficulty Mix</CardTitle>
               <CardDescription className="text-xs text-muted-foreground">Easy vs. Medium vs. Hard distribution</CardDescription>
             </div>
-            <div className="h-8 w-8 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center">
+            <div className="h-8 w-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
               <Trophy className="h-4 w-4" />
             </div>
           </CardHeader>
@@ -328,13 +328,13 @@ export default function DashboardPage() {
       </div>
 
       {/* 6. Activity Heatmap Card */}
-      <Card className="min-w-0 rounded-3xl bg-background/60 dark:bg-background/30 backdrop-blur-xl border-none shadow-sm">
+      <Card className="min-w-0 rounded-2xl bg-card border border-border shadow-xs">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <div>
             <CardTitle className="font-display text-lg font-bold tracking-tight">Activity Heatmap</CardTitle>
             <CardDescription className="text-xs text-muted-foreground">Daily problem solving activity over the last 90 days</CardDescription>
           </div>
-          <div className="h-8 w-8 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center">
+          <div className="h-8 w-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
             <Activity className="h-4 w-4" />
           </div>
         </CardHeader>

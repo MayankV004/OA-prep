@@ -37,8 +37,8 @@ export function StickyScrollSection({ items }: StickyScrollSectionProps) {
           <div className="space-y-8 bg-transparent">
             
             {/* Header pill indicator */}
-            <div className="text-xs font-bold uppercase tracking-widest text-rose-500 flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse" />
+            <div className="text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-primary" />
               <span>Interactive Scrollytelling</span>
             </div>
 
@@ -61,10 +61,8 @@ export function StickyScrollSection({ items }: StickyScrollSectionProps) {
                     {/* Big Borderless Number */}
                     <span
                       className={cn(
-                        'text-4xl lg:text-6xl font-black font-mono transition-all duration-500',
-                        isActive
-                          ? 'bg-clip-text text-transparent bg-gradient-to-r from-red-600 via-rose-500 to-red-500 drop-shadow-[0_0_20px_rgba(225,29,72,0.5)]'
-                          : 'text-muted-foreground/60'
+                        'text-4xl lg:text-6xl font-black font-mono transition-all duration-300',
+                        isActive ? 'text-primary' : 'text-muted-foreground/60'
                       )}
                     >
                       {item.number}
@@ -82,7 +80,7 @@ export function StickyScrollSection({ items }: StickyScrollSectionProps) {
                       {isActive && (
                         <motion.div
                           layoutId="active-indicator"
-                          className="h-1 w-16 bg-gradient-to-r from-red-600 to-rose-500 rounded-full"
+                          className="h-1 w-16 bg-primary rounded-full"
                         />
                       )}
                     </div>
@@ -102,7 +100,7 @@ export function StickyScrollSection({ items }: StickyScrollSectionProps) {
                   transition={{ duration: 0.3 }}
                   className="space-y-2 p-4 rounded-2xl bg-foreground/[0.02] dark:bg-white/[0.02]"
                 >
-                  <span className="text-xs font-mono font-semibold text-rose-500 uppercase tracking-wider">
+                  <span className="text-xs font-mono font-semibold text-primary uppercase tracking-wider">
                     {items[activeIdx].metric || `Module ${items[activeIdx].number}`}
                   </span>
                   <p className="text-sm text-muted-foreground font-light leading-relaxed">
@@ -162,17 +160,14 @@ function StickyItemCard({
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         className="group relative p-8 md:p-10 rounded-3xl bg-foreground/[0.015] dark:bg-white/[0.015] backdrop-blur-3xl border-0 shadow-none hover:bg-foreground/[0.03] dark:hover:bg-white/[0.03] transition-all duration-500"
       >
-        {/* Red Glow Background Accent */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-red-600/10 via-rose-500/5 to-transparent rounded-full blur-3xl group-hover:scale-125 transition-transform duration-700 pointer-events-none" />
-
         <div className="space-y-6 relative z-10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-red-600 via-rose-600 to-red-500 flex items-center justify-center text-white shadow-xl shadow-rose-500/30">
+              <div className="h-14 w-14 rounded-2xl bg-primary flex items-center justify-center text-primary-foreground shadow-xs">
                 <Icon className="h-7 w-7" />
               </div>
               <div>
-                <span className="text-xs font-mono font-bold text-rose-500 tracking-wider uppercase">
+                <span className="text-xs font-mono font-bold text-primary tracking-wider uppercase">
                   Module {item.number}
                 </span>
                 <h3 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">
@@ -182,13 +177,13 @@ function StickyItemCard({
             </div>
 
             {item.metric && (
-              <span className="px-3 py-1 rounded-full text-xs font-mono font-bold text-rose-500 bg-rose-500/10">
+              <span className="px-3 py-1 rounded-full text-xs font-mono font-bold text-primary bg-primary/10">
                 {item.metric}
               </span>
             )}
           </div>
 
-          <p className="text-base sm:text-lg text-muted-foreground leading-relaxed font-light">
+          <p className="text-base sm:text-lg text-muted-foreground leading-relaxed font-normal">
             {item.description}
           </p>
 
@@ -197,9 +192,9 @@ function StickyItemCard({
             {item.highlights.map((highlight) => (
               <div
                 key={highlight}
-                className="flex items-center gap-3 p-3.5 rounded-2xl bg-foreground/[0.02] dark:bg-white/[0.02] border-0 text-xs sm:text-sm font-medium text-foreground"
+                className="flex items-center gap-3 p-3.5 rounded-2xl bg-card border border-border text-xs sm:text-sm font-medium text-foreground"
               >
-                <CheckCircle2 className="h-4 w-4 text-rose-500 shrink-0" />
+                <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
                 <span>{highlight}</span>
               </div>
             ))}
@@ -207,7 +202,7 @@ function StickyItemCard({
 
           <div className="pt-4 flex items-center justify-between">
             <Link href={item.linkUrl}>
-              <button className="group/btn inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl font-bold text-sm text-white bg-gradient-to-r from-red-600 via-rose-600 to-red-500 shadow-lg shadow-rose-500/30 hover:shadow-rose-500/50 transition-all hover:scale-105 active:scale-95 cursor-pointer border-0">
+              <button className="group/btn inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl font-bold text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-xs active:scale-95 cursor-pointer border-0">
                 <span>{item.linkText}</span>
                 <ArrowRight className="h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
               </button>

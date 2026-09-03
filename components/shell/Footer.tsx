@@ -32,20 +32,20 @@ export function Footer({ className, variant = 'app' }: FooterProps) {
             {/* Column 1: Brand Info */}
             <div className="lg:col-span-2 space-y-4">
               <div className="flex items-center gap-2.5">
-                <div className="size-9 rounded-2xl bg-gradient-to-tr from-red-600 via-rose-600 to-red-500 grid place-items-center text-white font-extrabold text-lg shadow-md shadow-rose-500/20">
+                <div className="size-9 rounded-xl bg-primary grid place-items-center text-primary-foreground font-extrabold text-lg shadow-xs">
                   O
                 </div>
                 <span className="font-display font-extrabold text-2xl tracking-tight text-foreground">
-                  BigO <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 ml-1">Prep</span>
+                  BigO <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 ml-1">Prep</span>
                 </span>
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed max-w-sm">
                 Master Data Structures, Algorithms, Competitive Programming, and CS Core fundamentals to ace your Online Assessments and technical interviews.
               </p>
-              <div className="flex items-center gap-2 text-2xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-3 py-1 w-fit">
+              <div className="flex items-center gap-2 text-2xs font-semibold text-primary bg-primary/10 border border-primary/20 rounded-full px-3 py-1 w-fit">
                 <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
                 </span>
                 All Systems Operational
               </div>

@@ -128,10 +128,10 @@ export function ProblemRow({ problem, index = 0, queryKey, onNotesClick }: Probl
           <span
             aria-hidden
             className={cn(
-              'grid size-6 place-items-center rounded-full border-2 transition-all duration-200',
+              'grid size-6 place-items-center rounded-full border-2 transition-all duration-150',
               problem.completed
-                ? 'border-rose-500 bg-rose-500 text-white shadow-[0_0_10px_rgba(225,29,72,0.4)]'
-                : 'border-muted-foreground/30 bg-transparent text-transparent group-hover:border-rose-500/50'
+                ? 'border-primary bg-primary text-primary-foreground shadow-xs'
+                : 'border-muted-foreground/30 bg-transparent text-transparent group-hover:border-primary/50'
             )}
           >
             <Check className="size-3.5" strokeWidth={3} />
@@ -147,7 +147,7 @@ export function ProblemRow({ problem, index = 0, queryKey, onNotesClick }: Probl
             target="_blank"
             rel="noopener noreferrer"
             className={cn(
-              'group/link inline-flex max-w-md items-center gap-1.5 text-sm font-medium transition-colors duration-150 hover:text-rose-500',
+              'group/link inline-flex max-w-md items-center gap-1.5 text-sm font-medium transition-colors duration-150 hover:text-primary',
               problem.completed ? 'text-text-muted line-through decoration-text-muted/50' : 'text-foreground'
             )}
           >
@@ -215,7 +215,7 @@ export function ProblemRow({ problem, index = 0, queryKey, onNotesClick }: Probl
           aria-label={`${hasNotes ? 'Edit' : 'Add'} notes for ${label}`}
           className={cn(
             'press inline-grid size-8 place-items-center rounded-lg outline-none transition-colors',
-            hasNotes ? 'bg-primary/10 text-rose-500 font-semibold' : 'text-text-muted hover:bg-accent hover:text-foreground'
+            hasNotes ? 'bg-primary/10 text-primary font-semibold' : 'text-text-muted hover:bg-accent hover:text-foreground'
           )}
         >
           <StickyNote className="size-4" />

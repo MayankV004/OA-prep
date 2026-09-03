@@ -192,11 +192,11 @@ export function HeroGeometric({
           {/* Heading (Badge removed completely) */}
           <motion.div custom={0} variants={fadeUpVariants} initial="hidden" animate="visible">
             <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black mb-6 tracking-tight leading-[1.1]">
-              <span className="bg-clip-text text-transparent bg-gradient-to-b from-foreground via-foreground/90 to-foreground/60 dark:from-white dark:via-white/90 dark:to-white/60">
+              <span className="text-foreground">
                 {title1}
               </span>
               <br />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-600 via-rose-500 to-red-500 dark:from-red-400 dark:via-rose-400 dark:to-red-300">
+              <span className="text-primary">
                 {title2}
               </span>
             </h1>
@@ -218,7 +218,7 @@ export function HeroGeometric({
             className="flex flex-col sm:flex-row items-center justify-center gap-4"
           >
             <Link href="/dsa">
-              <button className="group relative inline-flex items-center justify-center h-12 px-8 rounded-2xl font-semibold text-white bg-gradient-to-r from-red-600 via-rose-600 to-red-500 shadow-[0_0_30px_rgba(225,29,72,0.4)] hover:shadow-[0_0_40px_rgba(225,29,72,0.7)] transition-all duration-300 hover:scale-105 active:scale-95 border-0 cursor-pointer">
+              <button className="group relative inline-flex items-center justify-center h-12 px-8 rounded-2xl font-bold text-primary-foreground bg-primary hover:bg-primary/90 shadow-xs transition-all duration-200 active:scale-95 border-0 cursor-pointer">
                 <span>Start Practice</span>
                 <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
               </button>

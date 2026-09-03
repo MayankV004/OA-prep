@@ -26,11 +26,11 @@ export function GroupProgress({ data }: { data: GroupStat[] }) {
         return (
           <div
             key={item.group}
-            className="p-3 rounded-2xl bg-background/50 border border-border/30 hover:border-rose-500/30 transition-colors shadow-sm space-y-2"
+            className="p-3 rounded-2xl bg-card border border-border hover:border-primary/40 transition-colors shadow-xs space-y-2"
           >
             <div className="flex items-center justify-between text-xs">
               <div className="flex items-center gap-2 font-bold text-foreground truncate max-w-[70%] font-display">
-                {isComplete && <CheckCircle2 className="h-3.5 w-3.5 text-rose-500 shrink-0" />}
+                {isComplete && <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />}
                 <span className="truncate">{item.group}</span>
               </div>
               <div className="text-muted-foreground font-mono text-[11px]">
@@ -43,9 +43,7 @@ export function GroupProgress({ data }: { data: GroupStat[] }) {
               <div
                 style={{ width: `${pct}%` }}
                 className={`h-full rounded-full transition-all duration-500 ${
-                  isComplete
-                    ? 'bg-rose-500'
-                    : 'bg-gradient-to-r from-red-600 via-rose-500 to-red-400'
+                  isComplete ? 'bg-primary' : 'bg-primary/80'
                 }`}
               />
             </div>

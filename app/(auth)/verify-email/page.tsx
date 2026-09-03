@@ -177,7 +177,7 @@ function VerifyEmailForm() {
   return (
     <div className="animate-in-up space-y-6">
       <div className="space-y-2 text-center">
-        <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-rose-500/10 text-rose-500 border border-rose-500/20 shadow-e1">
+        <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-primary/10 text-primary border border-primary/20 shadow-xs">
           <Mail className="size-7" />
         </div>
         <Heading level="page">Verify your email address</Heading>
@@ -218,7 +218,7 @@ function VerifyEmailForm() {
                 onChange={(e) => handleDigitChange(idx, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(idx, e)}
                 disabled={loading || success}
-                className="size-12 sm:size-14 rounded-xl border border-border/80 bg-input-background text-center font-mono text-xl sm:text-2xl font-bold text-foreground outline-none transition-all focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 disabled:opacity-50"
+                className="size-12 sm:size-14 rounded-xl border border-border bg-input text-center font-mono text-xl sm:text-2xl font-bold text-foreground outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
               />
             ))}
           </div>
@@ -226,7 +226,7 @@ function VerifyEmailForm() {
           <Button
             type="submit"
             size="xl"
-            className="w-full bg-gradient-to-r from-red-600 via-rose-600 to-red-500 text-white font-semibold shadow-[0_0_20px_rgba(225,29,72,0.4)] hover:shadow-[0_0_25px_rgba(225,29,72,0.6)]"
+            className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-bold shadow-xs border-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             loading={loading}
             disabled={otp.some((d) => !d) || loading}
           >
@@ -235,7 +235,7 @@ function VerifyEmailForm() {
 
           {/* Resend Code Action */}
           <div className="flex items-center justify-between pt-2 text-xs">
-            <Link href="/sign-in" className="inline-flex items-center gap-1.5 text-text-muted hover:text-foreground">
+            <Link href="/sign-in" className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground">
               <ArrowLeft className="size-3.5" /> Back to sign in
             </Link>
 
@@ -243,7 +243,7 @@ function VerifyEmailForm() {
               type="button"
               onClick={handleResend}
               disabled={resendCooldown > 0 || resending}
-              className="inline-flex items-center gap-1.5 font-medium text-rose-600 dark:text-rose-400 hover:underline disabled:opacity-50 disabled:no-underline disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-1.5 font-bold text-primary hover:underline disabled:opacity-50 disabled:no-underline disabled:cursor-not-allowed cursor-pointer"
             >
               {resending ? (
                 <>
@@ -268,7 +268,7 @@ export default function VerifyEmailPage() {
   return (
     <Suspense fallback={
       <div className="grid place-items-center p-12">
-        <Loader2 className="size-8 animate-spin text-rose-500" />
+        <Loader2 className="size-8 animate-spin text-primary" />
       </div>
     }>
       <VerifyEmailForm />

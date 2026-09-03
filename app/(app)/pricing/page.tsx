@@ -198,46 +198,46 @@ export default function PricingPage() {
               <tr className="border-b border-border/60 bg-muted/40 text-xs font-semibold uppercase text-muted-foreground">
                 <th className="p-4 sm:p-5">Capability</th>
                 <th className="p-4 sm:p-5 text-center">Free</th>
-                <th className="p-4 sm:p-5 text-center text-amber-500 font-bold">Pro</th>
+                <th className="p-4 sm:p-5 text-center text-warning font-bold">Pro</th>
                 <th className="p-4 sm:p-5 text-center">OA Season Pass</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/40 text-foreground/90">
               <tr>
                 <td className="p-4 sm:p-5 font-medium">Core DSA Pattern Variations</td>
-                <td className="p-4 sm:p-5 text-center text-emerald-500">12+ Patterns</td>
-                <td className="p-4 sm:p-5 text-center text-emerald-500">All Patterns</td>
-                <td className="p-4 sm:p-5 text-center text-emerald-500">All Patterns</td>
+                <td className="p-4 sm:p-5 text-center text-primary font-semibold">12+ Patterns</td>
+                <td className="p-4 sm:p-5 text-center text-primary font-semibold">All Patterns</td>
+                <td className="p-4 sm:p-5 text-center text-primary font-semibold">All Patterns</td>
               </tr>
               <tr>
                 <td className="p-4 sm:p-5 font-medium">Timed Company OA Mock Simulator</td>
                 <td className="p-4 sm:p-5 text-center text-muted-foreground">1 Demo Test</td>
-                <td className="p-4 sm:p-5 text-center text-emerald-500 font-semibold">Unlimited</td>
-                <td className="p-4 sm:p-5 text-center text-emerald-500 font-semibold">Unlimited</td>
+                <td className="p-4 sm:p-5 text-center text-primary font-semibold">Unlimited</td>
+                <td className="p-4 sm:p-5 text-center text-primary font-semibold">Unlimited</td>
               </tr>
               <tr>
                 <td className="p-4 sm:p-5 font-medium">Recent 60-Day Verified Company Questions</td>
                 <td className="p-4 sm:p-5 text-center text-muted-foreground">Locked</td>
-                <td className="p-4 sm:p-5 text-center text-emerald-500 font-semibold">Full Library</td>
-                <td className="p-4 sm:p-5 text-center text-emerald-500 font-semibold">Full Library</td>
+                <td className="p-4 sm:p-5 text-center text-primary font-semibold">Full Library</td>
+                <td className="p-4 sm:p-5 text-center text-primary font-semibold">Full Library</td>
               </tr>
               <tr>
                 <td className="p-4 sm:p-5 font-medium">AI Edge-Case & Failing Input Debugger</td>
                 <td className="p-4 sm:p-5 text-center text-muted-foreground">3 / day</td>
-                <td className="p-4 sm:p-5 text-center text-emerald-500 font-semibold">100 / month</td>
-                <td className="p-4 sm:p-5 text-center text-emerald-500 font-semibold">250 Total</td>
+                <td className="p-4 sm:p-5 text-center text-primary font-semibold">100 / month</td>
+                <td className="p-4 sm:p-5 text-center text-primary font-semibold">250 Total</td>
               </tr>
               <tr>
                 <td className="p-4 sm:p-5 font-medium">System Design & DevOps Curriculum</td>
                 <td className="p-4 sm:p-5 text-center text-muted-foreground">Previews</td>
-                <td className="p-4 sm:p-5 text-center text-emerald-500 font-semibold">Full Access</td>
-                <td className="p-4 sm:p-5 text-center text-emerald-500 font-semibold">Full Access</td>
+                <td className="p-4 sm:p-5 text-center text-primary font-semibold">Full Access</td>
+                <td className="p-4 sm:p-5 text-center text-primary font-semibold">Full Access</td>
               </tr>
               <tr>
                 <td className="p-4 sm:p-5 font-medium">Auto-renewing Subscription</td>
                 <td className="p-4 sm:p-5 text-center text-muted-foreground">No</td>
                 <td className="p-4 sm:p-5 text-center text-foreground">Yes (Cancel anytime)</td>
-                <td className="p-4 sm:p-5 text-center text-emerald-500 font-semibold">No (One-time)</td>
+                <td className="p-4 sm:p-5 text-center text-primary font-semibold">No (One-time)</td>
               </tr>
             </tbody>
           </table>

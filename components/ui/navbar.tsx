@@ -65,8 +65,8 @@ export function Navbar() {
                 </button>
               </Link>
               <Link href="/sign-up">
-                <button className="relative group overflow-hidden px-5 py-2 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-red-600 via-rose-600 to-red-500 shadow-[0_0_20px_rgba(225,29,72,0.35)] hover:shadow-[0_0_25px_rgba(225,29,72,0.6)] transition-all duration-300 hover:scale-105 active:scale-95 border-none">
-                  <span className="relative z-10">Get Started</span>
+                <button className="px-5 py-2 rounded-xl text-sm font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs transition-all active:scale-95 border-none cursor-pointer">
+                  <span>Get Started</span>
                 </button>
               </Link>
             </div>
@@ -121,7 +121,7 @@ export function Navbar() {
                     </button>
                   </Link>
                   <Link href="/sign-up" onClick={() => setMobileMenuOpen(false)}>
-                    <button className="w-full py-2.5 text-center font-semibold text-white rounded-xl bg-gradient-to-r from-red-600 via-rose-600 to-red-500 shadow-md">
+                    <button className="w-full py-2.5 text-center font-bold bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl shadow-xs cursor-pointer">
                       Get Started
                     </button>
                   </Link>

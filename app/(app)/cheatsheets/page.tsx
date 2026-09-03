@@ -56,7 +56,7 @@ export default function CheatsheetsPage() {
 
         <div className="flex items-center gap-3 shrink-0">
           {!isLoading && cheatsheets.length > 0 && (
-            <div className="px-3.5 py-1.5 rounded-2xl bg-rose-500/10 text-rose-500 font-mono text-xs font-bold">
+            <div className="px-3.5 py-1.5 rounded-2xl bg-primary/10 text-primary font-mono text-xs font-bold">
               {cheatsheets.length} sheet{cheatsheets.length !== 1 ? 's' : ''} available
             </div>
           )}
@@ -64,7 +64,7 @@ export default function CheatsheetsPage() {
             <Button
               size="lg"
               onClick={() => setIsOpen(true)}
-              className="rounded-2xl bg-gradient-to-r from-red-600 via-rose-600 to-red-500 text-white font-bold shadow-md hover:shadow-lg transition-all border-none gap-2"
+              className="rounded-2xl bg-primary text-primary-foreground font-bold shadow-xs hover:bg-primary/90 transition-all border-none gap-2 cursor-pointer"
             >
               <Plus className="size-4" />
               New Cheat Sheet

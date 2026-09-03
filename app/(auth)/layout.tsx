@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { BigOLogo } from '@/components/ui/big-o-logo';
 import { AnimatedThemeToggle } from '@/components/ui/animated-theme-toggle';
-import { GridGlowBackground } from '@/components/ui/grid-glow-background';
 
 /**
  * Modern 21st.dev inspired Auth Shell:
@@ -11,51 +10,40 @@ import { GridGlowBackground } from '@/components/ui/grid-glow-background';
  */
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="grid min-h-screen lg:grid-cols-[1.1fr_1fr] text-foreground font-sans selection:bg-rose-500/30 overflow-hidden relative bg-background transition-colors duration-300">
-      {/* Background Mesh Gradient matching theme across whole layout */}
-      <div className="absolute inset-0 bg-gradient-to-br from-rose-500/10 via-background to-indigo-500/10 dark:from-red-950/40 dark:via-slate-950/95 dark:to-indigo-950/40 opacity-90 transition-colors duration-300 -z-20" aria-hidden />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_30%,rgba(225,29,72,0.12),transparent_65%)] dark:bg-[radial-gradient(circle_at_25%_30%,rgba(225,29,72,0.18),transparent_65%)] -z-20" aria-hidden />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_75%,rgba(225,29,72,0.08),transparent_65%)] dark:bg-[radial-gradient(circle_at_75%_75%,rgba(225,29,72,0.10),transparent_65%)] -z-20" aria-hidden />
-
+    <div className="grid min-h-screen lg:grid-cols-[1.1fr_1fr] text-foreground font-sans selection:bg-primary/20 overflow-hidden relative bg-background transition-colors duration-200">
       {/* ── Left Side: Branded Showcase Panel (LG and up) ─────────── */}
-      <aside className="relative hidden overflow-hidden bg-slate-950 text-slate-100 lg:flex lg:flex-col border-r border-border/20">
-        <GridGlowBackground glowCount={8} gridSize={52} className="flex-1">
-          <div className="relative z-10 flex flex-col justify-between h-full p-12">
-            {/* Background Mesh for Left Panel */}
-            <div className="absolute inset-0 bg-gradient-to-br from-red-950/50 via-slate-950/95 to-indigo-950/50 opacity-90 -z-10" aria-hidden />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(225,29,72,0.18),transparent_65%)] -z-10" aria-hidden />
-
-            {/* Top Logo Header */}
-            <div className="flex items-center justify-between">
-              <Link href="/" className="flex items-center gap-3 group">
-                <BigOLogo size="lg" />
-              </Link>
-            </div>
-
-            {/* Center Main Copy */}
-            <div className="max-w-lg space-y-6 my-auto py-12">
-              <h1 className="font-display text-4xl xl:text-5xl font-black tracking-tight text-white leading-tight">
-                Every Pattern. <br />
-                Every Subject. <br />
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-500 via-rose-400 to-purple-400">
-                  One Workspace.
-                </span>
-              </h1>
-
-              <p className="text-slate-300 text-base leading-relaxed font-light">
-                Track DSA problem variations, master core CS fundamentals, practice competitive programming, and simulate real Online Assessments.
-              </p>
-            </div>
-
-            {/* Footer info */}
-            <div className="flex items-center justify-between text-xs text-slate-400 font-medium border-t border-slate-800/60 pt-6">
-              <span>BigO © {new Date().getFullYear()}</span>
-              <span className="flex items-center gap-1 text-emerald-400">
-                <CheckCircle2 className="h-3.5 w-3.5" /> Actively used for OA & interview prep
-              </span>
-            </div>
+      <aside className="relative hidden overflow-hidden bg-sidebar text-sidebar-foreground lg:flex lg:flex-col border-r border-border">
+        <div className="relative z-10 flex flex-col justify-between h-full p-12">
+          {/* Top Logo Header */}
+          <div className="flex items-center justify-between">
+            <Link href="/" className="flex items-center gap-3 group">
+              <BigOLogo size="lg" />
+            </Link>
           </div>
-        </GridGlowBackground>
+
+          {/* Center Main Copy */}
+          <div className="max-w-lg space-y-6 my-auto py-12">
+            <h1 className="font-display text-4xl xl:text-5xl font-black tracking-tight text-foreground leading-tight">
+              Every Pattern. <br />
+              Every Subject. <br />
+              <span className="text-primary">
+                One Workspace.
+              </span>
+            </h1>
+
+            <p className="text-muted-foreground text-base leading-relaxed font-normal">
+              Track DSA problem variations, master core CS fundamentals, practice competitive programming, and simulate real Online Assessments.
+            </p>
+          </div>
+
+          {/* Footer info */}
+          <div className="flex items-center justify-between text-xs text-muted-foreground font-medium border-t border-border pt-6">
+            <span>BigO © {new Date().getFullYear()}</span>
+            <span className="flex items-center gap-1.5 text-primary font-semibold">
+              <CheckCircle2 className="h-4 w-4" /> Actively used for OA & interview prep
+            </span>
+          </div>
+        </div>
       </aside>
 
       {/* ── Right Side: Form Column ─────────────────────────────── */}

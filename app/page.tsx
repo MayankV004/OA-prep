@@ -63,7 +63,7 @@ export default function LandingPage() {
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-4 px-4">
             <h2 className="text-3xl sm:text-5xl font-black tracking-tight">
               Everything you need to excel in{' '}
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-600 via-rose-500 to-red-500">
+              <span className="text-primary">
                 Technical Rounds
               </span>
             </h2>

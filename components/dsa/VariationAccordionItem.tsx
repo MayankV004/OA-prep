@@ -54,23 +54,18 @@ export function VariationAccordionItem({ variation, patternSlug, html, completed
                   Variation Progress:
                 </span>
                 <span className="font-mono text-xs text-foreground font-semibold">
-                  <span className={cn(solvedCount > 0 ? "text-rose-500 font-bold" : "text-foreground")}>
+                  <span className={cn(solvedCount > 0 ? "text-primary font-bold" : "text-foreground")}>
                     {solvedCount}
                   </span>
                   <span className="text-muted-foreground font-normal mx-1">/</span>
                   <span>{problemCount} solved</span>
-                  <span className="text-rose-500/90 font-mono ml-2">({pct}%)</span>
+                  <span className="text-primary/90 font-mono ml-2">({pct}%)</span>
                 </span>
               </div>
-              <div className="h-2 w-full sm:w-80 rounded-full bg-muted/60 overflow-hidden">
+              <div className="h-2 w-full sm:w-80 rounded-full bg-muted overflow-hidden">
                 <div
                   style={{ width: `${pct}%` }}
-                  className={cn(
-                    "h-full rounded-full transition-all duration-500",
-                    isCompleted
-                      ? "bg-emerald-500"
-                      : "bg-gradient-to-r from-red-600 via-rose-500 to-red-400"
-                  )}
+                  className="h-full rounded-full transition-all duration-500 bg-primary"
                 />
               </div>
             </div>
@@ -81,7 +76,7 @@ export function VariationAccordionItem({ variation, patternSlug, html, completed
         {problemCount > 0 && (
           <Link
             href={`/dsa/${patternSlug}/${variationSlug}/practice`}
-            className="group/btn inline-flex items-center justify-center gap-2 h-11 px-6 rounded-2xl font-semibold text-xs text-white bg-gradient-to-r from-red-600 via-rose-600 to-red-500 shadow-[0_0_20px_rgba(225,29,72,0.35)] hover:shadow-[0_0_25px_rgba(225,29,72,0.6)] hover:scale-105 active:scale-95 transition-all border-none shrink-0 self-start sm:self-center"
+            className="group/btn inline-flex items-center justify-center gap-2 h-11 px-6 rounded-2xl font-bold text-xs bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95 transition-all shadow-xs border-none shrink-0 self-start sm:self-center cursor-pointer"
           >
             <span>Practice Session ({problemCount})</span>
           </Link>
@@ -97,12 +92,12 @@ export function VariationAccordionItem({ variation, patternSlug, html, completed
 
       {/* Key Implementation Details */}
       {variation.important_details && variation.important_details.length > 0 && (
-        <div className="p-5 rounded-2xl bg-background/50 space-y-3">
-          <span className="font-display text-xs font-bold uppercase tracking-wider text-rose-500">Key Implementation Details</span>
+        <div className="p-5 rounded-2xl bg-card border border-border space-y-3">
+          <span className="font-display text-xs font-bold uppercase tracking-wider text-primary">Key Implementation Details</span>
           <ul className="space-y-2.5">
             {variation.important_details.map((detail, idx) => (
               <li key={idx} className="flex items-start gap-2.5 text-sm text-foreground">
-                <span className="mt-1.5 h-2 w-2 rounded-full bg-rose-500 shrink-0" />
+                <span className="mt-1.5 h-2 w-2 rounded-full bg-primary shrink-0" />
                 <div className="prose prose-sm dark:prose-invert max-w-none leading-relaxed text-muted-foreground [&_p]:my-0">
                   <MarkdownView content={detail} />
                 </div>

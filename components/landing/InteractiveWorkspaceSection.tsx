@@ -27,7 +27,7 @@ export function InteractiveWorkspaceSection() {
           <div className="space-y-6">
             <h2 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
               Master Variations, <br />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-600 via-rose-500 to-red-500">
+              <span className="text-primary">
                 Not Single Problems
               </span>
             </h2>
@@ -38,7 +38,7 @@ export function InteractiveWorkspaceSection() {
             <ul className="space-y-3.5">
               {WORKSPACE_HIGHLIGHTS.map((item) => (
                 <li key={item} className="flex items-center gap-3 text-sm font-medium text-foreground">
-                  <div className="h-6 w-6 rounded-full bg-rose-500/10 text-rose-500 flex items-center justify-center shrink-0">
+                  <div className="h-6 w-6 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
                     <CheckCircle2 className="h-4 w-4" />
                   </div>
                   <span>{item}</span>
@@ -48,7 +48,7 @@ export function InteractiveWorkspaceSection() {
 
             <div className="pt-4">
               <Link href="/dsa">
-                <button className="px-8 py-3.5 rounded-2xl font-bold text-white bg-gradient-to-r from-red-600 via-rose-600 to-red-500 shadow-xl shadow-rose-500/25 hover:shadow-rose-500/40 hover:scale-105 active:scale-95 transition-all cursor-pointer border-0">
+                <button className="px-8 py-3.5 rounded-2xl font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs active:scale-95 transition-all cursor-pointer border-0">
                   Browse DSA Roadmap
                 </button>
               </Link>

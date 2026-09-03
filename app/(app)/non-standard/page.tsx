@@ -125,7 +125,7 @@ export default function NonStandardPage() {
           <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
             <div
               style={{ width: `${overallProgress}%` }}
-              className="h-full rounded-full bg-gradient-to-r from-red-600 via-rose-500 to-red-400 transition-all duration-500"
+              className="h-full rounded-full bg-primary transition-all duration-500"
             />
           </div>
         </div>
@@ -238,7 +238,7 @@ export default function NonStandardPage() {
                         <span
                           className={cn(
                             'font-semibold font-mono',
-                            complete ? 'text-rose-500 font-bold' : 'text-foreground'
+                            complete ? 'text-primary font-bold' : 'text-foreground'
                           )}
                         >
                           {complete ? 'Complete' : `${pct}%`}
@@ -247,11 +247,7 @@ export default function NonStandardPage() {
                       <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
                         <div
                           style={{ width: `${pct}%` }}
-                          className={`h-full rounded-full transition-all duration-500 ${
-                            complete
-                              ? 'bg-rose-500'
-                              : 'bg-gradient-to-r from-red-600 via-rose-500 to-red-400'
-                          }`}
+                          className="h-full rounded-full transition-all duration-500 bg-primary"
                         />
                       </div>
                     </div>
