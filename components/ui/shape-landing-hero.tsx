@@ -13,7 +13,6 @@ function ElegantShape({
   height = 100,
   rotate = 0,
   y = 15,
-  gradient = 'from-primary/[0.15]',
   parallaxFactor = 1,
 }: {
   className?: string;
@@ -22,7 +21,6 @@ function ElegantShape({
   height?: number;
   rotate?: number;
   y?: number;
-  gradient?: string;
   parallaxFactor?: number;
 }) {
   const { scrollY } = useScroll();
@@ -72,12 +70,8 @@ function ElegantShape({
         <div
           className={cn(
             'absolute inset-0 rounded-full',
-            'bg-gradient-to-r to-transparent',
-            gradient,
-            'backdrop-blur-[3px] border border-foreground/[0.08]',
-            'shadow-[0_8px_32px_0_rgba(0,0,0,0.1)] dark:shadow-[0_8px_32px_0_rgba(255,255,255,0.05)]',
-            'after:absolute after:inset-0 after:rounded-full',
-            'after:bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.15),transparent_70%)]'
+            'bg-card/40 dark:bg-card/25 backdrop-blur-[2px] border border-border/40',
+            'shadow-[0_8px_32px_0_rgba(0,0,0,0.06)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)]'
           )}
         />
       </motion.div>
@@ -122,9 +116,6 @@ export function HeroGeometric({
       ref={containerRef}
       className="relative min-h-[92vh] w-full flex items-center justify-center overflow-hidden bg-background pt-24 pb-16 transition-colors duration-500"
     >
-      {/* Dynamic Ambient Background Gradients */}
-      <div className="absolute inset-0 bg-gradient-to-br from-red-500/[0.08] via-transparent to-rose-500/[0.08] dark:from-red-500/[0.14] dark:to-rose-500/[0.14] blur-3xl pointer-events-none" />
-
       {/* Floating 3D Geometric Glassmorphic Shapes with Scroll Parallax */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <ElegantShape
@@ -134,7 +125,6 @@ export function HeroGeometric({
           rotate={12}
           y={15}
           parallaxFactor={1.4}
-          gradient="from-red-500/[0.2] dark:from-red-400/[0.25]"
           className="left-[-10%] md:left-[-5%] top-[15%] md:top-[20%]"
         />
 
@@ -145,7 +135,6 @@ export function HeroGeometric({
           rotate={-15}
           y={15}
           parallaxFactor={-1.2}
-          gradient="from-rose-500/[0.2] dark:from-rose-400/[0.25]"
           className="right-[-5%] md:right-[0%] top-[65%] md:top-[70%]"
         />
 
@@ -156,7 +145,6 @@ export function HeroGeometric({
           rotate={-8}
           y={15}
           parallaxFactor={1.8}
-          gradient="from-pink-500/[0.2] dark:from-pink-400/[0.25]"
           className="left-[5%] md:left-[10%] bottom-[5%] md:bottom-[10%]"
         />
 
@@ -167,7 +155,6 @@ export function HeroGeometric({
           rotate={20}
           y={15}
           parallaxFactor={-0.8}
-          gradient="from-orange-500/[0.2] dark:from-orange-400/[0.25]"
           className="right-[15%] md:right-[20%] top-[10%] md:top-[15%]"
         />
 
@@ -178,7 +165,6 @@ export function HeroGeometric({
           rotate={-25}
           y={15}
           parallaxFactor={2.1}
-          gradient="from-red-600/[0.2] dark:from-red-500/[0.25]"
           className="left-[20%] md:left-[25%] top-[5%] md:top-[10%]"
         />
       </div>

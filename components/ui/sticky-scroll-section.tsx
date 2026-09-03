@@ -39,7 +39,7 @@ export function StickyScrollSection({ items }: StickyScrollSectionProps) {
             {/* Header pill indicator */}
             <div className="text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-primary" />
-              <span>Interactive Scrollytelling</span>
+              <span>Curated Curriculum</span>
             </div>
 
             {/* Giant Borderless Number Stack */}

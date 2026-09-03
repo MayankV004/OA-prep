@@ -33,19 +33,19 @@ export function PlacementLoopSection() {
         <div className="grid grid-cols-4 gap-6 items-end mb-8">
           {/* Card 01 */}
           <ScrollReveal direction="up" delay={0.1} distance={30} className="w-full">
-            <div className="relative p-2 bg-transparent border-0 shadow-none group">
-              <div className="text-4xl font-black font-mono text-primary mb-2">
+            <div className="relative p-6 rounded-2xl bg-card border border-border/80 shadow-xs hover:border-primary/40 transition-all group">
+              <div className="text-3xl font-black font-mono text-primary mb-2">
                 {step01.num}
               </div>
-              <h3 className="text-xl font-bold text-foreground mb-1.5 group-hover:text-primary transition-colors">
+              <h3 className="text-lg font-bold text-foreground mb-1.5 group-hover:text-primary transition-colors">
                 {step01.title}
               </h3>
-              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed font-light">
+              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed font-normal">
                 {step01.desc}
               </p>
 
-              {/* Precise Vertical Connector Line pointing down to horizontal axis */}
-              <div className="absolute left-1/2 -translate-x-1/2 top-full h-8 w-[2px] bg-primary/50 pointer-events-none" />
+              {/* Connector Line pointing down to horizontal axis */}
+              <div className="absolute left-1/2 -translate-x-1/2 top-full h-8 w-[2px] bg-primary/40 pointer-events-none" />
             </div>
           </ScrollReveal>
 
@@ -54,19 +54,19 @@ export function PlacementLoopSection() {
 
           {/* Card 03 */}
           <ScrollReveal direction="up" delay={0.3} distance={30} className="w-full">
-            <div className="relative p-2 bg-transparent border-0 shadow-none group">
-              <div className="text-4xl font-black font-mono text-primary mb-2">
+            <div className="relative p-6 rounded-2xl bg-card border border-border/80 shadow-xs hover:border-primary/40 transition-all group">
+              <div className="text-3xl font-black font-mono text-primary mb-2">
                 {step03.num}
               </div>
-              <h3 className="text-xl font-bold text-foreground mb-1.5 group-hover:text-primary transition-colors">
+              <h3 className="text-lg font-bold text-foreground mb-1.5 group-hover:text-primary transition-colors">
                 {step03.title}
               </h3>
-              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed font-light">
+              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed font-normal">
                 {step03.desc}
               </p>
 
-              {/* Precise Vertical Connector Line pointing down to horizontal axis */}
-              <div className="absolute left-1/2 -translate-x-1/2 top-full h-8 w-[2px] bg-primary/50 pointer-events-none" />
+              {/* Connector Line pointing down to horizontal axis */}
+              <div className="absolute left-1/2 -translate-x-1/2 top-full h-8 w-[2px] bg-primary/40 pointer-events-none" />
             </div>
           </ScrollReveal>
 
@@ -74,7 +74,7 @@ export function PlacementLoopSection() {
           <div />
         </div>
 
-        {/* MIDDLE AXIS LINE (Solid Primary with Reduced Opacity) */}
+        {/* MIDDLE AXIS LINE */}
         <div className="w-full h-1.5 rounded-full bg-primary/30 shadow-xs my-0" />
 
         {/* BOTTOM ROW CARDS (02 and 04) */}
@@ -84,17 +84,17 @@ export function PlacementLoopSection() {
 
           {/* Card 02 */}
           <ScrollReveal direction="down" delay={0.2} distance={30} className="w-full">
-            <div className="relative p-2 bg-transparent border-0 shadow-none group">
-              {/* Precise Vertical Connector Line pointing up to horizontal axis */}
-              <div className="absolute left-1/2 -translate-x-1/2 bottom-full h-8 w-[2px] bg-primary/50 pointer-events-none" />
+            <div className="relative p-6 rounded-2xl bg-card border border-border/80 shadow-xs hover:border-primary/40 transition-all group">
+              {/* Connector Line pointing up to horizontal axis */}
+              <div className="absolute left-1/2 -translate-x-1/2 bottom-full h-8 w-[2px] bg-primary/40 pointer-events-none" />
 
-              <div className="text-4xl font-black font-mono text-primary mb-2">
+              <div className="text-3xl font-black font-mono text-primary mb-2">
                 {step02.num}
               </div>
-              <h3 className="text-xl font-bold text-foreground mb-1.5 group-hover:text-primary transition-colors">
+              <h3 className="text-lg font-bold text-foreground mb-1.5 group-hover:text-primary transition-colors">
                 {step02.title}
               </h3>
-              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed font-light">
+              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed font-normal">
                 {step02.desc}
               </p>
             </div>
@@ -105,17 +105,17 @@ export function PlacementLoopSection() {
 
           {/* Card 04 */}
           <ScrollReveal direction="down" delay={0.4} distance={30} className="w-full">
-            <div className="relative p-2 bg-transparent border-0 shadow-none group">
-              {/* Precise Vertical Connector Line pointing up to horizontal axis */}
-              <div className="absolute left-1/2 -translate-x-1/2 bottom-full h-8 w-[2px] bg-primary/50 pointer-events-none" />
+            <div className="relative p-6 rounded-2xl bg-card border border-border/80 shadow-xs hover:border-primary/40 transition-all group">
+              {/* Connector Line pointing up to horizontal axis */}
+              <div className="absolute left-1/2 -translate-x-1/2 bottom-full h-8 w-[2px] bg-primary/40 pointer-events-none" />
 
-              <div className="text-4xl font-black font-mono text-primary mb-2">
+              <div className="text-3xl font-black font-mono text-primary mb-2">
                 {step04.num}
               </div>
-              <h3 className="text-xl font-bold text-foreground mb-1.5 group-hover:text-primary transition-colors">
+              <h3 className="text-lg font-bold text-foreground mb-1.5 group-hover:text-primary transition-colors">
                 {step04.title}
               </h3>
-              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed font-light">
+              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed font-normal">
                 {step04.desc}
               </p>
             </div>
@@ -123,16 +123,16 @@ export function PlacementLoopSection() {
         </div>
       </div>
 
-      {/* Mobile Stacked Layout - Text Only */}
-      <div className="md:hidden space-y-6">
+      {/* Mobile Stacked Layout */}
+      <div className="md:hidden grid grid-cols-1 sm:grid-cols-2 gap-4">
         {PLACEMENT_STEPS.map((step, idx) => (
-          <ScrollReveal key={step.num} direction="up" delay={idx * 0.1} distance={30}>
-            <div className="p-2 bg-transparent border-0 shadow-none">
-              <div className="text-3xl font-black font-mono text-primary mb-2">
+          <ScrollReveal key={step.num} direction="up" delay={idx * 0.1} distance={20}>
+            <div className="p-5 rounded-2xl bg-card border border-border shadow-xs">
+              <div className="text-2xl font-black font-mono text-primary mb-2">
                 {step.num}
               </div>
-              <h3 className="text-lg font-bold text-foreground mb-1">{step.title}</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed font-light">{step.desc}</p>
+              <h3 className="text-base font-bold text-foreground mb-1">{step.title}</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed font-normal">{step.desc}</p>
             </div>
           </ScrollReveal>
         ))}

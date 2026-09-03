@@ -131,12 +131,17 @@ export function ScrollCountUp({
   }, [isInView, targetNum, suffix, value]);
 
   return (
-    <div ref={ref} className={cn('text-center p-6 rounded-3xl relative group', className)}>
-      <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-red-500/5 via-rose-500/5 to-red-600/5 group-hover:from-red-500/10 group-hover:to-rose-500/10 transition-colors duration-500 pointer-events-none" />
-      <div className="text-4xl sm:text-5xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-red-600 via-rose-500 to-red-500 font-mono">
+    <div
+      ref={ref}
+      className={cn(
+        'text-center p-6 rounded-2xl bg-card border border-border shadow-xs hover:border-primary/40 transition-all duration-200 group',
+        className
+      )}
+    >
+      <div className="text-3xl sm:text-5xl font-black tracking-tight text-foreground font-mono">
         {displayValue}
       </div>
-      <div className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-muted-foreground mt-2">
+      <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mt-2.5">
         {label}
       </div>
     </div>

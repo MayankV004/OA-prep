@@ -19,13 +19,16 @@ export function CtaSection() {
           <p className="text-muted-foreground text-lg max-w-xl mx-auto font-light leading-relaxed">
             Join engineering students who built structured prep habits, mastered patterns, and landed top tech roles.
           </p>
-          <div className="pt-4">
+          <div className="pt-4 space-y-3">
             <Link href="/sign-up">
-              <button className="group relative inline-flex items-center justify-center h-14 px-10 rounded-2xl font-bold text-lg text-primary-foreground bg-primary hover:bg-primary/90 shadow-xs transition-all duration-200 active:scale-95 cursor-pointer border-0">
+              <button className="group relative inline-flex items-center justify-center h-14 px-10 rounded-2xl font-bold text-base sm:text-lg text-primary-foreground bg-primary hover:bg-primary/90 shadow-xs transition-all duration-200 active:scale-95 cursor-pointer border-0">
                 <span>Get Started Now — It's Free</span>
                 <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
               </button>
             </Link>
+            <p className="text-xs text-muted-foreground font-medium">
+              Free forever for core practice • No credit card required • 500+ curated questions
+            </p>
           </div>
         </div>
       </ScrollReveal>
