@@ -155,7 +155,7 @@ function SidebarBody({
 function Sidebar({
   sections,
   isAdmin = false,
-  homeHref = '/dashboard',
+  homeHref = '/',
   onSearch,
   idPrefix = 'nav',
 }: {

@@ -31,7 +31,7 @@ export function Navbar() {
         
         {/* Brand Logo */}
         <Link href="/" className="flex items-center gap-3 group">
-          <BigOLogo size="md" showBadge />
+          <BigOLogo size="md" showBadge={false} />
         </Link>
 
         {/* Desktop Nav Links */}

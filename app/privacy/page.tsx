@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { Lock, ShieldCheck, ArrowLeft, Clock, Eye, Database, Server } from 'lucide-react';
 import { Navbar } from '@/components/ui/navbar';
 import { Badge } from '@/components/ui/badge';
-import { Footer } from '@/components/shell/Footer';
 
 export default function PrivacyPage() {
   const lastUpdated = 'August 26, 2026';
@@ -144,7 +143,7 @@ export default function PrivacyPage() {
             </p>
             <p className="text-muted-foreground">
               If you have any questions or privacy inquiries, please visit our{' '}
-              <Link href="/contact" className="text-blue-600 dark:text-blue-400 font-semibold underline">
+              <Link href="/contact" className="text-primary font-semibold underline">
                 Contact Page
               </Link>{' '}
               or email us at <code className="text-foreground">support@bigoprep.tech</code>.
@@ -152,9 +151,6 @@ export default function PrivacyPage() {
           </section>
         </div>
       </main>
-
-      {/* Global Footer */}
-      <Footer variant="public" />
     </div>
   );
 }

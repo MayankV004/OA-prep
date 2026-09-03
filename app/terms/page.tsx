@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { ShieldCheck, FileText, ArrowLeft, Clock } from 'lucide-react';
 import { Navbar } from '@/components/ui/navbar';
 import { Badge } from '@/components/ui/badge';
-import { Footer } from '@/components/shell/Footer';
 
 export default function TermsPage() {
   const lastUpdated = 'August 26, 2026';
@@ -142,7 +141,7 @@ export default function TermsPage() {
             </h2>
             <p className="text-muted-foreground">
               If you have any questions or concerns regarding these Terms, please reach out to us via our{' '}
-              <Link href="/contact" className="text-rose-600 dark:text-rose-400 font-semibold underline">
+              <Link href="/contact" className="text-primary font-semibold underline">
                 Contact Page
               </Link>{' '}
               or email us at <code className="text-foreground">support@bigoprep.tech</code>.
@@ -150,9 +149,6 @@ export default function TermsPage() {
           </section>
         </div>
       </main>
-
-      {/* Global Footer */}
-      <Footer variant="public" />
     </div>
   );
 }

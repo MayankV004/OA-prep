@@ -18,7 +18,6 @@ import { Navbar } from '@/components/ui/navbar';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { FeedbackModal } from '@/components/feedback/FeedbackModal';
-import { Footer } from '@/components/shell/Footer';
 import { useToast } from '@/components/ui/toast';
 
 const FAQS = [
@@ -330,9 +329,6 @@ export default function ContactPage() {
           </div>
         </div>
       </main>
-
-      {/* Global Footer */}
-      <Footer variant="public" />
 
       {/* Feedback Modal */}
       <FeedbackModal

@@ -47,7 +47,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
       </aside>
 
       {/* ── Right Side: Form Column ─────────────────────────────── */}
-      <main className="relative flex flex-col justify-between px-5 py-8 sm:px-12 lg:px-16 z-10 bg-background/80 dark:bg-slate-950/60 backdrop-blur-md text-foreground transition-colors duration-300">
+      <main className="relative flex flex-col justify-between px-5 py-8 sm:px-12 lg:px-16 z-10 bg-background/80 backdrop-blur-md text-foreground transition-colors duration-200">
         {/* Top Header Bar */}
         <div className="flex items-center justify-between w-full max-w-md mx-auto">
           <Link

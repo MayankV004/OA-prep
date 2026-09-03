@@ -31,7 +31,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   const isAdmin = (session.user as any).role === 'admin';
 
   return (
-    <AppShell variant="app" isAdmin={isAdmin} homeHref="/dashboard" idPrefix="app">
+    <AppShell variant="app" isAdmin={isAdmin} homeHref="/" idPrefix="app">
       {children}
     </AppShell>
   );
