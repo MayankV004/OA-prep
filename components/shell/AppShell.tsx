@@ -41,6 +41,12 @@ function ShellFrame({
 
   const openPalette = React.useCallback(() => setPaletteOpen(true), []);
 
+  // Proctored OA test runner requires a 100% full-screen distraction-free workspace (no sidebar or topbar)
+  const isProctoredTest = pathname.includes('/oa/') && pathname.endsWith('/test');
+  if (isProctoredTest) {
+    return <div className="h-screen w-screen overflow-hidden bg-background">{children}</div>;
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Sidebar

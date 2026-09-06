@@ -15,6 +15,7 @@ import {
   Shield,
   Sparkles,
   Tags,
+  Timer,
   Trophy,
   User,
   Users,
@@ -41,6 +42,7 @@ export const APP_NAV: NavSection[] = [
     items: [
       { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, exact: true },
       { name: 'Pattern DSA', href: '/dsa', icon: Code2 },
+      { name: 'OA Simulator', href: '/oa', icon: Timer },
       { name: 'Non-standard', href: '/non-standard', icon: Layers },
       { name: 'Comp. Prog.', href: '/cp', icon: Trophy, exact: true },
       { name: 'Contest Radar', href: '/cp/contests', icon: Calendar },
@@ -115,6 +117,7 @@ export function isNavItemActive(pathname: string, item: NavItem): boolean {
 
 const LABEL_OVERRIDES: Record<string, string> = {
   dsa: 'Pattern DSA',
+  oa: 'OA Simulator',
   cp: 'Competitive Programming',
   contests: 'Contests Radar',
   'non-standard': 'Non-standard',
