@@ -9,4 +9,6 @@ export * from './llm-client';
 export * from './storage';
 export * from './vision/face-analyzer';
 export * from './vision/device-analyzer';
+export * from './vision/neural-face-detector';
+export * from './vision/neural-device-detector';
 export * from './audio/acoustic-analyzer';

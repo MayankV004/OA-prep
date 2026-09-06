@@ -23,32 +23,45 @@ export function detectOpticalPhone(
   ctx: CanvasRenderingContext2D,
   candidate?: CandidateRegion
 ): PhoneAnalysisResult {
+  // Optical phone detection is strictly peripheral to an active seated candidate.
+  // If candidate is absent from camera view, optical phone detection must not run.
+  if (!candidate || candidate.boxWidth <= 12 || candidate.boxHeight <= 12) {
+    return {
+      isPhoneDetected: false,
+      phoneScreenPixels: 0,
+      phoneDarkPixels: 0,
+      aspectRatio: 0,
+      boxWidth: 0,
+      boxHeight: 0,
+    };
+  }
+
   const imgData = ctx.getImageData(0, 0, 160, 120);
   const data = imgData.data;
 
   // Candidate Head/Hair Exclusion Zone
   // A candidate's own head, hair, glasses, beard, and collar must never be flagged as a phone
-  let headLeft = -1;
-  let headRight = -1;
-  let headTop = -1;
-  let headBottom = -1;
+  const halfW = Math.max(18, candidate.boxWidth * 0.75);
+  const headLeft = Math.max(0, candidate.centroidX - halfW);
+  const headRight = Math.min(160, candidate.centroidX + halfW);
+  const headTop = Math.max(0, candidate.centroidY - candidate.boxHeight * 0.95);
+  const headBottom = Math.min(120, candidate.centroidY + candidate.boxHeight * 0.85);
 
-  if (candidate && candidate.boxWidth > 12 && candidate.boxHeight > 12) {
-    const halfW = Math.max(16, candidate.boxWidth * 0.75);
-    headLeft = candidate.centroidX - halfW;
-    headRight = candidate.centroidX + halfW;
-    // Exclude top hair/scalp to chin/neck
-    headTop = candidate.centroidY - candidate.boxHeight * 0.95;
-    headBottom = candidate.centroidY + candidate.boxHeight * 0.85;
+  // Multi-Zone Trackers: Evaluate Left Side, Right Side, and Lower-Chest separately
+  // This prevents dark pixels on opposite sides from merging into an invalid huge box.
+  interface ZoneCluster {
+    count: number;
+    screenPixels: number;
+    darkPixels: number;
+    minX: number;
+    maxX: number;
+    minY: number;
+    maxY: number;
   }
 
-  // 1. Track Illuminated Mobile Screen Clusters (Bright neutral emissive display)
-  let sCount = 0;
-  let sMinX = 160, sMaxX = 0, sMinY = 120, sMaxY = 0;
-
-  // 2. Track Dark Handheld Device Bodies (Solid black/gray rectangular phone slabs)
-  let dCount = 0;
-  let dMinX = 160, dMaxX = 0, dMinY = 120, dMaxY = 0;
+  const leftZone: ZoneCluster = { count: 0, screenPixels: 0, darkPixels: 0, minX: 160, maxX: 0, minY: 120, maxY: 0 };
+  const rightZone: ZoneCluster = { count: 0, screenPixels: 0, darkPixels: 0, minX: 160, maxX: 0, minY: 120, maxY: 0 };
+  const lowerZone: ZoneCluster = { count: 0, screenPixels: 0, darkPixels: 0, minX: 160, maxX: 0, minY: 120, maxY: 0 };
 
   for (let py = 12; py < 112; py += 2) {
     for (let px = 8; px < 152; px += 2) {
@@ -62,70 +75,85 @@ export function detectOpticalPhone(
       const pg = data[pIdx + 1];
       const pb = data[pIdx + 2];
 
-      // Illuminated mobile screen: high brightness neutral/blue-white emissive light
-      const isScreenLit =
-        pr > 195 && pg > 195 && pb > 195 &&
-        Math.abs(pr - pg) < 18 && Math.abs(pr - pb) < 18;
+      const Y = 0.299 * pr + 0.587 * pg + 0.114 * pb;
 
-      // Dark phone slab: very dark non-reflective pixels (excluding bottom lap/desk edge)
-      const isDarkPhone = py < 106 && pr < 30 && pg < 30 && pb < 30;
+      // Non-skin classification (rejects human skin tones)
+      const isSkin = pr > pg && pr > pb && pr > 75 && pb < pr * 0.75;
+      if (isSkin) continue;
 
-      if (isScreenLit) {
-        sCount++;
-        if (px < sMinX) sMinX = px;
-        if (px > sMaxX) sMaxX = px;
-        if (py < sMinY) sMinY = py;
-        if (py > sMaxY) sMaxY = py;
-      } else if (isDarkPhone) {
-        dCount++;
-        if (px < dMinX) dMinX = px;
-        if (px > dMaxX) dMaxX = px;
-        if (py < dMinY) dMinY = py;
-        if (py > dMaxY) dMaxY = py;
+      // 1. Emissive Display / Lit Screen (bright non-skin display / wallpaper / text)
+      const isScreen = Y >= 155;
+
+      // 2. Dark Device Body / Bezel (solid black/dark gray phone chassis)
+      const isDarkBody = Y <= 82;
+
+      if (!isScreen && !isDarkBody) continue;
+
+      // Route pixel to corresponding zone
+      let targetZone: ZoneCluster | null = null;
+      if (px < headLeft) {
+        targetZone = leftZone;
+      } else if (px > headRight) {
+        targetZone = rightZone;
+      } else if (py > headBottom) {
+        targetZone = lowerZone;
+      }
+
+      if (targetZone) {
+        targetZone.count++;
+        if (isScreen) targetZone.screenPixels++;
+        if (isDarkBody) targetZone.darkPixels++;
+        if (px < targetZone.minX) targetZone.minX = px;
+        if (px > targetZone.maxX) targetZone.maxX = px;
+        if (py < targetZone.minY) targetZone.minY = py;
+        if (py > targetZone.maxY) targetZone.maxY = py;
       }
     }
   }
 
-  // Evaluate Screen Detection
-  const sW = Math.max(0, sMaxX - sMinX);
-  const sH = Math.max(0, sMaxY - sMinY);
-  const sAspect = sH > 0 && sW > 0 ? (sH >= sW ? sH / sW : sW / sH) : 0;
-  // Step is 2, so sampled pixels in bounding box = (sW / 2) * (sH / 2)
-  const sSampledGridPoints = Math.max(1, (sW / 2) * (sH / 2));
-  const sDensity = sCount / sSampledGridPoints;
+  // Validate smartphone geometry in a given zone
+  const evaluateZone = (zone: ZoneCluster): { detected: boolean; width: number; height: number; aspect: number } => {
+    if (zone.count < 22) return { detected: false, width: 0, height: 0, aspect: 0 };
 
-  const isScreenPhone =
-    sCount >= 28 &&
-    sW >= 12 && sW <= 55 &&
-    sH >= 18 && sH <= 80 &&
-    sAspect >= 1.25 && sAspect <= 2.6 &&
-    sDensity >= 0.35; // Dense solid rectangle, NOT diffuse ambient wall light
+    const W = Math.max(0, zone.maxX - zone.minX);
+    const H = Math.max(0, zone.maxY - zone.minY);
+    if (W < 10 || W > 68 || H < 20 || H > 92) {
+      return { detected: false, width: W, height: H, aspect: 0 };
+    }
 
-  // Evaluate Dark Handheld Device Body
-  const dW = Math.max(0, dMaxX - dMinX);
-  const dH = Math.max(0, dMaxY - dMinY);
-  const dAspect = dH > 0 && dW > 0 ? (dH >= dW ? dH / dW : dW / dH) : 0;
-  const dSampledGridPoints = Math.max(1, (dW / 2) * (dH / 2));
-  const dDensity = dCount / dSampledGridPoints;
+    // Must be elevated in view (held up in air, not sitting on desk bottom)
+    if (zone.minY > 90) {
+      return { detected: false, width: W, height: H, aspect: 0 };
+    }
 
-  const isDarkPhoneDetected =
-    dCount >= 40 &&
-    dW >= 14 && dW <= 48 &&
-    dH >= 22 && dH <= 75 &&
-    dAspect >= 1.30 && dAspect <= 2.5 &&
-    dDensity >= 0.40; // Dense solid slab, NOT scattered ambient shadows
+    const aspect = H >= W ? H / W : W / H;
+    const sampledPoints = Math.max(1, (W / 2) * (H / 2));
+    const density = zone.count / sampledPoints;
 
-  const isPhoneDetected = isScreenPhone || isDarkPhoneDetected;
-  const bestW = isScreenPhone ? sW : dW;
-  const bestH = isScreenPhone ? sH : dH;
-  const bestAspect = isScreenPhone ? sAspect : dAspect;
+    // Classic smartphone aspect ratio (1.25 to 3.0) and dense cluster
+    const isPhone = aspect >= 1.25 && aspect <= 3.1 && density >= 0.20;
+
+    return { detected: isPhone, width: W, height: H, aspect };
+  };
+
+  const evalLeft = evaluateZone(leftZone);
+  const evalRight = evaluateZone(rightZone);
+  const evalLower = evaluateZone(lowerZone);
+
+  const isPhoneDetected = evalLeft.detected || evalRight.detected || evalLower.detected;
+  const bestZone = evalRight.detected ? rightZone : evalLeft.detected ? leftZone : lowerZone;
+  const bestEval = evalRight.detected ? evalRight : evalLeft.detected ? evalLeft : evalLower;
+
+  if (isPhoneDetected) {
+    console.log(`[PROCTOR OPTICAL] Handheld smartphone detected in ${evalRight.detected ? 'RIGHT' : evalLeft.detected ? 'LEFT' : 'LOWER'} zone (Aspect: ${bestEval.aspect.toFixed(2)}, Size: ${bestEval.width}x${bestEval.height})`);
+  }
 
   return {
     isPhoneDetected,
-    phoneScreenPixels: sCount,
-    phoneDarkPixels: dCount,
-    aspectRatio: bestAspect,
-    boxWidth: bestW,
-    boxHeight: bestH,
+    phoneScreenPixels: bestZone.screenPixels,
+    phoneDarkPixels: bestZone.darkPixels,
+    aspectRatio: bestEval.aspect,
+    boxWidth: bestEval.width,
+    boxHeight: bestEval.height,
   };
 }

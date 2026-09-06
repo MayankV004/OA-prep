@@ -1,12 +1,18 @@
 'use client';
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { Camera, CameraOff, Mic, MicOff, AlertCircle, Eye, Shield, ShieldAlert, Smartphone, Minimize2, Maximize2 } from 'lucide-react';
+import { Camera, CameraOff, Mic, MicOff, AlertCircle, Eye, Shield, ShieldAlert, Smartphone, Users, BookOpen, Minimize2, Maximize2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   ProctorViolationEvent,
   FaceStatus,
   GazeStatus,
+  NeuralModelStatus,
+  CandidateRegion,
+  analyzeNeuralFaceFrame,
+  initNeuralFaceModel,
+  detectNeuralDevices,
+  initNeuralDeviceModel,
   analyzeFaceFrame,
   detectOpticalPhone,
   setupAcousticAnalyzer,
@@ -33,11 +39,17 @@ export function ProctorCameraPip({ onViolation, onMediaStateChange }: ProctorCam
   const [hasMic, setHasMic] = useState(false);
   const [audioLevel, setAudioLevel] = useState(0);
 
+  // Neural Engine Model Status
+  const [modelStatus, setModelStatus] = useState<NeuralModelStatus>('uninitialized');
+
   // Face Detection & Prohibited Object State
   const [faceStatus, setFaceStatus] = useState<FaceStatus>('detecting');
+  const [faceCount, setFaceCount] = useState<number>(1);
   const [faceInScreenPercent, setFaceInScreenPercent] = useState<number>(0);
   const [gazeStatus, setGazeStatus] = useState<GazeStatus>('no_face');
   const [phoneDetected, setPhoneDetected] = useState(false);
+  const [phoneScore, setPhoneScore] = useState(0);
+  const [bookDetected, setBookDetected] = useState(false);
   const [faceOccluded, setFaceOccluded] = useState(false);
   const [minimized, setMinimized] = useState(false);
   const [initError, setInitError] = useState<string | null>(null);
@@ -46,7 +58,11 @@ export function ProctorCameraPip({ onViolation, onMediaStateChange }: ProctorCam
   const partialOrAbsentStreak = useRef(0);
   const gazeDivertedStreak = useRef(0);
   const voiceActivityStreak = useRef(0);
+  const phoneStreak = useRef(0);
+  const multiPersonStreak = useRef(0);
   const lastViolationTime = useRef<Record<string, number>>({});
+  const latestFaceRef = useRef<CandidateRegion | null>(null);
+  const phonePersistenceTimer = useRef<NodeJS.Timeout | null>(null);
 
   const shouldTriggerViolation = (key: string, cooldownMs = 3500) => {
     const now = Date.now();
@@ -121,6 +137,9 @@ export function ProctorCameraPip({ onViolation, onMediaStateChange }: ProctorCam
       active = false;
       if (animFrameIdRef.current) {
         cancelAnimationFrame(animFrameIdRef.current);
+      }
+      if (phonePersistenceTimer.current) {
+        clearTimeout(phonePersistenceTimer.current);
       }
       if (stream) {
         stream.getTracks().forEach((track) => track.stop());
@@ -201,8 +220,38 @@ export function ProctorCameraPip({ onViolation, onMediaStateChange }: ProctorCam
     return () => clearInterval(audioInterval);
   }, [hasMic, onViolation]);
 
-  // 4. Continuous Face Detection, Gaze & Device Check Loop (Runs every 450ms)
-  const runVisionAnalysis = useCallback(async () => {
+  // 4. Load Neural AI Models (BlazeFace + COCO-SSD) on Client Mount
+  useEffect(() => {
+    let isMounted = true;
+    async function loadModels() {
+      try {
+        setModelStatus('loading');
+        const [faceMod, devMod] = await Promise.all([
+          initNeuralFaceModel(),
+          initNeuralDeviceModel(),
+        ]);
+        if (!isMounted) return;
+        if (faceMod && devMod) {
+          setModelStatus('ready');
+        } else if (faceMod || devMod) {
+          setModelStatus('ready');
+        } else {
+          setModelStatus('fallback');
+        }
+      } catch (err) {
+        console.warn('Neural models initialization failed, using fallback:', err);
+        if (isMounted) setModelStatus('fallback');
+      }
+    }
+
+    loadModels();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // 5. ENGINE 1: Real-Time Neural Face, Multiple Person & 3D Gaze Analysis (Every 180ms)
+  const runFaceAnalysis = useCallback(async () => {
     const video = videoRef.current;
     if (!video || !hasCamera) return;
 
@@ -210,61 +259,251 @@ export function ProctorCameraPip({ onViolation, onMediaStateChange }: ProctorCam
       setFaceStatus('detecting');
       setFaceInScreenPercent(0);
       setGazeStatus('no_face');
+      latestFaceRef.current = null;
       return;
     }
 
-    const videoW = video.videoWidth || 320;
-    const videoH = video.videoHeight || 240;
+    const inputSource = displayCanvasRef.current || video;
+    const videoW = displayCanvasRef.current?.width || video.videoWidth || 320;
+    const videoH = displayCanvasRef.current?.height || video.videoHeight || 240;
 
-    // Option A: Check Chromium Native Shape Detection API if available
-    const hasNativeFaceDetector = typeof (window as any).FaceDetector !== 'undefined';
-    if (hasNativeFaceDetector) {
-      try {
-        const detector = new (window as any).FaceDetector({ fastMode: true, maxDetectedFaces: 4 });
-        const faces = await detector.detect(video);
+    // Fast Path A: Google BlazeFace Neural Model
+    if (modelStatus === 'ready') {
+      const neuralResult = await analyzeNeuralFaceFrame(inputSource, videoW, videoH);
+      if (neuralResult) {
+        setFaceCount(neuralResult.faceCount);
 
-        if (!faces || faces.length === 0) {
-          handleFaceCalculation(0, false, 0.5, false, false);
-          return;
+        // Update latestFaceRef for spatial candidate exclusion in device analysis
+        if (neuralResult.faceCount > 0 && neuralResult.boxWidth > 0) {
+          latestFaceRef.current = {
+            centroidX: (neuralResult.centroidX / videoW) * 160,
+            centroidY: (neuralResult.centroidY / videoH) * 120,
+            boxWidth: (neuralResult.boxWidth / videoW) * 160,
+            boxHeight: (neuralResult.boxHeight / videoH) * 120,
+          };
+        } else {
+          latestFaceRef.current = null;
         }
 
-        if (faces.length > 1) {
-          handleFaceCalculation(100, true, 0.5, false, false);
-          if (shouldTriggerViolation('multiple_faces', 15000)) {
+        // Multiple faces check
+        if (neuralResult.faceCount > 1) {
+          multiPersonStreak.current += 1;
+          setFaceStatus('multiple');
+          setFaceInScreenPercent(100);
+          setGazeStatus('no_face');
+
+          if (multiPersonStreak.current >= 2 && shouldTriggerViolation('multiple_faces', 12000)) {
             onViolation({
               type: 'multiple_faces',
-              details: `Multiple people detected in camera frame (${faces.length} faces)`,
+              details: `Multiple people detected in camera view (${neuralResult.faceCount} faces visible)`,
             });
           }
           return;
         }
 
-        const face = faces[0].boundingBox;
-        const visibleW = Math.max(0, Math.min(videoW, face.x + face.width) - Math.max(0, face.x));
-        const visibleH = Math.max(0, Math.min(videoH, face.y + face.height) - Math.max(0, face.y));
-        const visibleArea = visibleW * visibleH;
-        const totalArea = Math.max(1, face.width * face.height);
+        multiPersonStreak.current = 0;
 
-        let inScreenPercent = Math.round((visibleArea / totalArea) * 100);
+        // Hand occlusion / face covering check
+        if (neuralResult.isOccluded) {
+          setFaceOccluded(true);
+          setFaceStatus('partial');
+          setFaceInScreenPercent(20);
+          setGazeStatus('no_face');
+          partialOrAbsentStreak.current += 1;
 
-        const faceCenterY = face.y + face.height / 2;
-        if (faceCenterY > videoH * 0.74) {
-          inScreenPercent = Math.min(inScreenPercent, 30);
-        } else if (faceCenterY < videoH * 0.24) {
-          inScreenPercent = Math.min(inScreenPercent, 30);
+          if (shouldTriggerViolation('covered_face', 3500)) {
+            onViolation({
+              type: 'no_face_detected',
+              details: 'Face is covered or occluded by hand/object. Ensure full facial visibility.',
+            });
+          }
+          return;
         }
 
-        const faceCenterX = face.x + face.width / 2;
-        const horizontalRatio = faceCenterX / videoW;
+        setFaceOccluded(false);
+        setFaceInScreenPercent(neuralResult.inScreenPercent);
 
-        handleFaceCalculation(inScreenPercent, false, horizontalRatio, false, false);
+        if (neuralResult.faceCount === 0) {
+          partialOrAbsentStreak.current += 1;
+          setFaceStatus('absent');
+          setGazeStatus('no_face');
+          latestFaceRef.current = null;
+          setPhoneDetected(false);
+          setPhoneScore(0);
+          phoneStreak.current = 0;
+          if (phonePersistenceTimer.current) {
+            clearTimeout(phonePersistenceTimer.current);
+          }
+
+          if (shouldTriggerViolation('absence', 3500)) {
+            onViolation({
+              type: 'no_face_detected',
+              details: 'Candidate absent from camera view (0% face detected)',
+            });
+          }
+          return;
+        }
+
+        if (neuralResult.inScreenPercent < 70) {
+          partialOrAbsentStreak.current += 1;
+          setFaceStatus('partial');
+          setGazeStatus('no_face');
+
+          if (shouldTriggerViolation('partial_face', 3500)) {
+            onViolation({
+              type: 'no_face_detected',
+              details: `Face only ${neuralResult.inScreenPercent}% visible in frame (less than 70% threshold). Please center your face.`,
+            });
+          }
+          return;
+        }
+
+        // Single Face Verified (>= 70%)
+        partialOrAbsentStreak.current = 0;
+        setFaceStatus('verified');
+        setGazeStatus(neuralResult.gazeStatus);
+
+        if (neuralResult.gazeStatus === 'diverted') {
+          gazeDivertedStreak.current += 1;
+          if (gazeDivertedStreak.current >= 3 && shouldTriggerViolation('gaze', 10000)) {
+            onViolation({
+              type: 'gaze_diverted',
+              details: 'Candidate looking away from screen (diverted gaze detected via 3D facial landmarks)',
+            });
+          }
+        } else {
+          gazeDivertedStreak.current = 0;
+        }
         return;
-      } catch {
-        // Fallback to high-performance modular canvas heuristic
       }
     }
 
-    // Option B: Real-time Modular Computer Vision Heuristics (160x120)
+    // Path B: Modular Canvas Computer Vision Fallback
+    let canvas = analysisCanvasRef.current;
+    if (!canvas) {
+      canvas = document.createElement('canvas');
+      canvas.width = 160;
+      canvas.height = 120;
+      analysisCanvasRef.current = canvas;
+    }
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    if (!ctx) return;
+
+    const faceResult = analyzeFaceFrame(ctx, video);
+    setFaceInScreenPercent(faceResult.inScreenPercent);
+    setFaceStatus(faceResult.faceStatus);
+    setGazeStatus(faceResult.gazeStatus);
+    setFaceOccluded(faceResult.isCovered);
+
+    if (faceResult.totalSkinPixels >= 40) {
+      latestFaceRef.current = {
+        centroidX: faceResult.centroidX,
+        centroidY: faceResult.centroidY,
+        boxWidth: faceResult.boxWidth,
+        boxHeight: faceResult.boxHeight,
+      };
+    } else {
+      latestFaceRef.current = null;
+    }
+
+    if (faceResult.isCovered) {
+      if (shouldTriggerViolation('covered_face', 3500)) {
+        onViolation({
+          type: 'no_face_detected',
+          details: 'Face is covered or occluded by hand/object.',
+        });
+      }
+    } else if (faceResult.faceStatus === 'absent') {
+      latestFaceRef.current = null;
+      setPhoneDetected(false);
+      setPhoneScore(0);
+      phoneStreak.current = 0;
+      if (phonePersistenceTimer.current) {
+        clearTimeout(phonePersistenceTimer.current);
+      }
+      if (shouldTriggerViolation('absence', 3500)) {
+        onViolation({
+          type: 'no_face_detected',
+          details: 'Candidate absent from camera view.',
+        });
+      }
+    } else if (faceResult.faceStatus === 'partial') {
+      if (shouldTriggerViolation('partial_face', 3500)) {
+        onViolation({
+          type: 'no_face_detected',
+          details: `Face only ${faceResult.inScreenPercent}% visible in frame (< 70%).`,
+        });
+      }
+    } else if (faceResult.gazeStatus === 'diverted') {
+      if (shouldTriggerViolation('gaze', 10000)) {
+        onViolation({
+          type: 'gaze_diverted',
+          details: 'Candidate looking away from screen.',
+        });
+      }
+    }
+  }, [hasCamera, modelStatus, onViolation]);
+
+  // 6. ENGINE 2: Dual-Tier Neural & Optical Prohibited Device Detection (Every 450ms)
+  const runDeviceAnalysis = useCallback(async () => {
+    const video = videoRef.current;
+    if (!video || !hasCamera || video.readyState < 2) return;
+
+    // GUARD: If candidate is absent from camera view, device detection MUST NOT trigger!
+    // A missing candidate cannot be using a phone. Empty room or chair must never cause a phone alert.
+    if (!latestFaceRef.current || faceStatus === 'absent' || faceCount === 0) {
+      setPhoneDetected(false);
+      setPhoneScore(0);
+      phoneStreak.current = 0;
+      if (phonePersistenceTimer.current) {
+        clearTimeout(phonePersistenceTimer.current);
+      }
+      return;
+    }
+
+    let phoneFound = false;
+    let score = 0;
+
+    // Use active 320x240 RGB canvas rendering loop for fastest WebGL texture ingestion
+    const inputSource = displayCanvasRef.current || video;
+
+    // Tier 1: COCO-SSD MobileNet Neural Object Detector
+    if (modelStatus === 'ready' || modelStatus === 'loading') {
+      try {
+        const devResult = await detectNeuralDevices(inputSource);
+        if (devResult) {
+          if (devResult.isPhoneDetected) {
+            phoneFound = true;
+            score = devResult.phoneScore;
+          }
+          setBookDetected(devResult.isBookDetected);
+
+          if (devResult.isMultiplePeopleDetected) {
+            setFaceStatus('multiple');
+            setFaceCount((prev) => Math.max(prev, 2));
+            if (shouldTriggerViolation('multi_person', 12000)) {
+              onViolation({
+                type: 'multiple_faces',
+                details: 'Secondary person detected in testing environment',
+              });
+            }
+          }
+
+          if (devResult.isBookDetected) {
+            if (shouldTriggerViolation('book', 10000)) {
+              onViolation({
+                type: 'prohibited_object_detected',
+                details: 'Physical reference material / book detected in testing area',
+              });
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Neural device inference error:', err);
+      }
+    }
+
+    // Tier 2: Real-time Multi-Zone Optical Geometry Detector (runs on fresh frame)
     let canvas = analysisCanvasRef.current;
     if (!canvas) {
       canvas = document.createElement('canvas');
@@ -274,121 +513,50 @@ export function ProctorCameraPip({ onViolation, onMediaStateChange }: ProctorCam
     }
 
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
-    if (!ctx) return;
+    if (ctx) {
+      ctx.drawImage(inputSource, 0, 0, 160, 120);
+      const opticalResult = detectOpticalPhone(ctx, latestFaceRef.current || undefined);
+      if (opticalResult.isPhoneDetected) {
+        phoneFound = true;
+        if (score === 0) score = 85;
+      }
+    }
 
-    // Run modular face & ocular occlusion analysis
-    const faceResult = analyzeFaceFrame(ctx, video);
+    if (phoneFound) {
+      setPhoneDetected(true);
+      setPhoneScore(score);
+      phoneStreak.current += 1;
 
-    // Run modular optical phone & prohibited device analysis (excluding candidate's head/hair)
-    const phoneResult = detectOpticalPhone(ctx, faceResult);
+      // Keep alert visible for at least 2.2s to prevent rapid UI flashing
+      if (phonePersistenceTimer.current) clearTimeout(phonePersistenceTimer.current);
+      phonePersistenceTimer.current = setTimeout(() => {
+        setPhoneDetected(false);
+      }, 2200);
 
-    handleFaceCalculation(
-      faceResult.inScreenPercent,
-      false,
-      faceResult.horizontalGazeRatio,
-      faceResult.isCovered,
-      phoneResult.isPhoneDetected
-    );
-  }, [hasCamera]);
-
-  const handleFaceCalculation = (
-    percent: number,
-    isMultiple: boolean,
-    horizontalGazeRatio: number,
-    isCovered: boolean = false,
-    isPhone: boolean = false
-  ) => {
-    setPhoneDetected(isPhone);
-    setFaceOccluded(isCovered);
-
-    if (isPhone) {
       if (shouldTriggerViolation('phone', 3500)) {
         onViolation({
           type: 'prohibited_object_detected',
-          details: 'Mobile phone detected in camera view',
+          details: `Mobile phone detected in camera view${score > 0 ? ` (${score}% confidence)` : ''}`,
         });
-      }
-    }
-
-    if (isCovered) {
-      setFaceStatus('partial');
-      setFaceInScreenPercent(20);
-      setGazeStatus('no_face');
-      partialOrAbsentStreak.current += 1;
-      if (shouldTriggerViolation('covered_face', 3500)) {
-        onViolation({
-          type: 'no_face_detected',
-          details: 'Face is covered or occluded by hand/object. Ensure full facial visibility.',
-        });
-      }
-      return;
-    }
-
-    setFaceInScreenPercent(percent);
-
-    if (isMultiple) {
-      setFaceStatus('multiple');
-      setGazeStatus('no_face');
-      return;
-    }
-
-    // Continuous 70% In-Screen Rule:
-    if (percent === 0) {
-      partialOrAbsentStreak.current += 1;
-      setFaceStatus('absent');
-      setGazeStatus('no_face');
-
-      if (shouldTriggerViolation('absence', 3500)) {
-        onViolation({
-          type: 'no_face_detected',
-          details: 'Candidate absent or face covered from camera view (0% face detected)',
-        });
-      }
-      return;
-    }
-
-    if (percent < 70) {
-      // Face is present, but less than 70% visible in the screen!
-      partialOrAbsentStreak.current += 1;
-      setFaceStatus('partial');
-      setGazeStatus('no_face');
-
-      if (shouldTriggerViolation('partial_face', 3500)) {
-        onViolation({
-          type: 'no_face_detected',
-          details: `Face only ${percent}% visible in frame (less than 70% threshold). Please center your face.`,
-        });
-      }
-      return;
-    }
-
-    // Face is >= 70% visible and verified
-    partialOrAbsentStreak.current = 0;
-    setFaceStatus('verified');
-
-    // Evaluate Gaze Tracking ONLY when face is verified and >= 70% in frame
-    if (horizontalGazeRatio < 0.28 || horizontalGazeRatio > 0.72) {
-      gazeDivertedStreak.current += 1;
-      if (gazeDivertedStreak.current >= 3) {
-        setGazeStatus('diverted');
-        if (shouldTriggerViolation('gaze', 10000)) {
-          onViolation({
-            type: 'gaze_diverted',
-            details: `Off-screen gaze detected (${horizontalGazeRatio < 0.28 ? 'Looking left' : 'Looking right'} for >3s)`,
-          });
-        }
       }
     } else {
-      gazeDivertedStreak.current = 0;
-      setGazeStatus('centered');
+      phoneStreak.current = Math.max(0, phoneStreak.current - 1);
     }
-  };
+  }, [hasCamera, modelStatus, faceStatus, faceCount, onViolation]);
 
+  // Fast Face & Gaze Loop (180ms)
   useEffect(() => {
     if (!hasCamera) return;
-    const visionInterval = setInterval(runVisionAnalysis, 450);
-    return () => clearInterval(visionInterval);
-  }, [hasCamera, runVisionAnalysis]);
+    const faceInterval = setInterval(runFaceAnalysis, 180);
+    return () => clearInterval(faceInterval);
+  }, [hasCamera, runFaceAnalysis]);
+
+  // Throttled Object & Device Loop (450ms)
+  useEffect(() => {
+    if (!hasCamera) return;
+    const deviceInterval = setInterval(runDeviceAnalysis, 450);
+    return () => clearInterval(deviceInterval);
+  }, [hasCamera, runDeviceAnalysis]);
 
   if (initError) {
     return (
@@ -422,11 +590,34 @@ export function ProctorCameraPip({ onViolation, onMediaStateChange }: ProctorCam
       {/* Top Header Bar */}
       <div className="px-3.5 py-2 bg-muted/40 border-b border-border/60 flex items-center justify-between text-2xs">
         <div className="flex items-center gap-2">
-          <span className="relative flex size-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex rounded-full size-2 bg-emerald-500" />
-          </span>
-          <span className="font-bold text-foreground tracking-wide">REC • PROCTOR</span>
+          {modelStatus === 'ready' ? (
+            <>
+              <span className="relative flex size-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full size-2 bg-emerald-500" />
+              </span>
+              <span className="font-bold text-foreground tracking-wide">REC • AI PROCTOR</span>
+              <span className="text-3xs text-emerald-400 font-mono bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/25">
+                NEURAL
+              </span>
+            </>
+          ) : modelStatus === 'loading' ? (
+            <>
+              <span className="relative flex size-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+                <span className="relative inline-flex rounded-full size-2 bg-amber-500" />
+              </span>
+              <span className="font-bold text-foreground tracking-wide">REC • CALIBRATING AI...</span>
+            </>
+          ) : (
+            <>
+              <span className="relative flex size-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full size-2 bg-emerald-500" />
+              </span>
+              <span className="font-bold text-foreground tracking-wide">REC • PROCTOR LIVE</span>
+            </>
+          )}
         </div>
 
         <button
@@ -458,16 +649,32 @@ export function ProctorCameraPip({ onViolation, onMediaStateChange }: ProctorCam
           className="w-full h-full object-cover -scale-x-100"
         />
 
-        {/* Prohibited Device / Phone Banner (Slim compact floating badge) */}
-        {phoneDetected && (
+        {/* Prohibited Device / Phone Banner */}
+        {phoneDetected && faceStatus !== 'absent' && (
           <div className="absolute bottom-9 left-1/2 -translate-x-1/2 z-20 bg-red-600/95 text-white font-semibold text-3xs py-0.5 px-2.5 rounded-full shadow-md flex items-center gap-1 border border-red-400/60 whitespace-nowrap animate-in fade-in">
             <Smartphone className="size-2.5 shrink-0" />
-            <span>Phone Detected</span>
+            <span>Phone Detected {phoneScore > 0 ? `(${phoneScore}%)` : ''}</span>
           </div>
         )}
 
-        {/* Face Occluded / Covered Banner (Slim compact floating badge) */}
-        {faceOccluded && !phoneDetected && (
+        {/* Multiple People Alert Banner */}
+        {faceStatus === 'multiple' && (
+          <div className="absolute bottom-9 left-1/2 -translate-x-1/2 z-20 bg-purple-600/95 text-white font-semibold text-3xs py-0.5 px-2.5 rounded-full shadow-md flex items-center gap-1 border border-purple-400/60 whitespace-nowrap animate-in fade-in">
+            <Users className="size-2.5 shrink-0" />
+            <span>Multiple People ({faceCount} Faces)</span>
+          </div>
+        )}
+
+        {/* Physical Book / Material Banner */}
+        {bookDetected && !phoneDetected && faceStatus !== 'absent' && (
+          <div className="absolute bottom-9 left-1/2 -translate-x-1/2 z-20 bg-amber-500/95 text-black font-semibold text-3xs py-0.5 px-2.5 rounded-full shadow-md flex items-center gap-1 border border-amber-300 whitespace-nowrap animate-in fade-in">
+            <BookOpen className="size-2.5 shrink-0" />
+            <span>Prohibited Material / Book</span>
+          </div>
+        )}
+
+        {/* Face Occluded / Covered Banner */}
+        {faceOccluded && !phoneDetected && faceStatus !== 'multiple' && faceStatus !== 'absent' && (
           <div className="absolute bottom-9 left-1/2 -translate-x-1/2 z-20 bg-amber-500/95 text-black font-semibold text-3xs py-0.5 px-2.5 rounded-full shadow-md flex items-center gap-1 border border-amber-300 whitespace-nowrap animate-in fade-in">
             <ShieldAlert className="size-2.5 shrink-0" />
             <span>Face Occluded</span>
@@ -478,13 +685,13 @@ export function ProctorCameraPip({ onViolation, onMediaStateChange }: ProctorCam
         <div
           className={cn(
             'absolute inset-3 rounded-xl border border-dashed transition-all duration-300 pointer-events-none',
-            phoneDetected && 'border-red-500/80 bg-red-500/[0.04]',
-            !phoneDetected && faceOccluded && 'border-amber-400/80 bg-amber-500/[0.04]',
-            !phoneDetected && !faceOccluded && faceStatus === 'verified' && 'border-primary/40 bg-primary/[0.02]',
-            !phoneDetected && !faceOccluded && faceStatus === 'partial' && 'border-amber-400/60 bg-amber-500/[0.04]',
-            !phoneDetected && !faceOccluded && faceStatus === 'absent' && 'border-red-500/60 bg-red-500/[0.04]',
-            !phoneDetected && !faceOccluded && faceStatus === 'multiple' && 'border-purple-500/60 bg-purple-500/[0.04]',
-            !phoneDetected && !faceOccluded && faceStatus === 'detecting' && 'border-muted-foreground/20'
+            faceStatus === 'absent' && 'border-red-500/60 bg-red-500/[0.04]',
+            faceStatus !== 'absent' && phoneDetected && 'border-red-500/80 bg-red-500/[0.04]',
+            faceStatus !== 'absent' && !phoneDetected && faceOccluded && 'border-amber-400/80 bg-amber-500/[0.04]',
+            faceStatus !== 'absent' && !phoneDetected && !faceOccluded && faceStatus === 'verified' && 'border-primary/40 bg-primary/[0.02]',
+            faceStatus !== 'absent' && !phoneDetected && !faceOccluded && faceStatus === 'partial' && 'border-amber-400/60 bg-amber-500/[0.04]',
+            faceStatus !== 'absent' && !phoneDetected && !faceOccluded && faceStatus === 'multiple' && 'border-purple-500/60 bg-purple-500/[0.04]',
+            faceStatus !== 'absent' && !phoneDetected && !faceOccluded && faceStatus === 'detecting' && 'border-muted-foreground/20'
           )}
         />
 
@@ -494,22 +701,22 @@ export function ProctorCameraPip({ onViolation, onMediaStateChange }: ProctorCam
           <div
             className={cn(
               'px-2 py-0.5 rounded text-3xs font-semibold uppercase backdrop-blur-md transition-all',
-              phoneDetected && 'bg-red-500 text-white shadow-sm shadow-red-500/20',
-              !phoneDetected && faceOccluded && 'bg-amber-500 text-black shadow-sm shadow-amber-500/20',
-              !phoneDetected && !faceOccluded && faceStatus === 'verified' && 'bg-black/60 text-emerald-400 border border-emerald-500/30 shadow-sm',
-              !phoneDetected && !faceOccluded && faceStatus === 'partial' && 'bg-amber-500 text-black shadow-sm shadow-amber-500/20',
-              !phoneDetected && !faceOccluded && faceStatus === 'absent' && 'bg-red-500 text-white shadow-sm shadow-red-500/20',
-              !phoneDetected && !faceOccluded && faceStatus === 'multiple' && 'bg-purple-600 text-white shadow-sm shadow-purple-600/20',
-              !phoneDetected && !faceOccluded && faceStatus === 'detecting' && 'bg-black/60 text-muted-foreground'
+              faceStatus === 'absent' && 'bg-red-500 text-white shadow-sm shadow-red-500/20',
+              faceStatus !== 'absent' && phoneDetected && 'bg-red-500 text-white shadow-sm shadow-red-500/20',
+              faceStatus !== 'absent' && !phoneDetected && faceOccluded && 'bg-amber-500 text-black shadow-sm shadow-amber-500/20',
+              faceStatus !== 'absent' && !phoneDetected && !faceOccluded && faceStatus === 'verified' && 'bg-black/60 text-emerald-400 border border-emerald-500/30 shadow-sm',
+              faceStatus !== 'absent' && !phoneDetected && !faceOccluded && faceStatus === 'partial' && 'bg-amber-500 text-black shadow-sm shadow-amber-500/20',
+              faceStatus !== 'absent' && !phoneDetected && !faceOccluded && faceStatus === 'multiple' && 'bg-purple-600 text-white shadow-sm shadow-purple-600/20',
+              faceStatus !== 'absent' && !phoneDetected && !faceOccluded && faceStatus === 'detecting' && 'bg-black/60 text-muted-foreground'
             )}
           >
-            {phoneDetected && 'Phone Alert'}
-            {!phoneDetected && faceOccluded && 'Covered'}
-            {!phoneDetected && !faceOccluded && faceStatus === 'verified' && `Face: ${faceInScreenPercent}%`}
-            {!phoneDetected && !faceOccluded && faceStatus === 'partial' && `Face: ${faceInScreenPercent}%`}
-            {!phoneDetected && !faceOccluded && faceStatus === 'absent' && 'Face: Missing'}
-            {!phoneDetected && !faceOccluded && faceStatus === 'multiple' && 'Multiple!'}
-            {!phoneDetected && !faceOccluded && faceStatus === 'detecting' && 'Calibrating'}
+            {faceStatus === 'absent' && 'Face: Missing'}
+            {faceStatus !== 'absent' && phoneDetected && 'Phone Alert'}
+            {faceStatus !== 'absent' && !phoneDetected && faceOccluded && 'Covered'}
+            {faceStatus !== 'absent' && !phoneDetected && !faceOccluded && faceStatus === 'verified' && `Face: ${faceInScreenPercent}%`}
+            {faceStatus !== 'absent' && !phoneDetected && !faceOccluded && faceStatus === 'partial' && `Face: ${faceInScreenPercent}%`}
+            {faceStatus !== 'absent' && !phoneDetected && !faceOccluded && faceStatus === 'multiple' && `Multiple (${faceCount})`}
+            {faceStatus !== 'absent' && !phoneDetected && !faceOccluded && faceStatus === 'detecting' && 'Calibrating'}
           </div>
 
           {/* Gaze Status Pill */}

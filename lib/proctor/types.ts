@@ -42,6 +42,46 @@ export interface PhoneAnalysisResult {
   boxHeight: number;
 }
 
+export type NeuralModelStatus = 'uninitialized' | 'loading' | 'ready' | 'fallback';
+
+export interface FacialLandmarks {
+  rightEye: [number, number];
+  leftEye: [number, number];
+  noseTip: [number, number];
+  mouthCenter: [number, number];
+  rightEar: [number, number];
+  leftEar: [number, number];
+}
+
+export interface NeuralFaceResult {
+  faceCount: number;
+  inScreenPercent: number;
+  faceStatus: FaceStatus;
+  gazeStatus: GazeStatus;
+  headYawRatio: number;
+  headPitchRatio: number;
+  isOccluded: boolean;
+  boxWidth: number;
+  boxHeight: number;
+  centroidX: number;
+  centroidY: number;
+  landmarks?: FacialLandmarks;
+}
+
+export interface NeuralDetectedObject {
+  label: string;
+  score: number;
+  bbox: [number, number, number, number];
+}
+
+export interface NeuralDeviceResult {
+  isPhoneDetected: boolean;
+  isMultiplePeopleDetected: boolean;
+  isBookDetected: boolean;
+  phoneScore: number;
+  detectedObjects: NeuralDetectedObject[];
+}
+
 export interface IActivityAnalysisInput {
   assessmentTitle: string;
   company: string;
