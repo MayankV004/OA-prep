@@ -125,3 +125,90 @@ REST API via Next.js Route Handlers under `/api/*`. Route handlers enforce authe
 | GET | `/api/admin/activity` | Admin | Query global audit activity log |
 | GET | `/api/admin/settings` | Admin | Get application feature flags & settings |
 | PATCH | `/api/admin/settings` | Admin | Update application feature flags & settings |
+| GET | `/api/admin/content/patterns` | Admin | List full pattern collection with nested variations |
+| POST | `/api/admin/content/patterns` | Admin | Create new DSA pattern |
+| PATCH | `/api/admin/content/patterns/:slug` | Admin | Update pattern details |
+| POST | `/api/admin/content/patterns/:slug/variations` | Admin | Append variation to pattern |
+| PATCH | `/api/admin/content/patterns/:slug/variations/:variationId` | Admin | Update specific pattern variation |
+| POST | `/api/admin/content/patterns/:slug/variations/:variationId/problems` | Admin | Add curated problem to variation |
+| POST | `/api/admin/content/patterns/wipe` | Admin | Reset/wipe pattern collections (requires confirmation) |
+| GET | `/api/admin/feedback` | Admin | List user feedback items (`?status=...&category=...`) |
+| PATCH | `/api/admin/feedback/:id` | Admin | Update feedback status (`resolved`, `archived`, `in_progress`) |
+
+---
+
+## Online Assessment (OA) Simulator & Proctoring
+
+| Method | Path | Auth | Body / Query | Description |
+| --- | --- | --- | --- | --- |
+| GET | `/api/oa/assessments` | Auth | `?company=...&role=...` | List available company OA assessments and difficulty tiers |
+| GET | `/api/oa/assessments/:slug` | Auth | — | Fetch single assessment briefing, rules, and problem overview |
+| POST | `/api/oa/assessments/:slug/start` | Auth | `{ baselineSelfieUrl? }` | Initialize candidate session, generate submission ID, lock duration |
+| POST | `/api/oa/assessments/:slug/submit` | Auth | Detailed submission payload | Submit completed code solutions, telemetry timeline, and trigger LLM analysis |
+| GET | `/api/oa/submissions/:submissionId` | Auth | — | Fetch candidate assessment score, problem breakdowns, and forensic report |
+| POST | `/api/upload` | Auth | Multipart/Form-Data | Upload WebP violation snapshots to Cloudflare R2 / local vault |
+
+---
+
+## Competitive Programming (CP) & Ratings
+
+| Method | Path | Auth | Body / Query | Description |
+| --- | --- | --- | --- | --- |
+| GET | `/api/cp/handles` | Auth | — | Get linked competitive programming handles (CF, LC, CC, AC) |
+| POST | `/api/cp/handles` | Auth | `{ platform, handle }` | Link CP handle and immediately trigger profile verification & rating scrape |
+| GET | `/api/cp/performance` | Auth | `?platform=...` | Query historical contest rating curves, global ranks, and composite score |
+
+---
+
+## Global Contests & Alert Subscriptions
+
+| Method | Path | Auth | Body / Query | Description |
+| --- | --- | --- | --- | --- |
+| GET | `/api/contests` | Auth | `?status=UPCOMING\|RUNNING&platform=...` | List upcoming and ongoing programming contests across platforms |
+| GET | `/api/contests/subscription` | Auth | — | Get user contest notification preferences and alert channels |
+| POST | `/api/contests/subscription` | Auth | `{ platforms, alertTiming, emailEnabled }` | Update contest notification alert preferences |
+| POST | `/api/contests/unsubscribe` | Public | `?token=...` | One-click unsubscribe from contest email notifications |
+
+---
+
+## Background Cron Workers (QStash / Vercel Cron)
+
+| Method | Path | Auth | Description |
+| --- | --- | --- | --- |
+| GET/POST | `/api/cron/contests-sync` | Cron Secret | Scrapes upcoming contests from Codeforces, LeetCode, CodeChef, and AtCoder APIs |
+| GET/POST | `/api/cron/contest-alerts` | Cron Secret | Evaluates user alert timings (e.g. 1h, 24h prior) and enqueues notification emails |
+| GET/POST | `/api/cron/user-contests-sync` | Cron Secret | Synchronizes linked user CP profiles and updates rating history |
+| POST | `/api/workers/email` | QStash Sign | Verifies `upstash-signature` and dispatches React Email templates via Resend |
+
+---
+
+## Monetization, Billing & Subscriptions (Stripe)
+
+| Method | Path | Auth | Body / Query | Description |
+| --- | --- | --- | --- | --- |
+| GET | `/api/subscription` | Auth | — | Fetch user subscription status, plan tier (`free`, `pro_monthly`, `pro_annual`, `oa_pass`), and remaining AI credits |
+| POST | `/api/checkout` | Auth | `{ plan: "pro_monthly" \| "pro_annual" \| "oa_pass" }` | Generate Stripe Checkout Session URL or trigger instant mock confirmation in dev |
+| GET | `/api/checkout/verify-session` | Auth | `?session_id=...` | Verify completed Stripe checkout and sync entitlements immediately |
+| POST | `/api/checkout/mock-confirm` | Auth | `{ plan }` | Development-only instant upgrade bypass for testing without Stripe credentials |
+| POST | `/api/subscription/portal` | Auth | — | Create Stripe Billing Customer Portal session for managing payment methods |
+| POST | `/api/webhooks/stripe` | Public | Stripe Webhook Payload | Listens for `checkout.session.completed`, `customer.subscription.updated`, and `customer.subscription.deleted` |
+
+---
+
+## Problem Revision, Progress & Notes
+
+| Method | Path | Auth | Body / Query | Description |
+| --- | --- | --- | --- | --- |
+| PATCH | `/api/problems/revision` | Auth | `{ problemId, revision: boolean }` | Toggle one-click star bookmark for pre-interview revision |
+| GET | `/api/problems/progress` | Auth | — | Fetch full map of user completion statuses and revision bookmarks |
+
+---
+
+## User Feedback, Metrics & Export
+
+| Method | Path | Auth | Body / Query | Description |
+| --- | --- | --- | --- | --- |
+| POST | `/api/feedback` | Auth | `{ category, message, rating? }` | Submit user feedback, bug reports, or feature requests |
+| GET | `/api/metrics` | Auth | — | System telemetry, database metrics, and OpenTelemetry diagnostic counters |
+| GET | `/api/export` | Auth | `?format=json\|csv` | Export complete user revision notes, problem bookmarks, and progress data |
+

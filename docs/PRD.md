@@ -36,16 +36,44 @@
 - 90-day activity heatmap and completion trend charts powered by Recharts.
 - Activity feed detailing problem completion and note updates.
 
-### 2.7 Admin Panel
+### 2.7 Online Assessment (OA) Simulator
+- **Company-Specific Exam Mocking**: Full simulation of technical assessments from top tech employers (Google, Amazon, Uber, Meta, Microsoft) with realistic time constraints.
+- **Embedded IDE**: Browser-based Monaco Editor with syntax highlighting, language auto-detection (C++, Python, Java, JavaScript), and intelligent indentation.
+- **Automated Test Execution**: Multi-language test runner evaluating code against public sample cases and hidden verification suites with runtime and memory constraints.
+- **Comprehensive Assessment Reports**: Instant generation of candidate diagnostic reports including score percentile, time efficiency, pattern strength breakdowns, and proctoring audit trails.
+
+### 2.8 Enterprise Dual-Engine Neural Proctoring
+- **Client-Side Hardware Acceleration**: Zero native software downloads; runs TensorFlow.js WebGL directly inside the candidate's browser.
+- **Dual-Loop Vision Pipeline**:
+  - **Fast Biometrics Loop (180ms)**: Real-time Google BlazeFace landmark detection, multi-face presence counting, and 3D head pose estimation (Yaw/Pitch tracking).
+  - **Throttled Object Loop (450ms)**: COCO-SSD MobileNet-v2 inference detecting unauthorized physical materials (mobile phones, secondary screens, textbooks).
+- **Anti-False-Positive Guards**: Face-presence gating suppressing empty-frame device warnings, spatial exclusion zones preventing hair/clothing false alarms, and 2.2-second UI debounce timers.
+- **Multimodal Telemetry**: Page Visibility API monitoring tab switches, window blur interceptors, clipboard paste blocking, and Web Audio API RMS speech detection.
+- **Evidence Vault & AI Forensics**: Direct SigV4 uploads of violation frames to Cloudflare R2 and automated session integrity risk scoring via Groq Llama-3.3-70B and deterministic fallbacks.
+
+### 2.9 Competitive Programming (CP) Sync & Global Contest Alerts
+- **Multi-Platform Integration**: Automated profile scraping and rating tracking across Codeforces, LeetCode, CodeChef, and AtCoder.
+- **Composite Placement Score**: Proprietary algorithm normalizing competitive ratings into an actionable 0–100 candidate preparedness rating.
+- **Contest Aggregation Engine**: Scheduled background scrapers monitoring upcoming contests across platforms with customizable email alert schedules.
+
+### 2.10 Monetization, Subscriptions & Credits
+- **Tiered Access Model**: Free Tier, Pro Monthly, Pro Annual, and single-use OA Passes.
+- **Stripe Integration**: Secure checkout sessions, billing customer portal, automated subscription lifecycle management via webhooks, and local mock testing bypass.
+- **AI Quotas**: Credit accounting for automated behavioral forensic analysis and proctored assessment attempts.
+
+### 2.11 Admin Panel
 - **User Management**: View users, promote/demote roles, enable/disable accounts.
 - **Invites Management**: Issue, resend, or revoke invite tokens via Resend.
-- **Taxonomies**: Dynamically edit pattern titles, platforms, buckets, and subjects.
+- **Taxonomies & Content**: Dynamically edit pattern titles, variations, curated problems, and categories.
+- **Feedback & Moderation**: Review candidate feedback, bug reports, and track resolution status.
 - **Audit Log**: Global activity log capturing administrative and user actions.
 
 ---
 
 ## 3. Non-Functional Requirements
 
-- **Performance**: High page responsiveness via Next.js 16 App Router and client caching with TanStack Query v5.
-- **Security**: Strict Markdown XSS sanitization via `rehype-sanitize`, security header policies, and sliding-window rate limiting (`proxy.ts`).
-- **Observability**: Distributed tracing and metrics collection via OpenTelemetry.
+- **Performance**: High page responsiveness via Next.js 16 App Router and client caching with TanStack Query v5. Sub-30ms client-side inference latency for biometric tracking.
+- **Privacy & Security**: Zero raw video streaming to servers. Video feeds stay on the client; only encrypted, compressed WebP frames of flagged violation moments are uploaded to Cloudflare R2.
+- **Content Security**: Strict Markdown XSS sanitization via `rehype-sanitize`, security header policies, and sliding-window rate limiting (`proxy.ts`).
+- **Observability**: Distributed tracing and metrics collection via OpenTelemetry and Prometheus/Grafana integrations.
+

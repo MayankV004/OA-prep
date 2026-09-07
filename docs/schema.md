@@ -20,6 +20,15 @@ Timestamps (`createdAt`, `updatedAt`) are managed by Mongoose's `timestamps: tru
 | `activities` | Per user (both `actorId` and `targetUserId`) |
 | `invites` | System (admin-managed) |
 | `otpverifications` | System (OTP codes with TTL auto-deletion) |
+| `assessments` | Shared (company OA templates and problems) |
+| `assessment_submissions` | Per user (`userId` + `assessmentId`) with proctoring audit logs |
+| `subscription` | Per user (`userId` unique) with Stripe metadata & AI quotas |
+| `user_cp_profiles` | Per user (`userId` unique) with multi-platform CP stats |
+| `user_contest_histories` | Per user (`userId` + platform rating history) |
+| `contests` | Shared (global programming contest index) |
+| `contest_subscriptions` | Per user (contest notification alert preferences) |
+| `contest_alert_logs` | System (dispatched contest notification tracking) |
+| `feedbacks` | Per user (`userId` optional) with admin moderation |
 
 ## Collections
 
@@ -208,3 +217,127 @@ Append-only log for user and admin actions.
 | `sentAt` | Date | timestamp sent |
 | `expiresAt` | Date | token expiration date |
 | `acceptedAt` | Date? | |
+
+### `assessments` (`models/assessment.ts`)
+
+Curated company Online Assessment templates with timed constraints, multi-language starter code, test suites, and proctoring rules.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `_id` | ObjectId | |
+| `title` | string | Assessment title (e.g. "Google L4 Software Engineer OA") |
+| `slug` | string | Unique URL slug (indexed) |
+| `company` | string | Company tag (e.g. "Google", "Amazon", "Uber") |
+| `role` | string | Role name (e.g. "SDE 2", "Frontend Engineer") |
+| `description` | string | Candidate briefing and overview |
+| `durationMinutes` | number | Exam time limit (e.g. 90) |
+| `difficulty` | `"Easy" \| "Medium" \| "Hard"` | |
+| `instructions` | string[] | Bullet-point rules and guidelines |
+| `problems` | Subdocument array | Nested `IAssessmentProblem` documents (title, slug, starterCode, testCases) |
+| `allowedLanguages` | string[] | Enabled languages: `["cpp", "python", "java", "javascript"]` |
+| `isPublished` | boolean | Availability flag |
+| `proctoringConfig` | Object | Enabled proctoring rules (camera, audio, faceDetection, deviceDetection, etc.) |
+| `createdBy` | ObjectId | ref `users` (admin author) |
+
+### `assessment_submissions` (`models/assessmentSubmission.ts`)
+
+Candidate test runs, code submissions, pass/fail test diagnostics, proctoring telemetry timelines, and AI behavioral forensic reports.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `_id` | ObjectId | Unique submission identifier |
+| `assessmentId` | ObjectId | ref `assessments` (indexed) |
+| `userId` | ObjectId | ref `users` (indexed) |
+| `startedAt` | Date | Session start timestamp |
+| `submittedAt` | Date? | Session completion timestamp |
+| `timeSpentSeconds` | number | Elapsed test duration |
+| `status` | `"in_progress" \| "submitted" \| "abandoned" \| "flagged"` | Default `"in_progress"` |
+| `problemResults` | Subdocument array | Code solutions, language, test cases passed, runtime ms, memory kb |
+| `totalScore` | number | Earned test points |
+| `maxScore` | number | Maximum possible test points |
+| `percentile` | number | Calculated candidate performance percentile |
+| `patternDiagnostics` | Subdocument array | Pattern mastery breakdown (e.g. Two Pointers: 100%, DP: 40%) |
+| `telemetryEvents` | Subdocument array | Chronological event stream (`type`, `timestamp`, `severity`, `details`, `snapshotUrl`) |
+| `forensicReport` | Subdocument | Integrity audit (`riskScore`, `verdict`, `summary`, `integrityFlags`, `generatedBy`) |
+| `baselineSelfieUrl` | string? | Onboarding reference selfie URL (Cloudflare R2) |
+
+### `subscription` (`models/subscription.ts`)
+
+User commercial plan entitlements, Stripe subscription metadata, and AI evaluation quotas.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `_id` | ObjectId | |
+| `userId` | ObjectId | ref `users` (unique index) |
+| `tier` | `"free" \| "pro_monthly" \| "pro_annual" \| "oa_pass"` | Plan level |
+| `status` | `"active" \| "past_due" \| "canceled" \| "incomplete" \| "trialing"` | Stripe status |
+| `stripeCustomerId` | string? | Stripe Customer ID (`cus_...`) |
+| `stripeSubscriptionId` | string? | Stripe Subscription ID (`sub_...`) |
+| `stripePriceId` | string? | Current active Stripe Price ID |
+| `currentPeriodStart` | Date? | Billing cycle start |
+| `currentPeriodEnd` | Date? | Billing cycle renewal date |
+| `cancelAtPeriodEnd` | boolean | Cancellation state |
+| `credits` | `{ aiTotal, aiUsed, oaTotal, oaUsed }` | Monthly / pass credits tracking |
+
+### `user_cp_profiles` (`models/userCpProfile.ts`)
+
+Multi-platform competitive programming ratings and synchronization stats.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `_id` | ObjectId | |
+| `userId` | ObjectId | ref `users` (unique index) |
+| `handles` | Object | Linked handles (`codeforces`, `leetcode`, `codechef`, `atcoder`) |
+| `ratings` | Object | Current and peak ratings per platform |
+| `compositeScore` | number | Normalized 0–100 placement readiness index |
+| `globalRank` | number? | Aggregated platform ranking |
+| `totalSolved` | number | Cumulative count of solved problems across platforms |
+| `streak` | number | Daily active problem-solving streak |
+| `badges` | string[] | Earned competitive achievements |
+| `lastSyncedAt` | Date | Last successful automated API scrape |
+
+### `contests` (`models/contest.ts`)
+
+Global programming contests indexed from Codeforces, LeetCode, CodeChef, and AtCoder.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `_id` | ObjectId | |
+| `platform` | `"codeforces" \| "leetcode" \| "codechef" \| "atcoder"` | Contest source |
+| `contestId` | string | External platform contest identifier (compound index with platform) |
+| `title` | string | Contest name (e.g. "Weekly Contest 438") |
+| `url` | string | Direct link to participate |
+| `startTime` | Date | Scheduled contest start time (indexed) |
+| `endTime` | Date | Scheduled contest end time |
+| `durationSeconds` | number | Length of contest in seconds |
+| `status` | `"UPCOMING" \| "RUNNING" \| "FINISHED"` | Current state |
+| `type` | string? | Contest classification (e.g. "Div. 2", "Biweekly") |
+
+### `contest_subscriptions` (`models/contestSubscription.ts`)
+
+User notification preferences for upcoming competitive programming contests.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `_id` | ObjectId | |
+| `userId` | ObjectId | ref `users` (unique index) |
+| `email` | string | Notification recipient email |
+| `platforms` | string[] | Platforms to alert (`["codeforces", "leetcode", ...]`) |
+| `alertTiming` | number[] | Alert offsets in minutes before start (e.g. `[60, 1440]`) |
+| `emailEnabled` | boolean | Master alert toggle |
+| `unsubscribeToken` | string | Cryptographically secure token for one-click email unsubscribe |
+
+### `feedbacks` (`models/feedback.ts`)
+
+In-app user feedback, bug reports, and moderation workflows.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `_id` | ObjectId | |
+| `userId` | ObjectId? | ref `users` (optional for anonymous submissions) |
+| `category` | `"bug" \| "feature" \| "content" \| "other"` | Feedback category |
+| `message` | string | Feedback details / description |
+| `rating` | number? | 1–5 star rating |
+| `status` | `"pending" \| "in_progress" \| "resolved" \| "archived"` | Admin moderation state |
+| `adminNotes` | string? | Internal administrative notes |
+
