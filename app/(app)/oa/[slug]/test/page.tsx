@@ -16,10 +16,17 @@ import {
   Send,
   Loader2,
   Terminal,
+  Copy,
+  FileDown,
+  FileUp,
+  FileText,
+  Code2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ProctorCameraPip, type ProctorViolationEvent } from '@/components/oa/ProctorCameraPip';
 import { MarkdownView } from '@/components/markdown/View';
+import { toast } from 'sonner';
+import { downloadTextFile } from '@/lib/cp/testcaseParser';
 
 // Dynamically import Monaco Editor to ensure zero SSR canvas issues
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), {
@@ -105,6 +112,14 @@ export default function AssessmentTestRunnerPage({
   const [testResults, setTestResults] = useState<any[] | null>(null);
   const [compileError, setCompileError] = useState<string | null>(null);
   const [runCooldown, setRunCooldown] = useState<number>(0);
+
+  // Custom CP testcase execution state
+  const [consoleTab, setConsoleTab] = useState<'tests' | 'custom'>('tests');
+  const [isConsoleOpen, setIsConsoleOpen] = useState<boolean>(false);
+  const [customInputText, setCustomInputText] = useState<string>('');
+  const [customExecutionResult, setCustomExecutionResult] = useState<any | null>(null);
+  const [isRunningCustom, setIsRunningCustom] = useState<boolean>(false);
+  const customFileInputRef = useRef<HTMLInputElement>(null);
 
   // Final submission state
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
@@ -382,6 +397,8 @@ export default function AssessmentTestRunnerPage({
   const handleRunTests = async () => {
     if (!currentProblem || isRunningTests || runCooldown > 0) return;
     setIsRunningTests(true);
+    setIsConsoleOpen(true);
+    setConsoleTab('tests');
     setTestResults(null);
     setCompileError(null);
 
@@ -436,6 +453,109 @@ export default function AssessmentTestRunnerPage({
     } finally {
       setIsRunningTests(false);
     }
+  };
+
+  // 7b. Run against Custom Input (Competitive Programming standard I/O)
+  const handleRunCustomInput = async () => {
+    if (!currentProblem || isRunningCustom || runCooldown > 0) return;
+    setIsRunningCustom(true);
+    setIsConsoleOpen(true);
+    setConsoleTab('custom');
+    setCustomExecutionResult(null);
+    setCompileError(null);
+
+    try {
+      const payload = {
+        problemId: currentProblem.id,
+        language: currentLanguage,
+        code: currentCode,
+        customInput: customInputText,
+        patternTag: currentProblem.patternTag,
+        starterCode: currentProblem.starterCode?.[currentLanguage] || '',
+      };
+
+      const res = await fetch('/api/oa/execute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.message || 'Execution error');
+        setIsRunningCustom(false);
+        return;
+      }
+
+      if (data.compileError) {
+        setCompileError(data.compileError);
+      }
+
+      if (data.results?.[0]) {
+        setCustomExecutionResult(data.results[0]);
+      }
+
+      setRunCooldown(3);
+      const interval = setInterval(() => {
+        setRunCooldown((prev) => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } catch (err: any) {
+      console.error('Run custom input error:', err);
+      toast.error('Failed to execute code with custom input.');
+    } finally {
+      setIsRunningCustom(false);
+    }
+  };
+
+  // Upload custom input.txt file
+  const handleCustomFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = event.target?.result as string;
+      if (text !== undefined) {
+        setCustomInputText(text);
+        setIsConsoleOpen(true);
+        setConsoleTab('custom');
+        toast.success(`Loaded "${file.name}" into custom stdin!`);
+      }
+      if (customFileInputRef.current) customFileInputRef.current.value = '';
+    };
+    reader.readAsText(file);
+  };
+
+  // Copy standard input to clipboard
+  const handleCopyStdin = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success('Input copied to clipboard!');
+  };
+
+  // Download individual sample input as .txt
+  const handleDownloadSampleTxt = (text: string, index: number) => {
+    downloadTextFile(text, `${slug}_problem_${activeProblemIdx + 1}_sample_${index + 1}_input.txt`);
+    toast.success(`Downloaded sample #${index + 1} input.txt!`);
+  };
+
+  // Download all sample test cases as a .txt file
+  const handleDownloadAllSamples = () => {
+    if (!currentProblem || !currentProblem.visibleTestCases.length) return;
+    const content = currentProblem.visibleTestCases
+      .map(
+        (tc, idx) =>
+          `=== SAMPLE CASE ${idx + 1} ===\n--- INPUT ---\n${tc.input}\n--- EXPECTED OUTPUT ---\n${tc.expectedOutput}\n`
+      )
+      .join('\n');
+    downloadTextFile(content, `${slug}_problem_${activeProblemIdx + 1}_all_samples.txt`);
+    toast.success('Downloaded all sample testcases (.txt)!');
   };
 
   // 8. Final Submission
@@ -670,23 +790,73 @@ export default function AssessmentTestRunnerPage({
               <MarkdownView content={currentProblem.description} variant="exam" allowCopy={false} />
             </div>
 
-            {/* Visible Testcases */}
+            {/* Visible Testcases (CP Standard I/O) */}
             <div className="space-y-3 pt-4 border-t border-border/40">
-              <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-foreground">
-                Sample Test Cases ({currentProblem.visibleTestCases.length} Visible)
-              </h4>
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
+                  <Terminal className="size-3.5 text-primary" />
+                  Sample Test Cases ({currentProblem.visibleTestCases.length} Visible)
+                </h4>
+                {currentProblem.visibleTestCases.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleDownloadAllSamples}
+                    className="inline-flex items-center gap-1 text-2xs font-mono text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                  >
+                    <FileDown className="size-3" />
+                    Download All (.txt)
+                  </button>
+                )}
+              </div>
 
-              <div className="space-y-2.5">
+              <div className="space-y-3">
                 {currentProblem.visibleTestCases.map((tc, i) => (
-                  <div key={i} className="p-3.5 rounded-xl bg-card border border-border/70 font-mono text-xs space-y-1 shadow-2xs">
-                    <div className="text-muted-foreground text-2xs uppercase font-bold">Case {i + 1}</div>
-                    <div className="text-foreground">
-                      <span className="text-muted-foreground">Input: </span>
-                      {tc.input}
+                  <div key={i} className="rounded-xl bg-card border border-border/70 overflow-hidden text-xs shadow-2xs font-mono">
+                    <div className="px-3.5 py-2 bg-card/80 border-b border-border/50 flex items-center justify-between text-2xs">
+                      <span className="font-bold text-foreground">Sample #{i + 1}</span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleCopyStdin(tc.input)}
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                          title="Copy standard input"
+                        >
+                          <Copy className="size-2.5" />
+                          Copy Stdin
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDownloadSampleTxt(tc.input, i)}
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                          title="Download as input.txt"
+                        >
+                          <FileDown className="size-2.5" />
+                          .txt
+                        </button>
+                      </div>
                     </div>
-                    <div className="text-primary font-semibold">
-                      <span className="text-muted-foreground">Output: </span>
-                      {tc.expectedOutput}
+
+                    <div className="p-3.5 space-y-2.5">
+                      <div className="space-y-1">
+                        <div className="text-2xs text-muted-foreground uppercase font-semibold">Standard Input (stdin):</div>
+                        <pre className="p-2 rounded-lg bg-[#090D12] text-foreground font-mono text-xs overflow-x-auto whitespace-pre-wrap leading-relaxed border border-border/40">
+                          {tc.input}
+                        </pre>
+                      </div>
+
+                      <div className="space-y-1">
+                        <div className="text-2xs text-muted-foreground uppercase font-semibold">Standard Output (stdout):</div>
+                        <pre className="p-2 rounded-lg bg-[#090D12] text-primary font-mono text-xs overflow-x-auto whitespace-pre-wrap leading-relaxed border border-border/40">
+                          {tc.expectedOutput}
+                        </pre>
+                      </div>
+
+                      {tc.explanation && (
+                        <div className="text-2xs text-muted-foreground italic pt-1 border-t border-border/30">
+                          <span className="font-semibold text-foreground/80 not-italic">Note: </span>
+                          {tc.explanation}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -765,106 +935,285 @@ export default function AssessmentTestRunnerPage({
             />
           </div>
 
-          {/* Testcase Output Console Tray */}
-          {(testResults || compileError) && (
-            <div className="h-48 border-t border-border/80 bg-card/70 backdrop-blur-md overflow-y-auto p-4 space-y-2.5 font-mono text-xs shrink-0">
-              <div className="flex items-center justify-between text-2xs uppercase text-muted-foreground font-bold">
-                <span className="flex items-center gap-1.5">
-                  <Terminal className="size-3 text-primary" />
-                  <span>Test Execution Summary</span>
-                </span>
-                {testResults && (
-                  <span
-                    className={cn(
-                      'font-bold',
-                      testResults.every((r) => r.passed) ? 'text-primary' : 'text-amber-400'
-                    )}
-                  >
-                    {testResults.filter((r) => r.passed).length}/{testResults.length} Cases Passed
-                  </span>
-                )}
-              </div>
-
-              {/* Compilation Error Banner */}
-              {compileError && (
-                <div className="p-3 rounded-xl border border-red-500/30 bg-red-500/[0.06] text-red-400 space-y-1.5 font-mono text-xs">
-                  <div className="flex items-center gap-1.5 font-bold uppercase text-2xs text-red-400">
-                    <AlertTriangle className="size-3.5" />
-                    <span>Compilation / Syntax Error</span>
-                  </div>
-                  <pre className="whitespace-pre-wrap text-2xs leading-relaxed max-h-28 overflow-y-auto text-red-300">
-                    {compileError}
-                  </pre>
-                </div>
-              )}
-
-              {/* Individual Test Cases */}
-              {testResults && (
-                <div className="space-y-1.5">
-                  {testResults.map((r) => (
-                    <div
-                      key={r.index}
+          {/* Testcase Output Console Tray (Dual-Tab: Sample Tests + CP Custom Input) */}
+          {(isConsoleOpen || testResults || compileError || customExecutionResult) && (
+            <div className="h-64 border-t border-border/80 bg-[#090D12]/95 backdrop-blur-md overflow-hidden flex flex-col font-mono text-xs shrink-0 shadow-lg">
+              {/* Console Header / Tabs */}
+              <div className="h-9 border-b border-border/70 px-4 flex items-center justify-between bg-card/60 shrink-0">
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1 bg-muted/60 p-0.5 rounded-lg border border-border/50">
+                    <button
+                      type="button"
+                      onClick={() => setConsoleTab('tests')}
                       className={cn(
-                        'flex items-center justify-between p-2 rounded-lg border text-xs gap-3',
-                        r.passed
-                          ? 'bg-primary/[0.04] border-primary/20 text-foreground'
-                          : 'bg-red-500/[0.04] border-red-500/20 text-foreground'
+                        'px-3 py-1 rounded-md text-2xs font-semibold uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer',
+                        consoleTab === 'tests'
+                          ? 'bg-background text-foreground shadow-xs font-bold'
+                          : 'text-muted-foreground hover:text-foreground'
                       )}
                     >
-                      <div className="flex items-center gap-2 overflow-hidden truncate">
-                        {r.passed ? (
-                          <CheckCircle2 className="size-3.5 text-primary shrink-0" />
-                        ) : (
-                          <XCircle className="size-3.5 text-red-400 shrink-0" />
+                      <Terminal className="size-3 text-primary" />
+                      <span>Sample Tests</span>
+                      {testResults && (
+                        <span
+                          className={cn(
+                            'text-2xs px-1.5 py-0.2 rounded-full font-bold',
+                            testResults.every((r) => r.passed)
+                              ? 'bg-primary/20 text-primary'
+                              : 'bg-red-500/20 text-red-400'
+                          )}
+                        >
+                          {testResults.filter((r) => r.passed).length}/{testResults.length}
+                        </span>
+                      )}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setConsoleTab('custom')}
+                      className={cn(
+                        'px-3 py-1 rounded-md text-2xs font-semibold uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer',
+                        consoleTab === 'custom'
+                          ? 'bg-background text-foreground shadow-xs font-bold'
+                          : 'text-muted-foreground hover:text-foreground'
+                      )}
+                    >
+                      <FileText className="size-3 text-emerald-400" />
+                      <span>Custom Input (CP)</span>
+                      {customExecutionResult && (
+                        <span className="text-2xs px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-400 font-bold">
+                          {customExecutionResult.status}
+                        </span>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {consoleTab === 'custom' && (
+                    <>
+                      {/* Hidden file input for uploading input.txt */}
+                      <input
+                        type="file"
+                        ref={customFileInputRef}
+                        accept=".txt"
+                        onChange={handleCustomFileUpload}
+                        className="hidden"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => customFileInputRef.current?.click()}
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-2xs font-mono text-muted-foreground hover:text-foreground border border-border/50 hover:bg-muted transition-colors cursor-pointer"
+                        title="Upload a .txt file as standard input"
+                      >
+                        <FileUp className="size-2.5 text-emerald-400" />
+                        Upload input.txt
+                      </button>
+                      {customInputText && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCustomInputText('');
+                            setCustomExecutionResult(null);
+                          }}
+                          className="text-2xs font-mono text-muted-foreground hover:text-red-400 px-1.5 py-0.5 cursor-pointer"
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => setIsConsoleOpen(false)}
+                    className="text-muted-foreground hover:text-foreground p-1 rounded transition-colors cursor-pointer"
+                    title="Collapse console"
+                  >
+                    <Minimize2 className="size-3.5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Console Body */}
+              <div className="flex-1 overflow-y-auto p-3 space-y-3">
+                {/* ── TAB 1: SAMPLE TESTS ── */}
+                {consoleTab === 'tests' && (
+                  <div className="space-y-2">
+                    {/* Compilation Error Banner */}
+                    {compileError && (
+                      <div className="p-3 rounded-xl border border-red-500/30 bg-red-500/[0.06] text-red-400 space-y-1.5 font-mono text-xs">
+                        <div className="flex items-center gap-1.5 font-bold uppercase text-2xs text-red-400">
+                          <AlertTriangle className="size-3.5" />
+                          <span>Compilation / Syntax Error</span>
+                        </div>
+                        <pre className="whitespace-pre-wrap text-2xs leading-relaxed max-h-28 overflow-y-auto text-red-300">
+                          {compileError}
+                        </pre>
+                      </div>
+                    )}
+
+                    {/* Individual Test Cases */}
+                    {testResults && testResults.length > 0 ? (
+                      <div className="space-y-1.5">
+                        {testResults.map((r) => (
+                          <div
+                            key={r.index}
+                            className={cn(
+                              'flex items-center justify-between p-2.5 rounded-lg border text-xs gap-3',
+                              r.passed
+                                ? 'bg-primary/[0.04] border-primary/20 text-foreground'
+                                : 'bg-red-500/[0.04] border-red-500/20 text-foreground'
+                            )}
+                          >
+                            <div className="flex items-center gap-2 overflow-hidden truncate">
+                              {r.passed ? (
+                                <CheckCircle2 className="size-3.5 text-primary shrink-0" />
+                              ) : (
+                                <XCircle className="size-3.5 text-red-400 shrink-0" />
+                              )}
+                              <span className="font-bold shrink-0">Case {r.index}:</span>
+                              <span className="text-muted-foreground truncate font-mono text-2xs">{r.input}</span>
+                            </div>
+
+                            <div className="flex items-center gap-3 shrink-0">
+                              {r.timeMs !== undefined && (
+                                <span className="text-2xs text-muted-foreground font-mono hidden sm:inline">
+                                  ⚡ {r.timeMs}ms
+                                </span>
+                              )}
+                              {r.memoryKb !== undefined && (
+                                <span className="text-2xs text-muted-foreground font-mono hidden sm:inline">
+                                  💾 {(r.memoryKb / 1024).toFixed(1)}MB
+                                </span>
+                              )}
+                              {!r.passed && (
+                                <span className="text-2xs text-muted-foreground">
+                                  Output: <span className="text-red-400">{r.actual}</span> | Expected:{' '}
+                                  <span className="text-foreground">{r.expected}</span>
+                                </span>
+                              )}
+                              <span className={cn('font-bold text-2xs', r.passed ? 'text-primary' : 'text-red-400')}>
+                                {r.status || (r.passed ? 'Accepted' : 'Wrong Answer')}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      !compileError && (
+                        <div className="py-6 text-center text-xs text-muted-foreground">
+                          Click <span className="text-primary font-semibold">"Run Visible Testcases"</span> to compile and test against sample cases.
+                        </div>
+                      )
+                    )}
+                  </div>
+                )}
+
+                {/* ── TAB 2: CUSTOM INPUT (CP MODE) ── */}
+                {consoleTab === 'custom' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 h-full">
+                    <div className="flex flex-col space-y-1">
+                      <div className="flex items-center justify-between text-2xs text-muted-foreground font-bold uppercase">
+                        <span>Standard Input (stdin):</span>
+                        <span>{customInputText ? `${customInputText.split('\n').length} lines` : 'Empty'}</span>
+                      </div>
+                      <textarea
+                        rows={4}
+                        value={customInputText}
+                        onChange={(e) => setCustomInputText(e.target.value)}
+                        placeholder="Paste standard input or click 'Upload input.txt' above..."
+                        className="flex-1 min-h-[100px] w-full p-2.5 rounded-lg bg-[#0c1017] border border-border/80 text-foreground font-mono text-xs focus:outline-none focus:border-primary/50 resize-none leading-relaxed"
+                      />
+                    </div>
+
+                    <div className="flex flex-col space-y-1">
+                      <div className="flex items-center justify-between text-2xs text-muted-foreground font-bold uppercase">
+                        <span>Standard Output (stdout):</span>
+                        {customExecutionResult && (
+                          <div className="flex items-center gap-2">
+                            {customExecutionResult.timeMs !== undefined && (
+                              <span className="text-primary">⚡ {customExecutionResult.timeMs}ms</span>
+                            )}
+                            {customExecutionResult.memoryKb !== undefined && (
+                              <span>💾 {(customExecutionResult.memoryKb / 1024).toFixed(1)}MB</span>
+                            )}
+                          </div>
                         )}
-                        <span className="font-bold shrink-0">Case {r.index}:</span>
-                        <span className="text-muted-foreground truncate">{r.input}</span>
                       </div>
 
-                      <div className="flex items-center gap-3 shrink-0">
-                        {r.timeMs !== undefined && (
-                          <span className="text-2xs text-muted-foreground font-mono hidden sm:inline">
-                            ⚡ {r.timeMs}ms
+                      <div className="flex-1 min-h-[100px] p-2.5 rounded-lg bg-[#0c1017] border border-border/80 font-mono text-xs overflow-y-auto whitespace-pre-wrap leading-relaxed">
+                        {isRunningCustom ? (
+                          <div className="h-full flex items-center justify-center gap-2 text-muted-foreground">
+                            <Loader2 className="size-3.5 animate-spin text-primary" />
+                            <span>Executing code with custom input...</span>
+                          </div>
+                        ) : customExecutionResult ? (
+                          <div className="space-y-2">
+                            <pre className="text-foreground">{customExecutionResult.actual || 'No output produced.'}</pre>
+                            {customExecutionResult.stderr && (
+                              <div className="pt-2 border-t border-red-500/20 text-red-400 text-2xs">
+                                <div className="font-bold">Standard Error:</div>
+                                <pre className="whitespace-pre-wrap">{customExecutionResult.stderr}</pre>
+                              </div>
+                            )}
+                          </div>
+                        ) : compileError ? (
+                          <pre className="text-red-400">{compileError}</pre>
+                        ) : (
+                          <span className="text-muted-foreground/60 italic">
+                            Output will appear here after clicking "Run with Custom Input".
                           </span>
                         )}
-                        {r.memoryKb !== undefined && (
-                          <span className="text-2xs text-muted-foreground font-mono hidden sm:inline">
-                            💾 {(r.memoryKb / 1024).toFixed(1)}MB
-                          </span>
-                        )}
-                        {!r.passed && (
-                          <span className="text-2xs text-muted-foreground">
-                            Output: <span className="text-red-400">{r.actual}</span> | Expected:{' '}
-                            <span className="text-foreground">{r.expected}</span>
-                          </span>
-                        )}
-                        <span className={cn('font-bold', r.passed ? 'text-primary' : 'text-red-400')}>
-                          {r.status || (r.passed ? 'Accepted' : 'Wrong Answer')}
-                        </span>
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
           {/* Editor Action Footer */}
           <div className="h-12 border-t border-border/80 px-4 flex items-center justify-between bg-card/40 shrink-0">
-            <button
-              onClick={handleRunTests}
-              disabled={isRunningTests || runCooldown > 0}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-muted hover:bg-muted/80 text-foreground transition-all cursor-pointer border border-border/80 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Play className={cn('size-3.5 text-primary', isRunningTests && 'animate-spin')} />
-              <span>
-                {isRunningTests
-                  ? 'Compiling & Running...'
-                  : runCooldown > 0
-                  ? `Cooldown (${runCooldown}s)`
-                  : 'Run Visible Testcases'}
-              </span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleRunTests}
+                disabled={isRunningTests || isRunningCustom || runCooldown > 0}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-muted hover:bg-muted/80 text-foreground transition-all cursor-pointer border border-border/80 disabled:opacity-50 disabled:cursor-not-allowed shadow-2xs"
+              >
+                <Play className={cn('size-3.5 text-primary', isRunningTests && 'animate-spin')} />
+                <span>
+                  {isRunningTests
+                    ? 'Compiling & Running...'
+                    : runCooldown > 0
+                    ? `Cooldown (${runCooldown}s)`
+                    : 'Run Visible Testcases'}
+                </span>
+              </button>
+
+              <button
+                onClick={handleRunCustomInput}
+                disabled={isRunningTests || isRunningCustom || runCooldown > 0}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-2xs"
+              >
+                <FileText className={cn('size-3.5', isRunningCustom && 'animate-spin')} />
+                <span>{isRunningCustom ? 'Running Custom...' : 'Run Custom Stdin'}</span>
+              </button>
+
+              <button
+                onClick={() => setIsConsoleOpen((prev) => !prev)}
+                className={cn(
+                  'p-1.5 rounded-xl border transition-colors cursor-pointer text-xs flex items-center gap-1',
+                  isConsoleOpen
+                    ? 'bg-card border-primary/40 text-foreground'
+                    : 'bg-muted/50 border-border/60 text-muted-foreground hover:text-foreground'
+                )}
+                title="Toggle Console Tray"
+              >
+                <Terminal className="size-3.5 text-primary" />
+                <span className="text-2xs font-mono hidden md:inline">Console</span>
+              </button>
+            </div>
 
             <div className="flex items-center gap-2">
               {activeProblemIdx < assessment.problems.length - 1 ? (

@@ -10,6 +10,8 @@ interface PricingCardProps {
   isPopular?: boolean;
   isCurrentPlan?: boolean;
   isLoading?: boolean;
+  discountedPrice?: number;
+  promoCodeLabel?: string;
   onSelect: (planId: CheckoutPlanKey) => void;
 }
 
@@ -18,9 +20,12 @@ export function PricingCard({
   isPopular = false,
   isCurrentPlan = false,
   isLoading = false,
+  discountedPrice,
+  promoCodeLabel,
   onSelect,
 }: PricingCardProps) {
   const isOneTime = plan.period === '75_days';
+  const hasDiscount = discountedPrice !== undefined && discountedPrice < plan.priceUsd;
 
   return (
     <div
@@ -31,13 +36,19 @@ export function PricingCard({
       }`}
     >
       {/* Top badges */}
-      {plan.badge && (
+      {promoCodeLabel ? (
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+          <span className="inline-flex items-center rounded-full bg-emerald-500 px-3 py-0.5 text-xs font-bold text-black shadow-xs uppercase tracking-wider font-mono">
+            {promoCodeLabel} APPLIED
+          </span>
+        </div>
+      ) : plan.badge ? (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
           <span className="inline-flex items-center rounded-full bg-primary px-3 py-0.5 text-xs font-bold text-primary-foreground shadow-xs uppercase tracking-wider">
             {plan.badge}
           </span>
         </div>
-      )}
+      ) : null}
 
       <div>
         <div className="flex items-center justify-between">
@@ -47,14 +58,21 @@ export function PricingCard({
         <p className="mt-2 text-sm text-muted-foreground min-h-[40px]">{plan.description}</p>
 
         {/* Pricing tag */}
-        <div className="mt-6 flex items-baseline gap-1.5">
-          <span className="text-4xl font-extrabold tracking-tight text-foreground">${plan.priceUsd}</span>
+        <div className="mt-6 flex items-baseline gap-2">
+          {hasDiscount ? (
+            <>
+              <span className="text-4xl font-extrabold tracking-tight text-emerald-500">${discountedPrice}</span>
+              <span className="text-lg line-through text-muted-foreground font-semibold">${plan.priceUsd}</span>
+            </>
+          ) : (
+            <span className="text-4xl font-extrabold tracking-tight text-foreground">${plan.priceUsd}</span>
+          )}
           <span className="text-sm font-medium text-muted-foreground">
             {isOneTime ? '/ one-time' : plan.period === 'year' ? '/ year' : '/ month'}
           </span>
         </div>
 
-        {plan.period === 'year' && (
+        {plan.period === 'year' && !hasDiscount && (
           <p className="mt-1 text-xs font-semibold text-primary">
             Equivalent to only ~$7.40/month
           </p>

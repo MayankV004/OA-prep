@@ -41,6 +41,7 @@ export interface ExecutionTestCase {
   expectedOutput: string;
   isHidden?: boolean;
   explanation?: string;
+  isCustom?: boolean;
 }
 
 export interface ExecutionResult {
@@ -55,6 +56,7 @@ export interface ExecutionResult {
   memoryKb?: number;
   compileOutput?: string;
   stderr?: string;
+  isCustom?: boolean;
 }
 
 export interface ExecutionBatchResponse {
@@ -65,4 +67,5 @@ export interface ExecutionBatchResponse {
   results: ExecutionResult[];
   compileError?: string;
   isFallback?: boolean;
+  isCustomRun?: boolean;
 }

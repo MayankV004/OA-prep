@@ -2,12 +2,25 @@
 
 import React, { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Check, ShieldCheck, CheckCircle2, HeartHandshake } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { Check, ShieldCheck, CheckCircle2, HeartHandshake, Percent, Tag, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { PricingCard } from '@/components/pricing/PricingCard';
 import { useSubscription } from '@/hooks/useSubscription';
-import { PLANS, type CheckoutPlanKey } from '@/lib/payments/types';
+import { PLANS, type CheckoutPlanKey, type PlanPricingDetail } from '@/lib/payments/types';
+import { toast } from 'sonner';
+
+interface ValidatedPromo {
+  code: string;
+  discountType: 'percentage' | 'fixed';
+  discountValue: number;
+  originalPrice: number;
+  discountAmount: number;
+  finalPrice: number;
+  description?: string;
+}
 
 export default function PricingPage() {
   const searchParams = useSearchParams();
@@ -17,11 +30,76 @@ export default function PricingPage() {
   const [billingInterval, setBillingInterval] = useState<'monthly' | 'annual'>('annual');
   const { plan: currentPlan, isPro, checkout, isCheckingOut, openPortal, isOpeningPortal } = useSubscription();
 
-  const handleSelectPlan = (planKey: CheckoutPlanKey) => {
-    checkout(planKey);
+  // Dynamic pricing fetch
+  const { data: pricingData } = useQuery<{ success: boolean; plans: Record<CheckoutPlanKey, PlanPricingDetail> }>({
+    queryKey: ['pricing'],
+    queryFn: async () => {
+      const res = await fetch('/api/pricing');
+      if (!res.ok) return { success: false, plans: PLANS };
+      return res.json();
+    },
+    staleTime: 60 * 1000,
+  });
+
+  const currentPlans = pricingData?.plans || PLANS;
+
+  // Promo code state
+  const [promoInput, setPromoInput] = useState('');
+  const [appliedPromo, setAppliedPromo] = useState<ValidatedPromo | null>(null);
+  const [isValidatingPromo, setIsValidatingPromo] = useState(false);
+  const [isPromoInputOpen, setIsPromoInputOpen] = useState(false);
+
+  const activeProPlan = billingInterval === 'annual' ? currentPlans.pro_annual : currentPlans.pro_monthly;
+
+  const handleApplyPromo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!promoInput.trim()) return;
+
+    setIsValidatingPromo(true);
+    try {
+      const res = await fetch('/api/promo/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: promoInput.trim().toUpperCase(),
+          plan: activeProPlan.id,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.valid) {
+        toast.error(data.message || 'Invalid promo code');
+        return;
+      }
+
+      setAppliedPromo(data);
+      toast.success(`Promo code ${data.code} applied! Saved $${data.discountAmount}`);
+    } catch (err: any) {
+      toast.error('Failed to validate promo code');
+    } finally {
+      setIsValidatingPromo(false);
+    }
   };
 
-  const activeProPlan = billingInterval === 'annual' ? PLANS.pro_annual : PLANS.pro_monthly;
+  const handleRemovePromo = () => {
+    setAppliedPromo(null);
+    setPromoInput('');
+    toast.info('Promo code removed');
+  };
+
+  const handleSelectPlan = (planKey: CheckoutPlanKey) => {
+    checkout(planKey, appliedPromo?.code);
+  };
+
+  // Compute promo discounts per plan
+  const getPlanDiscountedPrice = (plan: PlanPricingDetail) => {
+    if (!appliedPromo) return undefined;
+    if (appliedPromo.discountType === 'percentage') {
+      const discount = (plan.priceUsd * appliedPromo.discountValue) / 100;
+      return Math.max(0, Math.round((plan.priceUsd - discount) * 100) / 100);
+    }
+    return Math.max(0, Math.round((plan.priceUsd - appliedPromo.discountValue) * 100) / 100);
+  };
 
   return (
     <div className="min-h-screen py-10 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
@@ -84,6 +162,62 @@ export default function PricingPage() {
             </span>
           </button>
         </div>
+
+        {/* Promo Code Drawer */}
+        <div className="mt-6 flex flex-col items-center justify-center">
+          {appliedPromo ? (
+            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 animate-in fade-in">
+              <Percent className="size-3.5 text-emerald-500" />
+              <span>
+                Code <strong className="font-mono">{appliedPromo.code}</strong> applied ({appliedPromo.discountType === 'percentage' ? `${appliedPromo.discountValue}% OFF` : `$${appliedPromo.discountValue} OFF`})
+              </span>
+              <button
+                type="button"
+                onClick={handleRemovePromo}
+                className="ml-1 rounded-full p-0.5 hover:bg-emerald-500/20 text-muted-foreground hover:text-foreground transition-colors"
+                title="Remove promo code"
+              >
+                <X className="size-3" />
+              </button>
+            </div>
+          ) : isPromoInputOpen ? (
+            <form onSubmit={handleApplyPromo} className="flex items-center gap-2 max-w-xs w-full animate-in fade-in">
+              <Input
+                placeholder="Enter Promo Code"
+                value={promoInput}
+                onChange={(e) => setPromoInput(e.target.value.toUpperCase())}
+                className="font-mono text-xs uppercase h-9"
+                required
+              />
+              <Button
+                type="submit"
+                disabled={isValidatingPromo || !promoInput.trim()}
+                size="sm"
+                className="h-9 px-4 text-xs font-semibold bg-emerald-500 hover:bg-emerald-400 text-black"
+              >
+                {isValidatingPromo ? <Loader2 className="size-3 animate-spin" /> : 'Apply'}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsPromoInputOpen(false)}
+                className="h-9 px-2 text-xs text-muted-foreground"
+              >
+                <X className="size-3.5" />
+              </Button>
+            </form>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setIsPromoInputOpen(true)}
+              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-emerald-500 font-medium transition-colors"
+            >
+              <Tag className="size-3" />
+              <span>Have a promo or campus code?</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Pricing Cards Grid */}
@@ -138,15 +272,19 @@ export default function PricingPage() {
           isPopular={true}
           isCurrentPlan={isPro && (currentPlan === 'pro_monthly' || currentPlan === 'pro_annual')}
           isLoading={isCheckingOut}
+          discountedPrice={getPlanDiscountedPrice(activeProPlan)}
+          promoCodeLabel={appliedPromo?.code}
           onSelect={handleSelectPlan}
         />
 
         {/* OA Season Pass */}
         <PricingCard
-          plan={PLANS.oa_pass}
+          plan={currentPlans.oa_pass}
           isPopular={false}
           isCurrentPlan={currentPlan === 'oa_pass'}
           isLoading={isCheckingOut}
+          discountedPrice={getPlanDiscountedPrice(currentPlans.oa_pass)}
+          promoCodeLabel={appliedPromo?.code}
           onSelect={handleSelectPlan}
         />
       </div>

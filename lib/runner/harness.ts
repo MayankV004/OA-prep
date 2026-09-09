@@ -88,8 +88,13 @@ export function buildExecutableSource(
 }
 
 function buildPythonHarness(userCode: string, args: ParsedArg[]): string {
-  // If user already wrote top-level input reading or __main__, run as is
-  if (userCode.includes('if __name__ ==') || userCode.includes('sys.stdin.read')) {
+  // If user already wrote top-level input reading or __main__, run as is (CP environment standard I/O)
+  if (
+    userCode.includes('if __name__ ==') ||
+    userCode.includes('sys.stdin') ||
+    userCode.includes('input(') ||
+    userCode.includes('input ()')
+  ) {
     return userCode;
   }
 
@@ -131,7 +136,14 @@ ${assignments.split('\n').map((l) => '        ' + l).join('\n')}
 }
 
 function buildCppHarness(userCode: string, args: ParsedArg[]): string {
-  if (userCode.includes('int main(') || userCode.includes('int main ()')) {
+  if (
+    userCode.includes('int main(') ||
+    userCode.includes('int main ()') ||
+    userCode.includes('int main (') ||
+    userCode.includes('signed main(') ||
+    userCode.includes('signed main ()') ||
+    userCode.includes('auto main(')
+  ) {
     return userCode;
   }
 

@@ -34,6 +34,18 @@ export async function GET(req: NextRequest) {
     credits = 100;
   }
 
+  const promoCode = searchParams.get('promoCode');
+  const discountedPriceParam = searchParams.get('discountedPriceUsd');
+  const paidPriceUsd = discountedPriceParam !== null ? Number(discountedPriceParam) : PLANS[plan].priceUsd;
+
+  if (promoCode) {
+    const { PromoCode } = await import('@/models/promoCode');
+    await PromoCode.findOneAndUpdate(
+      { code: promoCode.trim().toUpperCase() },
+      { $inc: { redemptionCount: 1 } }
+    );
+  }
+
   const targetObjectId = mongoose.Types.ObjectId.isValid(userId) ? new mongoose.Types.ObjectId(userId) : userId;
 
   await Subscription.findOneAndUpdate(
@@ -51,6 +63,11 @@ export async function GET(req: NextRequest) {
         cancelAtPeriodEnd: false,
         aiCreditsQuota: credits,
         aiCreditsUsed: 0,
+        metadata: {
+          promoCode: promoCode || null,
+          paidPriceUsd,
+          originalPriceUsd: PLANS[plan].priceUsd,
+        },
       },
     },
     { upsert: true, returnDocument: 'after' }
@@ -68,7 +85,8 @@ export async function GET(req: NextRequest) {
     metadata: {
       plan,
       provider: 'mock',
-      priceUsd: PLANS[plan].priceUsd,
+      priceUsd: paidPriceUsd,
+      promoCode: promoCode || null,
     },
   });
 

@@ -20,6 +20,7 @@ import {
   Users,
   Terminal,
   CreditCard,
+  Percent,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -87,11 +88,20 @@ export const ADMIN_NAV: NavSection[] = [
   {
     label: 'Content',
     items: [
+      { name: 'Company OAs', href: '/admin/content/assessments', icon: Timer },
       { name: 'Problems', href: '/admin/content/problems', icon: ListChecks },
       { name: 'Topics', href: '/admin/content/topics', icon: FolderTree },
       { name: 'Patterns', href: '/admin/content/patterns', icon: Code2 },
       { name: 'Cheat Sheets', href: '/admin/content/cheatsheets', icon: FileText },
       { name: 'Questions', href: '/admin/content/questions', icon: HelpCircle },
+    ],
+  },
+  {
+    label: 'Billing & Growth',
+    items: [
+      { name: 'Subscriptions', href: '/admin/billing', icon: CreditCard },
+      { name: 'Pricing & Plans', href: '/admin/billing/pricing', icon: Tags },
+      { name: 'Promo Codes', href: '/admin/billing/promos', icon: Percent },
     ],
   },
   {

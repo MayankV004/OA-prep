@@ -4,6 +4,7 @@ import { mockPaymentAdapter } from './mock';
 import type { PaymentProviderAdapter } from './types';
 
 export * from './types';
+export * from './pricingService';
 export { stripeAdapter } from './stripe';
 export { mockPaymentAdapter } from './mock';
 

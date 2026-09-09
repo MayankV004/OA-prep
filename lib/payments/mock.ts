@@ -16,9 +16,16 @@ export class MockPaymentAdapter implements PaymentProviderAdapter {
 
     // Direct user to our internal mock confirmation endpoint to simulate instant gateway payment
     const appUrl = env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-    const mockConfirmUrl = `${appUrl}/api/checkout/mock-confirm?plan=${params.plan}&userId=${params.userId}&returnTo=${encodeURIComponent(
+    let mockConfirmUrl = `${appUrl}/api/checkout/mock-confirm?plan=${params.plan}&userId=${params.userId}&returnTo=${encodeURIComponent(
       params.successUrl
     )}`;
+
+    if (params.promoCode) {
+      mockConfirmUrl += `&promoCode=${encodeURIComponent(params.promoCode)}`;
+    }
+    if (params.discountedPriceUsd !== undefined) {
+      mockConfirmUrl += `&discountedPriceUsd=${params.discountedPriceUsd}`;
+    }
 
     return {
       url: mockConfirmUrl,

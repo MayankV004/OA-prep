@@ -105,18 +105,34 @@ async function executeViaDockerRunner(
     let status = 'Accepted';
     let statusId = 3;
 
-    if (isCompilationFailed) {
-      status = 'Compilation Error';
-      statusId = 6;
-    } else if (data.run?.signal === 'SIGKILL' || data.run?.code === 124) {
-      status = 'Time Limit Exceeded';
-      statusId = 5;
-    } else if (data.run?.code !== 0) {
-      status = 'Runtime Error';
-      statusId = 11;
-    } else if (actualOutput !== expectedOutput) {
-      status = 'Wrong Answer';
-      statusId = 4;
+    if (tc.isCustom) {
+      if (isCompilationFailed) {
+        status = 'Compilation Error';
+        statusId = 6;
+      } else if (data.run?.signal === 'SIGKILL' || data.run?.code === 124) {
+        status = 'Time Limit Exceeded';
+        statusId = 5;
+      } else if (data.run?.code !== 0) {
+        status = 'Runtime Error';
+        statusId = 11;
+      } else {
+        status = 'Executed';
+        statusId = 3;
+      }
+    } else {
+      if (isCompilationFailed) {
+        status = 'Compilation Error';
+        statusId = 6;
+      } else if (data.run?.signal === 'SIGKILL' || data.run?.code === 124) {
+        status = 'Time Limit Exceeded';
+        statusId = 5;
+      } else if (data.run?.code !== 0) {
+        status = 'Runtime Error';
+        statusId = 11;
+      } else if (actualOutput !== expectedOutput) {
+        status = 'Wrong Answer';
+        statusId = 4;
+      }
     }
 
     const passed = statusId === 3;
@@ -135,6 +151,7 @@ async function executeViaDockerRunner(
       memoryKb,
       compileOutput: compileError,
       stderr: data.run?.stderr || undefined,
+      isCustom: tc.isCustom,
     };
 
     return result;
@@ -153,6 +170,7 @@ async function executeViaDockerRunner(
     results,
     compileError,
     isFallback: false,
+    isCustomRun: testCases.some((t) => t.isCustom),
   };
 }
 
@@ -285,6 +303,7 @@ export async function executeTestCases(
         results,
         compileError,
         isFallback: false,
+        isCustomRun: testCases.some((t) => t.isCustom),
       };
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);

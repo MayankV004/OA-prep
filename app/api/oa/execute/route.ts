@@ -14,12 +14,14 @@ const executeSchema = z.object({
     .array(
       z.object({
         input: z.string(),
-        expectedOutput: z.string(),
+        expectedOutput: z.string().default(''),
         isHidden: z.boolean().optional().default(false),
         explanation: z.string().optional(),
+        isCustom: z.boolean().optional().default(false),
       })
     )
-    .min(1, 'At least one testcase is required'),
+    .optional(),
+  customInput: z.string().optional(),
   patternTag: z.string().optional().default(''),
   starterCode: z.string().optional().default(''),
 });
@@ -74,11 +76,28 @@ export async function POST(req: Request) {
       );
     }
 
-    const { language, code, testCases, patternTag, starterCode } = parseResult.data;
+    const { language, code, testCases, customInput, patternTag, starterCode } = parseResult.data;
 
-    // Filter to only visible test cases for safety if isHidden is passed
-    const visibleCases: ExecutionTestCase[] = testCases.filter((tc) => !tc.isHidden);
-    const casesToRun = visibleCases.length > 0 ? visibleCases : testCases.slice(0, 3);
+    let casesToRun: ExecutionTestCase[] = [];
+
+    if (customInput !== undefined) {
+      casesToRun = [
+        {
+          input: customInput,
+          expectedOutput: '',
+          isHidden: false,
+          isCustom: true,
+        },
+      ];
+    } else if (testCases && testCases.length > 0) {
+      const visibleCases = testCases.filter((tc) => !tc.isHidden);
+      casesToRun = visibleCases.length > 0 ? visibleCases : testCases.slice(0, 3);
+    } else {
+      return NextResponse.json(
+        { success: false, message: 'Either testCases or customInput is required.' },
+        { status: 400 }
+      );
+    }
 
     // 4. Run testcases via Judge0 (or fallback)
     const executionResponse = await executeTestCases(

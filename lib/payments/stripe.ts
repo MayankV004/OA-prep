@@ -55,7 +55,10 @@ export class StripeAdapter implements PaymentProviderAdapter {
       priceId.length > 10
     );
 
-    if (isRealPriceId) {
+    const hasCustomDiscount = params.discountedPriceUsd !== undefined && params.discountedPriceUsd !== planConfig.priceUsd;
+    const finalPriceUsd = params.discountedPriceUsd !== undefined ? params.discountedPriceUsd : planConfig.priceUsd;
+
+    if (isRealPriceId && !hasCustomDiscount) {
       lineItems = [{ price: priceId, quantity: 1 }];
     } else {
       // Dynamic inline pricing in USD
@@ -64,9 +67,9 @@ export class StripeAdapter implements PaymentProviderAdapter {
           quantity: 1,
           price_data: {
             currency: 'usd',
-            unit_amount: planConfig.priceUsd * 100, // Cents
+            unit_amount: Math.round(finalPriceUsd * 100), // Cents
             product_data: {
-              name: planConfig.name,
+              name: planConfig.name + (params.promoCode ? ` (Promo: ${params.promoCode})` : ''),
               description: planConfig.description,
             },
             ...(planConfig.mode === 'subscription'
@@ -91,6 +94,8 @@ export class StripeAdapter implements PaymentProviderAdapter {
       metadata: {
         userId: params.userId,
         plan: params.plan,
+        promoCode: params.promoCode || '',
+        paidAmountUsd: String(finalPriceUsd),
       },
       subscription_data:
         planConfig.mode === 'subscription'
@@ -98,6 +103,8 @@ export class StripeAdapter implements PaymentProviderAdapter {
               metadata: {
                 userId: params.userId,
                 plan: params.plan,
+                promoCode: params.promoCode || '',
+                paidAmountUsd: String(finalPriceUsd),
               },
             }
           : undefined,

@@ -16,7 +16,8 @@ export function useSubscription() {
   });
 
   const checkoutMutation = useMutation({
-    mutationFn: (plan: CheckoutPlanKey) => subscriptionApi.createCheckout(plan),
+    mutationFn: ({ plan, promoCode }: { plan: CheckoutPlanKey; promoCode?: string }) =>
+      subscriptionApi.createCheckout(plan, promoCode),
     onSuccess: (res) => {
       if (res.url) {
         toast.loading('Redirecting to secure Stripe checkout...', { duration: 2500 });
@@ -56,7 +57,8 @@ export function useSubscription() {
     status: entitlement?.status || 'active',
     expiresAt: entitlement?.expiresAt ? new Date(entitlement.expiresAt) : null,
     aiCreditsRemaining: entitlement?.aiCreditsRemaining ?? 10,
-    checkout: checkoutMutation.mutate,
+    checkout: (plan: CheckoutPlanKey, promoCode?: string) =>
+      checkoutMutation.mutate({ plan, promoCode }),
     isCheckingOut: checkoutMutation.isPending,
     openPortal: portalMutation.mutate,
     isOpeningPortal: portalMutation.isPending,

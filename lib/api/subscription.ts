@@ -22,11 +22,11 @@ export interface SubscriptionDTO {
 export const subscriptionApi = {
   getSubscription: () => apiFetch<SubscriptionDTO>('/api/subscription'),
 
-  createCheckout: (plan: CheckoutPlanKey) =>
+  createCheckout: (plan: CheckoutPlanKey, promoCode?: string) =>
     apiFetch<{ success: boolean; url: string; provider: string }>('/api/checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ plan }),
+      body: JSON.stringify({ plan, promoCode }),
     }),
 
   openBillingPortal: () =>

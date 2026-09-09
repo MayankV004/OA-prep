@@ -73,6 +73,16 @@ export function PaywallModal({
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </div>
+
+        <div className="mt-3 text-center">
+          <Link
+            href="/pricing"
+            onClick={() => onOpenChange(false)}
+            className="text-2xs text-muted-foreground hover:text-emerald-500 underline underline-offset-4 font-medium"
+          >
+            Have a campus coupon or promo code? Redeem on Pricing
+          </Link>
+        </div>
       </DialogContent>
     </Dialog>
   );

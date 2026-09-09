@@ -19,3 +19,5 @@ export * from './userContestHistory';
 export * from './subscription';
 export * from './assessment';
 export * from './assessmentSubmission';
+export * from './promoCode';
+export * from './pricingPlan';

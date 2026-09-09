@@ -30,6 +30,10 @@ import {
   Shield,
   UserCheck,
   Users,
+  Timer,
+  CreditCard,
+  Percent,
+  Tags,
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -136,11 +140,14 @@ function ChartTooltip({
 /* ── Content quick links ────────────────────────────────────────────── */
 
 const CONTENT_LINKS = [
+  { icon: Timer, label: 'Company OAs', href: '/admin/content/assessments', desc: 'Manage OA simulations' },
+  { icon: CreditCard, label: 'Subscriptions', href: '/admin/billing', desc: 'Monitor paid subscribers' },
+  { icon: Tags, label: 'Pricing & Plans', href: '/admin/billing/pricing', desc: 'Configure plan rates' },
+  { icon: Percent, label: 'Promo Codes', href: '/admin/billing/promos', desc: 'Discount vouchers & campaigns' },
   { icon: LayoutList, label: 'Patterns', href: '/admin/content/patterns', desc: 'Manage DSA patterns' },
   { icon: Database, label: 'Problems', href: '/admin/content/problems', desc: 'User-tracked problems' },
   { icon: BookOpen, label: 'Topics', href: '/admin/content/topics', desc: 'Core subject topics' },
   { icon: FileText, label: 'Cheat Sheets', href: '/admin/content/cheatsheets', desc: 'Quick reference sheets' },
-  { icon: Mail, label: 'Invites', href: '/admin/invites', desc: 'Manage invitations' },
 ];
 
 const SIGNUP_WEEKS = 8;

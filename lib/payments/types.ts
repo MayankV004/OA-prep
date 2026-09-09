@@ -73,6 +73,8 @@ export interface CreateCheckoutParams {
   plan: CheckoutPlanKey;
   successUrl: string;
   cancelUrl: string;
+  promoCode?: string;
+  discountedPriceUsd?: number;
 }
 
 export interface CheckoutResult {
