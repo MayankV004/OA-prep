@@ -3,19 +3,17 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import {
-  Timer,
   ShieldCheck,
-  Building2,
   CheckCircle2,
   AlertCircle,
-  Clock,
   ArrowRight,
-  Sparkles,
   Lock,
   Search,
 } from 'lucide-react';
 import { PaywallModal } from '@/components/pricing/PaywallModal';
 import { ProBadge } from '@/components/pricing/ProBadge';
+import { SpotlightCard } from '@/components/ui/spotlight-card';
+import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 interface ProblemSummary {
@@ -107,8 +105,9 @@ export default function OACatalogPage() {
   return (
     <div className="min-h-screen bg-background text-foreground pb-24">
       {/* Top Banner Header */}
-      <div className="border-b border-border/50 bg-card/20 py-10 px-4 sm:px-8">
-        <div className="max-w-7xl mx-auto space-y-4">
+      <div className="relative overflow-hidden border-b border-border/60 bg-card/40 aurora-mesh py-12 px-4 sm:px-8">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+        <div className="max-w-7xl mx-auto space-y-4 relative z-10">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
@@ -184,7 +183,7 @@ export default function OACatalogPage() {
           </div>
         ) : filteredAssessments.length === 0 ? (
           <div className="text-center py-20 bg-card/20 rounded-2xl border border-dashed border-border p-8">
-            <Timer className="size-10 mx-auto text-muted-foreground/60 mb-3" />
+            <Search className="size-8 mx-auto text-muted-foreground/50 mb-3" />
             <h3 className="text-base font-bold text-foreground">No assessments found</h3>
             <p className="text-xs text-muted-foreground mt-1">Try clearing your search query or selecting another company filter.</p>
           </div>
@@ -195,117 +194,124 @@ export default function OACatalogPage() {
               const hasAttempted = Boolean(assessment.pastSubmission);
 
               return (
-                <div
+                <motion.div
                   key={assessment.id}
-                  className={cn(
-                    'group relative rounded-2xl bg-card border p-6 flex flex-col justify-between transition-all duration-200 shadow-2xs hover:shadow-sm',
-                    assessment.isLocked
-                      ? 'border-border/60 hover:border-border'
-                      : 'border-border/80 hover:border-primary/40'
-                  )}
-                >
-                  {/* Top Metadata & Badges */}
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-mono font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                          <Building2 className="size-3.5 text-primary" />
-                          {assessment.company}
-                        </span>
-                        <span className="text-[11px] text-muted-foreground font-mono">• {assessment.role}</span>
-                      </div>
-
-                      {/* Lock / Free Badge */}
-                      {assessment.isLocked ? (
-                        <div className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-2xs font-bold uppercase tracking-wider bg-muted text-muted-foreground">
-                          <Lock className="size-3" />
-                          <span>PRO</span>
-                        </div>
-                      ) : !assessment.isProOnly ? (
-                        <span className="px-2.5 py-0.5 rounded-full text-2xs font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
-                          Free Demo
-                        </span>
-                      ) : (
-                        <span className="px-2.5 py-0.5 rounded-full text-2xs font-bold uppercase tracking-wider bg-card border border-border text-foreground font-mono">
-                          Pro Pack
-                        </span>
-                      )}
-                    </div>
-
-                    <h2 className="text-lg font-bold text-foreground leading-snug group-hover:text-primary transition-colors">
-                      {assessment.title}
-                    </h2>
-
-                    <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                      {assessment.description}
-                    </p>
-
-                    {/* Metrics Strip */}
-                    <div className="flex items-center gap-3 pt-2 text-xs font-mono text-muted-foreground border-t border-border/40">
-                      <span className="flex items-center gap-1">
-                        <Clock className="size-3.5 text-muted-foreground" />
-                        {assessment.durationMinutes} mins
-                      </span>
-                      <span>•</span>
-                      <span>{assessment.problemCount} Problems</span>
-                      <span>•</span>
-                      <span>Cutoff: {assessment.passingScore}%</span>
-                    </div>
-
-                    {/* Patterns Tested Chips */}
-                    <div className="flex flex-wrap gap-1.5 pt-1">
-                      {assessment.problemSummaries.map((prob) => (
-                        <span
-                          key={prob.id}
-                          className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-muted/60 text-muted-foreground border border-border/40"
-                        >
-                          {prob.patternTag}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Bottom Action Footer */}
-                  <div className="pt-6 mt-4 border-t border-border/40 flex items-center justify-between">
-                    {hasAttempted ? (
-                      <div className="flex items-center gap-1.5 text-xs font-mono">
-                        {hasPassed ? (
-                          <span className="flex items-center gap-1 text-primary font-bold">
-                            <CheckCircle2 className="size-3.5" />
-                            Passed ({assessment.pastSubmission?.totalScore}%)
-                          </span>
-                        ) : (
-                          <span className="flex items-center gap-1 text-amber-500 font-medium">
-                            <AlertCircle className="size-3.5" />
-                            Score: {assessment.pastSubmission?.totalScore}%
-                          </span>
+                      initial={{ opacity: 0, y: 16 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.35, delay: filteredAssessments.indexOf(assessment) * 0.04 }}
+                    >
+                      <SpotlightCard
+                        spotlightColor={
+                          hasPassed
+                            ? 'rgba(16, 185, 129, 0.15)'
+                            : assessment.isLocked
+                            ? 'rgba(245, 158, 11, 0.12)'
+                            : 'rgba(99, 102, 241, 0.16)'
+                        }
+                        className={cn(
+                          'h-full flex flex-col justify-between',
+                          assessment.isLocked ? 'border-border/70 opacity-95' : 'border-border hover:border-primary/50'
                         )}
-                      </div>
-                    ) : (
-                      <span className="text-xs text-muted-foreground font-mono">Not attempted</span>
-                    )}
-
-                    {assessment.isLocked ? (
-                      <button
-                        onClick={() => setPaywallOpen(true)}
-                        className="inline-flex items-center gap-1 px-4 py-2 rounded-xl text-xs font-bold bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-all cursor-pointer"
                       >
-                        <Sparkles className="size-3.5" />
-                        <span>Unlock</span>
-                      </button>
-                    ) : (
-                      <Link href={`/oa/${assessment.slug}`}>
-                        <button className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-all cursor-pointer shadow-2xs">
-                          <span>{hasAttempted ? 'Retake / Review' : 'Start Assessment'}</span>
-                          <ArrowRight className="size-3.5" />
-                        </button>
-                      </Link>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                        {/* Top Metadata & Badges */}
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-mono font-bold uppercase tracking-wider text-primary">
+                                {assessment.company}
+                              </span>
+                              <span className="text-[11px] text-muted-foreground font-mono">• {assessment.role}</span>
+                            </div>
+
+                            {/* Lock / Free Badge */}
+                            {assessment.isLocked ? (
+                              <div className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-2xs font-bold uppercase tracking-wider bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                                <Lock className="size-3" />
+                                <span>PRO</span>
+                              </div>
+                            ) : !assessment.isProOnly ? (
+                              <span className="px-2.5 py-0.5 rounded-full text-2xs font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                                Free Demo
+                              </span>
+                            ) : (
+                              <span className="px-2.5 py-0.5 rounded-full text-2xs font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20 font-mono">
+                                Pro Pack
+                              </span>
+                            )}
+                          </div>
+
+                          <h2 className="text-lg font-bold text-foreground leading-snug group-hover:text-primary transition-colors">
+                            {assessment.title}
+                          </h2>
+
+                          <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                            {assessment.description}
+                          </p>
+
+                          {/* Metrics Strip */}
+                          <div className="flex items-center gap-3 pt-2 text-xs font-mono text-muted-foreground border-t border-border/40">
+                            <span>{assessment.durationMinutes} mins</span>
+                            <span>•</span>
+                            <span>{assessment.problemCount} Problems</span>
+                            <span>•</span>
+                            <span>Cutoff: {assessment.passingScore}%</span>
+                          </div>
+
+                          {/* Patterns Tested Chips */}
+                          <div className="flex flex-wrap gap-1.5 pt-1">
+                            {assessment.problemSummaries.map((prob) => (
+                              <span
+                                key={prob.id}
+                                className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-muted/60 text-muted-foreground border border-border/40"
+                              >
+                                {prob.patternTag}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Bottom Action Footer */}
+                        <div className="pt-6 mt-4 border-t border-border/40 flex items-center justify-between">
+                          {hasAttempted ? (
+                            <div className="flex items-center gap-1.5 text-xs font-mono">
+                              {hasPassed ? (
+                                <span className="flex items-center gap-1 text-emerald-500 font-bold">
+                                  <CheckCircle2 className="size-3.5" />
+                                  Passed ({assessment.pastSubmission?.totalScore}%)
+                                </span>
+                              ) : (
+                                <span className="flex items-center gap-1 text-amber-500 font-medium">
+                                  <AlertCircle className="size-3.5" />
+                                  Score: {assessment.pastSubmission?.totalScore}%
+                                </span>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-xs text-muted-foreground font-mono">Not attempted</span>
+                          )}
+
+                          {assessment.isLocked ? (
+                            <button
+                              onClick={() => setPaywallOpen(true)}
+                              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-amber-500/15 text-amber-500 border border-amber-500/30 hover:bg-amber-500/25 transition-all cursor-pointer active:scale-95"
+                            >
+                              <Lock className="size-3.5" />
+                              <span>Unlock Pro</span>
+                            </button>
+                          ) : (
+                            <Link href={`/oa/${assessment.slug}`}>
+                              <button className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-all cursor-pointer shadow-sm hover:shadow-glow active:scale-95 border-t border-white/20">
+                                <span>{hasAttempted ? 'Retake / Review' : 'Start Assessment'}</span>
+                                <ArrowRight className="size-3.5" />
+                              </button>
+                            </Link>
+                          )}
+                        </div>
+                      </SpotlightCard>
+                    </motion.div>
+                  );
+                })}
+              </div>
         )}
       </div>
 

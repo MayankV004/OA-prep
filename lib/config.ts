@@ -46,6 +46,15 @@ const envSchema = z.object({
   STRIPE_PRO_ANNUAL_PRICE_ID: z.string().optional().default(''),
   STRIPE_OA_PASS_PRICE_ID: z.string().optional().default(''),
   PAYMENT_PROVIDER: z.enum(['stripe', 'mock']).default('stripe'),
+
+  // Code Execution Engine (Docker Runner or Judge0)
+  CODE_RUNNER_URL: z.string().optional().default('http://localhost:2000'),
+  JUDGE0_RAPIDAPI_KEY: z.string().optional().default(''),
+  JUDGE0_RAPIDAPI_HOST: z.string().default('judge0-ce.p.rapidapi.com'),
+  JUDGE0_API_URL: z.string().optional().default(''),
+
+  // Assessment Environment Flags
+  NEXT_PUBLIC_ALLOW_COPY_PASTE: z.string().optional().default('false'),
 });
 
 function parseEnv() {

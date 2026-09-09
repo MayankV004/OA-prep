@@ -12,7 +12,7 @@ import {
   min,
   eachMonthOfInterval,
 } from 'date-fns';
-import { Flame, Trophy, Zap, ChevronDown, Info } from 'lucide-react';
+import { ChevronDown, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
@@ -257,8 +257,10 @@ export function ActivityHeatmap({ data = [] }: { data?: HeatmapCell[] }) {
       {/* ── Footer Legend ──────────────────────────────────────────────── */}
       <div className="flex flex-wrap items-center justify-between gap-3 pt-2 text-2xs text-text-muted border-t border-border/30">
         <div className="flex items-center gap-2 font-medium">
-          <Flame className="size-3.5 text-warning fill-warning" />
-          <span>Active Streak: <strong className="text-foreground">{currentStreak} days</strong></span>
+          <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-amber-500/15 text-amber-500 border border-amber-500/25">
+            Streak
+          </span>
+          <span>Active: <strong className="text-foreground">{currentStreak} days</strong></span>
         </div>
 
         <div className="flex items-center gap-1.5 ml-auto">

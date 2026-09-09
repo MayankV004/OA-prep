@@ -3,7 +3,7 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Sparkles, Check, ArrowRight } from 'lucide-react';
+import { Lock, Check, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
 interface PaywallModalProps {
@@ -30,8 +30,8 @@ export function PaywallModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[480px] p-6 border-border bg-card shadow-lg">
         <DialogHeader className="text-center sm:text-left">
-          <div className="mx-auto sm:mx-0 flex h-12 w-12 items-center justify-center rounded-2xl bg-warning/10 text-warning border border-warning/25 shadow-xs">
-            <Sparkles className="h-6 w-6" />
+          <div className="mx-auto sm:mx-0 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/20 shadow-xs">
+            <Lock className="h-5 w-5" />
           </div>
           <DialogTitle className="mt-4 text-xl font-bold tracking-tight">
             {featureTitle}

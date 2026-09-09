@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Sparkles, Check, ShieldCheck, Zap, HeartHandshake } from 'lucide-react';
+import { Check, ShieldCheck, CheckCircle2, HeartHandshake } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { PricingCard } from '@/components/pricing/PricingCard';
@@ -46,9 +46,8 @@ export default function PricingPage() {
 
       {/* Hero Header */}
       <div className="text-center max-w-3xl mx-auto">
-        <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-500 dark:text-amber-400 mb-4">
-          <Sparkles className="h-3.5 w-3.5" />
-          <span>Placement Season Special</span>
+        <div className="inline-flex items-center rounded-full border border-amber-500/30 bg-amber-500/10 px-3.5 py-1 text-xs font-mono font-bold uppercase tracking-wider text-amber-500 dark:text-amber-400 mb-4">
+          Placement Season Special
         </div>
         <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-foreground">
           Invest in Your Next Tech Offer
@@ -174,7 +173,7 @@ export default function PricingPage() {
           <p className="mt-1 text-xs text-muted-foreground">Bank-level 256-bit encryption. We never store credit card numbers.</p>
         </div>
         <div className="flex flex-col items-center">
-          <Zap className="h-6 w-6 text-amber-500 mb-2" />
+          <CheckCircle2 className="h-6 w-6 text-amber-500 mb-2" />
           <h4 className="text-sm font-semibold text-foreground">Instant Activation</h4>
           <p className="mt-1 text-xs text-muted-foreground">Your account is upgraded immediately with zero delay.</p>
         </div>

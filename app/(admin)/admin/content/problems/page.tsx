@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
-import { ExternalLink, ListChecks, Sparkles } from 'lucide-react';
+import { ExternalLink, ListChecks } from 'lucide-react';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 
 import { DataTable, type Column } from '@/components/admin/DataTable';

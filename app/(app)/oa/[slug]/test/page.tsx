@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ProctorCameraPip, type ProctorViolationEvent } from '@/components/oa/ProctorCameraPip';
+import { MarkdownView } from '@/components/markdown/View';
 
 // Dynamically import Monaco Editor to ensure zero SSR canvas issues
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), {
@@ -102,6 +103,8 @@ export default function AssessmentTestRunnerPage({
   // Code test execution state
   const [isRunningTests, setIsRunningTests] = useState(false);
   const [testResults, setTestResults] = useState<any[] | null>(null);
+  const [compileError, setCompileError] = useState<string | null>(null);
+  const [runCooldown, setRunCooldown] = useState<number>(0);
 
   // Final submission state
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
@@ -109,12 +112,19 @@ export default function AssessmentTestRunnerPage({
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   const blurTimeRef = useRef<number | null>(null);
+  const isSubmittedRef = useRef(false);
 
   // 1. Initialize assessment session
   useEffect(() => {
     fetch(`/api/oa/assessments/${slug}/start`, { method: 'POST' })
       .then((res) => res.json())
       .then((data) => {
+        if (data.alreadyCompleted) {
+          isSubmittedRef.current = true;
+          router.replace(`/oa/${slug}/report/${data.submissionId}`);
+          return;
+        }
+
         if (data.success) {
           setAssessment(data.assessment);
           setSubmissionId(data.submissionId);
@@ -126,31 +136,75 @@ export default function AssessmentTestRunnerPage({
           const remaining = Math.max(0, data.durationMinutes * 60 - elapsedSecs);
           setSecondsRemaining(remaining);
 
-          // Initialize starter codes
+          // Initialize starter codes, restoring drafts from localStorage or server if available
           const initialCodes: Record<string, Record<string, string>> = {};
           const initialLangs: Record<string, 'cpp' | 'python' | 'java'> = {};
 
           data.assessment.problems.forEach((p: AssessmentProblem) => {
+            let draftCpp: string | null = null;
+            let draftPy: string | null = null;
+            let draftJava: string | null = null;
+            try {
+              draftCpp = localStorage.getItem(`oa_draft_${slug}_${p.id}_cpp`);
+              draftPy = localStorage.getItem(`oa_draft_${slug}_${p.id}_python`);
+              draftJava = localStorage.getItem(`oa_draft_${slug}_${p.id}_java`);
+            } catch {}
+
+            const serverSaved = data.savedCodes?.[p.id];
+
             initialCodes[p.id] = {
-              cpp: p.starterCode?.cpp || '',
-              python: p.starterCode?.python || '',
-              java: p.starterCode?.java || '',
+              cpp: draftCpp ?? (serverSaved?.language === 'cpp' ? serverSaved.code : p.starterCode?.cpp || ''),
+              python: draftPy ?? (serverSaved?.language === 'python' ? serverSaved.code : p.starterCode?.python || ''),
+              java: draftJava ?? (serverSaved?.language === 'java' ? serverSaved.code : p.starterCode?.java || ''),
             };
-            initialLangs[p.id] = 'cpp';
+            initialLangs[p.id] = (serverSaved?.language as 'cpp' | 'python' | 'java') || 'cpp';
           });
 
           setUserCodes(initialCodes);
           setLanguages(initialLangs);
         } else {
-          router.push(`/oa/${slug}`);
+          router.replace(`/oa/${slug}`);
         }
       })
       .catch((err) => {
         console.error('Failed to init test runner:', err);
-        router.push(`/oa/${slug}`);
+        router.replace(`/oa/${slug}`);
       })
       .finally(() => setLoading(false));
   }, [slug, router]);
+
+  // 1b. Navigation & Gesture Lock: Trap back button, gestures, and beforeunload
+  useEffect(() => {
+    if (loading) return;
+
+    // Push dummy history entry so back button/gesture triggers popstate instead of exiting
+    window.history.pushState({ assessmentSession: slug }, '', window.location.href);
+
+    const handlePopState = () => {
+      if (isSubmittedRef.current) return;
+      // Re-trap history immediately
+      window.history.pushState({ assessmentSession: slug }, '', window.location.href);
+      setProctorWarning(
+        'Navigation Locked: Leaving the test room during an active assessment is strictly prohibited.'
+      );
+    };
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (!isSubmittedRef.current) {
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [loading, slug]);
 
   // 2. Countdown Timer with auto-submit on timeout
   useEffect(() => {
@@ -220,6 +274,11 @@ export default function AssessmentTestRunnerPage({
         [currentLanguage]: newCode,
       },
     }));
+
+    // Local draft auto-save so browser refresh or crash never loses candidate code
+    try {
+      localStorage.setItem(`oa_draft_${slug}_${currentProblem.id}_${currentLanguage}`, newCode);
+    } catch {}
   };
 
   // 5. Biometric Proctoring Violation Callback
@@ -260,8 +319,15 @@ export default function AssessmentTestRunnerPage({
     }
   };
 
-  // 6. Monaco Editor mount setup with STRICT COPY-PASTE BLOCKING
+  // 6. Monaco Editor mount setup with STRICT COPY-PASTE BLOCKING (Bypassable if NEXT_PUBLIC_ALLOW_COPY_PASTE is true)
+  const allowCopyPaste = process.env.NEXT_PUBLIC_ALLOW_COPY_PASTE === 'true';
+
   const handleEditorMount = (editor: any) => {
+    // If copy-pasting is explicitly toggled on for testing/development, do not restrict clipboard
+    if (allowCopyPaste) {
+      return;
+    }
+
     // Intercept keyboard paste shortcuts (Ctrl+V, Cmd+V, Shift+Insert)
     editor.onKeyDown((e: any) => {
       // KeyCode 52 is 'V', KeyCode 45 is 'Insert'
@@ -312,87 +378,64 @@ export default function AssessmentTestRunnerPage({
     }
   };
 
-  // 7. Robust Testcase Evaluation
-  const handleRunTests = () => {
-    if (!currentProblem) return;
+  // 7. Live Code Execution via Judge0 API
+  const handleRunTests = async () => {
+    if (!currentProblem || isRunningTests || runCooldown > 0) return;
     setIsRunningTests(true);
     setTestResults(null);
+    setCompileError(null);
 
-    setTimeout(() => {
-      const visible = currentProblem.visibleTestCases || [];
+    try {
+      const payload = {
+        problemId: currentProblem.id,
+        language: currentLanguage,
+        code: currentCode,
+        testCases: currentProblem.visibleTestCases || [],
+        patternTag: currentProblem.patternTag,
+        starterCode: currentProblem.starterCode?.[currentLanguage] || '',
+      };
 
-      // Clean comments and whitespace
-      const cleanCode = currentCode
-        .replace(/\/\*[\s\S]*?\*\/|\/\/.*|#.*/g, '')
-        .replace(/\s+/g, ' ')
-        .trim();
-
-      const starter = (currentProblem.starterCode?.[currentLanguage] || '')
-        .replace(/\/\*[\s\S]*?\*\/|\/\/.*|#.*/g, '')
-        .replace(/\s+/g, ' ')
-        .trim();
-
-      // Check if user code is merely returning 0, empty, or default unchanged starter
-      const hasLoops = /for\s*\(|while\s*\(|for\s+\w+\s+in|while\s+/.test(currentCode);
-      const hasConditionals = /if\s*\(|if\s+\w+/.test(currentCode);
-      const hasDataStructures = /vector|stack|queue|unordered_map|map|set|list|dict|heapq|deque/.test(currentCode);
-
-      const isSubstantive =
-        cleanCode.length > 45 &&
-        cleanCode !== starter &&
-        (hasLoops || (hasConditionals && hasDataStructures));
-
-      const patternLower = currentProblem.patternTag.toLowerCase();
-      const hasPatternKeywords =
-        (patternLower.includes('window') && /left|right|start|end|window|maxlen|minlen/i.test(currentCode)) ||
-        (patternLower.includes('stack') && /stack|st\.|push|pop|top|peek/i.test(currentCode)) ||
-        (patternLower.includes('graph') && /adj|queue|dist|visited|pq|priority_queue/i.test(currentCode)) ||
-        (patternLower.includes('tree') && /left|right|val|root|node|bfs|queue/i.test(currentCode)) ||
-        ((patternLower.includes('dp') || patternLower.includes('dynamic')) && /dp\[|memo|cache/i.test(currentCode)) ||
-        (patternLower.includes('interval') && /sort|interval|start|end|first|second/i.test(currentCode)) ||
-        (patternLower.includes('two pointer') && /left|right|low|high|ptr/i.test(currentCode)) ||
-        (patternLower.includes('topological') && /indegree|graph|adj|queue/i.test(currentCode));
-
-      const results = visible.map((tc, idx) => {
-        if (!isSubstantive) {
-          // Empty or unmodified starter code -> FAILS with default output
-          const defaultOutput = currentLanguage === 'python' ? '0' : currentLanguage === 'java' ? '0' : '0';
-          const isActuallyMatching = defaultOutput === tc.expectedOutput.trim();
-
-          return {
-            index: idx + 1,
-            input: tc.input,
-            expected: tc.expectedOutput,
-            actual: defaultOutput,
-            passed: isActuallyMatching,
-          };
-        }
-
-        if (hasPatternKeywords && currentCode.length > 80) {
-          // Correct pattern solution -> passes visible cases
-          return {
-            index: idx + 1,
-            input: tc.input,
-            expected: tc.expectedOutput,
-            actual: tc.expectedOutput,
-            passed: true,
-          };
-        } else {
-          // Partial logic -> passes Case 1, fails subsequent cases
-          const passed = idx === 0;
-          return {
-            index: idx + 1,
-            input: tc.input,
-            expected: tc.expectedOutput,
-            actual: passed ? tc.expectedOutput : 'Output mismatch / Index out of bounds',
-            passed,
-          };
-        }
+      const res = await fetch('/api/oa/execute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
       });
 
-      setTestResults(results);
+      const data = await res.json();
+
+      if (!res.ok) {
+        if (res.status === 429) {
+          setProctorWarning(data.message || 'Execution rate limit exceeded. Please wait a few seconds.');
+        } else {
+          setProctorWarning(data.message || 'Code execution error occurred.');
+        }
+        setIsRunningTests(false);
+        return;
+      }
+
+      if (data.compileError) {
+        setCompileError(data.compileError);
+      }
+
+      setTestResults(data.results || []);
+
+      // 4-second cooldown to preserve RapidAPI free tier quota
+      setRunCooldown(4);
+      const interval = setInterval(() => {
+        setRunCooldown((prev) => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } catch (err: any) {
+      console.error('Run tests error:', err);
+      setProctorWarning('Failed to connect to code execution service.');
+    } finally {
       setIsRunningTests(false);
-    }, 600);
+    }
   };
 
   // 8. Final Submission
@@ -439,7 +482,17 @@ export default function AssessmentTestRunnerPage({
 
       const data = await res.json();
       if (data.success) {
-        router.push(`/oa/${slug}/report/${data.submissionId}`);
+        isSubmittedRef.current = true;
+        // Clear local drafts for this assessment
+        try {
+          assessment.problems.forEach((p: AssessmentProblem) => {
+            (['cpp', 'python', 'java'] as const).forEach((l) => {
+              localStorage.removeItem(`oa_draft_${slug}_${p.id}_${l}`);
+            });
+          });
+        } catch {}
+
+        router.replace(`/oa/${slug}/report/${data.submissionId}`);
       } else {
         alert(data.message || 'Submission failed');
         setIsSubmitting(false);
@@ -480,7 +533,10 @@ export default function AssessmentTestRunnerPage({
   const monacoLang = currentLanguage === 'cpp' ? 'cpp' : currentLanguage === 'python' ? 'python' : 'java';
 
   return (
-    <div className="h-screen w-screen flex flex-col bg-background text-foreground overflow-hidden select-none font-sans">
+    <div
+      className="h-screen w-screen flex flex-col bg-background text-foreground overflow-hidden select-none font-sans overscroll-none touch-pan-y"
+      style={{ overscrollBehavior: 'none' }}
+    >
       {/* ── COMPACT PROCTOR FLOATING NOTIFICATION ───────── */}
       {proctorWarning && (
         <div className="fixed top-3 left-1/2 -translate-x-1/2 z-50 max-w-lg px-3.5 py-1 rounded-full bg-card/95 border border-amber-500/40 text-amber-300 text-2xs font-mono flex items-center gap-2 shadow-2xl backdrop-blur-md animate-in fade-in slide-in-from-top-2 duration-150">
@@ -517,6 +573,7 @@ export default function AssessmentTestRunnerPage({
                 onClick={() => {
                   setActiveProblemIdx(idx);
                   setTestResults(null);
+                  setCompileError(null);
                 }}
                 className={cn(
                   'px-3.5 py-1 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer border-0',
@@ -551,7 +608,7 @@ export default function AssessmentTestRunnerPage({
           {/* Proctor Violation Count Badge */}
           <div
             className={cn(
-              'hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-xl text-2xs font-mono font-semibold border',
+              'hidden sm:flex items-center gap-1.5 px-3.5 py-1 rounded-xl text-2xs font-mono font-semibold border',
               tabSwitchCount > 0
                 ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
                 : 'bg-card text-muted-foreground border-border/60'
@@ -609,8 +666,8 @@ export default function AssessmentTestRunnerPage({
             </div>
 
             {/* Markdown Problem Description */}
-            <div className="text-xs sm:text-sm text-foreground/90 leading-relaxed font-normal whitespace-pre-wrap">
-              {currentProblem.description}
+            <div className="text-foreground/90 leading-relaxed font-normal">
+              <MarkdownView content={currentProblem.description} variant="exam" allowCopy={false} />
             </div>
 
             {/* Visible Testcases */}
@@ -663,9 +720,22 @@ export default function AssessmentTestRunnerPage({
               ))}
             </div>
 
-            <span className="text-2xs font-mono text-muted-foreground">
-              VS Code Monaco Engine
-            </span>
+            <div className="flex items-center gap-2">
+              {allowCopyPaste ? (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-2xs font-mono font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  Paste Allowed (Test Mode)
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-2xs font-mono font-medium bg-muted text-muted-foreground border border-border/60">
+                  Clipboard Locked
+                </span>
+              )}
+
+              <span className="text-2xs font-mono text-muted-foreground hidden sm:inline">
+                VS Code Monaco Engine
+              </span>
+            </div>
           </div>
 
           {/* Monaco Code Editor Area with syntax highlighting and line numbers */}
@@ -696,57 +766,86 @@ export default function AssessmentTestRunnerPage({
           </div>
 
           {/* Testcase Output Console Tray */}
-          {testResults && (
-            <div className="h-44 border-t border-border/80 bg-card/70 backdrop-blur-md overflow-y-auto p-4 space-y-2 font-mono text-xs shrink-0">
+          {(testResults || compileError) && (
+            <div className="h-48 border-t border-border/80 bg-card/70 backdrop-blur-md overflow-y-auto p-4 space-y-2.5 font-mono text-xs shrink-0">
               <div className="flex items-center justify-between text-2xs uppercase text-muted-foreground font-bold">
                 <span className="flex items-center gap-1.5">
                   <Terminal className="size-3 text-primary" />
                   <span>Test Execution Summary</span>
                 </span>
-                <span
-                  className={cn(
-                    'font-bold',
-                    testResults.every((r) => r.passed) ? 'text-primary' : 'text-amber-400'
-                  )}
-                >
-                  {testResults.filter((r) => r.passed).length}/{testResults.length} Cases Passed
-                </span>
-              </div>
-
-              <div className="space-y-1.5">
-                {testResults.map((r) => (
-                  <div
-                    key={r.index}
+                {testResults && (
+                  <span
                     className={cn(
-                      'flex items-center justify-between p-2 rounded-lg border text-xs',
-                      r.passed
-                        ? 'bg-primary/[0.04] border-primary/20 text-foreground'
-                        : 'bg-red-500/[0.04] border-red-500/20 text-foreground'
+                      'font-bold',
+                      testResults.every((r) => r.passed) ? 'text-primary' : 'text-amber-400'
                     )}
                   >
-                    <div className="flex items-center gap-2 overflow-hidden truncate">
-                      {r.passed ? (
-                        <CheckCircle2 className="size-3.5 text-primary shrink-0" />
-                      ) : (
-                        <XCircle className="size-3.5 text-red-400 shrink-0" />
-                      )}
-                      <span className="font-bold shrink-0">Case {r.index}:</span>
-                      <span className="text-muted-foreground truncate">{r.input}</span>
-                    </div>
-
-                    <div className="flex items-center gap-3 shrink-0">
-                      {!r.passed && (
-                        <span className="text-2xs text-muted-foreground">
-                          Output: <span className="text-red-400">{r.actual}</span> | Expected: <span className="text-foreground">{r.expected}</span>
-                        </span>
-                      )}
-                      <span className={cn('font-bold', r.passed ? 'text-primary' : 'text-red-400')}>
-                        {r.passed ? 'Accepted' : 'Wrong Answer'}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                    {testResults.filter((r) => r.passed).length}/{testResults.length} Cases Passed
+                  </span>
+                )}
               </div>
+
+              {/* Compilation Error Banner */}
+              {compileError && (
+                <div className="p-3 rounded-xl border border-red-500/30 bg-red-500/[0.06] text-red-400 space-y-1.5 font-mono text-xs">
+                  <div className="flex items-center gap-1.5 font-bold uppercase text-2xs text-red-400">
+                    <AlertTriangle className="size-3.5" />
+                    <span>Compilation / Syntax Error</span>
+                  </div>
+                  <pre className="whitespace-pre-wrap text-2xs leading-relaxed max-h-28 overflow-y-auto text-red-300">
+                    {compileError}
+                  </pre>
+                </div>
+              )}
+
+              {/* Individual Test Cases */}
+              {testResults && (
+                <div className="space-y-1.5">
+                  {testResults.map((r) => (
+                    <div
+                      key={r.index}
+                      className={cn(
+                        'flex items-center justify-between p-2 rounded-lg border text-xs gap-3',
+                        r.passed
+                          ? 'bg-primary/[0.04] border-primary/20 text-foreground'
+                          : 'bg-red-500/[0.04] border-red-500/20 text-foreground'
+                      )}
+                    >
+                      <div className="flex items-center gap-2 overflow-hidden truncate">
+                        {r.passed ? (
+                          <CheckCircle2 className="size-3.5 text-primary shrink-0" />
+                        ) : (
+                          <XCircle className="size-3.5 text-red-400 shrink-0" />
+                        )}
+                        <span className="font-bold shrink-0">Case {r.index}:</span>
+                        <span className="text-muted-foreground truncate">{r.input}</span>
+                      </div>
+
+                      <div className="flex items-center gap-3 shrink-0">
+                        {r.timeMs !== undefined && (
+                          <span className="text-2xs text-muted-foreground font-mono hidden sm:inline">
+                            ⚡ {r.timeMs}ms
+                          </span>
+                        )}
+                        {r.memoryKb !== undefined && (
+                          <span className="text-2xs text-muted-foreground font-mono hidden sm:inline">
+                            💾 {(r.memoryKb / 1024).toFixed(1)}MB
+                          </span>
+                        )}
+                        {!r.passed && (
+                          <span className="text-2xs text-muted-foreground">
+                            Output: <span className="text-red-400">{r.actual}</span> | Expected:{' '}
+                            <span className="text-foreground">{r.expected}</span>
+                          </span>
+                        )}
+                        <span className={cn('font-bold', r.passed ? 'text-primary' : 'text-red-400')}>
+                          {r.status || (r.passed ? 'Accepted' : 'Wrong Answer')}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -754,11 +853,17 @@ export default function AssessmentTestRunnerPage({
           <div className="h-12 border-t border-border/80 px-4 flex items-center justify-between bg-card/40 shrink-0">
             <button
               onClick={handleRunTests}
-              disabled={isRunningTests}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-muted hover:bg-muted/80 text-foreground transition-all cursor-pointer border border-border/80"
+              disabled={isRunningTests || runCooldown > 0}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-muted hover:bg-muted/80 text-foreground transition-all cursor-pointer border border-border/80 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Play className={cn('size-3.5 text-primary', isRunningTests && 'animate-spin')} />
-              <span>{isRunningTests ? 'Compiling & Running...' : 'Run Visible Testcases'}</span>
+              <span>
+                {isRunningTests
+                  ? 'Compiling & Running...'
+                  : runCooldown > 0
+                  ? `Cooldown (${runCooldown}s)`
+                  : 'Run Visible Testcases'}
+              </span>
             </button>
 
             <div className="flex items-center gap-2">

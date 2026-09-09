@@ -1,20 +1,23 @@
 import { Info } from "lucide-react";
 import { MarkdownView } from "@/components/markdown/View";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export function ExplanationBlock({ text }: { text: string }) {
   if (!text) return null;
   return (
-    <Card>
-      <CardHeader className="-mt-(--card-spacing) rounded-t-xl bg-surface-sunken py-(--card-spacing)">
-        <CardTitle className="flex items-center gap-2">
-          <Info aria-hidden className="size-4 text-primary" />
-          Explanation
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="prose prose-sm dark:prose-invert max-w-none leading-relaxed text-text-secondary">
+    <div className="relative rounded-3xl bg-card/80 dark:bg-card/40 border border-border/80 p-6 sm:p-8 backdrop-blur-xl shadow-lg space-y-4 overflow-hidden">
+      <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-primary/25 to-transparent pointer-events-none" />
+      <div className="flex items-center gap-2.5 pb-3 border-b border-border/60">
+        <div className="p-2 rounded-xl bg-primary/10 text-primary border border-primary/20">
+          <Info className="size-4" />
+        </div>
+        <h3 className="font-display text-lg font-bold text-foreground">
+          Algorithmic Intuition & Explanation
+        </h3>
+      </div>
+      <div className="leading-relaxed text-muted-foreground">
         <MarkdownView content={text} />
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
+

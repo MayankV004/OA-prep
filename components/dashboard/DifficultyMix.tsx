@@ -1,6 +1,6 @@
 'use client';
 
-import { Layers, Flame, Zap, ShieldAlert } from 'lucide-react';
+import { Layers } from 'lucide-react';
 import { EmptyState } from '@/components/ui/empty-state';
 
 interface DifficultyMixProps {
@@ -29,9 +29,9 @@ export function DifficultyMix({ data }: DifficultyMixProps) {
   const hardPct = Math.round((hard / total) * 100);
 
   const items = [
-    { label: 'Easy', count: easy, pct: easyPct, color: 'bg-emerald-500', icon: Zap, textColor: 'text-emerald-500' },
-    { label: 'Medium', count: medium, pct: medPct, color: 'bg-amber-500', icon: Flame, textColor: 'text-amber-500' },
-    { label: 'Hard', count: hard, pct: hardPct, color: 'bg-rose-500', icon: ShieldAlert, textColor: 'text-rose-500' },
+    { label: 'Easy', count: easy, pct: easyPct, color: 'bg-emerald-500', textColor: 'text-emerald-500' },
+    { label: 'Medium', count: medium, pct: medPct, color: 'bg-amber-500', textColor: 'text-amber-500' },
+    { label: 'Hard', count: hard, pct: hardPct, color: 'bg-rose-500', textColor: 'text-rose-500' },
   ];
 
   return (
@@ -60,7 +60,6 @@ export function DifficultyMix({ data }: DifficultyMixProps) {
       {/* Breakdown Cards */}
       <div className="grid grid-cols-3 gap-3">
         {items.map((item) => {
-          const Icon = item.icon;
           return (
             <div
               key={item.label}
@@ -68,7 +67,7 @@ export function DifficultyMix({ data }: DifficultyMixProps) {
             >
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-muted-foreground">{item.label}</span>
-                <Icon className={`h-3.5 w-3.5 ${item.textColor}`} />
+                <span className={`size-2 rounded-full ${item.color}`} />
               </div>
               <div className="mt-2">
                 <div className="text-xl font-bold tracking-tight text-foreground">{item.count}</div>

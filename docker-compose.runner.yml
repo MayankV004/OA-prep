@@ -1,0 +1,15 @@
+name: oa-prep-runner
+
+services:
+  code-runner:
+    image: ghcr.io/engineer-man/piston:latest
+    container_name: oa-prep-code-runner
+    privileged: true
+    ports:
+      - "2000:2000"
+    restart: unless-stopped
+    volumes:
+      - piston-packages:/piston/packages
+
+volumes:
+  piston-packages:

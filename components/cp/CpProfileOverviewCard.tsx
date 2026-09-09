@@ -9,7 +9,6 @@ import {
   Trophy,
   ExternalLink,
   Settings,
-  Sparkles,
   ArrowRight,
   Award,
 } from 'lucide-react';
@@ -124,11 +123,9 @@ export function CpProfileOverviewCard({
 
           <div className="flex items-center gap-2.5">
             {profile?.compositeScore !== undefined && profile.compositeScore > 0 && (
-              <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-rose-500/10 border border-rose-500/20">
-                <Sparkles className="size-3.5 text-rose-500" />
-                <span className="text-xs font-semibold text-foreground">
-                  Score: <strong className="text-rose-500 font-mono">{profile.compositeScore}/100</strong>
-                </span>
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-muted border border-border/70 text-xs font-mono">
+                <span className="text-muted-foreground uppercase text-[10px] font-bold">Score:</span>
+                <strong className="text-foreground font-mono">{profile.compositeScore}/100</strong>
               </div>
             )}
 

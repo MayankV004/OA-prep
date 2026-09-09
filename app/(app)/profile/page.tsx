@@ -10,7 +10,6 @@ import {
   Star,
   FileText,
   Calendar,
-  Sparkles,
   Edit3,
   Loader2,
   Code2,
@@ -24,8 +23,6 @@ import {
   Camera,
   Layers,
   Settings,
-  Flame,
-  Zap,
   GraduationCap,
   Globe,
   ExternalLink,
@@ -515,8 +512,8 @@ export default function ProfilePage() {
                   <Text size="caption" tone="muted" weight="medium" className="uppercase tracking-wider text-2xs">
                     Difficulty
                   </Text>
-                  <span className="grid size-7 place-items-center rounded-lg bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-                    <Flame className="size-3.5" />
+                  <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                    Mix
                   </span>
                 </div>
                 <div className="space-y-1 text-2xs font-mono">
@@ -618,7 +615,7 @@ export default function ProfilePage() {
                   : 'text-text-muted hover:text-foreground hover:bg-surface/60'
               }`}
             >
-              <Zap className="size-3.5" />
+              <Globe className="size-3.5" />
               <span>Connected CP Handles</span>
             </button>
 

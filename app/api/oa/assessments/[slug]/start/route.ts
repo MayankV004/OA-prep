@@ -48,12 +48,54 @@ export async function POST(
       }
     }
 
-    // Look for existing in_progress submission or create new
+    let isRetake = false;
+    try {
+      const body = await req.json();
+      if (body?.retake) isRetake = true;
+    } catch {
+      // Empty body is acceptable
+    }
+
+    // Look for existing in_progress submission
     let submission = await AssessmentSubmission.findOne({
       userId,
       assessmentId: assessment._id,
       status: 'in_progress',
     });
+
+    if (submission && !isRetake) {
+      // Check if session has expired beyond duration + 2 minute grace period
+      const startTime = new Date(submission.startedAt).getTime();
+      const totalDurationMs = assessment.durationMinutes * 60 * 1000;
+      if (Date.now() - startTime > totalDurationMs + 120_000) {
+        submission.status = 'completed';
+        await submission.save();
+        return NextResponse.json({
+          success: false,
+          alreadyCompleted: true,
+          submissionId: String(submission._id),
+          message: 'Assessment time limit has expired.',
+        });
+      }
+    }
+
+    // If no in_progress session and not explicitly retaking, check for existing completed submission
+    if (!submission && !isRetake) {
+      const completedSubmission = await AssessmentSubmission.findOne({
+        userId,
+        assessmentId: assessment._id,
+        status: 'completed',
+      }).sort({ submittedAt: -1, createdAt: -1 });
+
+      if (completedSubmission) {
+        return NextResponse.json({
+          success: false,
+          alreadyCompleted: true,
+          submissionId: String(completedSubmission._id),
+          message: 'You have already completed this assessment.',
+        });
+      }
+    }
 
     if (!submission) {
       submission = await AssessmentSubmission.create({
@@ -82,11 +124,24 @@ export async function POST(
       });
     }
 
+    const savedCodes: Record<string, { code: string; language: string }> = {};
+    if (submission.problemResults && submission.problemResults.length > 0) {
+      submission.problemResults.forEach((pr: any) => {
+        if (pr.code) {
+          savedCodes[pr.problemId] = {
+            code: pr.code,
+            language: pr.language || 'cpp',
+          };
+        }
+      });
+    }
+
     return NextResponse.json({
       success: true,
       submissionId: String(submission._id),
       startedAt: submission.startedAt,
       durationMinutes: assessment.durationMinutes,
+      savedCodes,
       assessment: {
         id: String(assessment._id),
         title: assessment.title,

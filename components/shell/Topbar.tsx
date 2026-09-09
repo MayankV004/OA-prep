@@ -28,9 +28,9 @@ function Topbar({ onSearch }: { onSearch: () => void }) {
   return (
     <header
       className={cn(
-        'surface-blur sticky top-0 z-20 flex h-14 items-center justify-between gap-3 px-4 lg:px-6',
-        'transition-shadow duration-200 ease-out-quart',
-        scrolled && 'shadow-e2'
+        'surface-blur sticky top-0 z-20 flex h-14 items-center justify-between gap-3 px-4 lg:px-6 border-b border-border/60',
+        'transition-all duration-200 ease-out-quart',
+        scrolled && 'shadow-e2 bg-background/80 backdrop-blur-md'
       )}
     >
       <div className="flex items-center gap-2 min-w-0 flex-1">

@@ -27,7 +27,7 @@ export async function GET(req: Request) {
       .lean();
 
     // Fetch user submissions if authenticated
-    let userSubmissionsMap: Record<string, any> = {};
+    const userSubmissionsMap: Record<string, any> = {};
     if (userId) {
       const submissions = await AssessmentSubmission.find({
         userId,

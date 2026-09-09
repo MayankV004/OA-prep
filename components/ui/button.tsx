@@ -10,12 +10,16 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 hover:shadow-sm",
-        // Tertiary only — the borderless language prefers fills and tints.
+          "bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 hover:shadow-md active:scale-[0.98] border-t border-white/20",
+        emerald:
+          "bg-emerald-600 dark:bg-emerald-500 text-white shadow-xs hover:bg-emerald-700 dark:hover:bg-emerald-600 hover:shadow-md active:scale-[0.98] border-t border-white/20",
+        amber:
+          "bg-amber-500 text-amber-950 font-semibold shadow-xs hover:bg-amber-400 hover:shadow-md active:scale-[0.98]",
+        // Tertiary / Secondary
         outline:
-          "border-border bg-transparent hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground",
+          "border-border bg-card/60 backdrop-blur-sm hover:bg-muted hover:text-foreground hover:border-primary/40 active:scale-[0.98] aria-expanded:bg-muted aria-expanded:text-foreground",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)] aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
+          "bg-secondary text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)] active:scale-[0.98] aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
         soft: "bg-accent text-accent-foreground hover:bg-accent-200 dark:hover:bg-accent-100",
         ghost:
           "text-text-secondary hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground",

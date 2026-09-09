@@ -13,12 +13,13 @@ import {
   MessageSquare,
   Settings,
   Shield,
-  Sparkles,
   Tags,
   Timer,
   Trophy,
   User,
   Users,
+  Terminal,
+  CreditCard,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -52,7 +53,7 @@ export const APP_NAV: NavSection[] = [
     label: 'Study',
     items: [
       { name: 'Subjects', href: '/subjects', icon: BookOpen },
-      { name: 'Advanced Topics', href: '/advanced', icon: Sparkles },
+      { name: 'Advanced Topics', href: '/advanced', icon: Terminal },
       { name: 'Interview Q&A', href: '/interview', icon: HelpCircle },
       { name: 'Cheat Sheets', href: '/cheatsheets', icon: FileText },
     ],
@@ -60,7 +61,7 @@ export const APP_NAV: NavSection[] = [
   {
     label: 'Account & Plans',
     items: [
-      { name: 'Pricing & Pro', href: '/pricing', icon: Sparkles },
+      { name: 'Pricing & Pro', href: '/pricing', icon: CreditCard },
       { name: 'Profile & Progress', href: '/profile', icon: User, exact: true },
       { name: 'Contact Us', href: '/contact', icon: HelpCircle },
     ],

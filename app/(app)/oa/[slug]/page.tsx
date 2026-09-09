@@ -6,11 +6,9 @@ import { useRouter } from 'next/navigation';
 import {
   Timer,
   ShieldAlert,
-  Building2,
   CheckCircle2,
   Clock,
   ArrowRight,
-  Sparkles,
   Lock,
   FileCode2,
   Eye,
@@ -103,8 +101,7 @@ export default function AssessmentBriefingPage({
         <div className="flex flex-wrap items-center justify-between gap-6">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-mono font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                <Building2 className="size-3.5 text-primary" />
+              <span className="text-xs font-mono font-bold uppercase tracking-wider text-primary">
                 {assessment.company}
               </span>
               <span className="text-xs font-mono text-muted-foreground">• {assessment.role}</span>
@@ -290,7 +287,7 @@ export default function AssessmentBriefingPage({
                 onClick={() => setPaywallOpen(true)}
                 className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl text-sm font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-all cursor-pointer shadow-xs"
               >
-                <Sparkles className="size-4" />
+                <Lock className="size-4" />
                 <span>Unlock with BigO Pro</span>
               </button>
             ) : (

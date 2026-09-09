@@ -76,9 +76,9 @@ Output: 1
         score: 50,
         patternTag: 'Sliding Window',
         starterCode: {
-          cpp: `int minSubArrayLen(int target, vector<int>& nums) {\n    // Write your solution here\n    return 0;\n}`,
+          cpp: `#include <iostream>\n#include <vector>\n#include <string>\n#include <algorithm>\n\nusing namespace std;\n\nclass Solution {\npublic:\n    int minSubArrayLen(int target, vector<int>& nums) {\n        // Write your solution here\n        return 0;\n    }\n};`,
           python: `def minSubArrayLen(target: int, nums: list[int]) -> int:\n    # Write your solution here\n    return 0`,
-          java: `class Solution {\n    public int minSubArrayLen(int target, int[] nums) {\n        // Write your solution here\n        return 0;\n    }\n}`,
+          java: `import java.io.*;\nimport java.util.*;\n\nclass Solution {\n    public int minSubArrayLen(int target, int[] nums) {\n        // Write your solution here\n        return 0;\n    }\n}`,
         },
         testCases: [
           { input: 'target = 7, nums = [2,3,1,2,4,3]', expectedOutput: '2', isHidden: false },
@@ -118,9 +118,9 @@ Explanation:
         score: 50,
         patternTag: 'Monotonic Stack',
         starterCode: {
-          cpp: `vector<int> calculateSpans(vector<int>& prices) {\n    // Write your solution here\n    return {};\n}`,
+          cpp: `#include <iostream>\n#include <vector>\n#include <string>\n#include <algorithm>\n\nusing namespace std;\n\nclass Solution {\npublic:\n    vector<int> calculateSpans(vector<int>& prices) {\n        // Write your solution here\n        return {};\n    }\n};`,
           python: `def calculateSpans(prices: list[int]) -> list[int]:\n    # Write your solution here\n    return []`,
-          java: `class Solution {\n    public int[] calculateSpans(int[] prices) {\n        // Write your solution here\n        return new int[0];\n    }\n}`,
+          java: `import java.io.*;\nimport java.util.*;\n\nclass Solution {\n    public int[] calculateSpans(int[] prices) {\n        // Write your solution here\n        return new int[0];\n    }\n}`,
         },
         testCases: [
           { input: 'prices = [100,80,60,70,60,75,85]', expectedOutput: '[1,1,1,2,1,4,6]', isHidden: false },
@@ -172,9 +172,9 @@ Maximum length is 2.
         score: 50,
         patternTag: 'Sliding Window',
         starterCode: {
-          cpp: `int longestSubarray(vector<int>& weights, int k) {\n    // Write your solution here\n    return 0;\n}`,
+          cpp: `#include <iostream>\n#include <vector>\n#include <string>\n#include <algorithm>\n\nusing namespace std;\n\nclass Solution {\npublic:\n    int longestSubarray(vector<int>& weights, int k) {\n        // Write your solution here\n        return 0;\n    }\n};`,
           python: `def longestSubarray(weights: list[int], k: int) -> int:\n    # Write your solution here\n    return 0`,
-          java: `class Solution {\n    public int longestSubarray(int[] weights, int k) {\n        // Write your solution here\n        return 0;\n    }\n}`,
+          java: `import java.io.*;\nimport java.util.*;\n\nclass Solution {\n    public int longestSubarray(int[] weights, int k) {\n        // Write your solution here\n        return 0;\n    }\n}`,
         },
         testCases: [
           { input: 'weights = [8,2,4,7], k = 4', expectedOutput: '2', isHidden: false },
@@ -204,9 +204,9 @@ Explanation: The first 1's next greater is 2; the number 2 can't find next great
         score: 50,
         patternTag: 'Monotonic Stack',
         starterCode: {
-          cpp: `vector<int> nextGreaterElements(vector<int>& nums) {\n    // Write your solution here\n    return {};\n}`,
+          cpp: `#include <iostream>\n#include <vector>\n#include <string>\n#include <algorithm>\n\nusing namespace std;\n\nclass Solution {\npublic:\n    vector<int> nextGreaterElements(vector<int>& nums) {\n        // Write your solution here\n        return {};\n    }\n};`,
           python: `def nextGreaterElements(nums: list[int]) -> list[int]:\n    # Write your solution here\n    return []`,
-          java: `class Solution {\n    public int[] nextGreaterElements(int[] nums) {\n        // Write your solution here\n        return new int[0];\n    }\n}`,
+          java: `import java.io.*;\nimport java.util.*;\n\nclass Solution {\n    public int[] nextGreaterElements(int[] nums) {\n        // Write your solution here\n        return new int[0];\n    }\n}`,
         },
         testCases: [
           { input: 'nums = [1,2,1]', expectedOutput: '[2,-1,2]', isHidden: false },
@@ -254,9 +254,9 @@ Output: 2
         score: 50,
         patternTag: 'Graph Dijkstra',
         starterCode: {
-          cpp: `int networkDelayTime(vector<vector<int>>& times, int n, int k) {\n    // Write your solution here\n    return -1;\n}`,
+          cpp: `#include <iostream>\n#include <vector>\n#include <string>\n#include <algorithm>\n\nusing namespace std;\n\nclass Solution {\npublic:\n    int networkDelayTime(vector<vector<int>>& times, int n, int k) {\n        // Write your solution here\n        return -1;\n    }\n};`,
           python: `def networkDelayTime(times: list[list[int]], n: int, k: int) -> int:\n    # Write your solution here\n    return -1`,
-          java: `class Solution {\n    public int networkDelayTime(int[][] times, int n, int k) {\n        // Write your solution here\n        return -1;\n    }\n}`,
+          java: `import java.io.*;\nimport java.util.*;\n\nclass Solution {\n    public int networkDelayTime(int[][] times, int n, int k) {\n        // Write your solution here\n        return -1;\n    }\n}`,
         },
         testCases: [
           { input: 'times = [[2,1,1],[2,3,1],[3,4,1]], n = 4, k = 2', expectedOutput: '2', isHidden: false },
@@ -293,9 +293,9 @@ There are two ways to reach the bottom-right corner:
         score: 50,
         patternTag: 'Dynamic Programming',
         starterCode: {
-          cpp: `int uniquePathsWithObstacles(vector<vector<int>>& obstacleGrid) {\n    // Write your solution here\n    return 0;\n}`,
+          cpp: `#include <iostream>\n#include <vector>\n#include <string>\n#include <algorithm>\n\nusing namespace std;\n\nclass Solution {\npublic:\n    int uniquePathsWithObstacles(vector<vector<int>>& obstacleGrid) {\n        // Write your solution here\n        return 0;\n    }\n};`,
           python: `def uniquePathsWithObstacles(obstacleGrid: list[list[int]]) -> int:\n    # Write your solution here\n    return 0`,
-          java: `class Solution {\n    public int uniquePathsWithObstacles(int[][] obstacleGrid) {\n        // Write your solution here\n        return 0;\n    }\n}`,
+          java: `import java.io.*;\nimport java.util.*;\n\nclass Solution {\n    public int uniquePathsWithObstacles(int[][] obstacleGrid) {\n        // Write your solution here\n        return 0;\n    }\n}`,
         },
         testCases: [
           { input: 'obstacleGrid = [[0,0,0],[0,1,0],[0,0,0]]', expectedOutput: '2', isHidden: false },
@@ -342,9 +342,9 @@ Explanation: Since intervals [1,3] and [2,6] overlap, merge them into [1,6].
         score: 50,
         patternTag: 'Intervals',
         starterCode: {
-          cpp: `vector<vector<int>> merge(vector<vector<int>>& intervals) {\n    // Write your solution here\n    return {};\n}`,
+          cpp: `#include <iostream>\n#include <vector>\n#include <string>\n#include <algorithm>\n\nusing namespace std;\n\nclass Solution {\npublic:\n    vector<vector<int>> merge(vector<vector<int>>& intervals) {\n        // Write your solution here\n        return {};\n    }\n};`,
           python: `def merge(intervals: list[list[int]]) -> list[list[int]]:\n    # Write your solution here\n    return []`,
-          java: `class Solution {\n    public int[][] merge(int[][] intervals) {\n        // Write your solution here\n        return new int[0][0];\n    }\n}`,
+          java: `import java.io.*;\nimport java.util.*;\n\nclass Solution {\n    public int[][] merge(int[][] intervals) {\n        // Write your solution here\n        return new int[0][0];\n    }\n}`,
         },
         testCases: [
           { input: 'intervals = [[1,3],[2,6],[8,10],[15,18]]', expectedOutput: '[[1,6],[8,10],[15,18]]', isHidden: false },
@@ -371,9 +371,9 @@ Output: 2
         score: 50,
         patternTag: 'Intervals',
         starterCode: {
-          cpp: `int minMeetingRooms(vector<vector<int>>& intervals) {\n    // Write your solution here\n    return 0;\n}`,
+          cpp: `#include <iostream>\n#include <vector>\n#include <string>\n#include <algorithm>\n\nusing namespace std;\n\nclass Solution {\npublic:\n    int minMeetingRooms(vector<vector<int>>& intervals) {\n        // Write your solution here\n        return 0;\n    }\n};`,
           python: `def minMeetingRooms(intervals: list[list[int]]) -> int:\n    # Write your solution here\n    return 0`,
-          java: `class Solution {\n    public int minMeetingRooms(int[][] intervals) {\n        // Write your solution here\n        return 0;\n    }\n}`,
+          java: `import java.io.*;\nimport java.util.*;\n\nclass Solution {\n    public int minMeetingRooms(int[][] intervals) {\n        // Write your solution here\n        return 0;\n    }\n}`,
         },
         testCases: [
           { input: 'intervals = [[0,30],[5,10],[15,20]]', expectedOutput: '2', isHidden: false },
@@ -422,9 +422,9 @@ Explanation: The sum of 2 and 7 is 9. Therefore, index1 = 1, index2 = 2. We retu
         score: 40,
         patternTag: 'Two Pointers',
         starterCode: {
-          cpp: `vector<int> twoSum(vector<int>& numbers, int target) {\n    // Write your solution here\n    return {};\n}`,
+          cpp: `#include <iostream>\n#include <vector>\n#include <string>\n#include <algorithm>\n\nusing namespace std;\n\nclass Solution {\npublic:\n    vector<int> twoSum(vector<int>& numbers, int target) {\n        // Write your solution here\n        return {};\n    }\n};`,
           python: `def twoSum(numbers: list[int], target: int) -> list[int]:\n    # Write your solution here\n    return []`,
-          java: `class Solution {\n    public int[] twoSum(int[] numbers, int target) {\n        // Write your solution here\n        return new int[0];\n    }\n}`,
+          java: `import java.io.*;\nimport java.util.*;\n\nclass Solution {\n    public int[] twoSum(int[] numbers, int target) {\n        // Write your solution here\n        return new int[0];\n    }\n}`,
         },
         testCases: [
           { input: 'numbers = [2,7,11,15], target = 9', expectedOutput: '[1,2]', isHidden: false },
@@ -456,9 +456,9 @@ Explanation: The maximum width exists in the third level with length 4 (5,3,null
         score: 60,
         patternTag: 'Tree BFS',
         starterCode: {
-          cpp: `int widthOfBinaryTree(TreeNode* root) {\n    // Write your solution here\n    return 0;\n}`,
+          cpp: `#include <iostream>\n#include <vector>\n#include <string>\n#include <algorithm>\n\nusing namespace std;\n\nclass Solution {\npublic:\n    int widthOfBinaryTree(TreeNode* root) {\n        // Write your solution here\n        return 0;\n    }\n};`,
           python: `def widthOfBinaryTree(root: Optional[TreeNode]) -> int:\n    # Write your solution here\n    return 0`,
-          java: `class Solution {\n    public int widthOfBinaryTree(TreeNode root) {\n        // Write your solution here\n        return 0;\n    }\n}`,
+          java: `import java.io.*;\nimport java.util.*;\n\nclass Solution {\n    public int widthOfBinaryTree(TreeNode root) {\n        // Write your solution here\n        return 0;\n    }\n}`,
         },
         testCases: [
           { input: 'root = [1,3,2,5,3,null,9]', expectedOutput: '4', isHidden: false },
@@ -508,9 +508,9 @@ Explanation: There are a total of 2 tasks to take. To take task 1 you should hav
         score: 50,
         patternTag: 'Topological Sort',
         starterCode: {
-          cpp: `bool canFinish(int numCourses, vector<vector<int>>& prerequisites) {\n    // Write your solution here\n    return true;\n}`,
+          cpp: `#include <iostream>\n#include <vector>\n#include <string>\n#include <algorithm>\n\nusing namespace std;\n\nclass Solution {\npublic:\n    bool canFinish(int numCourses, vector<vector<int>>& prerequisites) {\n        // Write your solution here\n        return true;\n    }\n};`,
           python: `def canFinish(numCourses: int, prerequisites: list[list[int]]) -> bool:\n    # Write your solution here\n    return True`,
-          java: `class Solution {\n    public boolean canFinish(int numCourses, int[][] prerequisites) {\n        // Write your solution here\n        return true;\n    }\n}`,
+          java: `import java.io.*;\nimport java.util.*;\n\nclass Solution {\n    public boolean canFinish(int numCourses, int[][] prerequisites) {\n        // Write your solution here\n        return true;\n    }\n}`,
         },
         testCases: [
           { input: 'numCourses = 2, prerequisites = [[1,0]]', expectedOutput: 'true', isHidden: false },
@@ -539,9 +539,9 @@ Explanation: Replace the two 'A's with two 'B's or vice versa.
         score: 50,
         patternTag: 'Sliding Window',
         starterCode: {
-          cpp: `int characterReplacement(string s, int k) {\n    // Write your solution here\n    return 0;\n}`,
+          cpp: `#include <iostream>\n#include <vector>\n#include <string>\n#include <algorithm>\n\nusing namespace std;\n\nclass Solution {\npublic:\n    int characterReplacement(string s, int k) {\n        // Write your solution here\n        return 0;\n    }\n};`,
           python: `def characterReplacement(s: str, k: int) -> int:\n    # Write your solution here\n    return 0`,
-          java: `class Solution {\n    public int characterReplacement(String s, int k) {\n        // Write your solution here\n        return 0;\n    }\n}`,
+          java: `import java.io.*;\nimport java.util.*;\n\nclass Solution {\n    public int characterReplacement(String s, int k) {\n        // Write your solution here\n        return 0;\n    }\n}`,
         },
         testCases: [
           { input: 's = "ABAB", k = 2', expectedOutput: '4', isHidden: false },

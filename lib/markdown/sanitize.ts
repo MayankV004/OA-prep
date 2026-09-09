@@ -55,6 +55,8 @@ export const sanitizeSchema = {
     'sub',
     'sup',
     'kbd',
+    'details',
+    'summary',
   ],
   protocols: {
     href: ['http', 'https', 'mailto'],

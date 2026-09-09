@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/toast';
-import { Sparkles, Loader2, Check } from 'lucide-react';
+import { Loader2, Check } from 'lucide-react';
 import { cheatsheetsApi } from '@/lib/api/cheatsheets';
 import { queryKeys } from '@/lib/query-keys';
 
@@ -71,8 +71,8 @@ export function CreateCheatsheetDialog({ open, onOpenChange }: CreateCheatsheetD
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg rounded-3xl border-border/60 bg-background/95 backdrop-blur-xl p-6 shadow-2xl">
         <DialogHeader className="space-y-1.5">
-          <div className="flex items-center gap-2 text-rose-500 font-bold text-xs uppercase tracking-wider">
-            <Sparkles className="size-3.5" /> Admin Reference Guide
+          <div className="text-primary font-mono font-bold text-xs uppercase tracking-wider">
+            Admin Reference Guide
           </div>
           <DialogTitle className="text-2xl font-black font-display tracking-tight">
             Create Cheat Sheet

@@ -2,12 +2,12 @@
 
 import React, { useEffect, useState, use } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   CheckCircle2,
   XCircle,
   AlertTriangle,
   Clock,
-  Building2,
   ShieldCheck,
   ShieldAlert,
   ArrowRight,
@@ -17,7 +17,6 @@ import {
   Copy,
   Check,
   ChevronDown,
-  Sparkles,
   Camera,
   Mic,
   Eye,
@@ -37,11 +36,24 @@ export default function AssessmentReportPage({
   params: Promise<{ slug: string; submissionId: string }>;
 }) {
   const { slug, submissionId } = use(params);
+  const router = useRouter();
 
   const [report, setReport] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [expandedCodes, setExpandedCodes] = useState<Record<string, boolean>>({});
   const [copiedCodeId, setCopiedCodeId] = useState<string | null>(null);
+
+  // Trap back navigation: If the candidate tries to navigate back from the report, take them cleanly to /oa catalog instead of re-entering test
+  useEffect(() => {
+    window.history.pushState({ isReport: true }, '', window.location.href);
+
+    const handlePopState = () => {
+      router.replace('/oa');
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [router]);
 
   useEffect(() => {
     fetch(`/api/oa/submissions/${submissionId}`)
@@ -123,7 +135,10 @@ export default function AssessmentReportPage({
   });
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-24 w-full">
+    <div
+      className="min-h-screen bg-background text-foreground pb-24 w-full overscroll-none"
+      style={{ overscrollBehavior: 'none' }}
+    >
       {/* ── PRINT-ONLY OFFICIAL HEADER (Appears only on PDF export) ── */}
       <div className="hidden print:block w-full p-8 border-b border-slate-200 bg-white text-slate-900 font-sans">
         <div className="flex items-center justify-between">
@@ -147,8 +162,7 @@ export default function AssessmentReportPage({
         <div className="flex flex-wrap items-center justify-between gap-6">
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-3">
-              <span className="text-xs font-mono font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                <Building2 className="size-3.5 text-primary" />
+              <span className="text-xs font-mono font-bold uppercase tracking-wider text-primary">
                 {assessment?.company} • {assessment?.role}
               </span>
               <span className="text-xs font-mono text-muted-foreground flex items-center gap-1">
@@ -426,7 +440,7 @@ export default function AssessmentReportPage({
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center gap-2.5">
                 <div className="size-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                  <Sparkles className="size-4" />
+                  <ShieldCheck className="size-4" />
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-foreground">

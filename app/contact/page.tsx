@@ -7,7 +7,6 @@ import {
   MessageSquare,
   Bug,
   Clock,
-  Sparkles,
   HelpCircle,
   ChevronDown,
   CheckCircle2,
@@ -110,9 +109,8 @@ export default function ContactPage() {
       <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 pt-28 pb-16 space-y-16">
         {/* Hero Section */}
         <div className="text-center space-y-4 max-w-3xl mx-auto animate-in-up">
-          <Badge variant="outline" className="px-4 py-1 rounded-full border-rose-500/30 text-rose-600 dark:text-rose-400 bg-rose-500/5 text-xs font-semibold gap-1.5">
-            <Sparkles className="size-3.5" />
-            We&apos;re here to help
+          <Badge variant="outline" className="px-3.5 py-1 rounded-full border-primary/30 text-primary bg-primary/10 text-xs font-mono font-bold uppercase tracking-wider">
+            Candidate Support Desk
           </Badge>
           <h1 className="text-4xl sm:text-5xl font-display font-extrabold tracking-tight text-foreground">
             Contact & Support

@@ -4,6 +4,8 @@ import { Assessment, AssessmentSubmission } from '@/models';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { generateActivityAnalysis } from '@/lib/proctor/activity-analyzer';
+import { executeTestCases } from '@/lib/runner/judge0';
+import { SupportedLanguage } from '@/lib/runner/types';
 
 export async function POST(
   req: Request,
@@ -59,7 +61,22 @@ export async function POST(
       );
     }
 
-    // 1. Grade each problem
+    // Idempotent guard: If already graded, return saved results without re-running Judge0 or AI analyzer
+    if (submission.status === 'completed') {
+      return NextResponse.json({
+        success: true,
+        submissionId: String(submission._id),
+        totalScore: submission.totalScore,
+        maxScore: submission.maxScore,
+        passed: submission.passed,
+        percentile: submission.percentile,
+        cheatingRiskPercentage: submission.cheatingRiskPercentage,
+        integrityVerdict: submission.integrityVerdict,
+        patternDiagnostics: submission.patternDiagnostic,
+      });
+    }
+
+    // 1. Grade each problem using Judge0 execution engine
     const problemResults: any[] = [];
     const patternDiagnostics: any[] = [];
     let totalScore = 0;
@@ -68,61 +85,44 @@ export async function POST(
     for (const problem of assessment.problems || []) {
       const sol = solutions.find((s: any) => s.problemId === problem.id);
       const code = sol?.code?.trim() || '';
-      const language = sol?.language || 'cpp';
+      const language = (sol?.language || 'cpp') as SupportedLanguage;
       const timeSpent = sol?.timeSpentSeconds || 0;
       const testCases = problem.testCases || [];
       const totalTestCases = testCases.length;
-
-      // Evaluation logic:
-      // Strip comments and normalize whitespace
-      const stripCode = (src: string) =>
-        src
-          .replace(/\/\*[\s\S]*?\*\/|\/\/.*|#.*/g, '')
-          .replace(/\s+/g, ' ')
-          .trim();
-
-      const starter = (problem.starterCode?.[language as 'cpp' | 'python' | 'java'] || '').trim();
-      const cleanUserCode = stripCode(code);
-      const cleanStarter = stripCode(starter);
+      const starter = (problem.starterCode?.[language] || '').trim();
 
       let passedTestCases = 0;
       let status: 'accepted' | 'partial' | 'wrong_answer' | 'time_limit_exceeded' = 'wrong_answer';
 
-      // Check if user code has actual algorithmic logic (loops, variables, data structures)
-      const hasLoops = /for\s*\(|while\s*\(|for\s+\w+\s+in|while\s+/.test(code);
-      const hasConditionals = /if\s*\(|if\s+\w+/.test(code);
-      const hasDataStructures = /vector|stack|queue|unordered_map|map|set|list|dict|heapq|deque/.test(code);
-      const isSubstantive =
-        cleanUserCode.length > 45 &&
-        cleanUserCode !== cleanStarter &&
-        (hasLoops || (hasConditionals && hasDataStructures));
-
-      if (!isSubstantive) {
-        // Empty, default starter, or trivial return -> strictly 0 testcases passed
+      if (!code || code === starter) {
         passedTestCases = 0;
         status = 'wrong_answer';
       } else {
-        // Check for pattern-specific keywords
-        const patternLower = problem.patternTag.toLowerCase();
-        const hasPatternKeywords =
-          (patternLower.includes('window') && /left|right|start|end|window|maxlen|minlen/i.test(code)) ||
-          (patternLower.includes('stack') && /stack|st\.|push|pop|top|peek/i.test(code)) ||
-          (patternLower.includes('graph') && /adj|queue|dist|visited|pq|priority_queue/i.test(code)) ||
-          (patternLower.includes('tree') && /left|right|val|root|node|bfs|queue/i.test(code)) ||
-          ((patternLower.includes('dp') || patternLower.includes('dynamic')) && /dp\[|memo|cache/i.test(code)) ||
-          (patternLower.includes('interval') && /sort|interval|start|end|first|second/i.test(code)) ||
-          (patternLower.includes('two pointer') && /left|right|low|high|ptr/i.test(code)) ||
-          (patternLower.includes('topological') && /indegree|graph|adj|queue/i.test(code));
+        // Execute against all test cases (visible + hidden)
+        const execResponse = await executeTestCases(
+          code,
+          language,
+          testCases.map((tc: any) => ({
+            input: tc.input,
+            expectedOutput: tc.expectedOutput,
+            isHidden: tc.isHidden,
+            explanation: tc.explanation,
+          })),
+          problem.patternTag,
+          starter
+        );
 
-        if (hasPatternKeywords && code.length > 80) {
-          // Solved with optimal pattern logic -> all testcases passed
-          passedTestCases = totalTestCases;
+        passedTestCases = execResponse.passedCount;
+
+        const hasTle = execResponse.results.some((r) => r.statusId === 5);
+        if (hasTle) {
+          status = 'time_limit_exceeded';
+        } else if (passedTestCases === totalTestCases && totalTestCases > 0) {
           status = 'accepted';
-        } else {
-          // Partial logic -> passes visible cases but fails hidden stress/edge cases
-          const visibleCount = testCases.filter((tc: any) => !tc.isHidden).length;
-          passedTestCases = Math.max(1, visibleCount);
+        } else if (passedTestCases > 0) {
           status = 'partial';
+        } else {
+          status = 'wrong_answer';
         }
       }
 

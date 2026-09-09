@@ -95,7 +95,7 @@ function SidebarNavLink({
       {active ? (
         <motion.span
           layoutId={layoutId}
-          className="absolute inset-0 rounded-xl bg-primary/10 border border-primary/25 shadow-xs"
+          className="absolute inset-0 rounded-xl bg-primary/12 border border-primary/25 shadow-[0_0_14px_rgba(99,102,241,0.18)] before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white/25 before:to-transparent"
           transition={{ type: 'spring', stiffness: 380, damping: 32 }}
           aria-hidden
         />

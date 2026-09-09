@@ -114,7 +114,7 @@ export function HeroGeometric({
   return (
     <div
       ref={containerRef}
-      className="relative min-h-[92vh] w-full flex items-center justify-center overflow-hidden bg-background pt-24 pb-16 transition-colors duration-500"
+      className="relative min-h-[92vh] w-full flex items-center justify-center overflow-hidden bg-background aurora-mesh pt-24 pb-16 transition-colors duration-500"
     >
       {/* Floating 3D Geometric Glassmorphic Shapes with Scroll Parallax */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -175,27 +175,26 @@ export function HeroGeometric({
         className="relative z-10 container mx-auto px-4 md:px-6"
       >
         <div className="max-w-4xl mx-auto text-center">
-          {/* Heading (Badge removed completely) */}
+          {/* Elevated Flagship Typography */}
           <motion.div custom={0} variants={fadeUpVariants} initial="hidden" animate="visible">
-            <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black mb-6 tracking-tight leading-[1.1]">
-              <span className="text-foreground">
+            <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-[5.75rem] font-display font-black mb-6 tracking-[-0.035em] sm:tracking-[-0.045em] leading-[1.04]">
+              <span className="bg-gradient-to-b from-foreground via-foreground to-foreground/80 bg-clip-text text-transparent block">
                 {title1}
               </span>
-              <br />
-              <span className="text-primary">
+              <span className="bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-400 dark:from-emerald-400 dark:via-teal-300 dark:to-emerald-200 bg-clip-text text-transparent block mt-1.5 drop-shadow-xs">
                 {title2}
               </span>
             </h1>
           </motion.div>
 
-          {/* Subtitle */}
+          {/* Subtitle with High Contrast & Readability */}
           <motion.div custom={1} variants={fadeUpVariants} initial="hidden" animate="visible">
-            <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-10 leading-relaxed font-light tracking-wide max-w-2xl mx-auto px-4">
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground/90 dark:text-muted-foreground mb-10 leading-relaxed font-normal max-w-2xl mx-auto px-4">
               {description}
             </p>
           </motion.div>
 
-          {/* CTA Buttons */}
+          {/* Emerald Theme CTA Buttons */}
           <motion.div
             custom={2}
             variants={fadeUpVariants}
@@ -204,16 +203,34 @@ export function HeroGeometric({
             className="flex flex-col sm:flex-row items-center justify-center gap-4"
           >
             <Link href="/dsa">
-              <button className="group relative inline-flex items-center justify-center h-12 px-8 rounded-2xl font-bold text-primary-foreground bg-primary hover:bg-primary/90 shadow-xs transition-all duration-200 active:scale-95 border-0 cursor-pointer">
+              <button className="group relative inline-flex items-center justify-center h-13 px-9 rounded-full font-bold text-black bg-emerald-500 hover:bg-emerald-400 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 border-t border-white/30 transition-all duration-200 active:scale-[0.98] cursor-pointer text-base">
                 <span>Start Practice</span>
-                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                <ArrowRight className="ml-2.5 size-4 transition-transform group-hover:translate-x-1" />
               </button>
             </Link>
             <a href="#features">
-              <button className="h-12 px-8 rounded-2xl font-medium text-foreground bg-foreground/[0.04] dark:bg-white/[0.06] hover:bg-foreground/[0.08] dark:hover:bg-white/[0.1] border border-foreground/[0.1] dark:border-white/[0.15] backdrop-blur-md transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer">
+              <button className="inline-flex items-center justify-center h-13 px-8 rounded-full font-semibold text-foreground bg-background/80 dark:bg-white/[0.04] hover:bg-muted/70 dark:hover:bg-white/[0.08] border border-border/80 dark:border-white/10 backdrop-blur-xl transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-base shadow-xs">
                 Explore Features
               </button>
             </a>
+          </motion.div>
+
+          {/* Trust Metric Strip */}
+          <motion.div
+            custom={3}
+            variants={fadeUpVariants}
+            initial="hidden"
+            animate="visible"
+            className="mt-12 flex flex-wrap items-center justify-center gap-6 text-xs text-muted-foreground font-medium"
+          >
+            <span className="flex items-center gap-2">
+              <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>90+ Algorithmic Patterns</span>
+            </span>
+            <span className="hidden sm:inline text-border">•</span>
+            <span>Interactive Multi-Language Sandbox</span>
+            <span className="hidden sm:inline text-border">•</span>
+            <span>Tier-1 Placement OA Simulations</span>
           </motion.div>
         </div>
       </motion.div>

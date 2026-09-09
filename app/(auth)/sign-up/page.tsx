@@ -3,17 +3,13 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
+import { User, Mail, Lock, Eye, EyeOff, ChevronRight, Loader2 } from 'lucide-react';
 
 import { authClient } from '@/lib/auth-client';
-import { Button } from '@/components/ui/button';
-import { Heading, Text } from '@/components/ui/typography';
-import {
-  AuthField,
-  FormBanner,
-  PasswordField,
-  PasswordStrength,
-} from '@/components/auth/AuthField';
-
+import { FormBanner, PasswordStrength } from '@/components/auth/AuthField';
+import { AuthSegmentedTabs } from '@/components/auth/AuthSegmentedTabs';
+import { authContainerVariants, authItemVariants } from '@/lib/motion-theme';
 import { useToast } from '@/components/ui/toast';
 
 export default function SignUpPage() {
@@ -23,6 +19,7 @@ export default function SignUpPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [touched, setTouched] = useState<{ email?: boolean; password?: boolean }>({});
@@ -53,22 +50,11 @@ export default function SignUpPage() {
   const canSubmit =
     Boolean(name && email && password) && !emailError && !passwordError;
 
-function getSafeRedirectUrl(): string {
-  if (typeof window === 'undefined') return '/dashboard';
-  const searchParams = new URLSearchParams(window.location.search);
-  const redirectTo = searchParams.get('redirectTo');
-  if (redirectTo && redirectTo.startsWith('/') && !redirectTo.startsWith('//')) {
-    return redirectTo;
-  }
-  return '/dashboard';
-}
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
-    // Unchanged better-auth contract: same method, same field names.
     const { error: signUpError } = await authClient.signUp.email({
       email,
       password,
@@ -81,7 +67,6 @@ function getSafeRedirectUrl(): string {
       return;
     }
 
-    // Trigger OTP send and redirect to verify-email
     try {
       await fetch('/api/auth/otp/send', {
         method: 'POST',
@@ -96,135 +81,196 @@ function getSafeRedirectUrl(): string {
   };
 
   return (
-    <div className="animate-in-up">
-      <div className="space-y-1.5">
-        <Heading level="page">Create your account</Heading>
-        <Text size="compact" tone="muted">
-          Start tracking your placement prep in one place.
-        </Text>
-      </div>
+    <motion.div
+      variants={authContainerVariants}
+      initial="hidden"
+      animate="show"
+      className="w-full space-y-6"
+    >
+      {/* ── Segmented Pill Toggle at the Top ── */}
+      <motion.div variants={authItemVariants}>
+        <AuthSegmentedTabs />
+      </motion.div>
 
-      <form onSubmit={handleSubmit} className="mt-8 space-y-4">
-        {error ? <FormBanner tone="error">{error}</FormBanner> : null}
-
-        <AuthField
-          id="name"
-          label="Full name"
-          type="text"
-          autoComplete="name"
-          placeholder="Mayank Verma"
-          required
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          disabled={loading}
-        />
-
-        <AuthField
-          id="email"
-          label="Email"
-          type="email"
-          inputMode="email"
-          autoComplete="email"
-          placeholder="you@college.edu"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          onBlur={() => setTouched((t) => ({ ...t, email: true }))}
-          error={emailError}
-          valid={Boolean(email) && !emailError}
-          disabled={loading}
-        />
-
-        <div className="space-y-2">
-          <PasswordField
-            id="password"
-            label="Password"
-            autoComplete="new-password"
-            placeholder="••••••••"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onBlur={() => setTouched((t) => ({ ...t, password: true }))}
-            error={passwordError}
-            disabled={loading}
-          />
-          <PasswordStrength password={password} />
-        </div>
-
-        <Button
-          type="submit"
-          size="xl"
-          className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-bold shadow-xs border-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-          loading={loading}
-          disabled={!canSubmit}
-        >
+      {/* ── Header Eyebrow, Title, and Subtitle ── */}
+      <motion.div variants={authItemVariants} className="space-y-1.5 text-left">
+        <span className="text-xs sm:text-sm font-semibold text-emerald-400 tracking-wide uppercase">
+          Get started
+        </span>
+        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
           Create account
-        </Button>
+        </h1>
+        <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed pt-1">
+          Join engineers mastering technical assessments and landing dream offers.
+        </p>
+      </motion.div>
+
+      {/* ── Google Social Button (Full Pill) ── */}
+      <motion.div variants={authItemVariants} className="pt-2">
+        <button
+          type="button"
+          onClick={async () => {
+            await authClient.signIn.social({
+              provider: 'google',
+              errorCallbackURL: '/sign-up',
+            });
+          }}
+          className="w-full flex items-center justify-center gap-3 py-3.5 px-5 rounded-full border border-white/10 bg-[#141414] hover:bg-[#1f1f1f] text-white text-sm font-medium transition-all cursor-pointer shadow-sm hover:border-white/20 active:scale-[0.99]"
+        >
+          {/* Multi-Color Google G Logo */}
+          <svg className="size-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              fill="#4285F4"
+              d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"
+            />
+            <path
+              fill="#34A853"
+              d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.26v3.15C3.25 21.36 7.34 24 12 24z"
+            />
+            <path
+              fill="#FBBC05"
+              d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.26C.46 8.16 0 9.97 0 12s.46 3.84 1.26 5.42l4.02-3.15z"
+            />
+            <path
+              fill="#EA4335"
+              d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.25 2.64 1.26 6.58l4.02 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
+            />
+          </svg>
+          <span>Continue with Google</span>
+        </button>
+      </motion.div>
+
+      {/* ── Divider ── */}
+      <motion.div variants={authItemVariants} className="relative my-6 text-center">
+        <div className="absolute inset-0 flex items-center" aria-hidden="true">
+          <div className="w-full border-t border-white/10" />
+        </div>
+        <span className="relative bg-[#0B0C0E] px-4 text-xs text-zinc-500">
+          or continue with email
+        </span>
+      </motion.div>
+
+      {/* ── Borderless Form ── */}
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {error ? (
+          <motion.div variants={authItemVariants}>
+            <FormBanner tone="error">{error}</FormBanner>
+          </motion.div>
+        ) : null}
+
+        {/* Borderless Full Name Input */}
+        <motion.div variants={authItemVariants} className="space-y-1">
+          <div className="group relative flex items-center border-b border-white/15 focus-within:border-emerald-500 transition-colors py-2">
+            <User className="size-4 text-zinc-400 group-focus-within:text-emerald-400 transition-colors shrink-0 mr-3.5" />
+            <input
+              type="text"
+              id="name"
+              name="name"
+              autoComplete="name"
+              placeholder="Full Name"
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              disabled={loading}
+              className="w-full bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-white placeholder:text-zinc-500 text-sm py-1"
+            />
+          </div>
+        </motion.div>
+
+        {/* Borderless Email Input */}
+        <motion.div variants={authItemVariants} className="space-y-1">
+          <div className="group relative flex items-center border-b border-white/15 focus-within:border-emerald-500 transition-colors py-2">
+            <Mail className="size-4 text-zinc-400 group-focus-within:text-emerald-400 transition-colors shrink-0 mr-3.5" />
+            <input
+              type="email"
+              id="email"
+              name="email"
+              autoComplete="email"
+              placeholder="Email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onBlur={() => setTouched((t) => ({ ...t, email: true }))}
+              disabled={loading}
+              className="w-full bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-white placeholder:text-zinc-500 text-sm py-1"
+            />
+          </div>
+          {emailError && (
+            <p className="text-xs text-red-400 pt-1">{emailError}</p>
+          )}
+        </motion.div>
+
+        {/* Borderless Password Input */}
+        <motion.div variants={authItemVariants} className="space-y-2">
+          <div className="group relative flex items-center border-b border-white/15 focus-within:border-emerald-500 transition-colors py-2">
+            <Lock className="size-4 text-zinc-400 group-focus-within:text-emerald-400 transition-colors shrink-0 mr-3.5" />
+            <input
+              type={showPassword ? 'text' : 'password'}
+              id="password"
+              name="password"
+              autoComplete="new-password"
+              placeholder="Password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onBlur={() => setTouched((t) => ({ ...t, password: true }))}
+              disabled={loading}
+              className="w-full bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-white placeholder:text-zinc-500 text-sm py-1 pr-9"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-0 text-zinc-400 hover:text-white transition-colors cursor-pointer"
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+            >
+              {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+            </button>
+          </div>
+
+          {passwordError && (
+            <p className="text-xs text-red-400 pt-1">{passwordError}</p>
+          )}
+
+          {password ? (
+            <div className="pt-1">
+              <PasswordStrength password={password} />
+            </div>
+          ) : null}
+        </motion.div>
+
+        {/* Large Rounded Emerald CTA Button */}
+        <motion.div variants={authItemVariants} className="pt-4">
+          <button
+            type="submit"
+            disabled={loading || !canSubmit}
+            className="w-full rounded-full bg-emerald-400 hover:bg-emerald-300 active:bg-emerald-500 text-black font-bold py-3.5 px-6 h-12 flex items-center justify-center gap-1.5 text-sm sm:text-base shadow-lg shadow-emerald-500/20 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.99]"
+          >
+            {loading ? (
+              <Loader2 className="size-5 animate-spin" />
+            ) : (
+              <>
+                <span>Create Account</span>
+                <ChevronRight className="size-4 stroke-[2.5]" />
+              </>
+            )}
+          </button>
+        </motion.div>
       </form>
 
-      <div className="relative mt-6">
-        <div className="absolute inset-0 flex items-center" aria-hidden="true">
-          <div className="w-full border-t border-border"></div>
-        </div>
-        <div className="relative flex justify-center text-sm font-medium leading-6">
-          <span className="bg-background px-6 text-muted-foreground transition-colors duration-200">Or continue with</span>
-        </div>
-      </div>
-
-      <div className="mt-6 grid grid-cols-2 gap-4">
-        <Button
-          variant="outline"
-          className="w-full border-border bg-card hover:bg-muted text-foreground transition-colors cursor-pointer"
-          onClick={async () => {
-            await authClient.signIn.social({
-              provider: "google",
-              errorCallbackURL: "/sign-up"
-            });
-          }}
-        >
-          <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512">
-            <path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"></path>
-          </svg>
-          Google
-        </Button>
-        <Button
-          variant="outline"
-          className="w-full border-border bg-card hover:bg-muted text-foreground transition-colors cursor-pointer"
-          onClick={async () => {
-            await authClient.signIn.social({
-              provider: "github",
-              errorCallbackURL: "/sign-up"
-            });
-          }}
-        >
-          <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="github" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512">
-            <path fill="currentColor" d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"></path>
-          </svg>
-          GitHub
-        </Button>
-      </div>
-
-      <Text size="compact" tone="muted" className="mt-6 text-center">
-        Already have an account?{' '}
-        <Link
-          href="/sign-in"
-          className="rounded font-bold text-primary hover:underline outline-none"
-        >
-          Sign in
-        </Link>
-      </Text>
-
-      <p className="mt-6 text-center text-2xs text-text-muted leading-relaxed">
-        By creating an account, you agree to BigO&apos;s{' '}
-        <Link href="/terms" className="underline hover:text-foreground transition-colors">
+      {/* ── Footer Disclaimer ── */}
+      <motion.p
+        variants={authItemVariants}
+        className="text-center text-xs text-zinc-400/80 pt-4 leading-relaxed"
+      >
+        By continuing, you agree to our{' '}
+        <Link href="/terms" className="text-emerald-400 hover:underline underline-offset-2">
           Terms of Service
         </Link>{' '}
         and{' '}
-        <Link href="/privacy" className="underline hover:text-foreground transition-colors">
+        <Link href="/privacy" className="text-emerald-400 hover:underline underline-offset-2">
           Privacy Policy
         </Link>
-        .
-      </p>
-    </div>
+      </motion.p>
+    </motion.div>
   );
 }
