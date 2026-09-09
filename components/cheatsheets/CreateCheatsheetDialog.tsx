@@ -90,7 +90,7 @@ export function CreateCheatsheetDialog({ open, onOpenChange }: CreateCheatsheetD
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Big-O Complexity & Data Structures"
               required
-              className="rounded-xl border-border/60 focus:border-rose-500"
+              className="rounded-xl border-border/60 focus:border-emerald-500/50"
             />
           </div>
 
@@ -100,7 +100,7 @@ export function CreateCheatsheetDialog({ open, onOpenChange }: CreateCheatsheetD
               value={slug}
               onChange={(e) => setSlug(e.target.value)}
               placeholder="e.g. big-o-reference"
-              className="rounded-xl font-mono text-xs border-border/60 focus:border-rose-500"
+              className="rounded-xl font-mono text-xs border-border/60 focus:border-emerald-500/50"
             />
           </div>
 
@@ -110,7 +110,7 @@ export function CreateCheatsheetDialog({ open, onOpenChange }: CreateCheatsheetD
               value={tagsInput}
               onChange={(e) => setTagsInput(e.target.value)}
               placeholder="e.g. DSA, Algorithms, Time Complexity"
-              className="rounded-xl border-border/60 focus:border-rose-500"
+              className="rounded-xl border-border/60 focus:border-emerald-500/50"
             />
           </div>
 
@@ -121,7 +121,7 @@ export function CreateCheatsheetDialog({ open, onOpenChange }: CreateCheatsheetD
               onChange={(e) => setBody(e.target.value)}
               placeholder="# Big-O Reference&#10;&#10;## Time Complexities&#10;- Array Lookup: O(1)"
               rows={5}
-              className="rounded-xl font-mono text-xs border-border/60 focus:border-rose-500"
+              className="rounded-xl font-mono text-xs border-border/60 focus:border-emerald-500/50"
             />
           </div>
 
@@ -131,7 +131,7 @@ export function CreateCheatsheetDialog({ open, onOpenChange }: CreateCheatsheetD
               variant="ghost"
               size="sm"
               onClick={() => onOpenChange(false)}
-              className="rounded-xl"
+              className="rounded-xl text-xs"
             >
               Cancel
             </Button>
@@ -139,7 +139,7 @@ export function CreateCheatsheetDialog({ open, onOpenChange }: CreateCheatsheetD
               type="submit"
               size="sm"
               disabled={createMutation.isPending || !title.trim()}
-              className="rounded-xl bg-gradient-to-r from-red-600 via-rose-600 to-red-500 text-white font-bold shadow-md gap-1.5"
+              className="rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold shadow-xs gap-1.5 text-xs"
             >
               {createMutation.isPending ? (
                 <Loader2 className="size-3.5 animate-spin" />

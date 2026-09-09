@@ -42,32 +42,36 @@ export default function CheatsheetsPage() {
   }, [cheatsheets, tagFilter, debouncedSearch]);
 
   return (
-    <div className="space-y-8 pb-12 w-full">
+    <div className="space-y-8 pb-16 w-full">
       {/* 1. Header Section */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pt-2">
-        <div className="space-y-1.5">
-          <h1 className="font-display text-3xl sm:text-5xl font-black tracking-tight text-foreground leading-tight">
-            Quick <span className="text-rose-500">Cheat Sheets</span>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-1 pb-2">
+        <div className="space-y-1.5 min-w-0">
+          <div className="flex items-center gap-2 text-2xs font-bold text-emerald-400 font-mono uppercase tracking-wider">
+            <span>Engineering Quick Reference</span>
+            <span className="text-border">·</span>
+            <span>Handbooks & Syntax</span>
+          </div>
+          <h1 className="font-display text-3xl sm:text-4xl font-black tracking-tight text-foreground">
+            Cheat Sheets
           </h1>
-          <p className="text-sm sm:text-base text-muted-foreground max-w-2xl font-light">
-            Quick reference Markdown documents, formulas, key commands, and code snippets curated for your technical interview prep.
+          <p className="text-sm text-muted-foreground font-normal max-w-2xl">
+            Quick reference syntax, methods, formulas, complexity tables, and code snippets curated for technical interviews.
           </p>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-3 shrink-0 self-start sm:self-center">
           {!isLoading && cheatsheets.length > 0 && (
-            <div className="px-3.5 py-1.5 rounded-2xl bg-primary/10 text-primary font-mono text-xs font-bold">
+            <div className="px-3 py-1.5 rounded-xl bg-card border border-border/40 text-muted-foreground font-mono text-xs font-semibold shadow-2xs">
               {cheatsheets.length} sheet{cheatsheets.length !== 1 ? 's' : ''} available
             </div>
           )}
           {isAdmin && (
             <Button
-              size="lg"
               onClick={() => setIsOpen(true)}
-              className="rounded-2xl bg-primary text-primary-foreground font-bold shadow-xs hover:bg-primary/90 transition-all border-none gap-2 cursor-pointer"
+              className="bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs gap-1.5 shadow-xs"
             >
-              <Plus className="size-4" />
-              New Cheat Sheet
+              <Plus className="size-3.5" />
+              New Sheet
             </Button>
           )}
         </div>

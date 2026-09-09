@@ -24,7 +24,9 @@ import {
   Mail,
   Send,
   Shield,
+  Sparkles,
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface SubscriptionData {
   enabled: boolean;
@@ -81,7 +83,15 @@ function PreferencesForm({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contestSubscription'] });
+      toast.success(
+        enabled
+          ? `Contest alerts updated! Reminders will be sent to ${initialData.email}.`
+          : 'Contest alerts paused.'
+      );
       onClose();
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || 'Failed to save alert preferences');
     },
   });
 
@@ -92,20 +102,22 @@ function PreferencesForm({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'test', timezone }),
       });
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || 'Failed to send test alert');
+        throw new Error(data.message || data.error || 'Failed to send test alert');
       }
-      return res.json();
+      return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       setTestSent(true);
       setTestError(null);
-      setTimeout(() => setTestSent(false), 5000);
+      toast.success(data?.message || `Test alert sent to ${initialData.email}!`);
+      setTimeout(() => setTestSent(false), 8000);
     },
     onError: (err: Error) => {
       setTestError(err.message);
-      setTimeout(() => setTestError(null), 5000);
+      toast.error(err.message);
+      setTimeout(() => setTestError(null), 8000);
     },
   });
 
@@ -201,59 +213,55 @@ function PreferencesForm({
             </div>
           </div>
 
-          {/* Admin-only Test Alert Email Trigger */}
-          {initialData.isAdmin && (
-            <div
-              className={`rounded-xl border border-dashed border-primary/30 p-2.5 bg-primary/5 flex items-center justify-between gap-2 ${
-                !enabled ? 'opacity-40 pointer-events-none' : ''
-              }`}
-            >
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs font-semibold text-text flex items-center gap-1">
-                    <Mail className="size-3.5 text-primary shrink-0" />
-                    <span>Send Sample Alert</span>
-                  </span>
-                  <Badge className="bg-primary/10 text-primary border-primary/20 text-[9px] py-0 px-1 font-mono">
-                    <Shield className="size-2.5 mr-0.5" /> ADMIN ONLY
-                  </Badge>
-                </div>
-                <span className="text-[10px] text-text-muted block truncate mt-0.5">
-                  Verify real email delivery to {initialData.email}
-                </span>
+          {/* Live Test Alert Email Verification */}
+          <div
+            className={`rounded-xl border border-dashed border-primary/40 p-3 bg-primary/5 flex items-center justify-between gap-3 ${
+              !enabled ? 'opacity-40 pointer-events-none' : ''
+            }`}
+          >
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5">
+                <Mail className="size-3.5 text-primary shrink-0" />
+                <span className="text-xs font-semibold text-text">Verify Email Delivery</span>
+                <Badge className="bg-emerald-500/15 text-emerald-500 border-emerald-500/30 text-[9px] py-0 px-1 font-mono font-semibold">
+                  LIVE TEST
+                </Badge>
               </div>
-
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => testMutation.mutate()}
-                disabled={testMutation.isPending || !enabled}
-                className="shrink-0 text-xs gap-1.5 h-7 px-2.5 font-medium border-primary/30 hover:bg-primary/10"
-              >
-                {testMutation.isPending ? (
-                  <>
-                    <Loader2 className="size-3 animate-spin" />
-                    <span>Sending...</span>
-                  </>
-                ) : testSent ? (
-                  <>
-                    <CheckCircle2 className="size-3 text-emerald-500" />
-                    <span className="text-emerald-500">Sent! Check Inbox</span>
-                  </>
-                ) : (
-                  <>
-                    <Send className="size-3" />
-                    <span>Send Test</span>
-                  </>
-                )}
-              </Button>
+              <span className="text-[10px] text-text-muted block truncate mt-0.5">
+                Send a sample contest alert to <strong>{initialData.email}</strong> right now.
+              </span>
             </div>
-          )}
+
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => testMutation.mutate()}
+              disabled={testMutation.isPending || !enabled}
+              className="shrink-0 text-xs gap-1.5 h-8 px-3 font-semibold border-primary/30 hover:bg-primary/15 transition-all cursor-pointer"
+            >
+              {testMutation.isPending ? (
+                <>
+                  <Loader2 className="size-3 animate-spin" />
+                  <span>Sending...</span>
+                </>
+              ) : testSent ? (
+                <>
+                  <CheckCircle2 className="size-3 text-emerald-500" />
+                  <span className="text-emerald-500 font-bold">Sent! Check Inbox</span>
+                </>
+              ) : (
+                <>
+                  <Send className="size-3 text-primary" />
+                  <span>Send Test Alert</span>
+                </>
+              )}
+            </Button>
+          </div>
 
           {testError && (
-            <div className="p-2 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs">
-              {testError}
+            <div className="p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs font-medium">
+              ⚠️ {testError}
             </div>
           )}
         </div>

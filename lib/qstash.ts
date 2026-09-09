@@ -31,10 +31,16 @@ export async function enqueueEmail(job: EmailJob): Promise<void> {
   if (!token || token.startsWith('qstash_dummy') || isLoopback) {
     // Dev / Localhost: fire directly via next/server after() — cloud QStash cannot reach loopback URLs
     try {
-      after(() => dispatchEmail(job));
+      after(async () => {
+        try {
+          await dispatchEmail(job);
+        } catch (err) {
+          console.error('[lib/qstash] Failed to dispatch email in background after():', err);
+        }
+      });
     } catch {
       // In non-request contexts where after() cannot be used, run directly
-      dispatchEmail(job).catch((err) => console.error('Failed to dispatch email in background:', err));
+      dispatchEmail(job).catch((err) => console.error('[lib/qstash] Failed to dispatch email directly:', err));
     }
     return;
   }

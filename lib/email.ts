@@ -13,7 +13,7 @@ import React from 'react';
 import { env } from '@/lib/config';
 
 function getResendClient() {
-  const resendApiKey = env.RESEND_API_KEY;
+  const resendApiKey = process.env.RESEND_API_KEY || env.RESEND_API_KEY;
   const isDummyKey = !resendApiKey || resendApiKey === 're_dummy' || resendApiKey.startsWith('re_dummy');
   return resendApiKey && !isDummyKey ? new Resend(resendApiKey) : null;
 }

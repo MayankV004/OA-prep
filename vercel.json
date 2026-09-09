@@ -1,0 +1,16 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/contests-sync",
+      "schedule": "0 */4 * * *"
+    },
+    {
+      "path": "/api/cron/contest-alerts",
+      "schedule": "*/15 * * * *"
+    },
+    {
+      "path": "/api/cron/user-contests-sync",
+      "schedule": "0 2 * * *"
+    }
+  ]
+}

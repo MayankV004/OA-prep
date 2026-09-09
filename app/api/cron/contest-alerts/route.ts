@@ -19,20 +19,20 @@ const LEAD_TIME_WINDOWS: LeadTimeConfig[] = [
   {
     key: '24h',
     label: 'Starts tomorrow (in 24 hours)',
-    minOffsetMs: 23 * 3600 * 1000,
-    maxOffsetMs: 25 * 3600 * 1000,
+    minOffsetMs: 20 * 3600 * 1000, // 20h
+    maxOffsetMs: 26 * 3600 * 1000, // 26h
   },
   {
     key: '2h',
     label: 'Starts in 2 hours',
-    minOffsetMs: 100 * 60 * 1000, // 1h 40m
-    maxOffsetMs: 135 * 60 * 1000, // 2h 15m
+    minOffsetMs: 90 * 60 * 1000, // 1h 30m
+    maxOffsetMs: 150 * 60 * 1000, // 2h 30m
   },
   {
     key: '30m',
     label: 'Starts in 30 minutes',
-    minOffsetMs: 15 * 60 * 1000, // 15m
-    maxOffsetMs: 40 * 60 * 1000, // 40m
+    minOffsetMs: 10 * 60 * 1000, // 10m
+    maxOffsetMs: 50 * 60 * 1000, // 50m
   },
 ];
 

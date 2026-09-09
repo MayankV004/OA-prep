@@ -170,15 +170,16 @@ function CodeComponent({ node, className, children, ...props }: any) {
   );
 }
 
+function extractText(node: any): string {
+  if (!node) return '';
+  if (typeof node === 'string' || typeof node === 'number') return String(node);
+  if (Array.isArray(node)) return node.map(extractText).join('');
+  if (node?.props?.children) return extractText(node.props.children);
+  return '';
+}
+
 /* ── GitHub-style Alert Callout / Blockquote Component ──────────────────── */
 function BlockquoteComponent({ children }: any) {
-  const extractText = (node: any): string => {
-    if (typeof node === 'string') return node;
-    if (Array.isArray(node)) return node.map(extractText).join('');
-    if (node?.props?.children) return extractText(node.props.children);
-    return '';
-  };
-
   const rawText = extractText(children).trim();
   const match = rawText.match(/^\[\!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]/i);
 
@@ -246,10 +247,15 @@ export const defaultMarkdownComponents = {
   code: CodeComponent,
   blockquote: BlockquoteComponent,
   h1: ({ children }: any) => {
-    const text = typeof children === 'string' ? children : '';
-    const id = text ? text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-') : undefined;
+    const text = extractText(children).trim();
+    const id = text
+      ? text
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/(^-|-$)/g, '')
+      : undefined;
     return (
-      <h1 id={id} className="group font-display text-2xl sm:text-3xl font-black tracking-tight text-foreground mt-8 mb-4 pb-2 border-b border-border/50 scroll-mt-20">
+      <h1 id={id} className="group font-display text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-foreground mt-10 mb-5 pb-3 border-b border-border/50 scroll-mt-24">
         <a href={id ? `#${id}` : undefined} className="inline-flex items-center gap-2 hover:text-primary transition-colors">
           <span>{children}</span>
           {id && <span className="opacity-0 group-hover:opacity-60 text-muted-foreground text-sm font-normal">#</span>}
@@ -258,10 +264,15 @@ export const defaultMarkdownComponents = {
     );
   },
   h2: ({ children }: any) => {
-    const text = typeof children === 'string' ? children : '';
-    const id = text ? text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-') : undefined;
+    const text = extractText(children).trim();
+    const id = text
+      ? text
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/(^-|-$)/g, '')
+      : undefined;
     return (
-      <h2 id={id} className="group font-display text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-7 mb-3 pb-1 border-b border-border/30 scroll-mt-20">
+      <h2 id={id} className="group font-display text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-9 mb-4 pb-2 border-b border-border/30 scroll-mt-24">
         <a href={id ? `#${id}` : undefined} className="inline-flex items-center gap-2 hover:text-primary transition-colors">
           <span>{children}</span>
           {id && <span className="opacity-0 group-hover:opacity-60 text-muted-foreground text-sm font-normal">#</span>}
@@ -270,10 +281,15 @@ export const defaultMarkdownComponents = {
     );
   },
   h3: ({ children }: any) => {
-    const text = typeof children === 'string' ? children : '';
-    const id = text ? text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-') : undefined;
+    const text = extractText(children).trim();
+    const id = text
+      ? text
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/(^-|-$)/g, '')
+      : undefined;
     return (
-      <h3 id={id} className="group font-display text-lg sm:text-xl font-bold text-foreground mt-6 mb-2 scroll-mt-20">
+      <h3 id={id} className="group font-display text-lg sm:text-xl font-bold text-foreground mt-7 mb-3 scroll-mt-24">
         <a href={id ? `#${id}` : undefined} className="inline-flex items-center gap-2 hover:text-primary transition-colors">
           <span>{children}</span>
           {id && <span className="opacity-0 group-hover:opacity-60 text-muted-foreground text-xs font-normal">#</span>}
@@ -282,22 +298,22 @@ export const defaultMarkdownComponents = {
     );
   },
   h4: ({ children }: any) => (
-    <h4 className="font-display text-base font-bold text-foreground mt-5 mb-2">
+    <h4 className="font-display text-base sm:text-lg font-bold text-foreground mt-6 mb-2">
       {children}
     </h4>
   ),
   h5: ({ children }: any) => (
-    <h5 className="font-mono text-xs font-bold uppercase tracking-wider text-muted-foreground mt-4 mb-1">
+    <h5 className="font-mono text-xs font-bold uppercase tracking-wider text-muted-foreground mt-5 mb-2">
       {children}
     </h5>
   ),
   h6: ({ children }: any) => (
-    <h6 className="font-mono text-xs font-bold uppercase tracking-wider text-muted-foreground mt-4 mb-1">
+    <h6 className="font-mono text-xs font-bold uppercase tracking-wider text-muted-foreground mt-5 mb-2">
       {children}
     </h6>
   ),
   p: ({ children }: any) => (
-    <p className="my-3 text-xs sm:text-sm text-foreground/90 leading-relaxed font-normal">
+    <p className="my-4 text-[15px] sm:text-[16px] text-foreground/90 leading-[1.8] font-normal tracking-[0.01em]">
       {children}
     </p>
   ),
@@ -319,17 +335,17 @@ export const defaultMarkdownComponents = {
     </td>
   ),
   ul: ({ children }: any) => (
-    <ul className="my-3.5 list-disc pl-6 space-y-1.5 text-xs sm:text-sm text-foreground/90 leading-relaxed marker:text-primary">{children}</ul>
+    <ul className="my-4 list-disc pl-6 space-y-2 text-[15px] sm:text-[16px] text-foreground/90 leading-[1.75] marker:text-primary">{children}</ul>
   ),
   ol: ({ children }: any) => (
-    <ol className="my-3.5 list-decimal pl-6 space-y-1.5 text-xs sm:text-sm text-foreground/90 leading-relaxed marker:font-mono marker:font-bold marker:text-primary">{children}</ol>
+    <ol className="my-4 list-decimal pl-6 space-y-2 text-[15px] sm:text-[16px] text-foreground/90 leading-[1.75] marker:font-mono marker:font-bold marker:text-primary">{children}</ol>
   ),
   li: ({ children }: any) => (
-    <li className="leading-relaxed pl-1">{children}</li>
+    <li className="leading-[1.75] pl-1 text-foreground/90">{children}</li>
   ),
   details: ({ children, ...props }: any) => (
     <details
-      className="group my-4 rounded-2xl border border-border/70 bg-card/60 p-4 transition-all open:bg-card open:shadow-e1"
+      className="group my-5 rounded-2xl border border-border/70 bg-card/60 p-4 sm:p-5 transition-all open:bg-card open:shadow-e1"
       {...props}
     >
       {children}
@@ -337,7 +353,7 @@ export const defaultMarkdownComponents = {
   ),
   summary: ({ children, ...props }: any) => (
     <summary
-      className="flex cursor-pointer items-center justify-between font-bold text-xs sm:text-sm text-foreground select-none outline-none group-hover:text-primary transition-colors"
+      className="flex cursor-pointer items-center justify-between font-bold text-sm sm:text-base text-foreground select-none outline-none group-hover:text-primary transition-colors"
       {...props}
     >
       <span>{children}</span>
@@ -385,16 +401,27 @@ interface MarkdownViewProps {
   content: string;
   allowCopy?: boolean;
   variant?: 'default' | 'exam';
+  fontSize?: 'compact' | 'default' | 'comfortable';
+  className?: string;
 }
 
 export function MarkdownView({
   content,
   allowCopy = true,
   variant = 'default',
+  fontSize = 'default',
+  className = '',
 }: MarkdownViewProps) {
+  const fontClass =
+    fontSize === 'compact'
+      ? 'text-[14px] leading-[1.7]'
+      : fontSize === 'comfortable'
+      ? 'text-[17px] sm:text-[18px] leading-[1.85]'
+      : 'text-[15.5px] sm:text-[16px] leading-[1.8]';
+
   return (
     <MarkdownConfigContext.Provider value={{ allowCopy, variant }}>
-      <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none text-foreground leading-relaxed">
+      <div className={`prose dark:prose-invert max-w-none text-foreground ${fontClass} ${className}`}>
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
           rehypePlugins={[[rehypeSanitize, sanitizeSchema]]}

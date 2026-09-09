@@ -2,7 +2,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, FileCode2 } from 'lucide-react';
 import { CheatsheetCard } from './CheatsheetCard';
 import type { Cheatsheet } from '@/types/cheatsheet';
 
@@ -25,12 +25,13 @@ export function CheatsheetGrid({
 }: CheatsheetGridProps) {
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className="p-6 rounded-3xl bg-background/60 backdrop-blur-xl space-y-3">
-            <Skeleton className="h-6 w-3/4 rounded-lg" />
-            <Skeleton className="h-4 w-full rounded-lg" />
-            <Skeleton className="h-4 w-1/2 rounded-lg" />
+          <div key={i} className="h-44 rounded-2xl bg-card/50 border border-border/30 p-5 space-y-3">
+            <Skeleton className="size-9 rounded-xl" />
+            <Skeleton className="h-5 w-3/4 rounded-md" />
+            <Skeleton className="h-3.5 w-full rounded-md" />
+            <Skeleton className="h-3.5 w-1/2 rounded-md" />
           </div>
         ))}
       </div>
@@ -39,38 +40,37 @@ export function CheatsheetGrid({
 
   if (cheatsheets.length === 0) {
     return (
-      <Card className="rounded-3xl border-none bg-background/50 p-8 text-center">
-        <CardContent>
-          <EmptyState
-            title={searchQuery || selectedTag ? 'No matching cheat sheets' : 'No cheat sheets created yet'}
-            description={
-              searchQuery || selectedTag
-                ? 'Try clearing your search query or tag filter.'
-                : 'Cheat sheets published by admins will appear here.'
-            }
-            action={
-              isAdmin ? (
-                <Button
-                  size="lg"
-                  onClick={onNewClick}
-                  className="rounded-2xl bg-gradient-to-r from-red-600 via-rose-600 to-red-500 text-white font-bold shadow-md"
-                >
-                  <Plus className="size-4" />
-                  New Cheat Sheet
-                </Button>
-              ) : undefined
-            }
-          />
-        </CardContent>
-      </Card>
+      <div className="rounded-2xl border border-dashed border-border/60 bg-card/40 p-10 text-center shadow-xs">
+        <EmptyState
+          icon={FileCode2}
+          title={searchQuery || selectedTag ? 'No matching cheat sheets' : 'No cheat sheets created yet'}
+          description={
+            searchQuery || selectedTag
+              ? 'Try clearing your search query or tag filter.'
+              : 'Cheat sheets published by admins will appear here.'
+          }
+          action={
+            isAdmin ? (
+              <Button
+                onClick={onNewClick}
+                className="bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs gap-1.5 shadow-xs"
+              >
+                <Plus className="size-3.5" />
+                New Cheat Sheet
+              </Button>
+            ) : undefined
+          }
+        />
+      </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {cheatsheets.map((sheet) => (
         <CheatsheetCard key={sheet._id} sheet={sheet} />
       ))}
     </div>
   );
 }
+

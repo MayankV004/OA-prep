@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Heading } from '@/components/ui/typography';
-import { Calendar, ExternalLink, Timer, Clock } from 'lucide-react';
+import { Calendar, ExternalLink, Timer, Clock, ArrowUpRight, Sparkles } from 'lucide-react';
 import { generateGoogleCalendarUrl } from '@/lib/contests/calendar';
+import { cn } from '@/lib/utils';
 
 export interface ContestItemProps {
   _id?: string;
@@ -21,37 +22,42 @@ export interface ContestItemProps {
 
 const PLATFORM_META: Record<
   string,
-  { label: string; bg: string; text: string; border: string }
+  { label: string; bg: string; text: string; border: string; glow: string }
 > = {
   leetcode: {
     label: 'LeetCode',
     bg: 'bg-amber-500/10 dark:bg-amber-500/15',
-    text: 'text-amber-600 dark:text-amber-400',
-    border: 'border-amber-500/25',
+    text: 'text-amber-500 dark:text-amber-400',
+    border: 'border-amber-500/30',
+    glow: 'from-amber-500/10 to-transparent',
   },
   codeforces: {
     label: 'Codeforces',
     bg: 'bg-blue-500/10 dark:bg-blue-500/15',
-    text: 'text-blue-600 dark:text-blue-400',
-    border: 'border-blue-500/25',
+    text: 'text-blue-500 dark:text-blue-400',
+    border: 'border-blue-500/30',
+    glow: 'from-blue-500/10 to-transparent',
   },
   codechef: {
     label: 'CodeChef',
-    bg: 'bg-rose-500/10 dark:bg-rose-500/15',
-    text: 'text-rose-600 dark:text-rose-400',
-    border: 'border-rose-500/25',
+    bg: 'bg-orange-500/10 dark:bg-orange-500/15',
+    text: 'text-orange-500 dark:text-orange-400',
+    border: 'border-orange-500/30',
+    glow: 'from-orange-500/10 to-transparent',
   },
   atcoder: {
     label: 'AtCoder',
     bg: 'bg-cyan-500/10 dark:bg-cyan-500/15',
-    text: 'text-cyan-600 dark:text-cyan-400',
-    border: 'border-cyan-500/25',
+    text: 'text-cyan-500 dark:text-cyan-400',
+    border: 'border-cyan-500/30',
+    glow: 'from-cyan-500/10 to-transparent',
   },
   hackerearth: {
     label: 'HackerEarth',
     bg: 'bg-emerald-500/10 dark:bg-emerald-500/15',
-    text: 'text-emerald-600 dark:text-emerald-400',
-    border: 'border-emerald-500/25',
+    text: 'text-emerald-500 dark:text-emerald-400',
+    border: 'border-emerald-500/30',
+    glow: 'from-emerald-500/10 to-transparent',
   },
 };
 
@@ -105,9 +111,10 @@ export function ContestCountdownCard({ contest }: { contest: ContestItemProps })
   const platformKey = contest.platform.toLowerCase();
   const meta = PLATFORM_META[platformKey] || {
     label: contest.platform,
-    bg: 'bg-rose-500/10',
-    text: 'text-rose-500',
-    border: 'border-rose-500/20',
+    bg: 'bg-emerald-500/10',
+    text: 'text-emerald-500',
+    border: 'border-emerald-500/30',
+    glow: 'from-emerald-500/10 to-transparent',
   };
 
   const startDate = new Date(contest.startTime);
@@ -133,24 +140,37 @@ export function ContestCountdownCard({ contest }: { contest: ContestItemProps })
   const isLive = time.status === 'RUNNING';
 
   return (
-    <Card className="flex flex-col justify-between overflow-hidden border border-border/60 bg-surface hover:border-rose-500/40 hover:shadow-e2 transition-all duration-300">
+    <Card className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-border/70 bg-card/70 backdrop-blur-xs hover:border-emerald-500/40 hover:shadow-e2 transition-all duration-300">
+      {/* Specular Ambient Glow Top Beam */}
+      <div
+        className={cn(
+          'pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r',
+          isLive ? 'from-emerald-500 via-teal-400 to-emerald-500 opacity-90' : meta.glow
+        )}
+      />
+
       <CardContent className="space-y-4 p-5">
-        {/* Header: Platform & Status */}
+        {/* Header: Platform Badge & Duration / Live Chip */}
         <div className="flex items-center justify-between gap-2">
           <span
-            className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-semibold border ${meta.bg} ${meta.text} ${meta.border}`}
+            className={cn(
+              'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-2xs font-mono font-bold tracking-wider uppercase border',
+              meta.bg,
+              meta.text,
+              meta.border
+            )}
           >
-            {meta.label}
+            <span>{meta.label}</span>
           </span>
 
           {isLive ? (
-            <Badge className="bg-emerald-500/15 text-emerald-500 border-emerald-500/30 animate-pulse font-mono font-medium text-xs">
-              <span className="size-2 rounded-full bg-emerald-500 mr-1.5 inline-block animate-ping" />
+            <Badge className="bg-emerald-500/15 text-emerald-500 border-emerald-500/30 font-mono font-bold text-2xs animate-pulse">
+              <span className="size-1.5 rounded-full bg-emerald-500 mr-1.5 inline-block animate-ping" />
               LIVE NOW
             </Badge>
           ) : (
-            <span className="text-xs text-text-muted font-mono flex items-center gap-1">
-              <Clock className="size-3 text-text-subtle" />
+            <span className="text-2xs text-muted-foreground font-mono flex items-center gap-1">
+              <Clock className="size-3 text-muted-foreground/70" />
               <span>{formatDuration(contest.durationSeconds)}</span>
             </span>
           )}
@@ -158,87 +178,102 @@ export function ContestCountdownCard({ contest }: { contest: ContestItemProps })
 
         {/* Title */}
         <div>
-          <Heading level="card" className="line-clamp-2 leading-snug font-bold text-foreground hover:text-rose-500 transition-colors">
+          <Heading
+            level="card"
+            className="line-clamp-2 leading-snug font-display font-bold text-foreground group-hover:text-emerald-400 transition-colors"
+          >
             {contest.name}
           </Heading>
         </div>
 
-        {/* Countdown Box */}
-        <div className="rounded-xl bg-surface-sunken/90 border border-border/50 p-3.5 shadow-inner">
-          <div className="flex items-center justify-between text-xs text-text-muted mb-2 font-medium">
-            <span className="flex items-center gap-1">
-              <Timer className="size-3.5 text-rose-500" />
-              {time.label}
+        {/* Digital Countdown Container */}
+        <div
+          className={cn(
+            'rounded-xl border p-3.5 shadow-inner transition-all',
+            isLive
+              ? 'bg-emerald-500/[0.04] border-emerald-500/30'
+              : 'bg-muted/40 border-border/50'
+          )}
+        >
+          <div className="flex items-center justify-between text-2xs text-muted-foreground mb-2 font-mono font-semibold">
+            <span className="flex items-center gap-1.5">
+              <Timer className={cn('size-3.5', isLive ? 'text-emerald-500' : 'text-emerald-500/80')} />
+              <span>{time.label}</span>
             </span>
             {isLive ? (
-              <span className="text-emerald-500 font-mono font-semibold">Remaining</span>
+              <span className="text-emerald-500 font-mono font-bold uppercase tracking-wider">Remaining</span>
             ) : (
-              <span className="font-mono text-text-subtle">{formattedTime}</span>
+              <span className="font-mono text-muted-foreground">{formattedTime}</span>
             )}
           </div>
 
           <div className="flex items-center gap-1.5 font-mono text-sm font-bold text-foreground">
             {time.status === 'COMPLETED' ? (
-              <span className="text-text-muted">Contest Finished</span>
+              <span className="text-xs text-muted-foreground">Contest Finished</span>
             ) : isLive ? (
-              <span className="text-emerald-500 font-extrabold tracking-wide">
+              <span className="text-emerald-400 font-black tracking-wide text-base">
                 {String(time.hours).padStart(2, '0')}h : {String(time.minutes).padStart(2, '0')}m :{' '}
                 {String(time.seconds).padStart(2, '0')}s
               </span>
             ) : (
-              <>
+              <div className="flex items-center gap-1">
                 {time.days !== undefined && time.days > 0 && (
-                  <span className="bg-surface px-2 py-0.5 rounded-md border border-border/70 text-foreground">
+                  <span className="bg-background px-2 py-0.5 rounded-lg border border-border/70 text-foreground text-xs font-bold tabular-nums">
                     {time.days}d
                   </span>
                 )}
-                <span className="bg-surface px-2 py-0.5 rounded-md border border-border/70 text-foreground">
+                <span className="bg-background px-2 py-0.5 rounded-lg border border-border/70 text-foreground text-xs font-bold tabular-nums">
                   {String(time.hours).padStart(2, '0')}h
                 </span>
-                <span className="text-text-muted">:</span>
-                <span className="bg-surface px-2 py-0.5 rounded-md border border-border/70 text-foreground">
+                <span className="text-muted-foreground text-xs">:</span>
+                <span className="bg-background px-2 py-0.5 rounded-lg border border-border/70 text-foreground text-xs font-bold tabular-nums">
                   {String(time.minutes).padStart(2, '0')}m
                 </span>
-                <span className="text-text-muted">:</span>
-                <span className="bg-surface px-2 py-0.5 rounded-md border border-rose-500/30 text-rose-500 bg-rose-500/5 font-extrabold">
+                <span className="text-muted-foreground text-xs">:</span>
+                <span className="bg-background px-2 py-0.5 rounded-lg border border-emerald-500/30 text-emerald-400 bg-emerald-500/10 text-xs font-black tabular-nums">
                   {String(time.seconds).padStart(2, '0')}s
                 </span>
-              </>
+              </div>
             )}
           </div>
         </div>
 
         {/* Date & Time info */}
-        <div className="space-y-1 text-xs text-text-muted">
+        <div className="space-y-1 text-xs font-mono text-muted-foreground">
           <div className="flex items-center gap-1.5">
-            <Calendar className="size-3.5 shrink-0 text-text-subtle" />
+            <Calendar className="size-3.5 shrink-0 text-muted-foreground/70" />
             <span className="truncate">
-              {formattedDate} at {formattedTime} (Local Time)
+              {formattedDate} • {formattedTime} (Local)
             </span>
           </div>
         </div>
       </CardContent>
 
-      <CardFooter className="flex items-center gap-2 border-t border-border/40 bg-surface-sunken/30 p-3.5">
+      <CardFooter className="flex items-center gap-2 border-t border-border/50 bg-muted/20 p-3">
         <a
           href={googleCalUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-border/70 bg-surface px-3 py-2 text-xs font-semibold text-text-muted hover:text-foreground hover:border-border hover:bg-surface-sunken/40 transition-colors flex-1 text-center shadow-xs"
+          className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-border/70 bg-card hover:bg-muted px-3 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-all flex-1 text-center shadow-2xs cursor-pointer"
           title="Add to Google Calendar"
         >
-          <Calendar className="size-3.5 text-rose-500" />
-          <span>Add to Cal</span>
+          <Calendar className="size-3.5 text-emerald-500" />
+          <span>Calendar</span>
         </a>
 
         <a
           href={contest.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold px-3.5 py-2 text-xs transition-all shadow-sm hover:shadow-md flex-1 text-center"
+          className={cn(
+            'inline-flex items-center justify-center gap-1.5 rounded-xl font-bold px-3.5 py-2 text-xs transition-all flex-1 text-center cursor-pointer shadow-xs',
+            isLive
+              ? 'bg-emerald-500 hover:bg-emerald-400 text-black shadow-emerald-500/20'
+              : 'bg-primary hover:bg-primary/90 text-primary-foreground'
+          )}
         >
           <span>{isLive ? 'Join Live' : 'Register'}</span>
-          <ExternalLink className="size-3.5" />
+          <ArrowUpRight className="size-3.5" />
         </a>
       </CardFooter>
     </Card>

@@ -1,16 +1,14 @@
 'use client';
 
-import { use, useState } from 'react';
+import { use, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { authClient } from '@/lib/auth-client';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
-import { Heading, Text } from '@/components/ui/typography';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft, FileText, Tag, Download, Printer, Shield, ExternalLink, Calendar } from 'lucide-react';
-import { MarkdownView } from '@/components/markdown/View';
+import { Card, CardContent } from '@/components/ui/card';
+import { Printer, Shield, FileCode2 } from 'lucide-react';
+import { ReaderLayout } from '@/components/reader/ReaderLayout';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 
 interface Cheatsheet {
@@ -20,14 +18,24 @@ interface Cheatsheet {
   body?: string;
   tags?: string[];
   updatedAt: string;
+  createdAt?: string;
 }
 
-export default function CheatsheetPage({ params }: { params: Promise<{ slug: string }> }) {
+function relative(value?: string) {
+  if (!value) return undefined;
+  try {
+    return formatDistanceToNow(parseISO(value), { addSuffix: true });
+  } catch {
+    return undefined;
+  }
+}
+
+export default function CheatsheetDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
   const { data: session } = authClient.useSession();
   const isAdmin = (session?.user as { role?: string } | undefined)?.role === 'admin';
 
-  // Fetch sheet by slug from backend API
+  // Fetch all sheets from backend API
   const { data: sheets = [], isLoading } = useQuery<Cheatsheet[]>({
     queryKey: ['cheatsheets'],
     queryFn: async () => {
@@ -39,164 +47,143 @@ export default function CheatsheetPage({ params }: { params: Promise<{ slug: str
 
   const sheet = sheets.find((s) => s.slug === slug);
 
+  // Compute Next & Previous cheatsheets
+  const { prevSheet, nextSheet } = useMemo(() => {
+    if (!sheets.length || !sheet) return { prevSheet: null, nextSheet: null };
+    const currentIndex = sheets.findIndex((s) => s.slug === sheet.slug);
+    if (currentIndex === -1) return { prevSheet: null, nextSheet: null };
+
+    const prev = currentIndex > 0 ? sheets[currentIndex - 1] : null;
+    const next = currentIndex < sheets.length - 1 ? sheets[currentIndex + 1] : null;
+
+    return {
+      prevSheet: prev
+        ? {
+            title: prev.title,
+            href: `/cheatsheets/${prev.slug}`,
+            subtitle: 'Previous Cheat Sheet',
+          }
+        : null,
+      nextSheet: next
+        ? {
+            title: next.title,
+            href: `/cheatsheets/${next.slug}`,
+            subtitle: 'Next Cheat Sheet',
+          }
+        : null,
+    };
+  }, [sheets, sheet]);
+
   // Download PDF via Browser Print engine
   const handleDownloadPDF = () => {
     window.print();
   };
 
+  if (isLoading) {
+    return (
+      <div className="space-y-6 pt-4 max-w-4xl">
+        <Skeleton className="h-6 w-48 rounded-lg" />
+        <Skeleton className="h-12 w-3/4 rounded-xl" />
+        <Skeleton className="h-5 w-64 rounded-lg" />
+        <div className="space-y-4 pt-6">
+          <Skeleton className="h-40 w-full rounded-2xl" />
+          <Skeleton className="h-64 w-full rounded-2xl" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!sheet) {
+    return (
+      <div className="py-12">
+        <Card className="rounded-3xl border border-dashed border-border/80 bg-card/50 p-12 text-center shadow-xs">
+          <CardContent className="p-0">
+            <EmptyState
+              icon={FileCode2}
+              title="Cheat Sheet Not Found"
+              description="The requested cheat sheet document could not be found or may have been relocated."
+              action={
+                <Link
+                  href="/cheatsheets"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500 text-black font-bold text-xs shadow-xs"
+                >
+                  Return to Cheat Sheets
+                </Link>
+              }
+            />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full space-y-6 pb-16">
+    <>
       {/* ── Print Specific Styles ──────────────────────────────────────── */}
       <style jsx global>{`
         @media print {
-          /* Hide app shell layout elements */
-          header, sidebar, nav, .no-print, [role="navigation"] {
+          header, sidebar, nav, aside, .no-print, [role="navigation"] {
             display: none !important;
           }
           body {
             background: #ffffff !important;
             color: #000000 !important;
           }
-          .printable-cheatsheet {
-            box-shadow: none !important;
-            border: none !important;
-            padding: 0 !important;
-            margin: 0 !important;
+          main {
             width: 100% !important;
             max-width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
           }
         }
       `}</style>
 
-      {/* ── Top Control Bar (Hidden on Print) ──────────────────────────── */}
-      <div className="no-print flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-border/40 pb-5">
-        <div className="flex items-center gap-3 min-w-0">
-          <Link
-            href="/cheatsheets"
-            className="grid size-10 shrink-0 place-items-center rounded-2xl border border-border/60 bg-background/80 text-foreground transition-all hover:border-rose-500/50 hover:text-rose-500 hover:-translate-x-0.5 shadow-sm"
-            aria-label="Back to cheat sheets"
-          >
-            <ArrowLeft className="size-4" />
-          </Link>
+      <ReaderLayout
+        title={sheet.title}
+        category="Cheat Sheets"
+        categoryHref="/cheatsheets"
+        content={sheet.body || ''}
+        updatedAt={relative(sheet.updatedAt || sheet.createdAt)}
+        prevItem={prevSheet}
+        nextItem={nextSheet}
+        actions={
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleDownloadPDF}
+              className="flex items-center gap-1.5 h-8 px-3 rounded-xl border border-border/50 bg-card/60 hover:bg-card text-foreground text-xs font-semibold transition-all shadow-2xs cursor-pointer"
+            >
+              <Printer className="size-3.5 text-emerald-400" />
+              <span className="hidden sm:inline">Print / PDF</span>
+            </button>
 
-          <div className="min-w-0 space-y-0.5">
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-extrabold uppercase tracking-widest text-rose-500">
-                CHEAT SHEET REFERENCE
-              </span>
-              {sheet?.slug && (
-                <code className="rounded-md bg-rose-500/10 px-2 py-0.5 font-mono text-[10px] font-semibold text-rose-500">
-                  /{sheet.slug}
-                </code>
-              )}
-            </div>
-            <Heading level="section" as="h1" className="min-w-0 truncate text-2xl sm:text-4xl font-black font-display tracking-tight text-foreground">
-              {sheet?.title ?? 'Loading...'}
-            </Heading>
-          </div>
-        </div>
-
-        {/* Action Controls: PDF Download & Admin Edit Link */}
-        <div className="flex items-center gap-2.5 shrink-0">
-          <Button
-            onClick={handleDownloadPDF}
-            variant="soft"
-            size="sm"
-            className="rounded-xl gap-2 font-semibold border border-border/40 hover:border-rose-500/40 hover:text-rose-500"
-          >
-            <Printer className="size-4 text-rose-500" />
-            <span>Download PDF / Print</span>
-          </Button>
-
-          {isAdmin && (
-            <Link href="/admin/content/cheatsheets">
-              <Button
-                variant="outline"
-                size="sm"
-                className="rounded-xl gap-1.5 font-semibold text-xs border-rose-500/30 bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white"
+            {isAdmin && (
+              <Link
+                href="/admin/content/cheatsheets"
+                className="flex items-center gap-1.5 h-8 px-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 text-xs font-semibold transition-all shadow-2xs"
               >
                 <Shield className="size-3.5" />
-                Edit in Admin Panel
-                <ExternalLink className="size-3" />
-              </Button>
-            </Link>
-          )}
-        </div>
-      </div>
-
-      {/* ── Metadata & Tags Bar ───────────────────────────────────────── */}
-      {!isLoading && sheet && (
-        <div className="no-print flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground bg-background/40 backdrop-blur-md p-3.5 rounded-2xl border border-border/30">
-          <div className="flex flex-wrap items-center gap-2">
-            <Tag className="size-3.5 text-rose-500" />
-            {sheet.tags && sheet.tags.length > 0 ? (
-              sheet.tags.map((tag) => (
-                <Badge
-                  key={tag}
-                  variant="secondary"
-                  className="bg-rose-500/10 text-rose-500 dark:text-rose-400 border border-rose-500/20 font-semibold rounded-lg text-xs"
-                >
-                  #{tag}
-                </Badge>
-              ))
-            ) : (
-              <span className="text-muted-foreground italic">No tags specified</span>
-            )}
-          </div>
-
-          {sheet.updatedAt && (
-            <div className="flex items-center gap-1.5 font-mono text-[11px]">
-              <Calendar className="size-3.5 text-muted-foreground" />
-              <span>Updated {formatDistanceToNow(parseISO(sheet.updatedAt), { addSuffix: true })}</span>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ── Full Width Printable Cheat Sheet Content View ─────────────── */}
-      <div className="printable-cheatsheet w-full min-h-[70vh] rounded-3xl border border-border/40 bg-background/60 dark:bg-background/30 backdrop-blur-xl p-6 sm:p-10 shadow-sm">
-        {isLoading ? (
-          <div className="space-y-4">
-            <Skeleton className="h-8 w-1/3 rounded-xl" />
-            <Skeleton className="h-4 w-full rounded-lg" />
-            <Skeleton className="h-4 w-11/12 rounded-lg" />
-            <Skeleton className="h-48 w-full rounded-2xl" />
-            <Skeleton className="h-4 w-4/5 rounded-lg" />
-          </div>
-        ) : !sheet ? (
-          <EmptyState
-            icon={FileText}
-            title="Cheat Sheet Not Found"
-            description="The cheat sheet document you are looking for does not exist or has been removed."
-            action={
-              <Link href="/cheatsheets">
-                <Button variant="soft">Return to Cheat Sheets</Button>
+                <span className="hidden sm:inline">Admin Edit</span>
               </Link>
-            }
-          />
-        ) : (
-          <div className="w-full">
-            {/* Header visible only on PDF print */}
-            <div className="hidden print:block mb-8 border-b pb-4">
-              <h1 className="text-3xl font-bold">{sheet.title}</h1>
-              <p className="text-xs text-gray-500 mt-1">BigO Platform Reference Guide &bull; {sheet.slug}</p>
-            </div>
-
-            {sheet.body ? (
-              <div className="w-full prose-content max-w-none">
-                <MarkdownView content={sheet.body} />
-              </div>
-            ) : (
-              <EmptyState
-                compact
-                icon={FileText}
-                title="Empty Cheat Sheet"
-                description="This cheat sheet does not contain any content yet."
-              />
             )}
+          </div>
+        }
+      >
+        {sheet.tags && sheet.tags.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1.5 pt-2 border-b border-border/20 pb-4 mb-6">
+            <span className="text-2xs font-mono uppercase text-muted-foreground mr-1">Tags:</span>
+            {sheet.tags.map((tag) => (
+              <span
+                key={tag}
+                className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono text-2xs font-semibold"
+              >
+                #{tag}
+              </span>
+            ))}
           </div>
         )}
-      </div>
-    </div>
+      </ReaderLayout>
+    </>
   );
 }
+

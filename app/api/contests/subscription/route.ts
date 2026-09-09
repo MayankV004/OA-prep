@@ -4,7 +4,9 @@ import { connectDB } from '@/lib/db';
 import { User } from '@/models/user';
 import { ContestSubscription } from '@/models/contestSubscription';
 import { Contest } from '@/models/contest';
+import { ContestAlertLog } from '@/models/contestAlertLog';
 import { enqueueEmail } from '@/lib/qstash';
+import { sendContestAlertEmail } from '@/lib/email';
 import { generateGoogleCalendarUrl } from '@/lib/contests/calendar';
 import { env } from '@/lib/config';
 import mongoose from 'mongoose';
@@ -79,12 +81,8 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Handle "Send Test Alert" action (Admin only)
+    // Handle "Send Test Alert" action (Available for all authenticated subscribers)
     if (parsed.action === 'test') {
-      if (role !== 'admin') {
-        throw { status: 403, message: 'Forbidden: Only administrators can trigger test alert emails' };
-      }
-
       const appUrl = env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
       const unsubscribeUrl = `${appUrl}/api/contests/unsubscribe?token=${sub.unsubscribeToken}`;
 
@@ -94,6 +92,7 @@ export async function POST(req: NextRequest) {
         const dummyStart = new Date(Date.now() + 2 * 3600 * 1000);
         const dummyEnd = new Date(Date.now() + 3.5 * 3600 * 1000);
         contest = {
+          _id: new mongoose.Types.ObjectId(),
           name: 'LeetCode Weekly Contest 438',
           platform: 'leetcode',
           url: 'https://leetcode.com/contest/weekly-contest-438',
@@ -119,32 +118,55 @@ export async function POST(req: NextRequest) {
         timeZone: userTz,
       }).format(new Date(contest!.startTime));
 
-      const formattedUtc = new Intl.DateTimeFormat('en-US', {
-        timeStyle: 'short',
-        timeZone: 'UTC',
-      }).format(new Date(contest!.startTime)) + ' UTC';
+      const formattedUtc =
+        new Intl.DateTimeFormat('en-US', {
+          timeStyle: 'short',
+          timeZone: 'UTC',
+        }).format(new Date(contest!.startTime)) + ' UTC';
 
-      await enqueueEmail({
-        type: 'contest_alert',
-        to: user.email,
-        userName: user.name,
-        platform: contest!.platform,
-        contestName: `[TEST ALERT] ${contest!.name}`,
-        contestUrl: contest!.url,
-        startTimeFormatted: `${formattedDate} (${userTz})`,
-        startTimeUtc: formattedUtc,
-        durationFormatted: `${Math.round((contest!.durationSeconds || 5400) / 60)} minutes`,
-        startsInLabel: 'Starts in 2 hours',
-        googleCalendarUrl: calUrl,
-        unsubscribeUrl,
-        preferencesUrl: `${appUrl}/cp/contests`,
-        practiceUrl: `${appUrl}/cp`,
-      });
+      try {
+        const emailResult = await sendContestAlertEmail({
+          to: user.email,
+          userName: user.name,
+          platform: contest!.platform,
+          contestName: `[TEST ALERT] ${contest!.name}`,
+          contestUrl: contest!.url,
+          startTimeFormatted: `${formattedDate} (${userTz})`,
+          startTimeUtc: formattedUtc,
+          durationFormatted: `${Math.round((contest!.durationSeconds || 5400) / 60)} minutes`,
+          startsInLabel: 'Starts in 2 hours',
+          googleCalendarUrl: calUrl,
+          unsubscribeUrl,
+          preferencesUrl: `${appUrl}/cp/contests`,
+          practiceUrl: `${appUrl}/cp`,
+        });
 
-      return {
-        success: true,
-        message: `Test alert sent to ${user.email}`,
-      };
+        // Record test alert log
+        try {
+          await ContestAlertLog.create({
+            userId: uid,
+            contestId: contest!._id,
+            leadTime: 'test',
+            sentAt: new Date(),
+            status: 'SENT',
+            emailId: (emailResult as any)?.data?.id || (emailResult as any)?.id,
+          });
+        } catch {
+          // Ignore duplicate if test log already recorded
+        }
+
+        return {
+          success: true,
+          message: `Verification test email sent to ${user.email}. Check your inbox or spam folder!`,
+          emailId: (emailResult as any)?.data?.id || (emailResult as any)?.id,
+        };
+      } catch (err: any) {
+        console.error('[Contest Test Alert] Failed to send email:', err);
+        throw {
+          status: 500,
+          message: `Failed to dispatch test email: ${err?.message || 'Email provider error'}`,
+        };
+      }
     }
 
     // Save preferences
