@@ -1,0 +1,73 @@
+name: CP Contest Alerts & Sync Cron
+
+on:
+  schedule:
+    # Triggers every 15 minutes to evaluate contest notification windows (24h, 2h, 30m)
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+    inputs:
+      sync_contests:
+        description: 'Also sync aggregator contests from CF/LC/CC/AC'
+        type: boolean
+        required: false
+        default: true
+
+jobs:
+  run-cron-tasks:
+    name: Trigger Contest Endpoints
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Contest Alerts (15m window check)
+        env:
+          APP_URL: ${{ secrets.APP_URL || 'https://bigoprep.tech' }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          echo "Evaluating contest alerts against: ${APP_URL}/api/cron/contest-alerts"
+          
+          AUTH_HEADER=""
+          if [ -n "$CRON_SECRET" ]; then
+            AUTH_HEADER="Authorization: Bearer ${CRON_SECRET}"
+          fi
+
+          RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST "${APP_URL}/api/cron/contest-alerts" \
+            ${AUTH_HEADER:+-H "$AUTH_HEADER"} \
+            -H "Content-Type: application/json")
+
+          HTTP_STATUS=$(echo "$RESPONSE" | grep "HTTP_STATUS" | cut -d':' -f2)
+          BODY=$(echo "$RESPONSE" | grep -v "HTTP_STATUS")
+
+          echo "Status: $HTTP_STATUS"
+          echo "Response: $BODY"
+
+          if [ "$HTTP_STATUS" -ge 400 ]; then
+            echo "::error::Contest alerts request failed with HTTP $HTTP_STATUS"
+            exit 1
+          fi
+
+      - name: Trigger Contest Aggregator Sync (On manual trigger or hourly)
+        if: github.event_name == 'workflow_dispatch' && inputs.sync_contests == true
+        env:
+          APP_URL: ${{ secrets.APP_URL || 'https://bigoprep.tech' }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          echo "Triggering contests sync against: ${APP_URL}/api/cron/contests-sync"
+          
+          AUTH_HEADER=""
+          if [ -n "$CRON_SECRET" ]; then
+            AUTH_HEADER="Authorization: Bearer ${CRON_SECRET}"
+          fi
+
+          RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST "${APP_URL}/api/cron/contests-sync" \
+            ${AUTH_HEADER:+-H "$AUTH_HEADER"} \
+            -H "Content-Type: application/json")
+
+          HTTP_STATUS=$(echo "$RESPONSE" | grep "HTTP_STATUS" | cut -d':' -f2)
+          BODY=$(echo "$RESPONSE" | grep -v "HTTP_STATUS")
+
+          echo "Status: $HTTP_STATUS"
+          echo "Response: $BODY"
+
+          if [ "$HTTP_STATUS" -ge 400 ]; then
+            echo "::error::Contests sync request failed with HTTP $HTTP_STATUS"
+            exit 1
+          fi
