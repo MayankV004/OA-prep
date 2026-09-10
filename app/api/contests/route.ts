@@ -56,7 +56,9 @@ export async function GET(req: NextRequest) {
       },
       {
         headers: {
-          'Cache-Control': 'public, s-maxage=300, max-age=60, stale-while-revalidate=600',
+          'Cache-Control': 'public, max-age=60, stale-while-revalidate=600',
+          'CDN-Cache-Control': 'max-age=300',
+          'Vercel-CDN-Cache-Control': 'max-age=300',
         },
       }
     );

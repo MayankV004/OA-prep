@@ -15,7 +15,9 @@ export async function GET(req: NextRequest, { params }: Ctx) {
     if (!sheet) throw { status: 404, message: 'Cheatsheet not found' };
     return Response.json(sheet, {
       headers: {
-        'Cache-Control': 'public, s-maxage=300, max-age=60, stale-while-revalidate=600',
+        'Cache-Control': 'public, max-age=60, stale-while-revalidate=600',
+        'CDN-Cache-Control': 'max-age=300',
+        'Vercel-CDN-Cache-Control': 'max-age=300',
       },
     });
   });

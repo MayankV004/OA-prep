@@ -17,7 +17,9 @@ export async function GET(req: NextRequest) {
     const cheatsheets = await Cheatsheet.find(query).sort({ updatedAt: -1 });
     return Response.json(cheatsheets, {
       headers: {
-        'Cache-Control': 'public, s-maxage=300, max-age=60, stale-while-revalidate=600',
+        'Cache-Control': 'public, max-age=60, stale-while-revalidate=600',
+        'CDN-Cache-Control': 'max-age=300',
+        'Vercel-CDN-Cache-Control': 'max-age=300',
       },
     });
   });

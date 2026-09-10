@@ -15,7 +15,9 @@ export async function GET(req: NextRequest) {
     const groups = await Group.find(query).sort({ order: 1 });
     return Response.json(groups, {
       headers: {
-        'Cache-Control': 'public, s-maxage=300, max-age=60, stale-while-revalidate=600',
+        'Cache-Control': 'public, max-age=60, stale-while-revalidate=600',
+        'CDN-Cache-Control': 'max-age=300',
+        'Vercel-CDN-Cache-Control': 'max-age=300',
       },
     });
   });
