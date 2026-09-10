@@ -28,11 +28,22 @@ export async function GET(req: NextRequest) {
     await sub.save();
   }
 
+  function escapeHtml(str: string): string {
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
   const isEnabled = sub.enabled;
+  const safeEmail = escapeHtml(sub.email || '');
+  const safeToken = encodeURIComponent(token);
   const title = isEnabled ? 'Contest Alerts Re-enabled' : 'Unsubscribed from Contest Alerts';
   const subtitle = isEnabled
-    ? `You will receive contest reminders at ${sub.email}.`
-    : `You will no longer receive contest alert emails at ${sub.email}.`;
+    ? `You will receive contest reminders at ${safeEmail}.`
+    : `You will no longer receive contest alert emails at ${safeEmail}.`;
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -117,7 +128,7 @@ export async function GET(req: NextRequest) {
       ${
         isEnabled
           ? `<a href="${appUrl}/cp/contests" class="btn btn-primary">Go to Contest Radar →</a>`
-          : `<a href="/api/contests/unsubscribe?token=${token}&action=resubscribe" class="btn btn-primary">Re-enable Alerts</a>
+          : `<a href="/api/contests/unsubscribe?token=${safeToken}&action=resubscribe" class="btn btn-primary">Re-enable Alerts</a>
              <a href="${appUrl}/cp/contests" class="btn btn-secondary">Manage Settings</a>`
       }
     </div>

@@ -3,17 +3,40 @@ import dbConnect from '@/lib/db';
 import { Subscription } from '@/models/subscription';
 import { recordActivity } from '@/lib/activity';
 import { PLANS, type CheckoutPlanKey } from '@/lib/payments';
+import { auth } from '@/lib/auth';
+import { env } from '@/lib/config';
 import mongoose from 'mongoose';
 
 export async function GET(req: NextRequest) {
+  // SEC-01 Fix: Disallow mock confirmation in production unless explicitly opted into mock provider
+  if (process.env.NODE_ENV === 'production' && env.PAYMENT_PROVIDER !== 'mock') {
+    return NextResponse.json(
+      { error: { code: 'NOT_FOUND', message: 'Mock payment confirmation is disabled in production.' } },
+      { status: 404 }
+    );
+  }
+
+  // Verify authentication: Ensure caller is logged in and can only confirm for themselves
+  const session = await auth.api.getSession({ headers: req.headers });
+  if (!session?.user?.id) {
+    return NextResponse.redirect(new URL('/sign-in?redirectTo=/pricing', req.url));
+  }
+
   const { searchParams } = new URL(req.url);
   const plan = searchParams.get('plan') as CheckoutPlanKey | null;
-  const userId = searchParams.get('userId');
+  const targetUserId = searchParams.get('userId');
   const returnTo = searchParams.get('returnTo') || '/dashboard?payment=success';
 
-  if (!plan || !userId || !PLANS[plan]) {
+  if (!plan || !targetUserId || !PLANS[plan]) {
     return NextResponse.redirect(new URL('/pricing?error=invalid_mock_request', req.url));
   }
+
+  // Prevent IDOR: targetUserId must match session user
+  if (session.user.id !== targetUserId) {
+    return NextResponse.redirect(new URL('/pricing?error=unauthorized_checkout_user', req.url));
+  }
+
+  const userId = session.user.id;
 
   await dbConnect();
 

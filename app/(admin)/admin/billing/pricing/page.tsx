@@ -53,7 +53,6 @@ export default function AdminPricingPage() {
         'Unlimited Company Mock OA Simulators',
         'Recent 60-day company question bank',
         'AI Edge-Case & Failing Input Debugger',
-        '100 AI credits / month',
         'Full System Design & Advanced CS deep dives',
         'In-browser Monaco code execution',
       ],
@@ -72,7 +71,6 @@ export default function AdminPricingPage() {
         'Everything in Pro Monthly',
         'Save 47% over monthly billing',
         'Priority access to new company OA packs',
-        '1,500 AI credits / year',
         'Full season interview revision & flashcards',
         'Exclusive placement prep webinars & community',
       ],
@@ -90,7 +88,6 @@ export default function AdminPricingPage() {
       features: [
         'Full Pro access for 75 days',
         'No subscription or recurring charges',
-        '250 AI debugging credits',
         'Target company crash course packs',
         'Timed OA simulator & leaderboard analytics',
       ],

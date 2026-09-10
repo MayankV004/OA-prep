@@ -11,13 +11,20 @@ export async function GET(req: NextRequest) {
     const status = searchParams.get('status') || 'UPCOMING,RUNNING';
     const limit = Math.min(parseInt(searchParams.get('limit') || '50', 10), 100);
 
-    const statusArray = status.split(',').map((s) => s.trim().toUpperCase());
+    const VALID_STATUSES = new Set(['UPCOMING', 'RUNNING', 'COMPLETED']);
+    const statusArray = status
+      .split(',')
+      .map((s) => s.trim().toUpperCase())
+      .filter((s) => VALID_STATUSES.has(s));
+
+    const finalStatuses = statusArray.length > 0 ? statusArray : ['UPCOMING', 'RUNNING'];
 
     const filter: Record<string, unknown> = {
-      status: { $in: statusArray },
+      status: { $in: finalStatuses },
     };
 
-    if (platform && platform !== 'all') {
+    const VALID_PLATFORMS = new Set(['leetcode', 'codeforces', 'codechef', 'atcoder', 'hackerearth']);
+    if (platform && platform !== 'all' && VALID_PLATFORMS.has(platform.toLowerCase())) {
       filter.platform = platform.toLowerCase();
     }
 
@@ -26,8 +33,9 @@ export async function GET(req: NextRequest) {
       .limit(limit)
       .lean();
 
-    // If database is empty, seed initial contests
-    if (contests.length === 0) {
+    // If database is completely empty, seed initial contests
+    const totalContestsInDb = await Contest.estimatedDocumentCount();
+    if (totalContestsInDb === 0) {
       await syncContests().catch(console.error);
       contests = await Contest.find(filter)
         .sort({ startTime: 1 })

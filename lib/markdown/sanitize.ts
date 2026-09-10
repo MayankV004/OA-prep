@@ -14,17 +14,14 @@ export const sanitizeSchema = {
     span: [
       ...(defaultSchema.attributes?.span ?? []),
       ['className', /.*/],
-      ['style'],
     ],
     pre: [
       ...(defaultSchema.attributes?.pre ?? []),
       ['className', /.*/],
-      ['style'],
     ],
     div: [
       ...(defaultSchema.attributes?.div ?? []),
       ['className', /.*/],
-      ['style'],
       ['data-lang'],
       ['data-color-mode'],
     ],

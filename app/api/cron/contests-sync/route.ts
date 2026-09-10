@@ -11,16 +11,17 @@ export async function POST(req: NextRequest) {
 }
 
 async function handleSync(req: NextRequest) {
-  // Authorization check for cron endpoint
+  // Authorization check for cron endpoint: fail-closed in production
   const authHeader = req.headers.get('authorization');
   const cronSecret = env.CRON_SECRET;
+  const isDev = process.env.NODE_ENV !== 'production';
 
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-    // Check if Upstash signature or standard dev request
-    const isDev = process.env.NODE_ENV !== 'production';
-    if (!isDev) {
+  if (!isDev) {
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+  } else if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {

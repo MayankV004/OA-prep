@@ -5,6 +5,8 @@ import { OTPVerification, User } from '@/models';
 import { sendOTPEmail } from '@/lib/email';
 import { z } from 'zod';
 
+import { checkRateLimit } from '@/lib/rate-limit';
+
 const sendOtpSchema = z.object({
   email: z.string().email('Invalid email address'),
   name: z.string().optional(),
@@ -12,6 +14,15 @@ const sendOtpSchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
+    const rl = await checkRateLimit(req, {
+      keyPrefix: 'otp-send',
+      max: 5,
+      windowMs: 10 * 60 * 1000,
+    });
+    if (!rl.success && rl.response) {
+      return rl.response;
+    }
+
     await dbConnect();
     const body = await req.json();
     const { email, name } = sendOtpSchema.parse(body);

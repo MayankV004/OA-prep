@@ -17,6 +17,7 @@ import { useToast } from '@/components/ui/toast';
 import { authClient } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
 import { FeedbackType, FeedbackSeverity } from '@/types/feedback';
+import { Bug, MessageSquare, CheckCircle2, AlertTriangle, ArrowRight, Loader2 } from 'lucide-react';
 
 interface FeedbackModalProps {
   open: boolean;
@@ -59,9 +60,9 @@ export function FeedbackModal({
 
       // Fetch remaining submissions today
       fetch('/api/feedback')
-        .then((res) => res.json())
+        .then((res) => (res.ok ? res.json() : null))
         .then((data) => {
-          if (typeof data.remainingToday === 'number') {
+          if (data && typeof data.remainingToday === 'number') {
             setRemainingToday(data.remainingToday);
           }
         })
@@ -105,7 +106,7 @@ export function FeedbackModal({
       toast.add(
         type === 'bug' ? 'Bug report submitted!' : 'Feedback submitted!',
         {
-          description: 'Thank you for helping us improve BigO.',
+          description: 'Thank you for helping us make BigO better.',
           type: 'success',
         }
       );
@@ -122,72 +123,111 @@ export function FeedbackModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg border-none bg-background/95 backdrop-blur-2xl shadow-[0_16px_48px_rgba(0,0,0,0.2)] dark:shadow-[0_16px_48px_rgba(0,0,0,0.6)] p-7 rounded-3xl">
+      <DialogContent className="sm:max-w-lg border border-border/80 bg-background/95 backdrop-blur-2xl shadow-e4 p-6 sm:p-7 rounded-3xl overflow-hidden">
+        {/* Specular Emerald Top Border Beam */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-500/40 to-transparent" />
+
         {submitted ? (
-          <div className="py-8 text-center space-y-4 animate-in-up">
-            <div className="mx-auto grid size-16 place-items-center rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 font-bold text-xl">
-              ✓
+          <div className="py-8 text-center space-y-4">
+            <div className="mx-auto size-14 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 grid place-items-center">
+              <CheckCircle2 className="size-7 stroke-[2.5]" />
             </div>
             <div className="space-y-1">
               <h3 className="text-xl font-display font-bold text-foreground">
                 Thank you!
               </h3>
-              <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+              <p className="text-xs sm:text-sm text-muted-foreground max-w-sm mx-auto">
                 {type === 'bug'
-                  ? 'Our engineering team has been notified. We appreciate you reporting this.'
-                  : 'Your feedback has been logged and sent to our team.'}
+                  ? 'Our engineering team has been notified with the debug telemetry.'
+                  : 'Your feedback has been logged directly into our product review board.'}
               </p>
             </div>
 
             {remainingToday !== null && (
-              <Badge variant="outline" className="py-1 px-4 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/5 rounded-full text-xs font-medium">
+              <Badge
+                variant="outline"
+                className="py-1 px-3 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/5 rounded-full text-2xs font-mono font-bold"
+              >
                 {remainingToday} of 5 submissions remaining today
               </Badge>
             )}
 
-            <div className="pt-4">
-              <Button
-                variant="outline"
+            <div className="pt-3">
+              <button
+                type="button"
                 onClick={() => onOpenChange(false)}
-                className="w-full sm:w-auto px-8 rounded-full h-11 border-none bg-muted/50 hover:bg-muted text-foreground"
+                className="w-full sm:w-auto px-7 py-2.5 rounded-xl text-xs font-semibold bg-surface-elevated hover:bg-muted text-foreground border border-border/80 transition-all cursor-pointer shadow-2xs"
               >
-                Close
-              </Button>
+                Done
+              </button>
             </div>
           </div>
         ) : (
           <>
             <DialogHeader className="space-y-1 text-left">
               <div className="flex items-center justify-between">
-                <DialogTitle className="text-xl font-display font-bold text-foreground">
-                  {type === 'bug' ? 'Report a Bug' : 'Share Feedback'}
+                <DialogTitle className="text-xl font-display font-bold text-foreground flex items-center gap-2">
+                  {type === 'bug' ? (
+                    <>
+                      <Bug className="size-5 text-rose-500" />
+                      Report an Issue
+                    </>
+                  ) : (
+                    <>
+                      <MessageSquare className="size-5 text-emerald-500" />
+                      Share Feedback
+                    </>
+                  )}
                 </DialogTitle>
                 {remainingToday !== null && (
                   <Badge
                     variant="outline"
                     className={cn(
-                      "text-2xs font-semibold px-3 py-1 rounded-full border-none",
+                      'text-2xs font-mono font-bold px-2.5 py-0.5 rounded-full border',
                       remainingToday === 0
-                        ? "bg-red-500/10 text-red-500"
-                        : "bg-muted/50 text-muted-foreground"
+                        ? 'bg-destructive/10 text-destructive border-destructive/20'
+                        : 'bg-muted/60 text-muted-foreground border-border/60'
                     )}
                   >
-                    {remainingToday}/5 remaining today
+                    {remainingToday}/5 today
                   </Badge>
                 )}
               </div>
-              <DialogDescription className="text-sm text-muted-foreground">
-                Help us improve BigO with your thoughts or bug reports.
+              <DialogDescription className="text-xs sm:text-sm text-muted-foreground">
+                Help us improve BigO with bug telemetry or feature recommendations.
               </DialogDescription>
             </DialogHeader>
 
             {/* Smooth Animated Toggle Pill Switcher */}
-            <div className="relative flex p-1.5 bg-muted/40 rounded-full my-3">
+            <div className="relative flex p-1 bg-surface-sunken/80 dark:bg-surface-sunken/40 border border-border/70 rounded-xl my-2">
+              <button
+                type="button"
+                onClick={() => setType('feedback')}
+                className={cn(
+                  'relative z-10 flex-1 py-1.5 rounded-lg text-xs font-semibold transition-colors duration-200 text-center flex items-center justify-center gap-1.5 cursor-pointer',
+                  type === 'feedback'
+                    ? 'text-emerald-600 dark:text-emerald-400 font-bold'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                {type === 'feedback' && (
+                  <motion.span
+                    layoutId="feedback-modal-toggle-pill"
+                    className="absolute inset-0 rounded-lg bg-card shadow-xs border border-border/60"
+                    transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                  />
+                )}
+                <span className="relative z-10 flex items-center gap-1.5">
+                  <MessageSquare className="size-3.5" />
+                  Feedback
+                </span>
+              </button>
+
               <button
                 type="button"
                 onClick={() => setType('bug')}
                 className={cn(
-                  'relative z-10 flex-1 py-2 rounded-full text-xs font-semibold transition-colors duration-200 text-center',
+                  'relative z-10 flex-1 py-1.5 rounded-lg text-xs font-semibold transition-colors duration-200 text-center flex items-center justify-center gap-1.5 cursor-pointer',
                   type === 'bug'
                     ? 'text-rose-600 dark:text-rose-400 font-bold'
                     : 'text-muted-foreground hover:text-foreground'
@@ -196,44 +236,29 @@ export function FeedbackModal({
                 {type === 'bug' && (
                   <motion.span
                     layoutId="feedback-modal-toggle-pill"
-                    className="absolute inset-0 rounded-full bg-background shadow-md border border-border/40"
+                    className="absolute inset-0 rounded-lg bg-card shadow-xs border border-border/60"
                     transition={{ type: 'spring', stiffness: 450, damping: 35 }}
                   />
                 )}
-                <span className="relative z-10">Bug Report</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setType('feedback')}
-                className={cn(
-                  'relative z-10 flex-1 py-2 rounded-full text-xs font-semibold transition-colors duration-200 text-center',
-                  type === 'feedback'
-                    ? 'text-blue-600 dark:text-blue-400 font-bold'
-                    : 'text-muted-foreground hover:text-foreground'
-                )}
-              >
-                {type === 'feedback' && (
-                  <motion.span
-                    layoutId="feedback-modal-toggle-pill"
-                    className="absolute inset-0 rounded-full bg-background shadow-md border border-border/40"
-                    transition={{ type: 'spring', stiffness: 450, damping: 35 }}
-                  />
-                )}
-                <span className="relative z-10">Feedback</span>
+                <span className="relative z-10 flex items-center gap-1.5">
+                  <Bug className="size-3.5" />
+                  Bug Report
+                </span>
               </button>
             </div>
 
             {errorMessage && (
-              <div className="p-3 text-xs rounded-2xl bg-destructive/10 text-destructive border border-destructive/20">
-                {errorMessage}
+              <div className="p-3 text-xs rounded-xl bg-destructive/10 text-destructive border border-destructive/20 flex items-center gap-2">
+                <AlertTriangle className="size-4 shrink-0" />
+                <span>{errorMessage}</span>
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4 mt-1">
+            <form onSubmit={handleSubmit} className="space-y-3.5 mt-1">
               {!session?.user && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="fb-name" className="text-xs font-semibold px-2">
+                  <div className="space-y-1">
+                    <Label htmlFor="fb-name" className="text-2xs font-semibold px-1 text-foreground/90">
                       Your Name
                     </Label>
                     <input
@@ -241,11 +266,11 @@ export function FeedbackModal({
                       placeholder="Mayank Verma"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="w-full h-11 px-5 rounded-full bg-muted/40 border-none outline-none text-sm text-foreground focus:bg-background focus:ring-2 focus:ring-rose-500/30 transition-all duration-200 placeholder:text-muted-foreground/60"
+                      className="w-full h-10 px-3.5 rounded-xl bg-surface-sunken/60 dark:bg-surface-sunken/40 border border-border/70 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
                     />
                   </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="fb-email" className="text-xs font-semibold px-2">
+                  <div className="space-y-1">
+                    <Label htmlFor="fb-email" className="text-2xs font-semibold px-1 text-foreground/90">
                       Email Address *
                     </Label>
                     <input
@@ -255,14 +280,14 @@ export function FeedbackModal({
                       placeholder="you@college.edu"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full h-11 px-5 rounded-full bg-muted/40 border-none outline-none text-sm text-foreground focus:bg-background focus:ring-2 focus:ring-rose-500/30 transition-all duration-200 placeholder:text-muted-foreground/60"
+                      className="w-full h-10 px-3.5 rounded-xl bg-surface-sunken/60 dark:bg-surface-sunken/40 border border-border/70 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
                     />
                   </div>
                 </div>
               )}
 
-              <div className="space-y-1.5">
-                <Label htmlFor="fb-title" className="text-xs font-semibold px-2">
+              <div className="space-y-1">
+                <Label htmlFor="fb-title" className="text-2xs font-semibold px-1 text-foreground/90">
                   {type === 'bug' ? 'Issue Summary *' : 'Title *'}
                 </Label>
                 <input
@@ -270,93 +295,107 @@ export function FeedbackModal({
                   required
                   placeholder={
                     type === 'bug'
-                      ? 'Activity heatmap not rendering'
-                      : 'Option to bookmark CP problems'
+                      ? 'E.g., Activity heatmap not syncing LeetCode submissions'
+                      : 'E.g., Add dark mode code theme switcher in Monaco editor'
                   }
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full h-11 px-5 rounded-full bg-muted/40 border-none outline-none text-sm text-foreground focus:bg-background focus:ring-2 focus:ring-rose-500/30 transition-all duration-200 placeholder:text-muted-foreground/60"
+                  className="w-full h-10 px-3.5 rounded-xl bg-surface-sunken/60 dark:bg-surface-sunken/40 border border-border/70 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label htmlFor="fb-category" className="text-xs font-semibold px-2">
+                <div className="space-y-1">
+                  <Label htmlFor="fb-category" className="text-2xs font-semibold px-1 text-foreground/90">
                     Category
                   </Label>
                   <select
                     id="fb-category"
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    className="w-full h-11 px-5 rounded-full bg-muted/40 border-none outline-none text-sm text-foreground focus:bg-background focus:ring-2 focus:ring-rose-500/30 transition-all duration-200 cursor-pointer"
+                    className="w-full h-10 px-3.5 rounded-xl bg-surface-sunken/60 dark:bg-surface-sunken/40 border border-border/70 text-xs sm:text-sm text-foreground outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all cursor-pointer"
                   >
-                    <option value="dsa">DSA Patterns</option>
-                    <option value="cs_core">CS Core Subjects</option>
-                    <option value="profile">Profile & Progress</option>
-                    <option value="auth">Auth & Account</option>
-                    <option value="ui">UI / Visual Design</option>
+                    <option value="dsa">DSA Patterns & Practice</option>
+                    <option value="oa">Company OA Mock Simulator</option>
+                    <option value="cs_core">CS Core Subjects & Interview</option>
+                    <option value="cp">Competitive Programming</option>
+                    <option value="profile">Profile & Heatmap</option>
+                    <option value="auth">Account & Billing</option>
+                    <option value="ui">UI & Visual Polish</option>
                     <option value="other">Other / General</option>
                   </select>
                 </div>
 
-                {type === 'bug' && (
-                  <div className="space-y-1.5">
-                    <Label htmlFor="fb-severity" className="text-xs font-semibold px-2">
+                {type === 'bug' ? (
+                  <div className="space-y-1">
+                    <Label htmlFor="fb-severity" className="text-2xs font-semibold px-1 text-foreground/90">
                       Severity
                     </Label>
                     <select
                       id="fb-severity"
                       value={severity}
                       onChange={(e) => setSeverity(e.target.value as any)}
-                      className="w-full h-11 px-5 rounded-full bg-muted/40 border-none outline-none text-sm text-foreground focus:bg-background focus:ring-2 focus:ring-rose-500/30 transition-all duration-200 cursor-pointer"
+                      className="w-full h-10 px-3.5 rounded-xl bg-surface-sunken/60 dark:bg-surface-sunken/40 border border-border/70 text-xs sm:text-sm text-foreground outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all cursor-pointer"
                     >
-                      <option value="low">Low - Minor cosmetic</option>
-                      <option value="medium">Medium - Normal bug</option>
-                      <option value="high">High - Feature broken</option>
-                      <option value="critical">Critical - App crash</option>
+                      <option value="low">Low - Minor cosmetic / typo</option>
+                      <option value="medium">Medium - Functional glitch</option>
+                      <option value="high">High - Feature blocked</option>
+                      <option value="critical">Critical - Crash / Data issue</option>
                     </select>
                   </div>
-                )}
+                ) : null}
               </div>
 
-              <div className="space-y-1.5">
-                <Label htmlFor="fb-desc" className="text-xs font-semibold px-2">
-                  Detailed Description *
-                </Label>
+              <div className="space-y-1">
+                <div className="flex items-center justify-between px-1">
+                  <Label htmlFor="fb-desc" className="text-2xs font-semibold text-foreground/90">
+                    Detailed Description *
+                  </Label>
+                  <span className="text-2xs text-muted-foreground font-mono">
+                    {description.length}/1000
+                  </span>
+                </div>
                 <textarea
                   id="fb-desc"
                   required
                   rows={4}
+                  maxLength={1000}
                   placeholder={
                     type === 'bug'
-                      ? 'Describe steps to reproduce the issue...'
-                      : 'Share your thoughts, suggestions, or features you want...'
+                      ? 'Steps to reproduce the problem, browser version, or expected outcome...'
+                      : 'Share your thoughts, suggestions, or features you want to see...'
                   }
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full p-4 rounded-2xl bg-muted/40 border-none outline-none text-sm text-foreground focus:bg-background focus:ring-2 focus:ring-rose-500/30 transition-all duration-200 resize-none placeholder:text-muted-foreground/60"
+                  className="w-full p-3.5 rounded-xl bg-surface-sunken/60 dark:bg-surface-sunken/40 border border-border/70 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all resize-none"
                 />
               </div>
-
-              {/* <div className="text-2xs text-muted-foreground px-2">
-                Page URL: <span className="font-mono text-foreground">{pathname}</span>
-              </div> */}
 
               <div className="flex items-center justify-end gap-3 pt-2">
                 <button
                   type="button"
                   onClick={() => onOpenChange(false)}
                   disabled={loading}
-                  className="px-6 h-11 rounded-full text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={loading || remainingToday === 0}
-                  className="px-7 h-11 rounded-full text-sm font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed border-none cursor-pointer"
+                  className="px-6 py-2.5 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary-hover shadow-sm hover:shadow-[0_0_20px_rgba(16,185,129,0.35)] border-t border-white/20 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center gap-2"
                 >
-                  {loading ? 'Submitting...' : `Submit ${type === 'bug' ? 'Report' : 'Feedback'}`}
+                  {loading ? (
+                    <>
+                      <Loader2 className="size-3.5 animate-spin" />
+                      <span>Submitting...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Submit {type === 'bug' ? 'Report' : 'Feedback'}</span>
+                      <ArrowRight className="size-3.5" />
+                    </>
+                  )}
                 </button>
               </div>
             </form>

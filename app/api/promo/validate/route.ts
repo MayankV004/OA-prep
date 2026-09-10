@@ -4,6 +4,8 @@ import { PromoCode } from '@/models/promoCode';
 import { getDynamicPlans, type CheckoutPlanKey } from '@/lib/payments';
 import { z } from 'zod';
 
+import { checkRateLimit } from '@/lib/rate-limit';
+
 const validatePromoSchema = z.object({
   code: z.string().min(1).max(50),
   plan: z.enum(['pro_monthly', 'pro_annual', 'oa_pass']),
@@ -11,6 +13,15 @@ const validatePromoSchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
+    const rl = await checkRateLimit(req, {
+      keyPrefix: 'promo-validate',
+      max: 15,
+      windowMs: 60 * 1000,
+    });
+    if (!rl.success && rl.response) {
+      return rl.response;
+    }
+
     await dbConnect();
     const body = await req.json();
     const { code, plan } = validatePromoSchema.parse(body);

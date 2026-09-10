@@ -4,6 +4,8 @@ import dbConnect from '@/lib/db';
 import { OTPVerification, User } from '@/models';
 import { z } from 'zod';
 
+import { checkRateLimit } from '@/lib/rate-limit';
+
 const verifyOtpSchema = z.object({
   email: z.string().email('Invalid email address'),
   otp: z.string().length(6, 'Verification code must be 6 digits'),
@@ -11,6 +13,15 @@ const verifyOtpSchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
+    const rl = await checkRateLimit(req, {
+      keyPrefix: 'otp-verify',
+      max: 10,
+      windowMs: 10 * 60 * 1000,
+    });
+    if (!rl.success && rl.response) {
+      return rl.response;
+    }
+
     await dbConnect();
     const body = await req.json();
     const { email, otp } = verifyOtpSchema.parse(body);
@@ -42,11 +53,25 @@ export async function POST(req: NextRequest) {
     }
 
     const inputHash = crypto.createHash('sha256').update(otp.trim()).digest('hex');
+    const hashesMatch =
+      inputHash.length === record.otpHash.length &&
+      crypto.timingSafeEqual(Buffer.from(inputHash), Buffer.from(record.otpHash));
 
-    if (inputHash !== record.otpHash) {
-      record.attempts += 1;
-      await record.save();
-      const remaining = 5 - record.attempts;
+    if (!hashesMatch) {
+      const updated = await OTPVerification.findOneAndUpdate(
+        { email: cleanEmail },
+        { $inc: { attempts: 1 } },
+        { returnDocument: 'after' }
+      );
+      const attempts = updated?.attempts ?? (record.attempts + 1);
+      if (attempts >= 5) {
+        await OTPVerification.deleteOne({ email: cleanEmail });
+        return NextResponse.json(
+          { error: { message: 'Too many failed attempts. Please request a new verification code.' } },
+          { status: 400 }
+        );
+      }
+      const remaining = Math.max(0, 5 - attempts);
       return NextResponse.json(
         { error: { message: `Incorrect verification code. ${remaining} attempts remaining.` } },
         { status: 400 }

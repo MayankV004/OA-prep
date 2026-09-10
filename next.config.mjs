@@ -38,6 +38,22 @@ const nextConfig = {
             key: 'X-XSS-Protection',
             value: '1; mode=block',
           },
+          {
+            key: 'X-DNS-Prefetch-Control',
+            value: 'on',
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(self), microphone=(self), geolocation=(), payment=(self)',
+          },
+          {
+            key: 'Cross-Origin-Opener-Policy',
+            value: 'same-origin-allow-popups',
+          },
+          {
+            key: 'Content-Security-Policy',
+            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https: blob:; font-src 'self' https: data:; connect-src 'self' https:; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; object-src 'none';",
+          },
         ],
       },
     ];
@@ -62,6 +78,16 @@ const nextConfig = {
       {
         source: '/cheatsheet/:path*',
         destination: '/cheatsheets/:path*',
+        permanent: true,
+      },
+      {
+        source: '/report',
+        destination: '/feedback',
+        permanent: true,
+      },
+      {
+        source: '/report/:path*',
+        destination: '/feedback',
         permanent: true,
       },
     ];

@@ -15,9 +15,10 @@ export async function GET(req: NextRequest) {
     const query: any = {};
     if (groupId) query.groupId = groupId;
     if (q) {
+      const safeQ = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       query.$or = [
-        { title: { $regex: q, $options: 'i' } },
-        { body: { $regex: q, $options: 'i' } },
+        { title: { $regex: safeQ, $options: 'i' } },
+        { body: { $regex: safeQ, $options: 'i' } },
       ];
     }
 

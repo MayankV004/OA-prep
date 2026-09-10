@@ -15,7 +15,14 @@ import { env } from '@/lib/config';
 export async function POST(req: Request) {
   const bodyText = await req.text();
 
-  // Verify QStash signature in production
+  const isDev = process.env.NODE_ENV !== 'production';
+
+  // Verify QStash signature — fail-closed in production
+  if (!isDev && !env.QSTASH_CURRENT_SIGNING_KEY) {
+    console.error('QSTASH_CURRENT_SIGNING_KEY is missing in production');
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   if (env.QSTASH_CURRENT_SIGNING_KEY) {
     const receiver = new Receiver({
       currentSigningKey: env.QSTASH_CURRENT_SIGNING_KEY,

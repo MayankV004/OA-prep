@@ -11,6 +11,7 @@ import { generateGoogleCalendarUrl } from '@/lib/contests/calendar';
 import { env } from '@/lib/config';
 import mongoose from 'mongoose';
 import { z } from 'zod';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 const subscriptionSchema = z.object({
   enabled: z.boolean().optional(),
@@ -83,6 +84,18 @@ export async function POST(req: NextRequest) {
 
     // Handle "Send Test Alert" action (Available for all authenticated subscribers)
     if (parsed.action === 'test') {
+      const rl = await checkRateLimit(req, {
+        keyPrefix: `contest-test:${userId}`,
+        max: 3,
+        windowMs: 60 * 60 * 1000,
+      });
+      if (!rl.success) {
+        throw {
+          status: 429,
+          message: 'Rate limit exceeded: Maximum 3 test emails allowed per hour. Please try again later.',
+        };
+      }
+
       const appUrl = env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
       const unsubscribeUrl = `${appUrl}/api/contests/unsubscribe?token=${sub.unsubscribeToken}`;
 

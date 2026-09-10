@@ -36,7 +36,7 @@ export async function proxy(request: NextRequest) {
     let ip = '127.0.0.1';
     if (cfConnectingIp) ip = cfConnectingIp.trim();
     else if (xRealIp) ip = xRealIp.trim();
-    else if (xForwardedFor) ip = xForwardedFor.split(',').map((s) => s.trim()).at(-1) ?? '127.0.0.1';
+    else if (xForwardedFor) ip = xForwardedFor.split(',')[0].trim();
 
     const redis = getRedis();
 
