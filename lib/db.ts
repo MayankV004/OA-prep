@@ -27,10 +27,9 @@ async function dbConnect() {
     const opts = {
       bufferCommands: false,
       dbName: env.MONGODB_DB,
-      // M0 free tier shares ~500 connections across all free clusters.
-      // Keep pool small so concurrent lambdas don't exhaust the cap.
-      maxPoolSize: 3,
-      minPoolSize: 1,
+      // Pool tuned for responsive concurrent parallel queries
+      maxPoolSize: 10,
+      minPoolSize: 2,
       serverSelectionTimeoutMS: 5_000,
       socketTimeoutMS: 45_000,
     };

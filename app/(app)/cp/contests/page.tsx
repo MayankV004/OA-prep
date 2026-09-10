@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { queryKeys, STALE_TIMES } from '@/lib/query-keys';
 
 const PLATFORMS = [
   { id: 'all', label: 'All Platforms' },
@@ -56,7 +57,7 @@ export default function ContestsPage() {
     count: number;
     contests: ContestItemProps[];
   }>({
-    queryKey: ['contests', selectedPlatform],
+    queryKey: queryKeys.contests.list(selectedPlatform),
     queryFn: async () => {
       const url =
         selectedPlatform === 'all'
@@ -66,6 +67,8 @@ export default function ContestsPage() {
       if (!res.ok) throw new Error('Failed to fetch contests');
       return res.json();
     },
+    staleTime: STALE_TIMES.shared,
+    placeholderData: (previousData) => previousData,
   });
 
   // Manual sync mutation

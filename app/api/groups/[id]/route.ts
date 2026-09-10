@@ -21,7 +21,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     if (!group) {
       return NextResponse.json({ error: { message: 'Subject not found' } }, { status: 404 });
     }
-    return NextResponse.json(group);
+    return NextResponse.json(group, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=300, max-age=60, stale-while-revalidate=600',
+      },
+    });
   });
 }
 

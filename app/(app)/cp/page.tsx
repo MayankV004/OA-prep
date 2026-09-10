@@ -9,6 +9,7 @@ import { RatingProgressChart } from '@/components/cp/RatingProgressChart';
 import { ContestHistoryTable, ContestHistoryRecord } from '@/components/cp/ContestHistoryTable';
 import { ContestAlertPreferencesModal } from '@/components/contests/ContestAlertPreferencesModal';
 import { Button } from '@/components/ui/button';
+import { queryKeys, STALE_TIMES } from '@/lib/query-keys';
 
 interface PerformanceData {
   success: boolean;
@@ -26,12 +27,14 @@ interface PerformanceData {
 
 export default function CPPage() {
   const { data: perfData, isLoading } = useQuery<PerformanceData>({
-    queryKey: ['cpPerformance'],
+    queryKey: queryKeys.cp.performance(),
     queryFn: async () => {
       const res = await fetch('/api/cp/performance');
       if (!res.ok) throw new Error('Failed to load performance data');
       return res.json();
     },
+    staleTime: STALE_TIMES.userSlow,
+    placeholderData: (previousData) => previousData,
   });
 
   return (

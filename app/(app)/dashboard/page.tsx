@@ -97,11 +97,8 @@ export default function DashboardPage() {
   const actionsTotal = stats?.heatmap?.reduce((s, d) => s + d.count, 0) ?? 0;
   const overallPct = totalProblems > 0 ? Math.round((totalCompleted / totalProblems) * 100) : 0;
 
-  // Centralized progress query
-  const { data: patternProgress = [] } = useQuery({
-    ...problemQueries.progressStats('pattern'),
-    enabled: Boolean(stats),
-  });
+  // Centralized progress query (fetches concurrently with stats)
+  const { data: patternProgress = [] } = useQuery(problemQueries.progressStats('pattern'));
 
   return (
     <div className="space-y-8 pb-16">

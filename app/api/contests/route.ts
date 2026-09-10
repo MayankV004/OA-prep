@@ -48,11 +48,18 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    return NextResponse.json({
-      success: true,
-      count: contests.length,
-      contests,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        count: contests.length,
+        contests,
+      },
+      {
+        headers: {
+          'Cache-Control': 'public, s-maxage=300, max-age=60, stale-while-revalidate=600',
+        },
+      }
+    );
   } catch (error: any) {
     console.error('Failed to fetch contests:', error);
     return NextResponse.json(

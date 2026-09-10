@@ -15,7 +15,11 @@ export async function GET(req: NextRequest) {
     if (searchParams.get('subjectId')) query.subjectId = searchParams.get('subjectId');
 
     const cheatsheets = await Cheatsheet.find(query).sort({ updatedAt: -1 });
-    return Response.json(cheatsheets);
+    return Response.json(cheatsheets, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=300, max-age=60, stale-while-revalidate=600',
+      },
+    });
   });
 }
 

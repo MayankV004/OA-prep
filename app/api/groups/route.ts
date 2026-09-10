@@ -13,7 +13,11 @@ export async function GET(req: NextRequest) {
     const query: any = {};
     if (kind) query.kind = kind;
     const groups = await Group.find(query).sort({ order: 1 });
-    return groups;
+    return Response.json(groups, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=300, max-age=60, stale-while-revalidate=600',
+      },
+    });
   });
 }
 

@@ -13,7 +13,11 @@ export async function GET(req: NextRequest, { params }: Ctx) {
     const { id } = await params;
     const sheet = await Cheatsheet.findById(id);
     if (!sheet) throw { status: 404, message: 'Cheatsheet not found' };
-    return sheet;
+    return Response.json(sheet, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=300, max-age=60, stale-while-revalidate=600',
+      },
+    });
   });
 }
 

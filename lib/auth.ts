@@ -63,6 +63,44 @@ function hashUserRef(id: string): string {
   return crypto.createHash('sha256').update(id).digest('hex').substring(0, 12);
 }
 
+interface CachedSession {
+  session: any;
+  expiresAt: number;
+}
+
+const sessionCache = new Map<string, CachedSession>();
+const SESSION_CACHE_TTL_MS = 60 * 1000; // 60 seconds
+
+async function getCachedSession(req: Request) {
+  const cookie = req.headers.get('cookie') || '';
+  const authHeader = req.headers.get('authorization') || '';
+  if (!cookie && !authHeader) return null;
+
+  const key = crypto.createHash('sha256').update(`${cookie}:${authHeader}`).digest('hex');
+  const now = Date.now();
+  const cached = sessionCache.get(key);
+
+  if (cached && cached.expiresAt > now) {
+    return cached.session;
+  }
+
+  const session = await auth.api.getSession({ headers: req.headers });
+  if (session?.user?.id) {
+    if (sessionCache.size > 5000) {
+      const oldestKey = sessionCache.keys().next().value;
+      if (oldestKey) sessionCache.delete(oldestKey);
+    }
+    sessionCache.set(key, {
+      session,
+      expiresAt: now + SESSION_CACHE_TTL_MS,
+    });
+  } else {
+    sessionCache.delete(key);
+  }
+
+  return session;
+}
+
 export async function withAuth<T>(
   req: Request,
   fn: (ctx: { userId: string; role: 'admin' | 'user' }) => Promise<T>
@@ -74,7 +112,7 @@ export async function withAuth<T>(
     span.setAttribute('http.method', req.method);
     span.setAttribute('http.target', url.pathname);
 
-    const session = await auth.api.getSession({ headers: req.headers });
+    const session = await getCachedSession(req);
     
     if (!session?.user?.id) {
       recordHttpRequest(req.method, url.pathname, 401, Date.now() - startTime);
@@ -100,9 +138,17 @@ export async function withAuth<T>(
       recordHttpRequest(req.method, url.pathname, 200, durationMs);
 
       if (result instanceof Response || (result && typeof result === 'object' && 'headers' in result && 'status' in result)) {
-        return result as Response;
+        const resp = result as Response;
+        if (!resp.headers.has('Cache-Control')) {
+          resp.headers.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+        }
+        return resp;
       }
-      return Response.json(result);
+      return Response.json(result, {
+        headers: {
+          'Cache-Control': 'private, no-cache, no-store, must-revalidate',
+        },
+      });
     } catch (err: any) {
       const status = err.status || 500;
       const message = err.message || 'Internal server error';

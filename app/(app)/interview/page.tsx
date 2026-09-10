@@ -103,16 +103,19 @@ function getSubjectMeta(slug: string, name: string) {
   };
 }
 
+import { queryKeys, STALE_TIMES } from '@/lib/query-keys';
+
 export default function InterviewPage() {
   const [searchQuery, setSearchQuery] = useState('');
 
   const { data: groups = [], isLoading } = useQuery<Group[]>({
-    queryKey: ['groups', 'subject'],
+    queryKey: queryKeys.groups.byKind('subject'),
     queryFn: async () => {
       const res = await fetch('/api/groups?kind=subject');
       if (!res.ok) return [];
       return res.json();
     },
+    staleTime: STALE_TIMES.static,
   });
 
   const filteredGroups = useMemo(() => {

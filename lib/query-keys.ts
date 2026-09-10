@@ -53,9 +53,32 @@ export const queryKeys = {
   patterns: {
     all: () => ['patterns'] as const,
   },
+  groups: {
+    byKind: (kind: string) => ['groups', kind] as const,
+    detail: (slugOrId: string) => ['group', slugOrId] as const,
+  },
   taxonomies: {
     all: () => ['taxonomies'] as const,
     byKind: (kind: string) => ['taxonomies', kind] as const,
+  },
+
+  // ── Contests & CP ─────────────────────────────────────────────────────────
+  contests: {
+    list: (platform: string = 'all') => ['contests', platform] as const,
+  },
+  cp: {
+    performance: () => ['cpPerformance'] as const,
+  },
+
+  // ── Pricing & Plans ───────────────────────────────────────────────────────
+  pricing: {
+    plans: () => ['pricing', 'plans'] as const,
+  },
+
+  // ── OA Assessments ────────────────────────────────────────────────────────
+  oa: {
+    assessments: () => ['oa', 'assessments'] as const,
+    detail: (slug: string) => ['oa', slug] as const,
   },
 
   // ── Admin ─────────────────────────────────────────────────────────────────
@@ -73,7 +96,7 @@ export const queryKeys = {
  */
 export const STALE_TIMES = {
   /** Data that almost never changes (admin-seeded) */
-  static: 10 * 60 * 1000,     // 10 minutes
+  static: 15 * 60 * 1000,     // 15 minutes
   /** Shared content that changes occasionally */
   shared: 5 * 60 * 1000,      // 5 minutes
   /** User data that changes when user interacts */

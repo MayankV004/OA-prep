@@ -22,6 +22,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { queryKeys, STALE_TIMES } from '@/lib/query-keys';
 
 interface SubjectGroup {
   _id: string;
@@ -58,24 +59,25 @@ export default function SubjectPage({ params }: { params: Promise<{ subject: str
 
   // 1. Fetch Subject by slug
   const { data: subject, isLoading: subjectLoading } = useQuery<SubjectGroup>({
-    queryKey: ['group', slug],
+    queryKey: queryKeys.groups.detail(slug),
     queryFn: async () => {
       const res = await fetch(`/api/groups/${slug}`);
       if (!res.ok) throw new Error('Subject not found');
       return res.json();
     },
+    staleTime: STALE_TIMES.static,
   });
 
-  // 2. Fetch Topic notes under this Subject
+  // 2. Fetch Topic notes under this Subject (runs in parallel via slug)
   const { data: topicsData, isLoading: topicsLoading } = useQuery<{ data?: TopicNote[] } | TopicNote[]>({
-    queryKey: ['topics', subject?._id || slug],
+    queryKey: ['topics', slug],
     queryFn: async () => {
-      const targetId = subject?._id || slug;
-      const res = await fetch(`/api/topics?groupId=${targetId}`);
+      const res = await fetch(`/api/topics?groupId=${slug}`);
       if (!res.ok) return { data: [] };
       return res.json();
     },
-    enabled: Boolean(subject?._id || slug),
+    staleTime: STALE_TIMES.static,
+    enabled: Boolean(slug),
   });
 
   const topics: TopicNote[] = Array.isArray(topicsData)

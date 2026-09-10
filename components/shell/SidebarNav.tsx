@@ -7,6 +7,10 @@ import { motion } from 'framer-motion';
 
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys, STALE_TIMES } from '@/lib/query-keys';
+import { dashboardQueries } from '@/lib/queries/dashboard';
+import { cheatsheetQueries } from '@/lib/queries/cheatsheets';
 import { isNavItemActive, type NavItem, type NavSection } from './nav';
 
 /**
@@ -77,11 +81,62 @@ function SidebarNavLink({
   layoutId: string;
 }) {
   const Icon = item.icon;
+  const queryClient = useQueryClient();
+
+  const handleMouseEnter = () => {
+    const href = item.href;
+    try {
+      if (href === '/dashboard') {
+        queryClient.prefetchQuery(dashboardQueries.stats('me'));
+      } else if (href === '/subjects' || href === '/interview') {
+        queryClient.prefetchQuery({
+          queryKey: queryKeys.groups.byKind('subject'),
+          queryFn: async () => {
+            const res = await fetch('/api/groups?kind=subject');
+            return res.ok ? res.json() : [];
+          },
+          staleTime: STALE_TIMES.static,
+        });
+      } else if (href === '/cheatsheets') {
+        queryClient.prefetchQuery(cheatsheetQueries.all());
+      } else if (href === '/cp/contests' || href === '/cp') {
+        queryClient.prefetchQuery({
+          queryKey: queryKeys.contests.list('all'),
+          queryFn: async () => {
+            const res = await fetch('/api/contests?status=UPCOMING,RUNNING');
+            return res.ok ? res.json() : { contests: [] };
+          },
+          staleTime: STALE_TIMES.shared,
+        });
+      } else if (href === '/pricing') {
+        queryClient.prefetchQuery({
+          queryKey: queryKeys.pricing.plans(),
+          queryFn: async () => {
+            const res = await fetch('/api/pricing');
+            return res.ok ? res.json() : { plans: {} };
+          },
+          staleTime: STALE_TIMES.shared,
+        });
+      } else if (href === '/oa') {
+        queryClient.prefetchQuery({
+          queryKey: queryKeys.oa.assessments(),
+          queryFn: async () => {
+            const res = await fetch('/api/oa/assessments');
+            return res.ok ? res.json() : { success: false, assessments: [] };
+          },
+          staleTime: STALE_TIMES.shared,
+        });
+      }
+    } catch {
+      // Non-blocking prefetch failure
+    }
+  };
 
   const link = (
     <Link
       href={item.href}
       onClick={onNavigate}
+      onMouseEnter={handleMouseEnter}
       aria-current={active ? 'page' : undefined}
       className={cn(
         'group relative flex h-9 items-center rounded-lg px-3 text-sm font-medium outline-none',
