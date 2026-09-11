@@ -12,44 +12,77 @@ export async function GET(req: NextRequest, { params }: Ctx) {
 
     const { type } = await params;
     const { searchParams } = new URL(req.url);
-    const limit = Math.min(Number(searchParams.get('limit') || 50), 100);
+    const limitParam = searchParams.get('limit');
+    const limit = limitParam === 'all' ? 2000 : Math.min(Number(limitParam || 1000), 2000);
     const q = searchParams.get('q');
+    const kind = searchParams.get('kind') || 'all';
+    const patternFilter = searchParams.get('pattern');
 
     let Model: any;
     const query: any = {};
 
     switch (type) {
       case 'problems': {
-        const patterns = await Pattern.find().lean();
         const extracted: any[] = [];
-        patterns.forEach((p: any) => {
-          p.variations?.forEach((v: any) => {
-            v.problems?.forEach((prob: any) => {
-              if (!q || prob.name.toLowerCase().includes(q.toLowerCase())) {
-                extracted.push({
-                  _id: prob._id,
-                  title: prob.name,
-                  url: prob.link,
-                  difficulty: prob.difficulty,
-                  kind: 'pattern',
-                  pattern: p.title,
-                  createdAt: p.createdAt
-                });
-              }
+
+        // 1. Fetch Pattern problems if kind is 'all' or 'pattern'
+        if (kind === 'all' || kind === 'pattern') {
+          const patternQuery: any = {};
+          if (patternFilter && patternFilter !== 'all') {
+            patternQuery.$or = [
+              { slug: patternFilter },
+              { title: { $regex: patternFilter, $options: 'i' } }
+            ];
+          }
+          const patterns = await Pattern.find(patternQuery).lean();
+
+          patterns.forEach((p: any) => {
+            p.variations?.forEach((v: any) => {
+              v.problems?.forEach((prob: any) => {
+                if (!q || prob.name?.toLowerCase().includes(q.toLowerCase())) {
+                  extracted.push({
+                    _id: prob._id?.toString() || `${p.slug}-${prob.name}`,
+                    title: prob.name,
+                    url: prob.link,
+                    difficulty: prob.difficulty || 'Medium',
+                    kind: 'pattern',
+                    pattern: p.title,
+                    variation: v.variation || v.title,
+                    company_tags: prob.company_tags || [],
+                    createdAt: p.createdAt || new Date().toISOString()
+                  });
+                }
+              });
             });
           });
-        });
-        
-        // If there's a kind filter, apply it
-        let filtered = extracted;
-        if (searchParams.get('kind')) {
-          const k = searchParams.get('kind');
-          if (k !== 'all') {
-            filtered = extracted.filter(prob => prob.kind === k);
-          }
         }
-        
-        return { data: filtered.slice(0, limit) };
+
+        // 2. Fetch Non-Standard and CP problems if kind is 'all', 'nonstandard', or 'cp'
+        if (kind === 'all' || kind === 'nonstandard' || kind === 'cp') {
+          const problemQuery: any = {};
+          if (kind !== 'all') {
+            problemQuery.kind = kind;
+          }
+          if (q) {
+            problemQuery.title = { $regex: q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' };
+          }
+
+          const dbProblems = await Problem.find(problemQuery).sort({ createdAt: -1 }).lean();
+          dbProblems.forEach((prob: any) => {
+            extracted.push({
+              _id: prob._id?.toString(),
+              title: prob.title,
+              url: prob.url,
+              difficulty: prob.difficulty,
+              kind: prob.kind || 'nonstandard',
+              bucket: prob.bucket,
+              platform: prob.platform,
+              createdAt: prob.createdAt || new Date().toISOString()
+            });
+          });
+        }
+
+        return { data: extracted.slice(0, limit) };
       }
       case 'topics': {
         Model = Topic;

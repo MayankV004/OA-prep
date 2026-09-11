@@ -61,17 +61,18 @@ export default function AdminProblemsPage() {
   const toast = useToast();
   const [search, setSearch] = useState('');
   const [kindFilter, setKindFilter] = useState('all');
+  const [patternFilter, setPatternFilter] = useState('all');
 
   const { data, isLoading, error } = useQuery<{ data: Problem[] }>({
-    queryKey: ['admin', 'problems', search, kindFilter],
+    queryKey: ['admin', 'problems', search, kindFilter, patternFilter],
     queryFn: async () => {
-      const params = new URLSearchParams({ limit: '50' });
+      const params = new URLSearchParams({ limit: 'all' });
       if (search) params.set('q', search);
       if (kindFilter !== 'all') params.set('kind', kindFilter);
+      if (patternFilter !== 'all') params.set('pattern', patternFilter);
       // Hit the admin global content API
       const res = await fetch(`/api/admin/content/problems?${params}`);
       if (!res.ok) throw new Error('Failed to fetch');
-      // Always { data: [...] } from this new endpoint
       return res.json();
     },
   });
@@ -110,7 +111,7 @@ export default function AdminProblemsPage() {
     },
     {
       id: 'kind',
-      header: 'Kind & group',
+      header: 'Kind & Category',
       hideBelow: 'lg',
       sortValue: (row) => row.kind,
       cell: (row) => (
@@ -143,8 +144,8 @@ export default function AdminProblemsPage() {
     <div className="space-y-6">
       <PageHeading
         overline="Content"
-        title="Problems"
-        description="Manage problem content across all categories."
+        title={`Problems Catalog (${problems.length})`}
+        description="Comprehensive repository of pattern DSA problems, non-standard challenges, and competitive programming problems."
       />
 
       {isLoading ? (
@@ -160,29 +161,57 @@ export default function AdminProblemsPage() {
           error={error}
           search={search}
           onSearchChange={setSearch}
-          searchPlaceholder="Search problems…"
+          searchPlaceholder="Search all problems by title…"
           emptyTitle="No problems found"
-          emptyDescription="Problems will appear here once they exist."
+          emptyDescription="Try adjusting search or category filters."
           emptyIcon={ListChecks}
           filters={
-            <select
-              aria-label="Filter by kind"
-              value={kindFilter}
-              onChange={(e) => setKindFilter(e.target.value)}
-              className="h-9 rounded-lg bg-surface-sunken px-3 text-sm text-foreground outline-none"
-            >
-              <option value="all">All kinds</option>
-              <option value="pattern">Pattern DSA</option>
-              <option value="nonstandard">Non-standard</option>
-              <option value="cp">Comp. prog.</option>
-            </select>
+            <div className="flex items-center gap-2">
+              <select
+                aria-label="Filter by kind"
+                value={kindFilter}
+                onChange={(e) => {
+                  setKindFilter(e.target.value);
+                  if (e.target.value !== 'pattern' && e.target.value !== 'all') {
+                    setPatternFilter('all');
+                  }
+                }}
+                className="h-9 rounded-lg bg-surface-sunken px-3 text-sm text-foreground outline-none border border-border/40"
+              >
+                <option value="all">All problem kinds</option>
+                <option value="pattern">Pattern DSA</option>
+                <option value="nonstandard">Non-standard problems</option>
+                <option value="cp">Competitive programming</option>
+              </select>
+
+              {(kindFilter === 'all' || kindFilter === 'pattern') && (
+                <select
+                  aria-label="Filter by pattern"
+                  value={patternFilter}
+                  onChange={(e) => setPatternFilter(e.target.value)}
+                  className="h-9 rounded-lg bg-surface-sunken px-3 text-sm text-foreground outline-none border border-border/40"
+                >
+                  <option value="all">All Patterns (10)</option>
+                  <option value="dynamic_programming_full">Dynamic Programming</option>
+                  <option value="binary_search">Binary Search</option>
+                  <option value="graph_algorithms">Graph Algorithms</option>
+                  <option value="trees">Trees</option>
+                  <option value="backtracking">Backtracking</option>
+                  <option value="prefix_sum">Prefix Sum</option>
+                  <option value="monotonic_stack">Monotonic Stack</option>
+                  <option value="greedy_algorithms">Greedy Algorithms</option>
+                  <option value="overlapping_intervals">Overlapping Intervals</option>
+                  <option value="segment_tree">Segment Tree</option>
+                </select>
+              )}
+            </div>
           }
-          pageSize={15}
+          pageSize={25}
+          exportable
+          exportFilename="bigo_complete_problems_catalog"
+          columnVisibility
         />
       )}
-
-
-
     </div>
   );
 }
