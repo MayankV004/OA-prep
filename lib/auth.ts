@@ -180,3 +180,77 @@ export function withRole<T>(
     return fn(ctx as any);
   });
 }
+
+export interface PortalContext {
+  userId: string;
+  role: 'head' | 'coordinator' | 'invigilator' | 'admin';
+  institutionId: string;
+  isSuperAdminObserver: boolean;
+}
+
+export async function withPortalAuth<T>(
+  req: Request,
+  fn: (ctx: PortalContext) => Promise<T>
+): Promise<Response> {
+  return withAuth(req, async (authCtx) => {
+    const { connectDB } = await import('@/lib/db');
+    const { Institution } = await import('@/models/institution');
+    const { InstitutionMember } = await import('@/models/institutionMember');
+
+    await connectDB();
+
+    const url = new URL(req.url);
+    const targetInstId = url.searchParams.get('institutionId') || req.headers.get('x-institution-id');
+
+    // 1. SuperAdmin observer access
+    if (authCtx.role === 'admin') {
+      let inst;
+      if (targetInstId) {
+        inst = await Institution.findById(targetInstId).lean();
+      } else {
+        inst = await Institution.findOne({ status: 'active' }).sort({ createdAt: -1 }).lean();
+      }
+
+      if (!inst) {
+        throw { status: 404, message: 'No campus institution available for observer mode' };
+      }
+
+      return fn({
+        userId: authCtx.userId,
+        role: 'admin',
+        institutionId: (inst._id as any).toString(),
+        isSuperAdminObserver: true,
+      });
+    }
+
+    // 2. Regular TPC Member access
+    const member = await InstitutionMember.findOne({
+      userId: authCtx.userId,
+      status: 'active',
+    })
+      .populate('institutionId')
+      .lean();
+
+    if (!member || !member.institutionId) {
+      throw {
+        status: 403,
+        message: 'Access denied: You are not an active member of any campus placement cell',
+      };
+    }
+
+    const inst = member.institutionId as any;
+    if (inst.status === 'suspended') {
+      throw { status: 403, message: 'Your campus account has been suspended by BigO SuperAdmin' };
+    }
+    if (inst.status === 'expired' || new Date(inst.licenseValidUntil) < new Date()) {
+      throw { status: 403, message: 'Your campus enterprise license has expired. Contact support.' };
+    }
+
+    return fn({
+      userId: authCtx.userId,
+      role: member.role as any,
+      institutionId: inst._id.toString(),
+      isSuperAdminObserver: false,
+    });
+  });
+}
