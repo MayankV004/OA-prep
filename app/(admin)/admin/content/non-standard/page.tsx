@@ -315,27 +315,41 @@ export default function AdminNonStandardPage() {
                   </Button>
                 }
               />
-              <DialogContent className="max-w-lg">
-                <DialogHeader>
-                  <DialogTitle>{editingId ? 'Edit Non-Standard Challenge' : 'Add Non-Standard Challenge'}</DialogTitle>
-                  <DialogDescription>
-                    Provide the problem metadata and the specific insight or observation that makes it non-standard.
+              <DialogContent className="sm:max-w-2xl md:max-w-3xl p-6 sm:p-8 rounded-2xl border border-border/80 bg-background/95 backdrop-blur-xl shadow-2xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader className="space-y-1.5 pb-3 border-b border-border/40">
+                  <div className="flex items-center gap-2.5">
+                    <span className="p-2 rounded-xl bg-primary/10 text-primary">
+                      <Layers className="h-5 w-5" />
+                    </span>
+                    <DialogTitle className="text-xl font-bold tracking-tight">
+                      {editingId ? 'Edit Non-Standard Challenge' : 'Add Non-Standard Challenge'}
+                    </DialogTitle>
+                  </div>
+                  <DialogDescription className="text-sm text-muted-foreground">
+                    Provide challenge metadata and document the non-classical mathematical trick, simulation invariant, or observation required.
                   </DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleSubmit} className="space-y-3 py-2 text-xs">
-                  <div className="space-y-1">
-                    <label className="font-medium">Problem Title</label>
+                <form onSubmit={handleSubmit} className="space-y-5 pt-4 text-sm">
+                  {/* Problem Title */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-foreground flex items-center gap-1">
+                      Problem Title <span className="text-rose-500">*</span>
+                    </label>
                     <Input
                       placeholder="e.g. Snowflake OA — Mutual Pursuit Points"
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
                       required
+                      className="h-11 text-sm bg-background/50 border-input"
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <label className="font-medium">Category Bucket</label>
+                  {/* 2-Column: Category Bucket & Difficulty */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-foreground flex items-center gap-1">
+                        Category Bucket <span className="text-rose-500">*</span>
+                      </label>
                       <select
                         value={isCustomBucket ? '__custom__' : bucket}
                         onChange={(e) => {
@@ -346,7 +360,7 @@ export default function AdminNonStandardPage() {
                             setBucket(e.target.value);
                           }
                         }}
-                        className="w-full h-9 rounded-md border border-input bg-background px-2.5 text-xs truncate"
+                        className="w-full h-11 rounded-lg border border-input bg-background/50 px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 truncate"
                         required
                       >
                         {availableBuckets.map((c) => (
@@ -357,24 +371,27 @@ export default function AdminNonStandardPage() {
                         <option value="__custom__">+ Create New Custom Bucket...</option>
                       </select>
                       {isCustomBucket && (
-                        <div className="pt-1.5">
+                        <div className="pt-2">
                           <Input
                             placeholder="Type new bucket name (e.g. Game Theory & Minimax Curveballs)..."
                             value={customBucket}
                             onChange={(e) => setCustomBucket(e.target.value)}
                             required
-                            className="text-xs"
+                            className="h-10 text-sm bg-background/60"
                           />
+                          <p className="mt-1 text-xs text-muted-foreground">This bucket will be dynamically created and filterable.</p>
                         </div>
                       )}
                     </div>
 
-                    <div className="space-y-1">
-                      <label className="font-medium">Difficulty Level</label>
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-foreground flex items-center gap-1">
+                        Difficulty Level <span className="text-rose-500">*</span>
+                      </label>
                       <select
                         value={difficulty}
                         onChange={(e) => setDifficulty(e.target.value as any)}
-                        className="w-full h-9 rounded-md border border-input bg-background px-3 text-xs"
+                        className="w-full h-11 rounded-lg border border-input bg-background/50 px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
                       >
                         <option value="Easy">Easy</option>
                         <option value="Medium">Medium</option>
@@ -383,46 +400,73 @@ export default function AdminNonStandardPage() {
                     </div>
                   </div>
 
-                  <div className="space-y-1">
-                    <label className="font-medium">Problem Link (LeetCode, Codeforces, etc.)</label>
+                  {/* Problem Link */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-foreground flex items-center gap-1">
+                      Problem Link or Source Reference <span className="text-rose-500">*</span>
+                    </label>
                     <Input
-                      placeholder="https://leetcode.com/problems/..."
+                      placeholder="https://leetcode.com/problems/... or Contest ID / Source URL"
                       value={url}
                       onChange={(e) => setUrl(e.target.value)}
                       required
+                      className="h-11 text-sm bg-background/50 border-input"
                     />
+                    <p className="text-xs text-muted-foreground">
+                      Direct link where candidates or admins can reference the original question prompt.
+                    </p>
                   </div>
 
-                  <div className="space-y-1">
-                    <label className="font-medium">Why is this Non-Standard? (Key Insight / Trick)</label>
+                  {/* Why Non-Standard Textarea */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-semibold text-foreground flex items-center gap-1">
+                        Why is this Non-Standard? (Key Insight / Invariant)
+                      </label>
+                      <span className="text-xs text-muted-foreground">Key pedagogical note</span>
+                    </div>
                     <textarea
-                      placeholder="Explain the unique mental model, simulation invariant, or mathematical observation..."
+                      placeholder="Explain why standard BFS/DP/Greedy patterns fail, and what mathematical invariant, coordinate transformation, or state machine trick is required..."
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
-                      className="w-full h-20 rounded-md border border-input bg-background p-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                      rows={5}
+                      className="w-full min-h-[130px] rounded-lg border border-input bg-background/50 p-3.5 text-sm leading-relaxed text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
                     />
+                    <p className="text-xs text-muted-foreground">
+                      This explanation is highlighted for students under the problem solution card to guide their pattern-breaking intuition.
+                    </p>
                   </div>
 
-                  <div className="space-y-1">
-                    <label className="font-medium">Company / Source Tags (Comma-separated)</label>
+                  {/* Company Tags */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-foreground">
+                      Company / Source Tags
+                    </label>
                     <Input
-                      placeholder="e.g. Citadel, Snowflake, Jane Street, AtCoder"
+                      placeholder="e.g. Jane Street, Citadel, Snowflake, Optiver, AtCoder"
                       value={tagsInput}
                       onChange={(e) => setTagsInput(e.target.value)}
+                      className="h-11 text-sm bg-background/50 border-input"
                     />
+                    <p className="text-xs text-muted-foreground">Comma-separated firm names, contests, or platforms.</p>
                   </div>
 
-                  <DialogFooter className="pt-2">
+                  <DialogFooter className="pt-4 mt-6 border-t border-border/40 flex items-center justify-end gap-3">
                     <Button
                       type="button"
                       variant="outline"
                       onClick={() => setIsDialogOpen(false)}
                       disabled={saveMutation.isPending}
+                      className="h-10 px-5 text-sm"
                     >
                       Cancel
                     </Button>
-                    <Button type="submit" disabled={saveMutation.isPending}>
-                      {saveMutation.isPending ? 'Saving...' : editingId ? 'Update Challenge' : 'Add Challenge'}
+                    <Button
+                      type="submit"
+                      disabled={saveMutation.isPending}
+                      className="h-10 px-6 text-sm font-medium shadow-sm"
+                    >
+                      {saveMutation.isPending ? 'Saving...' : editingId ? 'Update Challenge' : 'Save Non-Standard Challenge'}
                     </Button>
                   </DialogFooter>
                 </form>
