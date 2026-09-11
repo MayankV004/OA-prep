@@ -44,8 +44,6 @@ const institutionSchema = new Schema<IInstitution>(
   { timestamps: true }
 );
 
-institutionSchema.index({ slug: 1 });
-institutionSchema.index({ status: 1 });
 institutionSchema.index({ licenseValidUntil: 1 });
 
 export const Institution =

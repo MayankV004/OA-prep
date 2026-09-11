@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -15,6 +15,7 @@ import {
   CheckCircle2,
   ExternalLink,
   Search,
+  Loader2,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -52,7 +53,7 @@ interface DriveRow {
   flaggedSubmissions: number;
 }
 
-export default function PortalDrivesPage() {
+function PortalDrivesContent() {
   const searchParams = useSearchParams();
   const instId = searchParams.get('institutionId');
   const queryClient = useQueryClient();
@@ -362,3 +363,19 @@ export default function PortalDrivesPage() {
     </div>
   );
 }
+
+export default function PortalDrivesPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex flex-col items-center justify-center min-h-[350px] gap-3">
+          <Loader2 className="size-7 animate-spin text-primary" />
+          <span className="text-xs text-muted-foreground">Loading placement drives...</span>
+        </div>
+      }
+    >
+      <PortalDrivesContent />
+    </Suspense>
+  );
+}
+

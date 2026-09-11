@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
@@ -39,7 +39,7 @@ interface ValidatedPromo {
   description?: string;
 }
 
-export default function PricingPage() {
+function PricingContent() {
   const searchParams = useSearchParams();
   const paymentStatus = searchParams.get('payment');
   const canceled = searchParams.get('canceled');
@@ -531,3 +531,19 @@ export default function PricingPage() {
     </div>
   );
 }
+
+export default function PricingPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex flex-col items-center justify-center min-h-[400px] gap-3">
+          <Loader2 className="size-8 animate-spin text-primary" />
+          <span className="text-xs text-muted-foreground">Loading pricing plans...</span>
+        </div>
+      }
+    >
+      <PricingContent />
+    </Suspense>
+  );
+}
+

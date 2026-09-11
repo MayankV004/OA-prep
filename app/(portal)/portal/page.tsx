@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
@@ -15,6 +16,7 @@ import {
   ExternalLink,
   GraduationCap,
   Sparkles,
+  Loader2,
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -23,7 +25,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
-export default function PortalOverviewPage() {
+function PortalOverviewContent() {
   const searchParams = useSearchParams();
   const instId = searchParams.get('institutionId');
 
@@ -229,3 +231,19 @@ export default function PortalOverviewPage() {
     </div>
   );
 }
+
+export default function PortalOverviewPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex flex-col items-center justify-center min-h-[350px] gap-3">
+          <Loader2 className="size-7 animate-spin text-primary" />
+          <span className="text-xs text-muted-foreground">Loading campus dashboard...</span>
+        </div>
+      }
+    >
+      <PortalOverviewContent />
+    </Suspense>
+  );
+}
+

@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useState } from 'react';
+import { use, useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -17,6 +17,7 @@ import {
   AlertTriangle,
   Play,
   StopCircle,
+  Loader2,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -46,7 +47,7 @@ interface SubmissionItem {
   completedAt?: string;
 }
 
-export default function PortalLiveInvigilationPage(props: {
+function PortalLiveInvigilationContent(props: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(props.params);
@@ -357,3 +358,21 @@ export default function PortalLiveInvigilationPage(props: {
     </div>
   );
 }
+
+export default function PortalLiveInvigilationPage(props: {
+  params: Promise<{ id: string }>;
+}) {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex flex-col items-center justify-center min-h-[350px] gap-3">
+          <Loader2 className="size-7 animate-spin text-primary" />
+          <span className="text-xs text-muted-foreground">Connecting to live invigilation room...</span>
+        </div>
+      }
+    >
+      <PortalLiveInvigilationContent {...props} />
+    </Suspense>
+  );
+}
+

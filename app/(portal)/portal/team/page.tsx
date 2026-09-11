@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -12,6 +12,7 @@ import {
   Mail,
   Building,
   Info,
+  Loader2,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -45,7 +46,7 @@ interface MemberRow {
   createdAt: string;
 }
 
-export default function PortalTeamPage() {
+function PortalTeamContent() {
   const searchParams = useSearchParams();
   const instId = searchParams.get('institutionId');
   const queryClient = useQueryClient();
@@ -309,3 +310,19 @@ export default function PortalTeamPage() {
     </div>
   );
 }
+
+export default function PortalTeamPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex flex-col items-center justify-center min-h-[350px] gap-3">
+          <Loader2 className="size-7 animate-spin text-primary" />
+          <span className="text-xs text-muted-foreground">Loading campus team roster...</span>
+        </div>
+      }
+    >
+      <PortalTeamContent />
+    </Suspense>
+  );
+}
+

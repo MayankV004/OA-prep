@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, Suspense } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
@@ -23,7 +23,7 @@ import { authClient } from '@/lib/auth-client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
-export default function PortalLayout({ children }: { children: ReactNode }) {
+function PortalLayoutContent({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -233,3 +233,21 @@ export default function PortalLayout({ children }: { children: ReactNode }) {
     </div>
   );
 }
+
+export default function PortalLayout({ children }: { children: ReactNode }) {
+  return (
+    <Suspense
+      fallback={
+        <div className="grid min-h-screen place-items-center bg-background">
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 className="size-7 animate-spin text-primary" />
+            <span className="text-xs text-muted-foreground">Authenticating Campus Portal Access...</span>
+          </div>
+        </div>
+      }
+    >
+      <PortalLayoutContent>{children}</PortalLayoutContent>
+    </Suspense>
+  );
+}
+

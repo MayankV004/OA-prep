@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -14,6 +14,7 @@ import {
   ShieldAlert,
   Search,
   RefreshCw,
+  Loader2,
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -40,7 +41,7 @@ interface ScorecardRow {
   submittedAt: string;
 }
 
-export default function PortalResultsPage() {
+function PortalResultsContent() {
   const searchParams = useSearchParams();
   const instId = searchParams.get('institutionId');
 
@@ -282,3 +283,19 @@ export default function PortalResultsPage() {
     </div>
   );
 }
+
+export default function PortalResultsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex flex-col items-center justify-center min-h-[350px] gap-3">
+          <Loader2 className="size-7 animate-spin text-primary" />
+          <span className="text-xs text-muted-foreground">Loading candidate scorecards...</span>
+        </div>
+      }
+    >
+      <PortalResultsContent />
+    </Suspense>
+  );
+}
+
