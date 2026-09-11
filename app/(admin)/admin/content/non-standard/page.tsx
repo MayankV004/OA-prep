@@ -261,22 +261,20 @@ export default function AdminNonStandardPage() {
         <div className="flex items-center justify-end gap-1.5">
           <Button
             variant="ghost"
-            size="sm"
-            className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+            className="h-8 w-8 p-0 rounded-lg text-muted-foreground hover:text-foreground"
             onClick={() => handleOpenEdit(row)}
             title="Edit challenge"
           >
-            <Edit2 className="h-3 w-3" />
+            <Edit2 className="h-3.5 w-3.5" />
           </Button>
           <Button
             variant="ghost"
-            size="sm"
-            className="h-7 w-7 p-0 text-muted-foreground hover:text-rose-500"
+            className="h-8 w-8 p-0 rounded-lg text-muted-foreground hover:text-rose-500"
             onClick={() => deleteMutation.mutate(row._id)}
             disabled={deleteMutation.isPending}
             title="Delete challenge"
           >
-            <Trash2 className="h-3 w-3" />
+            <Trash2 className="h-3.5 w-3.5" />
           </Button>
         </div>
       ),
@@ -290,14 +288,14 @@ export default function AdminNonStandardPage() {
         title="Non-Standard DSA Challenges"
         description="Curate and manage tricky OA curveballs, quant puzzles, and single-trick observation problems that defy classical patterns."
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <Button
               variant="outline"
-              size="sm"
               onClick={() => refetch()}
               disabled={isRefetching || isLoading}
+              className="h-10 px-4 text-sm font-medium rounded-xl border-border/80 shadow-xs hover:bg-muted"
             >
-              <RefreshCw className={cn('mr-1.5 h-3.5 w-3.5', (isRefetching || isLoading) && 'animate-spin')} />
+              <RefreshCw className={cn('mr-2 h-4 w-4', (isRefetching || isLoading) && 'animate-spin')} />
               Refresh
             </Button>
             <Dialog
@@ -309,8 +307,8 @@ export default function AdminNonStandardPage() {
             >
               <DialogTrigger
                 render={
-                  <Button size="sm">
-                    <Plus className="mr-1.5 h-4 w-4" />
+                  <Button className="h-10 px-5 text-sm font-semibold rounded-xl shadow-xs gap-2">
+                    <Plus className="h-4 w-4" />
                     Add Non-Standard Problem
                   </Button>
                 }
@@ -545,19 +543,19 @@ export default function AdminNonStandardPage() {
       {/* Filter Bar */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search by problem title, why non-standard note, or tags..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 text-xs"
+            className="pl-9 h-10 text-sm rounded-xl"
           />
         </div>
 
         <select
           value={bucketFilter}
           onChange={(e) => setBucketFilter(e.target.value)}
-          className="h-9 rounded-md border border-input bg-background px-3 text-xs max-w-xs truncate"
+          className="h-10 rounded-xl border border-input bg-background px-3 text-sm max-w-xs truncate focus:outline-none focus:ring-1 focus:ring-primary/40"
         >
           <option value="all">All Buckets ({availableBuckets.length})</option>
           {availableBuckets.map((c) => (
@@ -570,7 +568,7 @@ export default function AdminNonStandardPage() {
         <select
           value={diffFilter}
           onChange={(e) => setDiffFilter(e.target.value)}
-          className="h-9 rounded-md border border-input bg-background px-3 text-xs"
+          className="h-10 rounded-xl border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary/40"
         >
           <option value="all">All Difficulties</option>
           <option value="Easy">Easy</option>
