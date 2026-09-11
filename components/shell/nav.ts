@@ -148,19 +148,67 @@ export function humanizeSegment(segment: string): string {
 
 export type Crumb = { label: string; href: string; isLast: boolean };
 
-/** Build breadcrumbs from a pathname, skipping dynamic-looking id segments. */
+/** Detect Mongo ObjectIds, UUIDs, or numeric identifiers that read badly in breadcrumbs. */
+export function isOpaqueId(segment: string): boolean {
+  return (
+    /^[0-9a-f]{24}$/i.test(segment) ||
+    /^\d+$/.test(segment) ||
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(segment)
+  );
+}
+
+/** Action/view segments that already identify the current view when followed by an ID. */
+const VIEW_ACTION_SEGMENTS = new Set(['report', 'test', 'review', 'result', 'results']);
+
+/** Build breadcrumbs from a pathname, skipping dynamic-looking id segments that are not standalone routes. */
 export function buildCrumbs(pathname: string): Crumb[] {
   const segments = pathname.split('/').filter(Boolean);
+  const crumbs: { label: string; href: string }[] = [];
 
-  return segments.map((segment, i) => {
+  for (let i = 0; i < segments.length; i++) {
+    const segment = segments[i];
+    const isLast = i === segments.length - 1;
+    const isId = isOpaqueId(segment);
+
+    // If this is an opaque ID:
+    if (isId) {
+      if (!isLast) {
+        // Intermediate ID segments (e.g. /dsa/[pattern]/[variationId]/practice)
+        // are internal routing parameters and not standalone pages. Skip them.
+        continue;
+      }
+
+      // If it's the last segment and preceded by an action/view segment (e.g. /oa/[slug]/report/[id]),
+      // the previous segment already identifies this view. Update its href to the full path.
+      const prevSegment = i > 0 ? segments[i - 1].toLowerCase() : '';
+      if (VIEW_ACTION_SEGMENTS.has(prevSegment) && crumbs.length > 0) {
+        crumbs[crumbs.length - 1].href = pathname;
+        continue;
+      }
+
+      // Otherwise, it represents an item detail under a collection (e.g. /admin/users/[id]).
+      crumbs.push({
+        label: 'Detail',
+        href: pathname,
+      });
+      continue;
+    }
+
+    // Normal segment
     const href = `/${segments.slice(0, i + 1).join('/')}`;
-    // Mongo ObjectIds and similar opaque ids read badly in a breadcrumb.
-    const isOpaqueId = /^[0-9a-f]{24}$/i.test(segment) || /^\d+$/.test(segment);
-
-    return {
-      label: isOpaqueId ? 'Detail' : humanizeSegment(segment),
+    crumbs.push({
+      label: humanizeSegment(segment),
       href,
-      isLast: i === segments.length - 1,
-    };
-  });
+    });
+  }
+
+  // Ensure the last crumb points to the full pathname
+  if (crumbs.length > 0) {
+    crumbs[crumbs.length - 1].href = pathname;
+  }
+
+  return crumbs.map((crumb, idx) => ({
+    ...crumb,
+    isLast: idx === crumbs.length - 1,
+  }));
 }
