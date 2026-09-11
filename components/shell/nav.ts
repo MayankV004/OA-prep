@@ -1,6 +1,7 @@
 import {
   Activity,
   BookOpen,
+  Building2,
   Calendar,
   Code2,
   FileText,
@@ -11,8 +12,11 @@ import {
   ListChecks,
   Mail,
   MessageSquare,
+  Radio,
+  Server,
   Settings,
   Shield,
+  ShieldAlert,
   Tags,
   Timer,
   Trophy,
@@ -69,31 +73,32 @@ export const APP_NAV: NavSection[] = [
   },
 ];
 
-/** Admin navigation. Same shape, rendered by the same shell. */
+/** Admin navigation — organized into 6 enterprise command pillars. */
 export const ADMIN_NAV: NavSection[] = [
   {
-    label: 'Overview',
+    label: 'Command & Control',
     items: [
       { name: 'Dashboard', href: '/admin', icon: LayoutDashboard, exact: true },
+      { name: 'Incident Desk', href: '/admin/proctoring', icon: ShieldAlert },
       { name: 'Feedback & Bugs', href: '/admin/feedback', icon: MessageSquare },
     ],
   },
   {
-    label: 'Users',
+    label: 'Assessment & Campus',
     items: [
-      { name: 'All Users', href: '/admin/users', icon: Users },
-      { name: 'Invites', href: '/admin/invites', icon: Mail },
+      { name: 'Company OAs', href: '/admin/content/assessments', icon: Timer },
+      { name: 'Campus Partners', href: '/admin/institutions', icon: Building2 },
+      { name: 'Live Drives', href: '/admin/institutions/live-drives', icon: Radio },
     ],
   },
   {
-    label: 'Content',
+    label: 'Knowledge Engine',
     items: [
-      { name: 'Company OAs', href: '/admin/content/assessments', icon: Timer },
-      { name: 'Problems', href: '/admin/content/problems', icon: ListChecks },
-      { name: 'Topics', href: '/admin/content/topics', icon: FolderTree },
-      { name: 'Patterns', href: '/admin/content/patterns', icon: Code2 },
+      { name: 'DSA Patterns', href: '/admin/content/patterns', icon: Code2 },
+      { name: 'Problem Catalog', href: '/admin/content/problems', icon: ListChecks },
+      { name: 'Topics & Tracks', href: '/admin/content/topics', icon: FolderTree },
       { name: 'Cheat Sheets', href: '/admin/content/cheatsheets', icon: FileText },
-      { name: 'Questions', href: '/admin/content/questions', icon: HelpCircle },
+      { name: 'Interview Q&A', href: '/admin/content/questions', icon: HelpCircle },
     ],
   },
   {
@@ -105,9 +110,17 @@ export const ADMIN_NAV: NavSection[] = [
     ],
   },
   {
-    label: 'System',
+    label: 'Identity & Access',
     items: [
+      { name: 'Candidates', href: '/admin/users', icon: Users },
+      { name: 'Invites', href: '/admin/invites', icon: Mail },
       { name: 'Taxonomies', href: '/admin/taxonomies', icon: Tags },
+    ],
+  },
+  {
+    label: 'System & Infra',
+    items: [
+      { name: 'Runner & Queues', href: '/admin/system/runner', icon: Server },
       { name: 'Activity Log', href: '/admin/activity', icon: Activity },
       { name: 'Settings', href: '/admin/settings', icon: Settings },
     ],
@@ -134,6 +147,9 @@ const LABEL_OVERRIDES: Record<string, string> = {
   'non-standard': 'Non-standard',
   admin: 'Admin',
   qa: 'Q&A',
+  proctoring: 'Incident Desk',
+  institutions: 'Campus Partners',
+  runner: 'Runner & Queues',
 };
 
 /** Turn a URL segment into readable breadcrumb text. */

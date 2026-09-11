@@ -3,7 +3,20 @@
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowRight, CornerDownLeft, Moon, Search, Sun } from 'lucide-react';
+import {
+  ArrowRight,
+  Building2,
+  CornerDownLeft,
+  CreditCard,
+  Moon,
+  Percent,
+  Plus,
+  Search,
+  Server,
+  ShieldAlert,
+  Sun,
+  Timer,
+} from 'lucide-react';
 import { useTheme } from 'next-themes';
 
 import { cn } from '@/lib/utils';
@@ -59,6 +72,59 @@ function CommandPalette({
       }))
     );
 
+    const adminActions: Command[] = isAdmin
+      ? [
+          {
+            id: 'admin:create-oa',
+            label: 'Create Company OA Challenge',
+            group: 'Admin Quick Actions',
+            icon: Timer,
+            hint: 'OA Editor',
+            run: () => go('/admin/content/assessments/new'),
+          },
+          {
+            id: 'admin:incident-desk',
+            label: 'Review Flagged Proctoring Incidents',
+            group: 'Admin Quick Actions',
+            icon: ShieldAlert,
+            hint: 'Incident Desk',
+            run: () => go('/admin/proctoring'),
+          },
+          {
+            id: 'admin:campus-partners',
+            label: 'Manage Campus Partners & Seats',
+            group: 'Admin Quick Actions',
+            icon: Building2,
+            hint: 'Institutions',
+            run: () => go('/admin/institutions'),
+          },
+          {
+            id: 'admin:runner-health',
+            label: 'Check Code Runner & Queue Health',
+            group: 'Admin Quick Actions',
+            icon: Server,
+            hint: 'Telemetry',
+            run: () => go('/admin/system/runner'),
+          },
+          {
+            id: 'admin:create-promo',
+            label: 'Create Promotional Discount Voucher',
+            group: 'Admin Quick Actions',
+            icon: Percent,
+            hint: 'Promos',
+            run: () => go('/admin/billing/promos'),
+          },
+          {
+            id: 'admin:grant-access',
+            label: 'Grant Pro Access / Manage Subscriptions',
+            group: 'Admin Quick Actions',
+            icon: CreditCard,
+            hint: 'Billing',
+            run: () => go('/admin/billing'),
+          },
+        ]
+      : [];
+
     const themeCommands: Command[] = [
       {
         id: 'theme:light',
@@ -82,7 +148,7 @@ function CommandPalette({
       },
     ];
 
-    return [...navCommands, ...themeCommands];
+    return [...adminActions, ...navCommands, ...themeCommands];
   }, [go, isAdmin, onOpenChange, setTheme]);
 
   const results = React.useMemo(() => {

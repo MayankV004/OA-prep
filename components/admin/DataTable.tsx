@@ -5,6 +5,8 @@ import {
   ArrowDown,
   ArrowUp,
   ChevronsUpDown,
+  Columns3,
+  Download,
   Inbox,
   Search,
   TriangleAlert,
@@ -17,6 +19,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Input } from '@/components/ui/input';
 import { Pagination } from '@/components/ui/pagination';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { SkeletonRows } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/typography';
 
@@ -68,6 +71,9 @@ function DataTable<T>({
   bulkActions,
   pageSize = 15,
   zebra = true,
+  exportable = true,
+  exportFilename = 'records',
+  columnVisibility = true,
 }: {
   data: T[] | undefined;
   columns: Column<T>[];
@@ -87,10 +93,14 @@ function DataTable<T>({
   bulkActions?: (selected: string[], clear: () => void) => React.ReactNode;
   pageSize?: number;
   zebra?: boolean;
+  exportable?: boolean;
+  exportFilename?: string;
+  columnVisibility?: boolean;
 }) {
   const [sort, setSort] = React.useState<SortState>(null);
   const [page, setPage] = React.useState(1);
   const [selected, setSelected] = React.useState<string[]>([]);
+  const [hiddenColumnIds, setHiddenColumnIds] = React.useState<string[]>([]);
 
   const rows = data ?? [];
   const selectable = Boolean(bulkActions);
@@ -122,6 +132,50 @@ function DataTable<T>({
       return sort.direction === 'asc' ? result : -result;
     });
   }, [columns, rows, sort]);
+
+  const toggleColumnVisibility = (colId: string) => {
+    setHiddenColumnIds((prev) =>
+      prev.includes(colId) ? prev.filter((id) => id !== colId) : [...prev, colId]
+    );
+  };
+
+  const visibleColumns = React.useMemo(() => {
+    return columns.filter((c) => !hiddenColumnIds.includes(c.id));
+  }, [columns, hiddenColumnIds]);
+
+  const handleExportCsv = () => {
+    if (sorted.length === 0) return;
+    const colsToExport = visibleColumns;
+    const headerRow = colsToExport.map((c) => `"${c.header.replace(/"/g, '""')}"`).join(',');
+    const rowsData = sorted.map((row) => {
+      return colsToExport
+        .map((c) => {
+          let val: any = '';
+          if (c.sortValue) {
+            val = c.sortValue(row);
+          } else if (c.id in (row as any)) {
+            val = (row as any)[c.id];
+          }
+          if (val == null) val = '';
+          if (typeof val === 'object') {
+            val = JSON.stringify(val);
+          }
+          return `"${String(val).replace(/"/g, '""')}"`;
+        })
+        .join(',');
+    });
+
+    const csvContent = [headerRow, ...rowsData].join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${exportFilename}-${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
 
   const pageCount = Math.max(1, Math.ceil(sorted.length / pageSize));
   const safePage = Math.min(page, pageCount);
@@ -157,14 +211,13 @@ function DataTable<T>({
 
   const clearSelection = () => setSelected([]);
 
-  const visibleColumns = columns;
   const primaryColumn = columns.find((c) => c.primary) ?? columns[0];
-  const secondaryColumns = columns.filter((c) => c !== primaryColumn);
+  const secondaryColumns = visibleColumns.filter((c) => c !== primaryColumn);
 
   return (
     <div className="flex flex-col gap-3">
       {/* ── Toolbar ─────────────────────────────────────────────── */}
-      {(onSearchChange || filters || actions) && (
+      {(onSearchChange || filters || actions || exportable || columnVisibility) && (
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           {onSearchChange ? (
             <div className="relative sm:max-w-xs sm:flex-1">
@@ -197,9 +250,58 @@ function DataTable<T>({
           {filters ? (
             <div className="flex flex-wrap items-center gap-2">{filters}</div>
           ) : null}
-          {actions ? (
-            <div className="flex items-center gap-2 sm:ml-auto">{actions}</div>
-          ) : null}
+
+          <div className="flex items-center gap-2 sm:ml-auto">
+            {exportable && sorted.length > 0 && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleExportCsv}
+                className="h-9 gap-1.5 text-xs text-muted-foreground hover:text-foreground font-medium"
+                title="Export filtered records to CSV"
+              >
+                <Download className="size-3.5" />
+                <span className="hidden sm:inline">Export CSV</span>
+              </Button>
+            )}
+
+            {columnVisibility && (
+              <Popover>
+                <PopoverTrigger
+                  className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border bg-card/60 px-2.5 text-xs font-medium text-muted-foreground backdrop-blur-xs hover:bg-muted hover:text-foreground outline-none"
+                >
+                  <Columns3 className="size-3.5" />
+                  <span className="hidden sm:inline">Columns</span>
+                </PopoverTrigger>
+                <PopoverContent align="end" className="w-52 p-2 space-y-1">
+                  <div className="px-2 py-1 text-2xs font-semibold uppercase tracking-wider text-muted-foreground border-b border-border/40 mb-1">
+                    Toggle Columns
+                  </div>
+                  {columns.map((col) => {
+                    const isHidden = hiddenColumnIds.includes(col.id);
+                    return (
+                      <label
+                        key={col.id}
+                        className="flex items-center gap-2 px-2 py-1.5 rounded-md text-xs hover:bg-muted cursor-pointer select-none"
+                      >
+                        <Checkbox
+                          checked={!isHidden}
+                          onCheckedChange={() => toggleColumnVisibility(col.id)}
+                          disabled={col.primary}
+                        />
+                        <span className={cn('truncate', isHidden && 'text-muted-foreground line-through opacity-70')}>
+                          {col.header}
+                        </span>
+                      </label>
+                    );
+                  })}
+                </PopoverContent>
+              </Popover>
+            )}
+
+            {actions}
+          </div>
         </div>
       )}
 
