@@ -1,6 +1,6 @@
 # BigO — Monetization Strategy & Feature Specification
 
-> **Document Status:** Draft / Strategic Proposal  
+> **Document Status:** Implemented Architecture & Production Operations (Phases 1–3 Live)  
 > **Author:** Senior Technical Lead / Engineering  
 > **Target Audience:** Engineering, Product, Stakeholders  
 
@@ -310,46 +310,52 @@ export async function requirePro(userId: string) {
 
 ```mermaid
 gantt
-    title Monetization Rollout Roadmap
+    title Monetization Rollout Roadmap & Implementation Status
     dateFormat  YYYY-MM-DD
-    section Phase 1: Core Billing
-    Subscription Schema & DB Design       :p1_1, 2026-09-05, 4d
-    Stripe & Razorpay Checkout Routes     :p1_2, after p1_1, 5d
-    Webhook Listeners & Signature Verify   :p1_3, after p1_2, 4d
-    Pricing Page & Paywall Modal UI       :p1_4, after p1_2, 5d
-    section Phase 2: OA Simulator
-    Mock Assessment Schema & Seeding      :p2_1, after p1_4, 4d
-    Timed Proctor Simulation UI           :p2_2, after p2_1, 7d
-    Scorecard & Diagnostic Report         :p2_3, after p2_2, 5d
-    section Phase 3: AI Engine & Code Runner
-    In-Browser Monaco Code Runner         :p3_1, after p2_3, 6d
-    AI Failing Testcase Generator         :p3_2, after p3_1, 5d
-    Credit Metering & Usage Dashboard     :p3_3, after p3_2, 3d
-    section Phase 4: B2B Campus
-    Multi-tenant Organization Model       :p4_1, after p3_3, 6d
+    section Phase 1: Core Billing [COMPLETED]
+    Subscription Schema & DB Design       :done, p1_1, 2026-09-01, 4d
+    Stripe Checkout & Customer Portal     :done, p1_2, after p1_1, 4d
+    Webhook Listeners & Signature Verify  :done, p1_3, after p1_2, 3d
+    Pricing Page & Paywall Modal UI       :done, p1_4, after p1_2, 4d
+    section Phase 2: OA Simulator [COMPLETED]
+    Mock Assessment Schema & Seeding      :done, p2_1, after p1_4, 4d
+    Timed Proctor Simulation & HUD        :done, p2_2, after p2_1, 5d
+    Scorecard & Diagnostic Report         :done, p2_3, after p2_2, 4d
+    section Phase 3: Code Runner & Promos [COMPLETED]
+    In-Browser Monaco Code Runner         :done, p3_1, after p2_3, 5d
+    Judge0 / Docker Piston Harness        :done, p3_2, after p3_1, 4d
+    Dynamic Pricing & Promo Code Engine   :done, p3_3, after p3_2, 3d
+    Admin Billing KPI & Revenue Analytics :done, p3_4, after p3_3, 3d
+    section Phase 4: B2B Campus [PLANNED]
+    Multi-tenant Organization Model       :p4_1, 2026-10-01, 7d
     TPO Cohort Analytics Dashboard        :p4_2, after p4_1, 7d
 ```
 
-### Phase 1: Billing Foundation & Entitlement Layer (P0)
-- Add `Subscription` collection and indexes.
-- Integrate Stripe & Razorpay checkout and webhook handlers with idempotency keys.
-- Build clean `/pricing` page with feature matrix and FAQs.
-- Implement UI paywall locks (e.g., pro badges, locked question previews).
+### Phase 1: Billing Foundation & Entitlement Layer (Completed)
+- Integrated `Subscription` collection with user-level unique indexing.
+- Implemented Stripe Checkout Sessions and cryptographically verified webhook handlers (`/api/webhooks/stripe`) with customer portal redirection.
+- Built clean responsive `/pricing` page with dynamic pricing plan fetching.
+- Built entitlement access checks (`withAuth` and subscription plan guards).
+- Added zero-friction mock upgrade simulator (`/api/checkout/mock-confirm`) for local offline testing.
 
-### Phase 2: Company OA Simulator & Recent Question Bank (P0)
-- Build assessment runner engine with countdown timers, fullscreen proctoring, and section transitions.
-- Seed 15 top company OA sets (Amazon, Google, Microsoft, Uber, Goldman Sachs, Atlassian).
-- Implement post-OA scorecard and percentile calculation against active users.
+### Phase 2: Company OA Simulator & Proctoring (Completed)
+- Timed assessment runner engine with countdown timers, fullscreen lockdown, tab-switch monitoring, and copy-paste interception.
+- Seeded verified top company OA problem sets (`scripts/seed-assessments.ts`) for Google, Amazon, Uber, Microsoft, etc.
+- Post-assessment diagnostic scorecards with percentile curves and pattern mastery verdicts (`/oa/[slug]/report/[submissionId]`).
+- Client-side dual-engine neural proctoring with TensorFlow.js (BlazeFace + COCO-SSD) and Groq Llama-3.3 forensic evaluation reports.
 
-### Phase 3: In-Browser Code Runner & AI Edge-Case Debugger (P1)
-- Embed Monaco code editor with testcase tab runner.
-- Connect code execution backend (Judge0 or Dockerized runner API).
-- Deploy AI Edge-case counter-example generator route with token-bucket credit deduction.
+### Phase 3: Code Execution Runner, Dynamic Pricing & Promos (Completed)
+- Embedded Monaco code editor with multi-language starter templates (C++, Python, Java).
+- Deployed isolated code runner infrastructure with local Docker Piston container (`docker-compose.runner.yml`), cloud Judge0, and heuristic fallback.
+- Added competitive programming testcase parser (`lib/cp/testcaseParser.ts`) supporting LeetCode-style argument assignments.
+- Built dynamic pricing plan database collection (`pricing_plans`) allowing administrators to update pricing, badges, and features without redeployment.
+- Built promotional code validation engine (`promo_codes`, `POST /api/promo/validate`) supporting percentage and fixed discounts, expiration dates, and plan restrictions.
+- Built administrative billing dashboard (`/admin/billing`) featuring MRR, ARR, active subscriber breakdowns, 6-month historical revenue charts (`RevenueTrendChart.tsx`), and manual plan grant/revocation.
 
-### Phase 4: B2B Campus & Institutional Licensing (P2)
-- Multi-tenant college support with customized onboarding URLs.
-- Admin portal for Training & Placement Officers (TPO) to view batch readiness heatmaps.
-- Capability for colleges to run campus-wide mock tests on BigO infrastructure.
+### Phase 4: B2B Campus & Institutional Licensing (Next Milestone)
+- Multi-tenant university support with branded onboarding URLs.
+- Admin portal for Training & Placement Officers (TPO) to view student batch readiness heatmaps.
+- Capability for colleges to run customized campus-wide mock placement assessments on BigO infrastructure.
 
 ---
 
@@ -357,15 +363,14 @@ gantt
 
 | Component | Cost Structure | Mitigation Strategy |
 |---|---|---|
-| **LLM Edge-Case Debugger** | ~$0.003 – $0.01 per query (Claude 3.5 Haiku / GPT-4o-mini) | Strict credit allowance (100/month on Pro). Cache identical code AST submissions in Redis. |
-| **Code Execution (Judge0)** | $15–$30/month (Fly.io / AWS ECS container) | Client-side test filtering; rate-limit consecutive runs to 1 per 5 seconds. |
-| **Payment Gateway Fees** | 2% + ₹3 (Razorpay UPI/Cards) / 2.9% + $0.30 (Stripe) | Passed as standard cost of doing business. Annual plans reduce per-transaction fee impact. |
-| **Gross Margin Target** | **85% – 92%** | High gross margins typical of pure software SaaS platforms. |
+| **LLM Forensic Activity Reports** | ~$0.003 – $0.008 per submission (Groq Llama-3.3-70B) | High-speed Groq inference API; deterministic fallback evaluator when offline. Strict credit allowances per tier. |
+| **Code Execution (Piston/Judge0)** | Self-hosted Docker container ($5–$15/mo VPS) or Pay-as-you-go Judge0 | Sliding-window rate limiting (12 runs/min per user); smart regex/heuristic fallback for standard syntax checks. |
+| **Payment Gateway Fees** | 2.9% + $0.30 (Stripe) | Passed as standard cost of doing business. Annual plans and 75-day passes maximize lifetime margin. |
+| **Object Evidence Storage (R2)** | $0.015/GB/month + zero egress fees (Cloudflare R2) | WebP compression ($<25\text{ KB}$ per infraction snapshot); 60-day auto-purge TTL. |
+| **Gross Margin Target** | **88% – 94%** | Highly optimized serverless and edge compute footprint. |
 
 ---
 
-## 7. Next Steps
+## 7. Operational Status
 
-To begin Phase 1 execution:
-1. Review and freeze the pricing tiers ($14/mo, $39/pass, $89/yr).
-2. Create Phase 1 Implementation Plan for Payment Gateway and Entitlements.
+Phases 1, 2, and 3 are fully operational in production. Next strategic focus is campus placement cell outreach (Phase 4).

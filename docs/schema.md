@@ -20,9 +20,11 @@ Timestamps (`createdAt`, `updatedAt`) are managed by Mongoose's `timestamps: tru
 | `activities` | Per user (both `actorId` and `targetUserId`) |
 | `invites` | System (admin-managed) |
 | `otpverifications` | System (OTP codes with TTL auto-deletion) |
-| `assessments` | Shared (company OA templates and problems) |
+| `assessments` | Shared (company OA templates, starter code, test suites) |
 | `assessment_submissions` | Per user (`userId` + `assessmentId`) with proctoring audit logs |
 | `subscription` | Per user (`userId` unique) with Stripe metadata & AI quotas |
+| `pricing_plans` | Shared (dynamic pricing tier definitions & features) |
+| `promo_codes` | Shared (promotional discount codes & redemption limits) |
 | `user_cp_profiles` | Per user (`userId` unique) with multi-platform CP stats |
 | `user_contest_histories` | Per user (`userId` + platform rating history) |
 | `contests` | Shared (global programming contest index) |
@@ -224,20 +226,28 @@ Curated company Online Assessment templates with timed constraints, multi-langua
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `_id` | ObjectId | |
+| `_id` | ObjectId | Auto-generated |
 | `title` | string | Assessment title (e.g. "Google L4 Software Engineer OA") |
 | `slug` | string | Unique URL slug (indexed) |
 | `company` | string | Company tag (e.g. "Google", "Amazon", "Uber") |
 | `role` | string | Role name (e.g. "SDE 2", "Frontend Engineer") |
 | `description` | string | Candidate briefing and overview |
-| `durationMinutes` | number | Exam time limit (e.g. 90) |
-| `difficulty` | `"Easy" \| "Medium" \| "Hard"` | |
-| `instructions` | string[] | Bullet-point rules and guidelines |
-| `problems` | Subdocument array | Nested `IAssessmentProblem` documents (title, slug, starterCode, testCases) |
-| `allowedLanguages` | string[] | Enabled languages: `["cpp", "python", "java", "javascript"]` |
-| `isPublished` | boolean | Availability flag |
-| `proctoringConfig` | Object | Enabled proctoring rules (camera, audio, faceDetection, deviceDetection, etc.) |
-| `createdBy` | ObjectId | ref `users` (admin author) |
+| `durationMinutes` | number | Exam time limit (default 60) |
+| `passingScore` | number | Minimum passing percentage score (default 70) |
+| `isProOnly` | boolean | Entitlement gate flag (default true) |
+| `difficulty` | `"Easy" \| "Medium" \| "Hard"` | Assessment difficulty tier |
+| `companyInstructions` | string[] | Bullet-point rules and guidelines |
+| `problems` | Subdocument array | Array of `IAssessmentProblem` documents |
+
+Subdocument `IAssessmentProblem`:
+- `id`: string (unique problem identifier)
+- `title`: string
+- `description`: string (Markdown problem statement, constraints, examples)
+- `difficulty`: `"Easy" | "Medium" | "Hard"`
+- `score`: number (points awarded, default 50)
+- `patternTag`: string (e.g. "Sliding Window", "Dynamic Programming")
+- `starterCode`: `{ cpp: string, python: string, java: string }`
+- `testCases`: Array of `{ input: string, expectedOutput: string, isHidden: boolean, explanation?: string }`
 
 ### `assessment_submissions` (`models/assessmentSubmission.ts`)
 
@@ -327,17 +337,61 @@ User notification preferences for upcoming competitive programming contests.
 | `emailEnabled` | boolean | Master alert toggle |
 | `unsubscribeToken` | string | Cryptographically secure token for one-click email unsubscribe |
 
-### `feedbacks` (`models/feedback.ts`)
+### `pricing_plans` (`models/pricingPlan.ts`)
 
-In-app user feedback, bug reports, and moderation workflows.
+Dynamic subscription and checkout pricing plans managed by administrators without requiring code redeployments.
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `_id` | ObjectId | |
-| `userId` | ObjectId? | ref `users` (optional for anonymous submissions) |
-| `category` | `"bug" \| "feature" \| "content" \| "other"` | Feedback category |
-| `message` | string | Feedback details / description |
-| `rating` | number? | 1–5 star rating |
-| `status` | `"pending" \| "in_progress" \| "resolved" \| "archived"` | Admin moderation state |
-| `adminNotes` | string? | Internal administrative notes |
+| `_id` | ObjectId | Auto-generated |
+| `planKey` | `"pro_monthly" \| "pro_annual" \| "oa_pass"` | Plan identifier (unique index) |
+| `name` | string | Display title (e.g. "BigO Pro Monthly") |
+| `badge` | string? | Highlight badge (e.g. "MOST POPULAR", "SAVE 40%") |
+| `priceUsd` | number | Plan price in USD |
+| `period` | `"month" \| "year" \| "75_days"` | Billing frequency |
+| `mode` | `"subscription" \| "payment"` | Recurring Stripe subscription vs one-time payment |
+| `description` | string | Subtitle / target persona description |
+| `features` | string[] | Array of feature bullet points |
+| `aiCredits` | number | Behavioral analysis forensic credits (default 100) |
+| `isActive` | boolean | Availability flag (indexed) |
+| `stripePriceId` | string? | Associated Stripe Price ID (`price_...`) |
+
+### `promo_codes` (`models/promoCode.ts`)
+
+Administrative discount codes with plan applicability, percentage/fixed calculations, and redemption caps.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `_id` | ObjectId | Auto-generated |
+| `code` | string | Promotional code string (unique, uppercase, indexed) |
+| `description` | string? | Internal campaign note |
+| `discountType` | `"percentage" \| "fixed"` | Percentage discount vs flat USD amount off |
+| `discountValue` | number | Percentage (e.g. 25 for 25%) or USD fixed amount (e.g. 10) |
+| `applicablePlans` | string[] | Allowed plans (`["all"]` or specific array like `["pro_annual"]`) |
+| `maxRedemptions` | number? | Maximum allowed redemptions (null for unlimited) |
+| `redemptionCount` | number | Cumulative successful checkout redemptions |
+| `expiresAt` | Date? | Expiration date |
+| `isActive` | boolean | Active toggle (compound index with `code`) |
+| `createdBy` | ObjectId? | ref `users` (admin who issued code) |
+
+### `feedbacks` (`models/feedback.ts`)
+
+User bug reports, feature suggestions, and administrative resolution workflows.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `_id` | ObjectId | Auto-generated |
+| `userId` | ObjectId? | ref `users` (optional for unauthenticated feedback) |
+| `email` | string | User contact email |
+| `name` | string? | Submitter name |
+| `type` | `"bug" \| "feedback"` | Feedback type |
+| `title` | string | Short summary title |
+| `description` | string | Detailed issue or feedback description |
+| `category` | string | Tag (e.g. "dsa", "oa", "ui", "other") |
+| `severity` | `"low" \| "medium" \| "high" \| "critical"` | Bug severity (default "medium") |
+| `pageUrl` | string? | URL where the issue occurred |
+| `userAgent` | string? | Browser and OS user agent string |
+| `ip` | string? | Submitter IP address (indexed with createdAt) |
+| `status` | `"pending" \| "in_review" \| "resolved" \| "dismissed"` | Admin workflow status (indexed) |
+| `adminNotes` | string? | Internal notes from administrator |
 

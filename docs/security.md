@@ -40,17 +40,24 @@ To prevent XSS:
 
 Sanitizer configuration allows standard formatting, links with `rel="noopener noreferrer nofollow"`, and code syntax highlighting while stripping dangerous tags (`<script>`, `<iframe>`, `<object>`, `<embed>`, `<form>`, `<input>`).
 
-## 5. Security Headers & CSP
+## 5. Security Headers & CSP Hardening
 
 Set in `next.config.mjs`:
-- `frame-ancestors 'none'` to mitigate clickjacking.
-- `X-Content-Type-Options: nosniff`.
-- Content Security Policy restricting script and object sources.
+- `Content-Security-Policy`: Restricts scripts, frames, styles, objects, and connect sources:
+  `default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https: blob:; font-src 'self' https: data:; connect-src 'self' https:; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; object-src 'none';`
+- `Permissions-Policy`: Restricted explicitly to `camera=(self), microphone=(self), geolocation=(), payment=(self)`.
+- `Cross-Origin-Opener-Policy`: `same-origin-allow-popups` (enables secure OAuth redirects).
+- `Strict-Transport-Security`: `max-age=63072000; includeSubDomains; preload` (HSTS).
+- `X-Frame-Options`: `DENY` to mitigate clickjacking attacks.
+- `X-Content-Type-Options`: `nosniff` preventing MIME confusion exploits.
+- `Referrer-Policy`: `strict-origin-when-cross-origin`.
+- `X-XSS-Protection`: `1; mode=block`.
+- `X-DNS-Prefetch-Control`: `on`.
 
 ## 6. Secrets Management
 
 - Secrets are configured via environment variables (`.env.local` locally, Vercel Environment Variables in production).
-- Credentials (`MONGODB_URI`, `BETTER_AUTH_SECRET`, `RESEND_API_KEY`, `STRIPE_SECRET_KEY`, `R2_*`, `GROQ_API_KEY`) are kept out of source control (`.gitignore`).
+- Credentials (`MONGODB_URI`, `BETTER_AUTH_SECRET`, `RESEND_API_KEY`, `STRIPE_SECRET_KEY`, `R2_*`, `GROQ_API_KEY`, `JUDGE0_*`) are kept out of source control (`.gitignore`).
 - `.env.example` provides template placeholders.
 
 ## 7. Online Assessment & Anti-Cheat Integrity Controls
@@ -68,4 +75,12 @@ The proctoring system enforces exam integrity while preserving candidate privacy
 - **Stripe Cryptographic Signature Validation**: All incoming requests to `/api/webhooks/stripe` must provide a valid `stripe-signature` header verified against `STRIPE_WEBHOOK_SECRET`.
 - **Server-Side Entitlement Authority**: Client applications cannot declare or upgrade their own tiers. All subscription state, credits, and expiry timestamps are written strictly by server-side webhook handlers.
 - **PCI-DSS Compliance**: No raw credit card details or payment credentials touch BigO servers. All checkout and payment method management is delegated to Stripe Checkout and Stripe Customer Portal.
+
+## 9. Sandboxed Code Execution Isolation & Rate Limiting
+
+- **Isolated Process Isolation**: User-submitted code (C++, Python, Java) executes inside isolated container sandboxes (local Docker Piston runner or RapidAPI Judge0). Containers execute with restricted system capabilities, strictly bounded CPU time, memory limits, and no host filesystem access.
+- **Sliding-Window Abuse Prevention**:
+  - `POST /api/oa/execute`: Gated by user-keyed sliding window rate limiting (max 12 executions per minute) preventing denial-of-service or crypto-mining attacks.
+  - `POST /api/promo/validate`: Gated by IP/session sliding window rate limiting (max 15 attempts per minute) mitigating brute-force promo code enumeration.
+- **Admin Mutation Validation**: All administrative mutation routes (`/api/admin/assessments`, `/api/admin/billing`, `/api/admin/promos`) enforce strict Zod schema validation, slug collision checks, and `admin` session role authorization.
 

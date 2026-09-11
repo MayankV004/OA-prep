@@ -71,7 +71,7 @@ Redis      (pool=3, most req    │
 
 #### 3.1 In-Memory Rate Limiter is Broken on Vercel
 
-**File:** [`lib/rate-limit.ts`](./lib/rate-limit.ts) · **File:** [`lib/auth.ts`](./lib/auth.ts#L13)
+**File:** [`lib/rate-limit.ts`](../lib/rate-limit.ts) · **File:** [`lib/auth.ts`](../lib/auth.ts#L13)
 
 The `store = new Map()` in `rate-limit.ts` and `storage: 'memory'` in `auth.ts` are **per-process**. On Vercel, every cold Lambda gets a fresh process. The same user can be rate-limited on Lambda A but unlimited on Lambda B. Rate limiting provides zero protection.
 
@@ -113,7 +113,7 @@ rateLimit: {
 
 #### 3.2 `/api/stats` Full Document Scan on Every Landing Page Hit
 
-**File:** [`app/api/stats/route.ts`](./app/api/stats/route.ts)
+**File:** [`app/api/stats/route.ts`](../app/api/stats/route.ts)
 
 Every unauthenticated visitor (including web crawlers) triggers a full `Pattern.find()` that loads all pattern documents into Node.js memory, then traverses nested arrays manually. This query runs with **no index**, loads **all docs**, and is **not cached**.
 
@@ -154,7 +154,7 @@ const stats = await withCache('global:stats', 600, async () => {
 
 #### 3.3 Dashboard Stats Load All Patterns Into Memory
 
-**File:** [`app/api/dashboard/stats/route.ts`](./app/api/dashboard/stats/route.ts#L22-L38)
+**File:** [`app/api/dashboard/stats/route.ts`](../app/api/dashboard/stats/route.ts#L22-L38)
 
 Same pattern as above — `Pattern.find().lean()` loads every pattern + variation + problem into Node.js memory to count completion. This runs on every dashboard load, **per authenticated user**.
 
@@ -178,7 +178,7 @@ const problemDifficultyMap = await withCache('global:problemDifficultyMap', 300,
 
 #### 3.4 Email Sending Blocks Request Lifecycle
 
-**Files:** [`app/api/admin/invites/route.ts`](./app/api/admin/invites/route.ts#L42) · [`app/api/admin/invites/route.ts`](./app/api/admin/invites/route.ts#L60)
+**Files:** [`app/api/admin/invites/route.ts`](../app/api/admin/invites/route.ts#L42) · [`app/api/admin/invites/route.ts`](../app/api/admin/invites/route.ts#L60)
 
 Both `sendInviteEmail(...)` calls are `await`ed synchronously. If Resend is slow or errors, the admin sees a timeout or failure — even though the invite was saved correctly.
 
@@ -209,7 +209,7 @@ POST /api/admin/invites
 
 #### 3.5 MongoDB Connection Pool Not Configured
 
-**File:** [`lib/db.ts`](./lib/db.ts#L26-L29)
+**File:** [`lib/db.ts`](../lib/db.ts#L26-L29)
 
 The connection is opened with MongoDB's default pool (5 connections). At 100 concurrent users, queries queue behind each other. Simple fix — configure pool size for your workload.
 
@@ -248,7 +248,7 @@ const opts = {
 
 #### 3.6 Auth Layout is a Client Component (TTFB + Flash)
 
-**File:** [`app/(app)/layout.tsx`](./app/(app)/layout.tsx)
+**File:** [`app/(app)/layout.tsx`](../app/(app)/layout.tsx)
 
 The layout is marked `'use client'` to run `authClient.useSession()`. This means:
 1. Server sends HTML with empty shell
@@ -283,7 +283,7 @@ Benefits: No loading spinner, better TTFB, RSC streaming works for child pages.
 
 #### 3.7 Activity Logging Blocks Mutations Inline
 
-**File:** [`lib/activity.ts`](./lib/activity.ts#L16) · Called in: `app/api/problems/route.ts`, `app/api/admin/invites/route.ts`
+**File:** [`lib/activity.ts`](../lib/activity.ts#L16) · Called in: `app/api/problems/route.ts`, `app/api/admin/invites/route.ts`
 
 `recordActivity()` does `await Activity.create(...)` inside the mutation handler. If the Activity write is slow, the user's problem creation is also slow. It already catches and swallows errors — good — but it still adds latency.
 
@@ -372,7 +372,7 @@ lib/api/
 
 #### 3.11 Tune TanStack Query `staleTime` Per Query
 
-**File:** [`components/Providers.tsx`](./components/Providers.tsx#L15)
+**File:** [`components/Providers.tsx`](../components/Providers.tsx#L15)
 
 Global `staleTime: 60 * 1000` is too uniform.
 

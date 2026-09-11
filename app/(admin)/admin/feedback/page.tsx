@@ -455,7 +455,6 @@ export default function AdminFeedbackPage() {
                         adminNotes,
                       })
                     }
-                    className="bg-gradient-to-r from-red-600 via-rose-600 to-red-500 text-white"
                   >
                     Save Changes
                   </Button>

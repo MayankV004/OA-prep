@@ -380,12 +380,12 @@ export default function AdminTopicsPage() {
               onClick={handleOpenCreateSubject}
               className="rounded-xl border-border/40 font-semibold gap-1.5"
             >
-              <Plus className="size-4 text-rose-500" />
+              <Plus className="size-4" />
               <span>New Subject</span>
             </Button>
             <Button
               onClick={handleOpenCreateTopic}
-              className="bg-gradient-to-r from-red-600 via-rose-600 to-red-500 text-white font-semibold shadow-sm hover:scale-105 transition-all border-none rounded-xl"
+              className="rounded-xl font-semibold gap-1.5"
             >
               <Plus className="size-4" />
               <span>New Topic Note</span>
@@ -401,7 +401,7 @@ export default function AdminTopicsPage() {
           className={cn(
             'px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2',
             activeTab === 'topics'
-              ? 'bg-rose-500 text-white shadow-sm'
+              ? 'bg-primary text-primary-foreground shadow-xs'
               : 'text-muted-foreground hover:text-foreground'
           )}
         >
@@ -414,7 +414,7 @@ export default function AdminTopicsPage() {
           className={cn(
             'px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2',
             activeTab === 'subjects'
-              ? 'bg-rose-500 text-white shadow-sm'
+              ? 'bg-primary text-primary-foreground shadow-xs'
               : 'text-muted-foreground hover:text-foreground'
           )}
         >
@@ -437,7 +437,7 @@ export default function AdminTopicsPage() {
           emptyDescription="Click 'New Topic Note' to add concept notes under any subject."
           emptyIcon={FileText}
           emptyAction={
-            <Button onClick={handleOpenCreateTopic} className="bg-rose-500 text-white rounded-xl">
+            <Button onClick={handleOpenCreateTopic} className="rounded-xl font-semibold">
               <Plus className="size-4" />
               New Topic Note
             </Button>
@@ -476,7 +476,7 @@ export default function AdminTopicsPage() {
           emptyDescription="Click 'New Subject' to create your first CS Subject."
           emptyIcon={BookOpen}
           emptyAction={
-            <Button onClick={handleOpenCreateSubject} className="bg-rose-500 text-white rounded-xl">
+            <Button onClick={handleOpenCreateSubject} className="rounded-xl font-semibold">
               <Plus className="size-4" />
               New Subject
             </Button>
@@ -525,7 +525,7 @@ export default function AdminTopicsPage() {
                   ...topicFormData,
                 })
               }
-              className="bg-gradient-to-r from-red-600 via-rose-600 to-red-500 text-white font-semibold border-none rounded-xl"
+              className="rounded-xl font-semibold"
             >
               {saveTopicMutation.isPending ? 'Saving...' : editingTopic ? 'Update Topic Note' : 'Create Topic Note'}
             </Button>
@@ -656,7 +656,7 @@ export default function AdminTopicsPage() {
                   ...subjectFormData,
                 })
               }
-              className="bg-gradient-to-r from-red-600 via-rose-600 to-red-500 text-white font-semibold border-none rounded-xl"
+              className="rounded-xl font-semibold"
             >
               {saveSubjectMutation.isPending ? 'Saving...' : editingSubject ? 'Update Track' : 'Create Track'}
             </Button>

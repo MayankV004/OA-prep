@@ -26,9 +26,10 @@
 ### 2.4 Subjects & Advanced CS Topics
 - **Subjects**: Structured concept notes and flashcards for Core CS subjects (OS, DBMS, Computer Networks, OOP).
 - **Advanced Topics**: Deep dives into DevOps, Docker, Kubernetes, System Design, and Generative AI.
+- **ReaderLayout Subsystem**: Distraction-free, responsive reading interface with scrollspy table of contents, progress indicators, and fullscreen reading mode for both topics and cheatsheets.
 
 ### 2.5 Cheat Sheets & Q&A Flashcards
-- Markdown cheat sheets with syntax highlighting and subject tags.
+- Markdown cheat sheets with syntax highlighting, subject tags, and reader mode rendering.
 - Interactive interview Q&A flashcards for rapid revision.
 
 ### 2.6 Dashboard & Analytics
@@ -36,10 +37,12 @@
 - 90-day activity heatmap and completion trend charts powered by Recharts.
 - Activity feed detailing problem completion and note updates.
 
-### 2.7 Online Assessment (OA) Simulator
+### 2.7 Online Assessment (OA) Simulator & Code Execution Engine
 - **Company-Specific Exam Mocking**: Full simulation of technical assessments from top tech employers (Google, Amazon, Uber, Meta, Microsoft) with realistic time constraints.
-- **Embedded IDE**: Browser-based Monaco Editor with syntax highlighting, language auto-detection (C++, Python, Java, JavaScript), and intelligent indentation.
-- **Automated Test Execution**: Multi-language test runner evaluating code against public sample cases and hidden verification suites with runtime and memory constraints.
+- **Embedded IDE**: Browser-based Monaco Editor with syntax highlighting, language selection (C++, Python, Java), intelligent indentation, and starter templates.
+- **Sandboxed Code Execution Harness**: Multi-tier runner architecture (containerized Docker Piston engine, cloud Judge0, and heuristic fallback) with automated testcase parsing (`lib/cp/testcaseParser.ts`).
+- **Live Code Execution**: Safe, rate-limited (12 runs/min) interactive code runs against public and custom testcases via `POST /api/oa/execute`.
+- **Automated Submission Grading**: Evaluates full testcase suites (visible + hidden), detects Time Limit Exceeded (TLE) or Wrong Answer (WA), and computes scores with pattern diagnostics (`mastered`, `needs_practice`, `failed`).
 - **Comprehensive Assessment Reports**: Instant generation of candidate diagnostic reports including score percentile, time efficiency, pattern strength breakdowns, and proctoring audit trails.
 
 ### 2.8 Enterprise Dual-Engine Neural Proctoring
@@ -54,18 +57,22 @@
 ### 2.9 Competitive Programming (CP) Sync & Global Contest Alerts
 - **Multi-Platform Integration**: Automated profile scraping and rating tracking across Codeforces, LeetCode, CodeChef, and AtCoder.
 - **Composite Placement Score**: Proprietary algorithm normalizing competitive ratings into an actionable 0–100 candidate preparedness rating.
-- **Contest Aggregation Engine**: Scheduled background scrapers monitoring upcoming contests across platforms with customizable email alert schedules.
+- **Hybrid Contest Crons**: Scheduled 15-minute GitHub Actions workflow for real-time alert dispatch (24h, 2h, 30m prior) and daily Vercel crons for aggregator syncing.
 
-### 2.10 Monetization, Subscriptions & Credits
+### 2.10 Monetization, Dynamic Pricing & Promo Codes
 - **Tiered Access Model**: Free Tier, Pro Monthly, Pro Annual, and single-use OA Passes.
+- **Dynamic Pricing Configuration**: MongoDB-backed pricing plans (`pricing_plans`) allowing dynamic updates to pricing, badges, and feature lists.
+- **Promotional Code Engine**: Support for percentage and fixed dollar discounts, expiration dates, plan applicability rules, and redemption limits (`POST /api/promo/validate`).
 - **Stripe Integration**: Secure checkout sessions, billing customer portal, automated subscription lifecycle management via webhooks, and local mock testing bypass.
 - **AI Quotas**: Credit accounting for automated behavioral forensic analysis and proctored assessment attempts.
 
-### 2.11 Admin Panel
+### 2.11 Administrative Management & Financial Analytics
 - **User Management**: View users, promote/demote roles, enable/disable accounts.
 - **Invites Management**: Issue, resend, or revoke invite tokens via Resend.
+- **Assessment Management**: Author and update company assessment suites, problem statements, scoring, starter templates, and hidden testcases (`/admin/content/assessments`).
+- **Billing & Revenue Dashboard**: Track Monthly Recurring Revenue (MRR), Annual Recurring Revenue (ARR), active subscriber breakdowns, 6-month historical revenue charts (`RevenueTrendChart.tsx`), promo code creation, and manual plan grant/revocation (`/admin/billing`).
 - **Taxonomies & Content**: Dynamically edit pattern titles, variations, curated problems, and categories.
-- **Feedback & Moderation**: Review candidate feedback, bug reports, and track resolution status.
+- **Feedback & Bug Moderation**: Review candidate feedback, bug reports with severity tags and URLs, and track resolution status (`/admin/feedback`).
 - **Audit Log**: Global activity log capturing administrative and user actions.
 
 ---

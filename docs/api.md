@@ -132,8 +132,22 @@ REST API via Next.js Route Handlers under `/api/*`. Route handlers enforce authe
 | PATCH | `/api/admin/content/patterns/:slug/variations/:variationId` | Admin | Update specific pattern variation |
 | POST | `/api/admin/content/patterns/:slug/variations/:variationId/problems` | Admin | Add curated problem to variation |
 | POST | `/api/admin/content/patterns/wipe` | Admin | Reset/wipe pattern collections (requires confirmation) |
-| GET | `/api/admin/feedback` | Admin | List user feedback items (`?status=...&category=...`) |
-| PATCH | `/api/admin/feedback/:id` | Admin | Update feedback status (`resolved`, `archived`, `in_progress`) |
+| GET | `/api/admin/assessments` | Admin | List all company assessments (`?q=...&company=...&difficulty=...&isProOnly=...`) |
+| POST | `/api/admin/assessments` | Admin | Create new assessment with problems, testcases, starter templates |
+| GET | `/api/admin/assessments/:id` | Admin | Fetch full assessment document including hidden testcases |
+| PATCH | `/api/admin/assessments/:id` | Admin | Update assessment configuration, problems, or duration |
+| DELETE | `/api/admin/assessments/:id` | Admin | Delete assessment |
+| GET | `/api/admin/billing` | Admin | Aggregated billing KPIs: active subscribers, MRR, ARR, promo stats, 6-month trends |
+| POST | `/api/admin/billing` | Admin | Manual grant/revoke of Pro / OA Pass plan with custom duration |
+| GET | `/api/admin/pricing` | Admin | List all dynamic pricing plans stored in MongoDB |
+| PATCH | `/api/admin/pricing` | Admin | Update plan prices, badges, features, and AI credit quotas |
+| GET | `/api/admin/promos` | Admin | List promo codes with redemption counts and limits |
+| POST | `/api/admin/promos` | Admin | Create new promo code (`{ code, discountType, discountValue, applicablePlans, expiresAt, maxRedemptions }`) |
+| GET | `/api/admin/promos/:id` | Admin | Get specific promo code details |
+| PATCH | `/api/admin/promos/:id` | Admin | Update promo code parameters or toggle `isActive` |
+| DELETE | `/api/admin/promos/:id` | Admin | Delete promo code |
+| GET | `/api/admin/feedback` | Admin | List user feedback & bug items (`?status=...&category=...`) |
+| PATCH | `/api/admin/feedback/:id` | Admin | Update feedback status (`pending`, `in_review`, `resolved`, `dismissed`) and admin notes |
 
 ---
 
@@ -144,7 +158,8 @@ REST API via Next.js Route Handlers under `/api/*`. Route handlers enforce authe
 | GET | `/api/oa/assessments` | Auth | `?company=...&role=...` | List available company OA assessments and difficulty tiers |
 | GET | `/api/oa/assessments/:slug` | Auth | — | Fetch single assessment briefing, rules, and problem overview |
 | POST | `/api/oa/assessments/:slug/start` | Auth | `{ baselineSelfieUrl? }` | Initialize candidate session, generate submission ID, lock duration |
-| POST | `/api/oa/assessments/:slug/submit` | Auth | Detailed submission payload | Submit completed code solutions, telemetry timeline, and trigger LLM analysis |
+| POST | `/api/oa/execute` | Auth | `{ problemId, language, code, testCases?, customInput?, patternTag?, starterCode? }` | Execute code against sample or custom testcases via Judge0 / Piston runner (12 runs/min rate limit) |
+| POST | `/api/oa/assessments/:slug/submit` | Auth | Detailed submission payload | Submit completed code solutions; runs all test cases (visible & hidden) via Judge0 runner, detects TLE/WA, calculates scores, multi-signal cheating risk, and generates LLM forensic narrative |
 | GET | `/api/oa/submissions/:submissionId` | Auth | — | Fetch candidate assessment score, problem breakdowns, and forensic report |
 | POST | `/api/upload` | Auth | Multipart/Form-Data | Upload WebP violation snapshots to Cloudflare R2 / local vault |
 
@@ -164,20 +179,20 @@ REST API via Next.js Route Handlers under `/api/*`. Route handlers enforce authe
 
 | Method | Path | Auth | Body / Query | Description |
 | --- | --- | --- | --- | --- |
-| GET | `/api/contests` | Auth | `?status=UPCOMING\|RUNNING&platform=...` | List upcoming and ongoing programming contests across platforms |
+| GET | `/api/contests` | Auth | `?status=UPCOMING\|RUNNING&platform=...` | List upcoming and ongoing programming contests across platforms (emits CDN cache headers) |
 | GET | `/api/contests/subscription` | Auth | — | Get user contest notification preferences and alert channels |
 | POST | `/api/contests/subscription` | Auth | `{ platforms, alertTiming, emailEnabled }` | Update contest notification alert preferences |
 | POST | `/api/contests/unsubscribe` | Public | `?token=...` | One-click unsubscribe from contest email notifications |
 
 ---
 
-## Background Cron Workers (QStash / Vercel Cron)
+## Background Cron Workers (QStash / Vercel Cron / GitHub Actions)
 
 | Method | Path | Auth | Description |
 | --- | --- | --- | --- |
-| GET/POST | `/api/cron/contests-sync` | Cron Secret | Scrapes upcoming contests from Codeforces, LeetCode, CodeChef, and AtCoder APIs |
-| GET/POST | `/api/cron/contest-alerts` | Cron Secret | Evaluates user alert timings (e.g. 1h, 24h prior) and enqueues notification emails |
-| GET/POST | `/api/cron/user-contests-sync` | Cron Secret | Synchronizes linked user CP profiles and updates rating history |
+| GET/POST | `/api/cron/contests-sync` | Cron Secret | Daily scrape of upcoming contests from Codeforces, LeetCode, CodeChef, and AtCoder APIs (Vercel Cron) |
+| GET/POST | `/api/cron/contest-alerts` | Cron Secret | Evaluates user alert timings (24h, 2h, 30m prior) and enqueues notification emails (GitHub Actions every 15 min) |
+| GET/POST | `/api/cron/user-contests-sync` | Cron Secret | Synchronizes linked user CP profiles and updates rating history (Vercel Cron daily) |
 | POST | `/api/workers/email` | QStash Sign | Verifies `upstash-signature` and dispatches React Email templates via Resend |
 
 ---
@@ -186,6 +201,8 @@ REST API via Next.js Route Handlers under `/api/*`. Route handlers enforce authe
 
 | Method | Path | Auth | Body / Query | Description |
 | --- | --- | --- | --- | --- |
+| GET | `/api/pricing` | Public | — | Fetch active dynamic pricing plans (monthly, annual, OA pass) from MongoDB with default fallback |
+| POST | `/api/promo/validate` | Public/Auth | `{ code, plan }` | Validate promo code, check expiry/limits, and calculate discount & final price (15 req/min rate limit) |
 | GET | `/api/subscription` | Auth | — | Fetch user subscription status, plan tier (`free`, `pro_monthly`, `pro_annual`, `oa_pass`), and remaining AI credits |
 | POST | `/api/checkout` | Auth | `{ plan: "pro_monthly" \| "pro_annual" \| "oa_pass" }` | Generate Stripe Checkout Session URL or trigger instant mock confirmation in dev |
 | GET | `/api/checkout/verify-session` | Auth | `?session_id=...` | Verify completed Stripe checkout and sync entitlements immediately |
@@ -208,7 +225,7 @@ REST API via Next.js Route Handlers under `/api/*`. Route handlers enforce authe
 
 | Method | Path | Auth | Body / Query | Description |
 | --- | --- | --- | --- | --- |
-| POST | `/api/feedback` | Auth | `{ category, message, rating? }` | Submit user feedback, bug reports, or feature requests |
+| POST | `/api/feedback` | Auth | `{ type: "bug" \| "feedback", title, description, category?, severity?, pageUrl? }` | Submit user feedback, bug reports, or feature requests with severity and URL context |
 | GET | `/api/metrics` | Auth | — | System telemetry, database metrics, and OpenTelemetry diagnostic counters |
 | GET | `/api/export` | Auth | `?format=json\|csv` | Export complete user revision notes, problem bookmarks, and progress data |
 
