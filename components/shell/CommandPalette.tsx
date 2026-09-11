@@ -8,6 +8,7 @@ import {
   Building2,
   CornerDownLeft,
   CreditCard,
+  Layers,
   Moon,
   Percent,
   Plus,
@@ -113,6 +114,14 @@ function CommandPalette({
             icon: Percent,
             hint: 'Promos',
             run: () => go('/admin/billing/promos'),
+          },
+          {
+            id: 'admin:non-standard',
+            label: 'Manage Non-Standard DSA Challenges',
+            group: 'Admin Quick Actions',
+            icon: Layers,
+            hint: 'Content',
+            run: () => go('/admin/content/non-standard'),
           },
           {
             id: 'admin:grant-access',

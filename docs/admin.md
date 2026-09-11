@@ -36,6 +36,7 @@ Routes under `/admin/*` are strictly gated by `withRole("admin")` and partitione
 
 ### III. Knowledge Engine
 - `/admin/content/patterns` — Curated DSA Patterns & Variations Editor
+- `/admin/content/non-standard` — Non-Standard DSA & Quant Puzzle Studio (9 Canonical Buckets, 'Why Non-Standard?' rationales)
 - `/admin/content/problems` — Multi-platform Problems Management
 - `/admin/content/topics` — Core CS Subject Concept Notes
 - `/admin/content/cheatsheets` — Topic Cheat Sheets & Revision Guides

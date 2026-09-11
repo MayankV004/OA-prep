@@ -95,6 +95,7 @@ export const ADMIN_NAV: NavSection[] = [
     label: 'Knowledge Engine',
     items: [
       { name: 'DSA Patterns', href: '/admin/content/patterns', icon: Code2 },
+      { name: 'Non-Standard DSA', href: '/admin/content/non-standard', icon: Layers },
       { name: 'Problem Catalog', href: '/admin/content/problems', icon: ListChecks },
       { name: 'Topics & Tracks', href: '/admin/content/topics', icon: FolderTree },
       { name: 'Cheat Sheets', href: '/admin/content/cheatsheets', icon: FileText },

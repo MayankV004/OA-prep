@@ -132,6 +132,10 @@ REST API via Next.js Route Handlers under `/api/*`. Route handlers enforce authe
 | PATCH | `/api/admin/content/patterns/:slug/variations/:variationId` | Admin | Update specific pattern variation |
 | POST | `/api/admin/content/patterns/:slug/variations/:variationId/problems` | Admin | Add curated problem to variation |
 | POST | `/api/admin/content/patterns/wipe` | Admin | Reset/wipe pattern collections (requires confirmation) |
+| GET | `/api/admin/content/non-standard` | Admin | List non-standard challenges (`?q=...&bucket=...&difficulty=...`) with aggregate metrics |
+| POST | `/api/admin/content/non-standard` | Admin | Create new non-standard problem with canonical bucket, reason, companies, starterCode |
+| PATCH | `/api/admin/content/non-standard` | Admin | Update non-standard challenge fields (`{ id, title, bucket, difficulty, ... }`) |
+| DELETE | `/api/admin/content/non-standard` | Admin | Delete non-standard challenge (`?id=...`) |
 | GET | `/api/admin/assessments` | Admin | List all company assessments (`?q=...&company=...&difficulty=...&isProOnly=...`) |
 | POST | `/api/admin/assessments` | Admin | Create new assessment with problems, testcases, starter templates |
 | GET | `/api/admin/assessments/:id` | Admin | Fetch full assessment document including hidden testcases |
