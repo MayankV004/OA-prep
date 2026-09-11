@@ -136,6 +136,15 @@ Unlike traditional problem trackers, BigO integrates **pattern-oriented DSA trac
 
 ---
 
+### 🏛️ 10. Enterprise Campus & Institutional B2B Suite
+- **SuperAdmin Campus Hub (`/admin/institutions`)**: Contract lifecycle and student seat license provisioning with university domain constraints (e.g. `@iitb.ac.in`).
+- **Nationwide Placement Drive Radar (`/admin/institutions/live-drives`)**: Real-time cross-university telemetry tracking active candidate concurrency, scheduled placement windows, and emergency controls.
+- **Candidate Incident Desk (`/admin/proctoring`)**: Centralized AI forensic review queue with second-by-second timeline scrubbing, Cloudflare R2 infraction snapshots, and Groq LLM behavioral narratives.
+- **Isolated TPC Campus Portal (`/portal/*`)**: Dedicated institutional control room strictly walled off from SuperAdmin views, empowering college Training & Placement Cells (TPC Head, Coordinators, Invigilators) to schedule drives, invigilate students live, and export placement scorecards (RFC 4180 CSV).
+- **Code Runner & Telemetry Operations Center (`/admin/system/runner`)**: Live Docker Piston runner health monitor, round-trip cluster latency gauges (MongoDB Atlas, Upstash Redis), submission throughput charts, and live container sandbox diagnostics.
+
+---
+
 ## 🛠️ Technology Stack
 
 | Layer | Technology | Purpose & Description |

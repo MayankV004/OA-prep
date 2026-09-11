@@ -228,22 +228,52 @@ Located under `lib/cache.ts` and API route headers:
   - **L2 Distributed Cache**: Upstash Redis HTTP client shared across Vercel serverless functions with explicit TTL and key invalidation (`withCache()`, `invalidateCache()`).
 - **Edge CDN Caching Headers**: High-throughput public read endpoints (such as `/api/contests`) supply `Cache-Control`, `CDN-Cache-Control`, and `Vercel-CDN-Cache-Control` headers (e.g. `s-maxage=300`) to prevent edge header stripping and offload traffic to Cloudflare and Vercel Edge networks.
 
-## 13. Folder Structure
+## 13. Proctoring Forensic Incident Desk & Adjudication Engine
+
+Located under `app/(admin)/admin/proctoring/` and `app/api/admin/proctoring/`:
+- **Centralized Incident Review Queue (`/admin/proctoring`)**: Triage candidate assessments with risk scores, biometric trigger counts, and integrity verdicts.
+- **Forensic Timeline Scrubber (`/admin/proctoring/[id]`)**: Second-by-second chronological telemetry scrubber overlaying candidate baseline verification selfie, 6-gauge biometric infraction counts, tab-switching events, and high-resolution signed Cloudflare R2 snapshots.
+- **AI Forensic Narrative**: Generative behavioral narrative synthesized via Groq (Llama-3.3-70B) detailing candidate infractions with timestamped evidence.
+- **Adjudication Desk**: SuperAdmin dispute resolution controls to uphold violations or mark false positives with permanent audit logging.
+
+## 14. Enterprise Campus Multi-Tenant B2B Architecture
+
+Located under `models/institution.ts`, `models/institutionMember.ts`, `models/cohortDrive.ts`, `app/(portal)/`, and `lib/auth.ts`:
+- **Tenant Sandboxing (`withPortalAuth`)**: Strict institutional isolation ensuring campus coordinators can only query or schedule placement drives for their assigned university.
+- **Three-Tier Institutional Hierarchy**:
+  - **Head of TPC**: Complete institutional authority to manage student seat quotas, schedule drives, and invite/remove placement coordinators.
+  - **Placement Coordinator**: Ability to schedule drives, monitor candidate testing windows, and export scorecard analytics to CSV.
+  - **Live Invigilator**: Dedicated proctoring desk observer with real-time candidate concurrency monitoring.
+- **Nationwide Placement Drive Radar (`/admin/institutions/live-drives`)**: Real-time cross-campus operations dashboard with live candidate concurrency tracking and emergency controls (pause, force start, +15m extra time).
+- **Isolated TPC Campus Portal (`/portal/*`)**: Clean, white-labeled control room completely separated from platform SuperAdmin views, protected on the server by `proxy.ts`.
+
+## 15. Folder Structure
 
 ```
 .
 ├── .github/workflows/                 # CI/CD & Automated Crons
 │   └── contest-alerts-cron.yml        # 15-minute CP contest alert & aggregator triggers
 ├── app/                               # Next.js 16 App Router
-│   ├── (admin)/admin/                 # Protected Admin Management Panel
+│   ├── (admin)/admin/                 # Protected SuperAdmin Management Control Hub
 │   │   ├── activity/                  # Global cross-user audit feed
 │   │   ├── billing/                   # Financial MRR/ARR, trends & promo code manager
 │   │   ├── content/                   # Content tables (Assessments, Problems, Topics)
 │   │   ├── feedback/                  # User feedback review & moderation
+│   │   ├── institutions/              # Campus B2B partner directory & seat licenses
+│   │   │   ├── [id]/                  # Single campus governance & TPC roster
+│   │   │   └── live-drives/           # Nationwide live drive radar & concurrency
 │   │   ├── invites/                   # Invite manager & token issuance
+│   │   ├── proctoring/                # Incident Desk & AI biometric audit queue
+│   │   │   └── [id]/                  # Forensic audit timeline & R2 evidence scrubber
 │   │   ├── settings/                  # Feature flags & system settings
+│   │   ├── system/runner/             # Docker Piston runner & container telemetry
 │   │   ├── taxonomies/                # Category taxonomy editor
 │   │   └── users/                     # User management & read-only dashboards
+│   ├── (portal)/portal/               # Isolated Campus TPC Placement Portal
+│   │   ├── drives/                    # Placement drive scheduler
+│   │   │   └── [id]/                  # Live invigilation monitoring room
+│   │   ├── results/                   # Candidate scorecards & 1-click Excel/CSV export
+│   │   └── team/                      # Self-serve TPC coordinator management
 │   ├── (app)/                         # Main Authenticated Application Pages
 │   │   ├── advanced/                  # System Design & Advanced CS modules
 │   │   ├── cheatsheets/               # Topic cheat sheets & reader views
@@ -271,7 +301,7 @@ Located under `lib/cache.ts` and API route headers:
 │   ├── terms/                         # Legal terms of service (LegalDocumentViewer)
 │   └── api/                           # REST API Route Handlers under /api/*
 │       ├── activity/                  # User activity streams
-│       ├── admin/                     # Admin assessments, billing, promos, pricing
+│       ├── admin/                     # Admin assessments, billing, promos, institutions, proctoring, runner
 │       ├── auth/                      # BetterAuth endpoints & OTP verification
 │       ├── cheatsheets/               # Cheatsheet CRUD
 │       ├── checkout/                  # Stripe checkout sessions & mock confirms
@@ -284,6 +314,7 @@ Located under `lib/cache.ts` and API route headers:
 │       ├── oa/                        # Assessments, execution harness, submissions
 │       │   ├── execute/               # Isolated code execution runner (Judge0/Piston)
 │       │   └── submissions/           # Submission records & audit reports
+│       ├── portal/                    # Isolated TPC APIs (overview, drives, results, team)
 │       ├── pricing/                   # Public dynamic pricing configuration
 │       ├── problems/                  # Problem CRUD, progress, revision flags, notes
 │       ├── profile/                   # Profile updates & CP data

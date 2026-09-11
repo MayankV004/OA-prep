@@ -31,6 +31,9 @@ Timestamps (`createdAt`, `updatedAt`) are managed by Mongoose's `timestamps: tru
 | `contest_subscriptions` | Per user (contest notification alert preferences) |
 | `contest_alert_logs` | System (dispatched contest notification tracking) |
 | `feedbacks` | Per user (`userId` optional) with admin moderation |
+| `institutions` | Institutional Partner Tenant (seats, validUntil, domain) |
+| `institution_members` | Campus TPC Roster (`institutionId` + `userId`, role: head/coord/invigilator) |
+| `cohort_drives` | Campus Testing Drive (`institutionId` + `assessmentId`, status, dates) |
 
 ## Collections
 
@@ -394,4 +397,55 @@ User bug reports, feature suggestions, and administrative resolution workflows.
 | `ip` | string? | Submitter IP address (indexed with createdAt) |
 | `status` | `"pending" \| "in_review" \| "resolved" \| "dismissed"` | Admin workflow status (indexed) |
 | `adminNotes` | string? | Internal notes from administrator |
+
+### `institutions` (`models/institution.ts`)
+
+Campus and university partner tenants governing enterprise B2B licensing, seat allocations, and domain filtering.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `_id` | ObjectId | Auto-generated |
+| `name` | string | University / Campus name (e.g. "IIT Bombay") |
+| `slug` | string | URL identifier (e.g. "iit-bombay", unique, indexed) |
+| `domain` | string | Optional email domain restriction (e.g. "iitb.ac.in") |
+| `logoUrl` | string? | Campus insignia image |
+| `totalSeats` | number | Contracted candidate license capacity |
+| `usedSeats` | number | Current students assessed against quota |
+| `licenseValidUntil` | Date | Contract validity expiration date (indexed) |
+| `status` | `"active" \| "suspended" \| "expired"` | Tenant status (indexed) |
+| `createdById` | ObjectId? | ref `users` (SuperAdmin who provisioned tenant) |
+
+### `institution_members` (`models/institutionMember.ts`)
+
+Authorized college training & placement cell (TPC) staff roster with granular permissions. Compound unique index on `{ institutionId: 1, userId: 1 }`.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `_id` | ObjectId | Auto-generated |
+| `institutionId` | ObjectId | ref `institutions` (indexed) |
+| `userId` | ObjectId | ref `users` (indexed) |
+| `role` | `"head" \| "coordinator" \| "invigilator"` | TPC permission hierarchy |
+| `department` | string? | Academic department (e.g. "Computer Science") |
+| `status` | `"active" \| "invited" \| "revoked"` | Member access state (indexed) |
+| `invitedBy` | ObjectId? | ref `users` (Head of TPC or SuperAdmin) |
+
+### `cohort_drives` (`models/cohortDrive.ts`)
+
+Campus placement testing drives connecting an assessment module to a student cohort testing window.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `_id` | ObjectId | Auto-generated |
+| `institutionId` | ObjectId | ref `institutions` (indexed) |
+| `assessmentId` | ObjectId | ref `assessments` (company OA module, indexed) |
+| `title` | string | Drive title (e.g. "2026 Batch - Technical Round 1") |
+| `description` | string? | Candidate instructions |
+| `startsAt` | Date | Drive testing window opening (indexed) |
+| `endsAt` | Date | Drive testing window closing (indexed) |
+| `durationMinutes` | number | Time limit per candidate session (default 90) |
+| `strictProctoring` | boolean | Enforces dual-engine neural proctoring + tab lock |
+| `allowedEmailDomains` | string[] | Array of authorized email suffixes |
+| `accessCode` | string? | Passcode for student entry |
+| `status` | `"scheduled" \| "live" \| "completed" \| "cancelled"` | Drive execution status (indexed) |
+| `createdById` | ObjectId? | ref `users` (TPC Coordinator who scheduled drive) |
 
