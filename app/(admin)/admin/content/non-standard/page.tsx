@@ -72,6 +72,8 @@ export default function AdminNonStandardPage() {
   const [url, setUrl] = useState('');
   const [difficulty, setDifficulty] = useState<'Easy' | 'Medium' | 'Hard'>('Medium');
   const [bucket, setBucket] = useState(CATEGORIES[0]);
+  const [isCustomBucket, setIsCustomBucket] = useState(false);
+  const [customBucket, setCustomBucket] = useState('');
   const [notes, setNotes] = useState('');
   const [tagsInput, setTagsInput] = useState('');
 
@@ -128,12 +130,21 @@ export default function AdminNonStandardPage() {
     },
   });
 
+  const availableBuckets = Array.from(
+    new Set([
+      ...CATEGORIES,
+      ...Object.keys(data?.metrics?.bucketCounts || {}),
+    ])
+  );
+
   const resetForm = () => {
     setEditingId(null);
     setTitle('');
     setUrl('');
     setDifficulty('Medium');
     setBucket(CATEGORIES[0]);
+    setIsCustomBucket(false);
+    setCustomBucket('');
     setNotes('');
     setTagsInput('');
   };
@@ -143,7 +154,15 @@ export default function AdminNonStandardPage() {
     setTitle(p.title);
     setUrl(p.url);
     setDifficulty(p.difficulty);
-    setBucket(p.bucket);
+    if (CATEGORIES.includes(p.bucket)) {
+      setBucket(p.bucket);
+      setIsCustomBucket(false);
+      setCustomBucket('');
+    } else {
+      setBucket('__custom__');
+      setIsCustomBucket(true);
+      setCustomBucket(p.bucket);
+    }
     setNotes(p.notes || '');
     setTagsInput((p.tags || []).join(', '));
     setIsDialogOpen(true);
@@ -155,6 +174,11 @@ export default function AdminNonStandardPage() {
       toast.error('Title and URL are required');
       return;
     }
+    const finalBucket = isCustomBucket ? customBucket.trim() : bucket;
+    if (!finalBucket) {
+      toast.error('Bucket name is required');
+      return;
+    }
     const tags = tagsInput
       .split(',')
       .map((t) => t.trim())
@@ -164,7 +188,7 @@ export default function AdminNonStandardPage() {
       title: title.trim(),
       url: url.trim(),
       difficulty,
-      bucket,
+      bucket: finalBucket,
       notes: notes.trim(),
       tags,
     });
@@ -313,17 +337,36 @@ export default function AdminNonStandardPage() {
                     <div className="space-y-1">
                       <label className="font-medium">Category Bucket</label>
                       <select
-                        value={bucket}
-                        onChange={(e) => setBucket(e.target.value)}
+                        value={isCustomBucket ? '__custom__' : bucket}
+                        onChange={(e) => {
+                          if (e.target.value === '__custom__') {
+                            setIsCustomBucket(true);
+                          } else {
+                            setIsCustomBucket(false);
+                            setBucket(e.target.value);
+                          }
+                        }}
                         className="w-full h-9 rounded-md border border-input bg-background px-2.5 text-xs truncate"
                         required
                       >
-                        {CATEGORIES.map((c) => (
+                        {availableBuckets.map((c) => (
                           <option key={c} value={c}>
                             {c}
                           </option>
                         ))}
+                        <option value="__custom__">+ Create New Custom Bucket...</option>
                       </select>
+                      {isCustomBucket && (
+                        <div className="pt-1.5">
+                          <Input
+                            placeholder="Type new bucket name (e.g. Game Theory & Minimax Curveballs)..."
+                            value={customBucket}
+                            onChange={(e) => setCustomBucket(e.target.value)}
+                            required
+                            className="text-xs"
+                          />
+                        </div>
+                      )}
                     </div>
 
                     <div className="space-y-1">
@@ -449,7 +492,7 @@ export default function AdminNonStandardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold font-mono">9 Buckets</div>
+            <div className="text-2xl font-bold font-mono">{availableBuckets.length} Buckets</div>
             <p className="mt-1 text-xs text-muted-foreground">Specialized algorithmic domains</p>
           </CardContent>
         </Card>
@@ -472,8 +515,8 @@ export default function AdminNonStandardPage() {
           onChange={(e) => setBucketFilter(e.target.value)}
           className="h-9 rounded-md border border-input bg-background px-3 text-xs max-w-xs truncate"
         >
-          <option value="all">All 9 Buckets</option>
-          {CATEGORIES.map((c) => (
+          <option value="all">All Buckets ({availableBuckets.length})</option>
+          {availableBuckets.map((c) => (
             <option key={c} value={c}>
               {c.split('/')[0].trim()}
             </option>
