@@ -12,7 +12,7 @@ import { SidebarNav } from './SidebarNav';
 import { UserMenu } from './UserMenu';
 import { useSidebar } from './use-sidebar';
 import { useSubscription } from '@/hooks/useSubscription';
-import type { NavSection } from './nav';
+import { type NavSection } from './nav';
 
 const EXPANDED = 264;
 const COLLAPSED = 68;

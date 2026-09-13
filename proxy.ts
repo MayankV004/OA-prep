@@ -22,7 +22,6 @@ const PROTECTED_PREFIXES = [
   '/advanced',
   '/search',
   '/admin',
-  '/portal',
 ];
 
 export async function proxy(request: NextRequest) {
@@ -92,6 +91,5 @@ export const config = {
     '/advanced/:path*',
     '/search/:path*',
     '/admin/:path*',
-    '/portal/:path*',
   ],
 };

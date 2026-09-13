@@ -21,6 +21,3 @@ export * from './assessment';
 export * from './assessmentSubmission';
 export * from './promoCode';
 export * from './pricingPlan';
-export * from './institution';
-export * from './institutionMember';
-export * from './cohortDrive';

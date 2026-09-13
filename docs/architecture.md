@@ -236,16 +236,14 @@ Located under `app/(admin)/admin/proctoring/` and `app/api/admin/proctoring/`:
 - **AI Forensic Narrative**: Generative behavioral narrative synthesized via Groq (Llama-3.3-70B) detailing candidate infractions with timestamped evidence.
 - **Adjudication Desk**: SuperAdmin dispute resolution controls to uphold violations or mark false positives with permanent audit logging.
 
-## 14. Enterprise Campus Multi-Tenant B2B Architecture
+## 14. Dedicated Student Career & Interview Preparation Architecture
 
-Located under `models/institution.ts`, `models/institutionMember.ts`, `models/cohortDrive.ts`, `app/(portal)/`, and `lib/auth.ts`:
-- **Tenant Sandboxing (`withPortalAuth`)**: Strict institutional isolation ensuring campus coordinators can only query or schedule placement drives for their assigned university.
-- **Three-Tier Institutional Hierarchy**:
-  - **Head of TPC**: Complete institutional authority to manage student seat quotas, schedule drives, and invite/remove placement coordinators.
-  - **Placement Coordinator**: Ability to schedule drives, monitor candidate testing windows, and export scorecard analytics to CSV.
-  - **Live Invigilator**: Dedicated proctoring desk observer with real-time candidate concurrency monitoring.
-- **Nationwide Placement Drive Radar (`/admin/institutions/live-drives`)**: Real-time cross-campus operations dashboard with live candidate concurrency tracking and emergency controls (pause, force start, +15m extra time).
-- **Isolated TPC Campus Portal (`/portal/*`)**: Clean, white-labeled control room completely separated from platform SuperAdmin views, protected on the server by `proxy.ts`.
+BigO is dedicated exclusively to individual student preparation for technical interviews:
+- **DSA Pattern Hub (`/dsa`)**: 12+ industry patterns with variation tracking and spaced repetition.
+- **Multi-Platform Competitive Programming Hub (`/cp`)**: Profile synchronization across Codeforces, LeetCode, CodeChef, and AtCoder with automated contest calendar and readiness analytics.
+- **Core CS & Advanced Revision (`/subjects`, `/advanced`)**: Deep conceptual revision for OS, DBMS, Networks, OOP, and System Design in dedicated distraction-free reader mode.
+- **Interview Q&A Flashcards (`/interview`) & Cheat Sheets (`/cheatsheets`)**.
+- **Proctored Online Assessment (OA) Simulation (`/oa`)**: Practice real company OA test cases under proctored corporate exam conditions (Monaco editor, Docker Piston execution, dual-engine biometric HUD, fullscreen lockdown).
 
 ## 15. Folder Structure
 
@@ -259,9 +257,6 @@ Located under `models/institution.ts`, `models/institutionMember.ts`, `models/co
 │   │   ├── billing/                   # Financial MRR/ARR, trends & promo code manager
 │   │   ├── content/                   # Content tables (Assessments, Problems, Topics)
 │   │   ├── feedback/                  # User feedback review & moderation
-│   │   ├── institutions/              # Campus B2B partner directory & seat licenses
-│   │   │   ├── [id]/                  # Single campus governance & TPC roster
-│   │   │   └── live-drives/           # Nationwide live drive radar & concurrency
 │   │   ├── invites/                   # Invite manager & token issuance
 │   │   ├── proctoring/                # Incident Desk & AI biometric audit queue
 │   │   │   └── [id]/                  # Forensic audit timeline & R2 evidence scrubber
@@ -269,11 +264,6 @@ Located under `models/institution.ts`, `models/institutionMember.ts`, `models/co
 │   │   ├── system/runner/             # Docker Piston runner & container telemetry
 │   │   ├── taxonomies/                # Category taxonomy editor
 │   │   └── users/                     # User management & read-only dashboards
-│   ├── (portal)/portal/               # Isolated Campus TPC Placement Portal
-│   │   ├── drives/                    # Placement drive scheduler
-│   │   │   └── [id]/                  # Live invigilation monitoring room
-│   │   ├── results/                   # Candidate scorecards & 1-click Excel/CSV export
-│   │   └── team/                      # Self-serve TPC coordinator management
 │   ├── (app)/                         # Main Authenticated Application Pages
 │   │   ├── advanced/                  # System Design & Advanced CS modules
 │   │   ├── cheatsheets/               # Topic cheat sheets & reader views

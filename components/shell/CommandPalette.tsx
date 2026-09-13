@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   ArrowRight,
-  Building2,
   CornerDownLeft,
   CreditCard,
   Layers,
@@ -51,7 +50,6 @@ function CommandPalette({
   const [active, setActive] = React.useState(0);
   const inputRef = React.useRef<HTMLInputElement>(null);
   const listRef = React.useRef<HTMLDivElement>(null);
-
   const go = React.useCallback(
     (href: string) => {
       onOpenChange(false);
@@ -61,7 +59,8 @@ function CommandPalette({
   );
 
   const commands = React.useMemo<Command[]>(() => {
-    const navSections = isAdmin ? [...APP_NAV, ...ADMIN_NAV] : APP_NAV;
+    const baseNav = APP_NAV;
+    const navSections = isAdmin ? [...baseNav, ...ADMIN_NAV] : baseNav;
 
     const navCommands = navSections.flatMap((section) =>
       section.items.map((item) => ({
@@ -90,14 +89,6 @@ function CommandPalette({
             icon: ShieldAlert,
             hint: 'Incident Desk',
             run: () => go('/admin/proctoring'),
-          },
-          {
-            id: 'admin:campus-partners',
-            label: 'Manage Campus Partners & Seats',
-            group: 'Admin Quick Actions',
-            icon: Building2,
-            hint: 'Institutions',
-            run: () => go('/admin/institutions'),
           },
           {
             id: 'admin:runner-health',

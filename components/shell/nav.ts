@@ -1,7 +1,6 @@
 import {
   Activity,
   BookOpen,
-  Building2,
   Calendar,
   Code2,
   FileText,
@@ -12,7 +11,6 @@ import {
   ListChecks,
   Mail,
   MessageSquare,
-  Radio,
   Server,
   Settings,
   Shield,
@@ -73,7 +71,7 @@ export const APP_NAV: NavSection[] = [
   },
 ];
 
-/** Admin navigation — organized into 6 enterprise command pillars. */
+/** Admin navigation — organized into 5 enterprise command pillars. */
 export const ADMIN_NAV: NavSection[] = [
   {
     label: 'Command & Control',
@@ -84,11 +82,9 @@ export const ADMIN_NAV: NavSection[] = [
     ],
   },
   {
-    label: 'Assessment & Campus',
+    label: 'Assessment Simulator',
     items: [
       { name: 'Company OAs', href: '/admin/content/assessments', icon: Timer },
-      { name: 'Campus Partners', href: '/admin/institutions', icon: Building2 },
-      { name: 'Live Drives', href: '/admin/institutions/live-drives', icon: Radio },
     ],
   },
   {
