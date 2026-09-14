@@ -13,7 +13,12 @@ export async function GET(req: NextRequest, { params }: Ctx) {
     const { id } = await params;
     const q = await Question.findById(id);
     if (!q) throw { status: 404, message: 'Question not found' };
-    if (q.userId.toString() !== userId && role !== 'admin') throw { status: 403, message: 'Forbidden' };
+
+    // System questions are viewable by all; custom questions only by author or admin
+    const isAuthor = q.userId?.toString() === userId;
+    if (!q.isSystem && !isAuthor && role !== 'admin') {
+      throw { status: 403, message: 'Forbidden' };
+    }
     return q;
   });
 }
@@ -24,7 +29,11 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
     const { id } = await params;
     const q = await Question.findById(id);
     if (!q) throw { status: 404, message: 'Question not found' };
-    if (q.userId.toString() !== userId && role !== 'admin') throw { status: 403, message: 'Forbidden' };
+
+    const isAuthor = q.userId?.toString() === userId;
+    if (!isAuthor && role !== 'admin') {
+      throw { status: 403, message: 'Forbidden' };
+    }
 
     const parsed = questionUpdateSchema.parse(await req.json());
     Object.assign(q, parsed);
@@ -32,7 +41,7 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
 
     recordActivity({
       actorId: userId,
-      targetUserId: q.userId.toString(),
+      targetUserId: q.userId ? q.userId.toString() : userId,
       kind: 'question.updated',
       entity: { type: 'question', id: q._id.toString() },
       metadata: { changedFields: Object.keys(parsed) },
@@ -47,12 +56,16 @@ export async function DELETE(req: NextRequest, { params }: Ctx) {
     const { id } = await params;
     const q = await Question.findById(id);
     if (!q) throw { status: 404, message: 'Question not found' };
-    if (q.userId.toString() !== userId && role !== 'admin') throw { status: 403, message: 'Forbidden' };
+
+    const isAuthor = q.userId?.toString() === userId;
+    if (!isAuthor && role !== 'admin') {
+      throw { status: 403, message: 'Forbidden' };
+    }
 
     await q.deleteOne();
     recordActivity({
       actorId: userId,
-      targetUserId: q.userId.toString(),
+      targetUserId: q.userId ? q.userId.toString() : userId,
       kind: 'question.deleted',
       entity: { type: 'question', id: q._id.toString() },
     });

@@ -21,8 +21,16 @@ interface Question {
   _id: string;
   question: string;
   subjectId: string;
-  difficulty: string;
-  createdAt: string;
+  difficulty?: string;
+  companyTags?: string[];
+  tags?: string[];
+  createdAt?: string;
+}
+
+interface Group {
+  _id: string;
+  name: string;
+  slug: string;
 }
 
 function relative(value?: string) {
@@ -39,17 +47,17 @@ function DifficultyBadge({ value }: { value?: string }) {
   const key = (value ?? '').toLowerCase();
   const tone =
     key === 'easy'
-      ? 'bg-success-muted text-success'
+      ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
       : key === 'medium'
-        ? 'bg-warning-muted text-warning'
+        ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
         : key === 'hard'
-          ? 'bg-danger-muted text-destructive'
-          : 'bg-muted text-text-secondary';
+          ? 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
+          : 'bg-muted text-muted-foreground';
 
   return (
-    <Badge variant="secondary" className={cn('capitalize', tone)}>
-      {value || 'Unrated'}
-    </Badge>
+    <span className={cn('px-2 py-0.5 rounded-md text-2xs font-semibold uppercase tracking-wider', tone)}>
+      {value || 'Medium'}
+    </span>
   );
 }
 
@@ -64,18 +72,119 @@ export default function AdminQuestionsPage() {
     clear: () => void;
   } | null>(null);
 
+  // Form State
+  const [formQuestion, setFormQuestion] = useState('');
+  const [formSubjectId, setFormSubjectId] = useState('');
+  const [formDifficulty, setFormDifficulty] = useState<'Easy' | 'Medium' | 'Hard'>('Medium');
+  const [formCompanyTags, setFormCompanyTags] = useState('');
+  const [formTags, setFormTags] = useState('');
+  const [formKeyPoints, setFormKeyPoints] = useState('');
+  const [formAnswer, setFormAnswer] = useState('');
+
+  // Fetch Subject Groups
+  const { data: groups = [] } = useQuery<Group[]>({
+    queryKey: ['groups', 'subject'],
+    queryFn: async () => {
+      const res = await fetch('/api/groups?kind=subject');
+      if (!res.ok) return [];
+      return res.json();
+    },
+  });
+
+  const subjectMap = new Map(groups.map((g) => [g._id, g.name]));
+
+  // Fetch Questions
   const { data, isLoading, error } = useQuery<{ data: Question[] }>({
     queryKey: ['admin', 'questions', search],
     queryFn: async () => {
-      const params = new URLSearchParams({ limit: '50' });
+      const params = new URLSearchParams({ limit: '100' });
       if (search) params.set('q', search);
       const res = await fetch(`/api/admin/content/questions?${params}`);
-      if (!res.ok) throw new Error('Failed to fetch');
+      if (!res.ok) throw new Error('Failed to fetch questions');
       return res.json();
     },
   });
 
   const questions = data?.data || [];
+
+  // Create Question Mutation
+  const createMutation = useMutation({
+    mutationFn: async (payload: {
+      question: string;
+      subjectId: string;
+      difficulty: 'Easy' | 'Medium' | 'Hard';
+      companyTags: string[];
+      tags: string[];
+      keyPoints: string[];
+      answer: string;
+      isSystem: boolean;
+    }) => {
+      const res = await fetch('/api/questions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.error?.message || 'Failed to create question');
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'questions'] });
+      queryClient.invalidateQueries({ queryKey: ['questions'] });
+      toast.add('Question created successfully', { type: 'success' });
+      setCreateOpen(false);
+      // Reset form
+      setFormQuestion('');
+      setFormSubjectId('');
+      setFormDifficulty('Medium');
+      setFormCompanyTags('');
+      setFormTags('');
+      setFormKeyPoints('');
+      setFormAnswer('');
+    },
+    onError: (err: unknown) => {
+      toast.add("Couldn't create question", {
+        description: err instanceof Error ? err.message : undefined,
+        type: 'error',
+      });
+    },
+  });
+
+  const handleCreateSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formQuestion.trim() || !formSubjectId) {
+      toast.add('Please enter a question and select a subject', { type: 'error' });
+      return;
+    }
+
+    const companyTags = formCompanyTags
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    const tags = formTags
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    const keyPoints = formKeyPoints
+      .split('\n')
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    createMutation.mutate({
+      question: formQuestion.trim(),
+      subjectId: formSubjectId,
+      difficulty: formDifficulty,
+      companyTags,
+      tags,
+      keyPoints,
+      answer: formAnswer.trim(),
+      isSystem: true,
+    });
+  };
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -87,6 +196,7 @@ export default function AdminQuestionsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'questions'] });
+      queryClient.invalidateQueries({ queryKey: ['questions'] });
       toast.add('Question deleted', { type: 'success' });
       setConfirming(null);
     },
@@ -98,7 +208,6 @@ export default function AdminQuestionsPage() {
     },
   });
 
-  // TODO: backend — bulk endpoint would replace this client-side loop
   const bulkDeleteMutation = useMutation({
     mutationFn: async (ids: string[]) => {
       const results = await Promise.allSettled(
@@ -114,6 +223,7 @@ export default function AdminQuestionsPage() {
     },
     onSuccess: ({ succeeded, failed }) => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'questions'] });
+      queryClient.invalidateQueries({ queryKey: ['questions'] });
       toast.add(`${succeeded} deleted, ${failed} failed`, {
         type: failed > 0 ? 'error' : 'success',
       });
@@ -133,29 +243,46 @@ export default function AdminQuestionsPage() {
       className: 'max-w-md',
       sortValue: (row) => row.question,
       cell: (row) => (
-        <span
-          title={row.question}
-          className="line-clamp-2 font-medium text-foreground [overflow-wrap:anywhere]"
-        >
-          {row.question}
-        </span>
+        <div className="space-y-1 py-1">
+          <span
+            title={row.question}
+            className="line-clamp-2 font-medium text-foreground [overflow-wrap:anywhere]"
+          >
+            {row.question}
+          </span>
+          {row.companyTags && row.companyTags.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {row.companyTags.slice(0, 3).map((comp) => (
+                <span
+                  key={comp}
+                  className="text-3xs font-mono px-1.5 py-0.5 rounded bg-surface-sunken text-muted-foreground border border-border/40"
+                >
+                  {comp}
+                </span>
+              ))}
+              {row.companyTags.length > 3 && (
+                <span className="text-3xs text-muted-foreground">+{row.companyTags.length - 3}</span>
+              )}
+            </div>
+          )}
+        </div>
       ),
     },
     {
       id: 'difficulty',
       header: 'Difficulty',
-      sortValue: (row) => row.difficulty,
+      sortValue: (row) => row.difficulty ?? 'Medium',
       cell: (row) => <DifficultyBadge value={row.difficulty} />,
     },
     {
       id: 'subjectId',
       header: 'Subject',
       hideBelow: 'lg',
-      sortValue: (row) => row.subjectId,
+      sortValue: (row) => subjectMap.get(row.subjectId) || row.subjectId,
       cell: (row) => (
-        <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-2xs text-text-secondary">
-          {row.subjectId}
-        </code>
+        <span className="rounded bg-muted/70 px-2 py-1 font-mono text-xs text-foreground font-medium">
+          {subjectMap.get(row.subjectId) || row.subjectId}
+        </span>
       ),
     },
     {
@@ -171,7 +298,6 @@ export default function AdminQuestionsPage() {
     },
   ];
 
-  // Previously a dead control — now it opens the (submit-disabled) create panel.
   const addQuestionButton = (
     <Button onClick={() => setCreateOpen(true)}>
       <Plus className="size-4" aria-hidden />
@@ -184,7 +310,7 @@ export default function AdminQuestionsPage() {
       <PageHeading
         overline="Content"
         title="Interview questions"
-        description="Theory and behavioural questions served across all subjects."
+        description="Core CS theory and placement interview questions across subjects."
         actions={addQuestionButton}
       />
 
@@ -196,9 +322,9 @@ export default function AdminQuestionsPage() {
         error={error}
         search={search}
         onSearchChange={setSearch}
-        searchPlaceholder="Search questions…"
+        searchPlaceholder="Search questions by text…"
         emptyTitle="No questions yet"
-        emptyDescription="Interview questions will appear here once they exist."
+        emptyDescription="Interview questions will appear here once seeded or created."
         emptyIcon={MessageSquareText}
         emptyAction={addQuestionButton}
         rowActions={(row) => (
@@ -225,59 +351,67 @@ export default function AdminQuestionsPage() {
         pageSize={15}
       />
 
-      {/* TODO: backend — POST endpoint needed before this form can submit */}
+      {/* Add Question SlideOver */}
       <SlideOver
         open={createOpen}
         onOpenChange={setCreateOpen}
-        title="Add question"
-        description="Form is ready — the create endpoint is not."
+        title="Add Curated Question"
+        description="Add a placement interview question to the platform bank. Markdown formatting is supported."
         width="lg"
         footer={
           <>
             <Button variant="ghost" onClick={() => setCreateOpen(false)}>
               Cancel
             </Button>
-            <Button disabled>Add question</Button>
+            <Button
+              onClick={handleCreateSubmit}
+              disabled={createMutation.isPending || !formQuestion.trim() || !formSubjectId}
+              className="bg-emerald-500 hover:bg-emerald-400 text-black font-semibold"
+            >
+              {createMutation.isPending ? 'Saving...' : 'Save Question'}
+            </Button>
           </>
         }
       >
-        <form
-          className="space-y-5"
-          onSubmit={(e) => {
-            // TODO: backend — POST endpoint needed before this form can submit
-            e.preventDefault();
-          }}
-        >
-          <div className="rounded-lg bg-warning-muted p-3">
-            <Text size="caption" className="text-warning">
-              Saving is disabled: there is no <code className="font-mono">POST</code>{' '}
-              /api/questions endpoint yet. The fields below are wired to local state only.
-            </Text>
-          </div>
-
+        <form className="space-y-5" onSubmit={handleCreateSubmit}>
           <div className="space-y-2">
-            <Label htmlFor="question-body">Question</Label>
+            <Label htmlFor="question-body">Question Title *</Label>
             <Textarea
               id="question-body"
-              name="question"
-              rows={4}
-              placeholder="e.g. Explain the difference between a process and a thread."
+              value={formQuestion}
+              onChange={(e) => setFormQuestion(e.target.value)}
+              rows={3}
+              required
+              placeholder="e.g. Explain how Virtual Memory and Paging work, and what causes Thrashing."
             />
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="question-subject">Subject ID</Label>
-              <Input id="question-subject" name="subjectId" placeholder="e.g. operating-systems" />
+              <Label htmlFor="question-subject">Subject *</Label>
+              <select
+                id="question-subject"
+                value={formSubjectId}
+                onChange={(e) => setFormSubjectId(e.target.value)}
+                required
+                className="h-10 w-full rounded-lg border border-border/50 bg-surface-sunken px-3 text-sm text-foreground outline-none focus:border-emerald-500/50"
+              >
+                <option value="">Select a subject...</option>
+                {groups.map((g) => (
+                  <option key={g._id} value={g._id}>
+                    {g.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="question-difficulty">Difficulty</Label>
               <select
                 id="question-difficulty"
-                name="difficulty"
-                defaultValue="Medium"
-                className="h-9 w-full rounded-lg bg-surface-sunken px-3 text-sm text-foreground outline-none"
+                value={formDifficulty}
+                onChange={(e) => setFormDifficulty(e.target.value as any)}
+                className="h-10 w-full rounded-lg border border-border/50 bg-surface-sunken px-3 text-sm text-foreground outline-none focus:border-emerald-500/50"
               >
                 <option value="Easy">Easy</option>
                 <option value="Medium">Medium</option>
@@ -286,13 +420,49 @@ export default function AdminQuestionsPage() {
             </div>
           </div>
 
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="company-tags">Company Tags</Label>
+              <Input
+                id="company-tags"
+                value={formCompanyTags}
+                onChange={(e) => setFormCompanyTags(e.target.value)}
+                placeholder="e.g. Google, Amazon, Uber"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="topic-tags">Topic Tags</Label>
+              <Input
+                id="topic-tags"
+                value={formTags}
+                onChange={(e) => setFormTags(e.target.value)}
+                placeholder="e.g. Memory, Linux, Paging"
+              />
+            </div>
+          </div>
+
           <div className="space-y-2">
-            <Label htmlFor="question-answer">Model answer</Label>
+            <Label htmlFor="key-points">Key Bullets (1 per line for quick flashcard recall)</Label>
+            <Textarea
+              id="key-points"
+              value={formKeyPoints}
+              onChange={(e) => setFormKeyPoints(e.target.value)}
+              rows={3}
+              placeholder="Process has isolated virtual memory space&#10;MMU translates virtual to physical address&#10;Thrashing happens when page fault rate surges"
+              className="font-mono text-xs"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="question-answer">Model Answer (Markdown)</Label>
             <Textarea
               id="question-answer"
-              name="answer"
-              rows={6}
-              placeholder="Optional reference answer…"
+              value={formAnswer}
+              onChange={(e) => setFormAnswer(e.target.value)}
+              rows={8}
+              placeholder="Structured explanation with architecture trade-offs, diagrams, and examples..."
+              className="font-mono text-xs leading-relaxed"
             />
           </div>
         </form>

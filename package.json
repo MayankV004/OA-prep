@@ -13,6 +13,7 @@
     "seed:nonstandard": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' scripts/seed-non-standard-problems.ts",
     "seed:patterns": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' scripts/seed-mongo-patterns.ts",
     "seed:assessments": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' scripts/seed-assessments.ts",
+    "seed:interview": "tsx scripts/seed-interview-questions.ts",
     "restore:progress": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' scripts/restore-user-progress.ts"
   },
   "dependencies": {

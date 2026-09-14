@@ -29,6 +29,13 @@ export const queryKeys = {
     detail: (id: string) => ['topics', id] as const,
   },
 
+  // ── Questions & Flashcards ────────────────────────────────────────────────
+  questions: {
+    list: (filters?: Record<string, any>) => ['questions', filters ?? {}] as const,
+    stats: (subjectId?: string) => ['questions', 'stats', subjectId ?? 'all'] as const,
+    detail: (id: string) => ['questions', 'detail', id] as const,
+  },
+
   // ── Problems (per-user, per-kind) ─────────────────────────────────────────
   problems: {
     list: (kind: string, filters?: Record<string, string | undefined>) =>

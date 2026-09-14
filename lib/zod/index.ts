@@ -83,10 +83,22 @@ export const questionWriteSchema = z.object({
   subjectId: z.string().min(1),
   question: z.string().min(1),
   answer: z.string().optional(),
+  difficulty: z.enum(['Easy', 'Medium', 'Hard']).default('Medium').optional(),
   tags: z.array(z.string()).optional(),
+  companyTags: z.array(z.string()).optional(),
+  keyPoints: z.array(z.string()).optional(),
+  isSystem: z.boolean().optional(),
 });
 
 export const questionUpdateSchema = questionWriteSchema.partial().omit({ subjectId: true });
+
+export const questionProgressUpdateSchema = z.object({
+  status: z.enum(['unseen', 'learning', 'reviewing', 'mastered']).optional(),
+  confidence: z.number().min(0).max(4).optional(),
+  bookmarked: z.boolean().optional(),
+  userNotes: z.string().optional(),
+});
+
 
 // --- Cheat Sheets ---
 export const cheatSheetWriteSchema = z.object({
