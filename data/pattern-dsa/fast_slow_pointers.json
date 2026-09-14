@@ -1,0 +1,76 @@
+{
+  "pattern": "Fast & Slow Pointers",
+  "description": "Also called Floyd's Tortoise and Hare, this pattern uses two pointers moving at different speeds (typically 1 step vs 2 steps) through a linked structure or implicit sequence to detect cycles, find midpoints, or locate cycle entry points without extra space.",
+  "important_details": [
+    "Works on linked lists, arrays interpreted as a 'next pointer' function (e.g. index-hopping), or any implicit functional graph.",
+    "If a cycle exists, the fast pointer will eventually lap the slow pointer and they meet inside the cycle.",
+    "No cycle exists if the fast pointer reaches null/a terminal state first.",
+    "Finding the cycle's start requires a second phase: reset one pointer to the head and move both one step at a time until they meet again."
+  ],
+  "other_relevant_details": "The core mathematical insight: after the pointers meet inside a cycle, the distance from the list head to the cycle start equals the distance from the meeting point to the cycle start (going around the cycle). This is why resetting one pointer to head and advancing both by 1 works.",
+  "variations": [
+    {
+      "variation": "Cycle Detection (Has Cycle)",
+      "description": "Determine whether a linked structure contains a cycle by checking if a fast pointer (2x speed) ever meets a slow pointer (1x speed).",
+      "important_details": [
+        "If fast or fast.next becomes null, there is no cycle — return false immediately.",
+        "The pointers are guaranteed to meet within one full loop of the cycle if one exists (no need to bound iterations).",
+        "O(1) space beats the naive hashset-of-visited-nodes approach which needs O(n)."
+      ],
+      "template_code": "public boolean hasCycle(ListNode head) {\n    ListNode slow = head, fast = head;\n    while (fast != null && fast.next != null) {\n        slow = slow.next;\n        fast = fast.next.next;\n        if (slow == fast) return true;\n    }\n    return false;\n}",
+      "other_relevant_details": "Time Complexity: O(n). Space: O(1).",
+      "problems": [
+        {"name": "Linked List Cycle", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/linked-list-cycle/", "company_tags": null},
+        {"name": "Happy Number", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/happy-number/", "company_tags": null},
+        {"name": "Circular Array Loop", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/circular-array-loop/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Find Cycle Start / Entry Point",
+      "description": "After detecting a cycle, locate the exact node where the cycle begins using the reset-and-re-meet phase.",
+      "important_details": [
+        "Phase 1: detect meeting point using standard fast/slow.",
+        "Phase 2: reset slow to head; advance both slow and a pointer starting at the meeting point one step at a time.",
+        "They meet exactly at the cycle's entry node — this is a direct consequence of the distance relationship in Floyd's algorithm."
+      ],
+      "template_code": "public ListNode detectCycle(ListNode head) {\n    ListNode slow = head, fast = head;\n    while (fast != null && fast.next != null) {\n        slow = slow.next;\n        fast = fast.next.next;\n        if (slow == fast) {\n            ListNode ptr = head;\n            while (ptr != slow) {\n                ptr = ptr.next;\n                slow = slow.next;\n            }\n            return ptr;\n        }\n    }\n    return null;\n}",
+      "other_relevant_details": "Time Complexity: O(n). Space: O(1).",
+      "problems": [
+        {"name": "Linked List Cycle II", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/linked-list-cycle-ii/", "company_tags": null},
+        {"name": "Find the Duplicate Number", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/find-the-duplicate-number/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Find the Middle Node",
+      "description": "Locate the middle of a linked list in a single pass: when the fast pointer reaches the end, the slow pointer is exactly at the midpoint.",
+      "important_details": [
+        "For even-length lists, decide upfront whether you want the first or second middle node — the loop condition (fast != null vs fast.next != null) controls this.",
+        "Frequently used as a subroutine inside other problems (e.g., splitting a list before merge-sorting it, or before reversing the second half for a palindrome check)."
+      ],
+      "template_code": "public ListNode middleNode(ListNode head) {\n    ListNode slow = head, fast = head;\n    while (fast != null && fast.next != null) {\n        slow = slow.next;\n        fast = fast.next.next;\n    }\n    return slow;\n}",
+      "other_relevant_details": "Time Complexity: O(n). Space: O(1) — avoids a two-pass 'count then walk n/2 times' approach.",
+      "problems": [
+        {"name": "Middle of the Linked List", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/middle-of-the-linked-list/", "company_tags": null},
+        {"name": "Palindrome Linked List", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/palindrome-linked-list/", "company_tags": null},
+        {"name": "Reorder List", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/reorder-list/", "company_tags": null},
+        {"name": "Sort List", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/sort-list/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Cycle in Implicit / Functional Graph",
+      "description": "Applies Floyd's algorithm where 'next' isn't a literal pointer but a function of the current value — e.g., digit-squares (Happy Number), array index hopping, or duplicate-finding treated as a linked-list-in-disguise.",
+      "important_details": [
+        "Model the state transition (e.g., nums[i] as the 'next' index) as if it were a linked list node.",
+        "The classic 'Find the Duplicate Number' problem treats array values as pointers: index i points to index nums[i], and the duplicate value is exactly the cycle's entry point.",
+        "Requires recognizing that a seemingly unrelated array/number problem is secretly a cycle-detection problem."
+      ],
+      "template_code": "public int findDuplicate(int[] nums) {\n    int slow = nums[0], fast = nums[0];\n    do {\n        slow = nums[slow];\n        fast = nums[nums[fast]];\n    } while (slow != fast);\n    slow = nums[0];\n    while (slow != fast) {\n        slow = nums[slow];\n        fast = nums[fast];\n    }\n    return slow;\n}",
+      "other_relevant_details": "Time Complexity: O(n). Space: O(1) — satisfies constraints that forbid modifying the array or using extra space, unlike sorting or a hashset.",
+      "problems": [
+        {"name": "Find the Duplicate Number", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/find-the-duplicate-number/", "company_tags": null},
+        {"name": "Happy Number", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/happy-number/", "company_tags": null},
+        {"name": "Circular Array Loop", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/circular-array-loop/", "company_tags": null}
+      ]
+    }
+  ]
+}

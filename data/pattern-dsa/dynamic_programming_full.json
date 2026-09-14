@@ -127,7 +127,8 @@
         {"name": "Count Square Submatrices with All Ones", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/count-square-submatrices-with-all-ones/", "company_tags": null},
         {"name": "Minimum Falling Path Sum", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/minimum-falling-path-sum/", "company_tags": null},
         {"name": "Out of Boundary Paths", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/out-of-boundary-paths/", "company_tags": null},
-        {"name": "Number of Paths with Max Score", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/number-of-paths-with-max-score/", "company_tags": null}
+        {"name": "Number of Paths with Max Score", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/number-of-paths-with-max-score/", "company_tags": null},
+        {"name": "Maximum Non-Negative Product in a Matrix", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-non-negative-product-in-a-matrix/", "company_tags": null}
       ]
     },
     {

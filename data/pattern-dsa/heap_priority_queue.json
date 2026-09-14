@@ -1,0 +1,81 @@
+{
+  "pattern": "Heap / Priority Queue",
+  "description": "A heap maintains the min or max element accessible in O(1), with O(log n) insert/remove — ideal whenever a problem repeatedly needs 'the smallest/largest remaining item' rather than a full sort, or needs to merge/rank streams of data.",
+  "important_details": [
+    "Java's PriorityQueue is a min-heap by default; pass a custom Comparator (or negate values) for a max-heap.",
+    "Using a heap to keep only the top K elements bounds space at O(k) instead of O(n) — pop the heap's top whenever size exceeds k.",
+    "Two heaps (a max-heap for the lower half, a min-heap for the upper half) give O(log n) median maintenance on a data stream.",
+    "K-way merge problems (multiple sorted lists/arrays) use a heap seeded with one element per source to get the next global minimum in O(log k)."
+  ],
+  "other_relevant_details": "Heap-based solutions are typically O(n log k) — much better than sorting the entire input (O(n log n)) when k is small relative to n. Recognize the pattern from 'kth largest/smallest', 'top k frequent', 'median of a stream', or 'merge k sorted'.",
+  "variations": [
+    {
+      "variation": "Top K Elements",
+      "description": "Maintain a heap of exactly size k while scanning the input, evicting the least-relevant element whenever the heap grows past k, leaving exactly the top k at the end.",
+      "important_details": [
+        "For 'k largest', use a MIN-heap of size k — the heap's root is always the smallest of the current top-k candidates, ready to be evicted.",
+        "For 'k smallest' or 'k closest', use a MAX-heap of size k for the symmetric reason.",
+        "This bounds heap operations to O(n log k), better than sorting all n elements when k << n."
+      ],
+      "template_code": "public int findKthLargest(int[] nums, int k) {\n    PriorityQueue<Integer> minHeap = new PriorityQueue<>();\n    for (int num : nums) {\n        minHeap.offer(num);\n        if (minHeap.size() > k) minHeap.poll();\n    }\n    return minHeap.peek();\n}",
+      "other_relevant_details": "Time Complexity: O(n log k). Space: O(k).",
+      "problems": [
+        {"name": "Kth Largest Element in an Array", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/kth-largest-element-in-an-array/", "company_tags": null},
+        {"name": "Top K Frequent Elements", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/top-k-frequent-elements/", "company_tags": null},
+        {"name": "K Closest Points to Origin", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/k-closest-points-to-origin/", "company_tags": null},
+        {"name": "Kth Smallest Element in a Sorted Matrix", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/kth-smallest-element-in-a-sorted-matrix/", "company_tags": null},
+        {"name": "Top K Frequent Words", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/top-k-frequent-words/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Two Heaps (Median Maintenance)",
+      "description": "Split the data stream into two balanced heaps — a max-heap holding the smaller half, a min-heap holding the larger half — so the median is always derivable from their tops in O(1).",
+      "important_details": [
+        "Invariant: sizes of the two heaps differ by at most 1, and every element in the max-heap (lower half) is <= every element in the min-heap (upper half).",
+        "After every insertion, rebalance by moving an element between heaps if the size invariant or ordering invariant is violated.",
+        "If total count is odd, the median is the top of the larger heap; if even, it's the average of both tops."
+      ],
+      "template_code": "class MedianFinder {\n    private PriorityQueue<Integer> lower = new PriorityQueue<>(Collections.reverseOrder());\n    private PriorityQueue<Integer> upper = new PriorityQueue<>();\n    public void addNum(int num) {\n        lower.offer(num);\n        upper.offer(lower.poll());\n        if (upper.size() > lower.size()) lower.offer(upper.poll());\n    }\n    public double findMedian() {\n        if (lower.size() > upper.size()) return lower.peek();\n        return (lower.peek() + upper.peek()) / 2.0;\n    }\n}",
+      "other_relevant_details": "Time Complexity: O(log n) per insertion, O(1) per median query. Space: O(n).",
+      "problems": [
+        {"name": "Find Median from Data Stream", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/find-median-from-data-stream/", "company_tags": null},
+        {"name": "Sliding Window Median", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/sliding-window-median/", "company_tags": null},
+        {"name": "IPO", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/ipo/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "K-way Merge",
+      "description": "Merge k sorted lists/arrays into one sorted output by seeding a min-heap with one candidate element from each source, always extracting the global minimum and refilling from the source it came from.",
+      "important_details": [
+        "Heap holds (value, sourceIndex, elementIndex) tuples so you know which source to pull the next candidate from after popping.",
+        "This generalizes pairwise merging (O(n*k)) down to O(n log k).",
+        "Also directly solves 'smallest range covering elements from k lists' with a small twist tracking the current max across heap contents."
+      ],
+      "template_code": "public ListNode mergeKLists(ListNode[] lists) {\n    PriorityQueue<ListNode> heap = new PriorityQueue<>((a, b) -> a.val - b.val);\n    for (ListNode node : lists) if (node != null) heap.offer(node);\n    ListNode dummy = new ListNode(-1), tail = dummy;\n    while (!heap.isEmpty()) {\n        ListNode curr = heap.poll();\n        tail.next = curr;\n        tail = tail.next;\n        if (curr.next != null) heap.offer(curr.next);\n    }\n    return dummy.next;\n}",
+      "other_relevant_details": "Time Complexity: O(N log k) where N is total elements across all lists. Space: O(k) for the heap.",
+      "problems": [
+        {"name": "Merge k Sorted Lists", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/merge-k-sorted-lists/", "company_tags": null},
+        {"name": "Smallest Range Covering Elements from K Lists", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/smallest-range-covering-elements-from-k-lists/", "company_tags": null},
+        {"name": "Kth Smallest Element in a Sorted Matrix", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/kth-smallest-element-in-a-sorted-matrix/", "company_tags": null},
+        {"name": "Find K Pairs with Smallest Sums", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/find-k-pairs-with-smallest-sums/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Greedy Scheduling with a Heap",
+      "description": "Use a heap to always pick the globally best next task/interval/resource in a greedy simulation — common for CPU scheduling, meeting room allocation, and reorganizing strings to avoid adjacent repeats.",
+      "important_details": [
+        "A max-heap of remaining task frequencies lets you always schedule the currently-most-frequent task next, which is the key greedy insight for cooldown-style scheduling.",
+        "A min-heap of interval end times tracks the earliest-freeing resource — used to count the minimum number of meeting rooms needed at any point.",
+        "Often paired with a cooldown queue or a secondary structure to enforce a 'wait period' before an item re-enters the heap."
+      ],
+      "template_code": "public int leastInterval(char[] tasks, int n) {\n    int[] freq = new int[26];\n    for (char t : tasks) freq[t - 'A']++;\n    PriorityQueue<Integer> maxHeap = new PriorityQueue<>(Collections.reverseOrder());\n    for (int f : freq) if (f > 0) maxHeap.offer(f);\n    int time = 0;\n    Queue<int[]> cooldown = new LinkedList<>(); // {count, availableTime}\n    while (!maxHeap.isEmpty() || !cooldown.isEmpty()) {\n        time++;\n        if (!maxHeap.isEmpty()) {\n            int count = maxHeap.poll() - 1;\n            if (count > 0) cooldown.offer(new int[]{count, time + n});\n        }\n        if (!cooldown.isEmpty() && cooldown.peek()[1] == time) {\n            maxHeap.offer(cooldown.poll()[0]);\n        }\n    }\n    return time;\n}",
+      "other_relevant_details": "Time Complexity: O(n log 26) which is effectively O(n) since heap size is bounded by alphabet size. Space: O(26).",
+      "problems": [
+        {"name": "Task Scheduler", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/task-scheduler/", "company_tags": null},
+        {"name": "Meeting Rooms II", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/meeting-rooms-ii/", "company_tags": null},
+        {"name": "Reorganize String", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/reorganize-string/", "company_tags": null},
+        {"name": "Rearrange String k Distance Apart", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/rearrange-string-k-distance-apart/", "company_tags": null}
+      ]
+    }
+  ]
+}

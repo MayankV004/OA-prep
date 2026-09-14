@@ -1,0 +1,82 @@
+{
+  "pattern": "Linked List Manipulation",
+  "description": "Covers the core techniques for rewiring linked list pointers in-place: full and partial reversal, using a dummy head node to simplify edge cases, and merging/reordering multiple lists — all without converting to an array (O(1) extra space).",
+  "important_details": [
+    "Always draw the pointer rewiring on paper first (prev/curr/next) — off-by-one pointer bugs are the most common failure mode.",
+    "A dummy node placed before the real head eliminates special-casing 'the head itself changes' (removal, insertion, merging).",
+    "Reversal is the building block for many other patterns: palindrome checks, reordering, and add-two-numbers style problems.",
+    "Two-pass (count length first) vs one-pass (fast/slow) solutions both appear frequently — know when each is asked for."
+  ],
+  "other_relevant_details": "This pattern pairs heavily with Fast & Slow Pointers (finding the middle/nth-from-end) — many hard linked-list problems combine both techniques in one solution.",
+  "variations": [
+    {
+      "variation": "Reverse the Entire List (In-Place)",
+      "description": "Iteratively re-point each node's 'next' to its predecessor using three tracking pointers (prev, curr, next), producing a fully reversed list in one O(n) pass.",
+      "important_details": [
+        "Save curr.next BEFORE overwriting curr.next = prev, or the rest of the list is lost.",
+        "prev starts as null (it becomes the new tail's next); the loop ends when curr is null and prev is the new head.",
+        "A recursive version exists too but uses O(n) call-stack space — mention the trade-off in interviews."
+      ],
+      "template_code": "public ListNode reverseList(ListNode head) {\n    ListNode prev = null, curr = head;\n    while (curr != null) {\n        ListNode next = curr.next;\n        curr.next = prev;\n        prev = curr;\n        curr = next;\n    }\n    return prev;\n}",
+      "other_relevant_details": "Time Complexity: O(n). Space: O(1) iterative (O(n) if recursive).",
+      "problems": [
+        {"name": "Reverse Linked List", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/reverse-linked-list/", "company_tags": null},
+        {"name": "Palindrome Linked List", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/palindrome-linked-list/", "company_tags": null},
+        {"name": "Add Two Numbers II", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/add-two-numbers-ii/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Reverse a Sublist / Reverse in Groups of K",
+      "description": "Reverse only a bounded segment of the list (positions m to n, or every consecutive group of k nodes), requiring careful reconnection of the reversed segment back to the untouched parts of the list.",
+      "important_details": [
+        "Use a dummy node before the segment so you always have a stable 'node before the reversal' to reconnect to, even if the segment starts at the head.",
+        "For group-of-k reversal, first check that at least k nodes remain — if fewer remain, leave that final partial group unreversed (per the classic problem statement).",
+        "Track four pointers conceptually: the node before the segment, the segment's original head (which becomes the new tail), the segment's new head, and the node after the segment."
+      ],
+      "template_code": "public ListNode reverseKGroup(ListNode head, int k) {\n    ListNode node = head;\n    int count = 0;\n    while (node != null && count < k) { node = node.next; count++; }\n    if (count < k) return head;\n    ListNode prev = reverseKGroup(node, k);\n    ListNode curr = head;\n    while (count-- > 0) {\n        ListNode next = curr.next;\n        curr.next = prev;\n        prev = curr;\n        curr = next;\n    }\n    return prev;\n}",
+      "other_relevant_details": "Time Complexity: O(n). Space: O(1) iterative version (the recursive sample above uses O(n/k) stack frames).",
+      "problems": [
+        {"name": "Reverse Linked List II", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/reverse-linked-list-ii/", "company_tags": null},
+        {"name": "Reverse Nodes in k-Group", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/reverse-nodes-in-k-group/", "company_tags": null},
+        {"name": "Swap Nodes in Pairs", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/swap-nodes-in-pairs/", "company_tags": null},
+        {"name": "Rotate List", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/rotate-list/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Dummy Node Technique",
+      "description": "Prepend a placeholder 'dummy' node before the real head so that insertion, deletion, or merge logic never needs a special case for 'the head node itself is changing'.",
+      "important_details": [
+        "Always return dummy.next at the end, never the original head variable (which may have been removed or is no longer first).",
+        "Especially useful for 'remove Nth from end', 'remove all nodes with value X', and merge/partition problems.",
+        "Combine with fast/slow pointers for the 'Nth from end' family: advance fast n steps ahead of slow, starting both from dummy."
+      ],
+      "template_code": "public ListNode removeNthFromEnd(ListNode head, int n) {\n    ListNode dummy = new ListNode(0, head);\n    ListNode fast = dummy, slow = dummy;\n    for (int i = 0; i < n; i++) fast = fast.next;\n    while (fast.next != null) {\n        fast = fast.next;\n        slow = slow.next;\n    }\n    slow.next = slow.next.next;\n    return dummy.next;\n}",
+      "other_relevant_details": "Time Complexity: O(n), single pass. Space: O(1).",
+      "problems": [
+        {"name": "Remove Nth Node From End of List", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/remove-nth-node-from-end-of-list/", "company_tags": null},
+        {"name": "Remove Linked List Elements", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/remove-linked-list-elements/", "company_tags": null},
+        {"name": "Partition List", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/partition-list/", "company_tags": null},
+        {"name": "Remove Duplicates from Sorted List II", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/remove-duplicates-from-sorted-list-ii/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Merge / Reorder Multiple Lists",
+      "description": "Combine or interleave two or more linked lists into a single list, either by merging two sorted lists node-by-node or by reordering a single list's nodes (e.g., alternating front/back).",
+      "important_details": [
+        "Merging two sorted lists is the merge-step of merge sort applied directly to linked lists — O(1) space unlike arrays.",
+        "For k-way merge, a min-heap of the current head of each list gives O(N log k) instead of O(N*k) pairwise merging.",
+        "Reordering (e.g., L0→Ln→L1→Ln-1...) typically combines find-middle + reverse-second-half + merge-alternately."
+      ],
+      "template_code": "public ListNode mergeTwoLists(ListNode l1, ListNode l2) {\n    ListNode dummy = new ListNode(-1);\n    ListNode tail = dummy;\n    while (l1 != null && l2 != null) {\n        if (l1.val <= l2.val) { tail.next = l1; l1 = l1.next; }\n        else { tail.next = l2; l2 = l2.next; }\n        tail = tail.next;\n    }\n    tail.next = (l1 != null) ? l1 : l2;\n    return dummy.next;\n}",
+      "other_relevant_details": "Time Complexity: O(m + n) for two lists; O(N log k) for k-way merge with a heap. Space: O(1) for two-list merge, O(k) for the heap.",
+      "problems": [
+        {"name": "Merge Two Sorted Lists", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/merge-two-sorted-lists/", "company_tags": null},
+        {"name": "Merge k Sorted Lists", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/merge-k-sorted-lists/", "company_tags": null},
+        {"name": "Reorder List", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/reorder-list/", "company_tags": null},
+        {"name": "Sort List", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/sort-list/", "company_tags": null},
+        {"name": "Add Two Numbers", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/add-two-numbers/", "company_tags": null},
+        {"name": "Copy List with Random Pointer", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/copy-list-with-random-pointer/", "company_tags": null}
+      ]
+    }
+  ]
+}

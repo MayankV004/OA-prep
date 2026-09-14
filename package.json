@@ -10,9 +10,10 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "seed:nonstandard": "ts-node scripts/seed-non-standard-problems.ts",
-    "seed:patterns": "ts-node scripts/seed-mongo-patterns.ts",
-    "seed:assessments": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' scripts/seed-assessments.ts"
+    "seed:nonstandard": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' scripts/seed-non-standard-problems.ts",
+    "seed:patterns": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' scripts/seed-mongo-patterns.ts",
+    "seed:assessments": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' scripts/seed-assessments.ts",
+    "restore:progress": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' scripts/restore-user-progress.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

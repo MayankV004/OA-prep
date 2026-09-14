@@ -1,0 +1,78 @@
+{
+  "pattern": "Math & Number Theory",
+  "description": "A grab-bag of classical number-theory techniques (primality, modular exponentiation, GCD/LCM, meet-in-the-middle search space splitting) that show up repeatedly in Hard OA questions and competitive programming, often as a subroutine inside a bigger problem.",
+  "important_details": [
+    "The Sieve of Eratosthenes precomputes primality for a whole range in O(n log log n), far better than trial-division per query.",
+    "Fast (binary) exponentiation computes a^b mod m in O(log b) instead of O(b) by squaring the base and halving the exponent each step.",
+    "GCD via the Euclidean algorithm runs in O(log(min(a,b))); LCM = (a*b) / gcd(a,b).",
+    "Meet in the Middle splits an exponential search space (2^n) into two halves (2^(n/2) each), trading a little space for a massive time reduction on subset-sum-like problems."
+  ],
+  "other_relevant_details": "These techniques rarely stand alone in interviews — they're usually the 'unlock' inside a bigger DP, graph, or combinatorics problem. Recognize them from constraints mentioning huge numbers (need modular arithmetic), 'divisors/primes up to N', or n around 30-40 (a meet-in-the-middle signal, since 2^40 is too slow but 2^20 x 2 is fine).",
+  "variations": [
+    {
+      "variation": "Sieve of Eratosthenes",
+      "description": "Precompute which numbers up to N are prime by iteratively marking multiples of each found prime as composite, avoiding per-number trial division.",
+      "important_details": [
+        "Start marking multiples from p*p (not 2*p) since smaller multiples are already marked by earlier primes.",
+        "Once built, the boolean sieve array answers 'is X prime?' in O(1) for any X <= N.",
+        "Extended variants compute the smallest prime factor (SPF) of every number, enabling O(log n) prime factorization afterward."
+      ],
+      "template_code": "public boolean[] sieveOfEratosthenes(int n) {\n    boolean[] isComposite = new boolean[n + 1];\n    for (int p = 2; (long) p * p <= n; p++) {\n        if (!isComposite[p]) {\n            for (int multiple = p * p; multiple <= n; multiple += p) {\n                isComposite[multiple] = true;\n            }\n        }\n    }\n    boolean[] isPrime = new boolean[n + 1];\n    for (int i = 2; i <= n; i++) isPrime[i] = !isComposite[i];\n    return isPrime;\n}",
+      "other_relevant_details": "Time Complexity: O(n log log n) to build. Space: O(n). Vastly faster than checking each number individually (O(n * sqrt(n))) when you need primality for many numbers.",
+      "problems": [
+        {"name": "Count Primes", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/count-primes/", "company_tags": null},
+        {"name": "Four Divisors", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/four-divisors/", "company_tags": null},
+        {"name": "Prime Arrangements", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/prime-arrangements/", "company_tags": null},
+        {"name": "Closest Prime Numbers in Range", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/closest-prime-numbers-in-range/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Fast (Modular) Exponentiation",
+      "description": "Compute a^b (mod m) in O(log b) by repeated squaring: at each step, square the base and halve the exponent, multiplying the result whenever the current exponent bit is 1.",
+      "important_details": [
+        "Take the modulus after every multiplication to prevent integer overflow when working with large exponents.",
+        "The recursive/iterative doubling insight — a^b = (a^(b/2))^2 if b is even, else a * a^(b-1) — is a common building block for combinatorics (nCr mod p using modular inverses).",
+        "Also directly usable for problems like 'pow(x, n)' without any modulus, just skip the mod step."
+      ],
+      "template_code": "public long fastPow(long base, long exp, long mod) {\n    long result = 1;\n    base %= mod;\n    while (exp > 0) {\n        if ((exp & 1) == 1) {\n            result = (result * base) % mod;\n        }\n        base = (base * base) % mod;\n        exp >>= 1;\n    }\n    return result;\n}",
+      "other_relevant_details": "Time Complexity: O(log b). Space: O(1) iterative (O(log b) if written recursively).",
+      "problems": [
+        {"name": "Pow(x, n)", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/powx-n/", "company_tags": null},
+        {"name": "Super Pow", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/super-pow/", "company_tags": null},
+        {"name": "Count Good Numbers", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/count-good-numbers/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "GCD, LCM & Modular Arithmetic",
+      "description": "Use the Euclidean algorithm for GCD (and the derived LCM formula) as a building block for fraction simplification, cycle-length problems, and any computation requiring results modulo a large prime.",
+      "important_details": [
+        "gcd(a, b) = gcd(b, a % b), base case gcd(a, 0) = a — runs in O(log(min(a,b))) via the Euclidean algorithm.",
+        "lcm(a, b) = (a / gcd(a,b)) * b — divide before multiplying to reduce overflow risk.",
+        "For 'answer mod 1e9+7' problems involving division, you need modular inverse (via Fermat's Little Theorem: a^(p-2) mod p when p is prime) since you can't directly divide under a modulus."
+      ],
+      "template_code": "public int gcd(int a, int b) {\n    return b == 0 ? a : gcd(b, a % b);\n}\npublic long lcm(long a, long b) {\n    return (a / gcd((int) a, (int) b)) * b;\n}",
+      "other_relevant_details": "Time Complexity: O(log(min(a,b))) for gcd. Space: O(log(min(a,b))) recursive stack, or O(1) iterative.",
+      "problems": [
+        {"name": "Greatest Common Divisor of Strings", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/greatest-common-divisor-of-strings/", "company_tags": null},
+        {"name": "Nth Magical Number", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/nth-magical-number/", "company_tags": null},
+        {"name": "Water and Jug Problem", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/water-and-jug-problem/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Meet in the Middle",
+      "description": "Split an exponential search space (typically 2^n subsets) into two halves, brute-force each half separately (2^(n/2) each), then combine the two halves efficiently (usually via sorting + binary search or a hashmap) to answer the original question.",
+      "important_details": [
+        "Turns an infeasible O(2^n) brute force into a feasible O(2^(n/2) * log(2^(n/2))) solution — the key unlock for n around 30-40.",
+        "Common pattern: split array into two halves, enumerate all subset sums of each half, sort one half's sums, then for each sum in the other half binary-search for the complement.",
+        "Requires the combination step (matching two halves) to be efficient — otherwise you've just moved the exponential cost elsewhere."
+      ],
+      "template_code": "public boolean canPartition(int[] nums, int target) {\n    int n = nums.length, half = n / 2;\n    List<Integer> leftSums = enumerateSums(nums, 0, half);\n    List<Integer> rightSums = enumerateSums(nums, half, n);\n    Collections.sort(rightSums);\n    for (int ls : leftSums) {\n        int need = target - ls;\n        if (Collections.binarySearch(rightSums, need) >= 0) return true;\n    }\n    return false;\n}\nprivate List<Integer> enumerateSums(int[] nums, int start, int end) {\n    List<Integer> sums = new ArrayList<>();\n    int len = end - start;\n    for (int mask = 0; mask < (1 << len); mask++) {\n        int sum = 0;\n        for (int i = 0; i < len; i++) {\n            if ((mask & (1 << i)) != 0) sum += nums[start + i];\n        }\n        sums.add(sum);\n    }\n    return sums;\n}",
+      "other_relevant_details": "Time Complexity: O(2^(n/2) * log(2^(n/2))) instead of O(2^n). Space: O(2^(n/2)) to store one half's enumerated sums.",
+      "problems": [
+        {"name": "Partition Equal Subset Sum", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/partition-equal-subset-sum/", "company_tags": null},
+        {"name": "Closest Subsequence Sum", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/closest-subsequence-sum/", "company_tags": null},
+        {"name": "Split Array Into Fibonacci Sequence", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/split-array-into-fibonacci-sequence/", "company_tags": null}
+      ]
+    }
+  ]
+}

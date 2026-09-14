@@ -19,6 +19,7 @@ Personal placement-prep tracker, Online Assessment (OA) simulator, and computer 
 | [admin.md](./admin.md) | Administrative control panel, user management, invite token workflows, assessment editor, billing dashboard (MRR/ARR & promo codes), feedback moderation, dynamic taxonomies, and audit logging |
 | [monetization.md](./monetization.md) | Monetization architecture, dynamic pricing plans (`pricing_plans`), promo code validation (`promo_codes`), revenue analytics, and B2B campus rollout |
 | [scalability.md](./scalability.md) | Scalable architecture plan for 2,000+ DAU target on MongoDB M0/M10, multi-tier caching (L1 + L2 Redis + Edge CDN), connection pooling, and QStash worker offload |
+| [metrics.md](./metrics.md) | **Engineering Metrics & Benchmarks**: Testing metrics, scalability & caching benchmarks, neural proctoring stats, code runner latency, and resume-ready bullet points |
 | [novelity.md](./novelity.md) | Core novelty angles: failure forensics, high-fidelity OA simulation environment, reasoning capture, and post-OA replay debriefs |
 
 Start with **[PRD.md](./PRD.md)**. Review **[architecture.md](./architecture.md)** and **[proctoring.md](./proctoring.md)** for system design. Use **[schema.md](./schema.md)** and **[api.md](./api.md)** as reference while developing. For billing, see **[monetization.md](./monetization.md)**, and for operations, see **[setup.md](./setup.md)**, **[deployment.md](./deployment.md)**, and **[admin.md](./admin.md)**.

@@ -29,6 +29,28 @@ async function main() {
     
     console.log(`Processing pattern: ${data.pattern}...`);
     
+    // Fetch existing pattern to preserve subdocument _ids and protect user progress
+    const existingPattern: any = await Pattern.findOne({ slug: patternSlug }).lean();
+    const existingVarMap = new Map<string, mongoose.Types.ObjectId>();
+    const existingProbMap = new Map<string, mongoose.Types.ObjectId>();
+
+    if (existingPattern && existingPattern.variations) {
+      for (const ev of existingPattern.variations) {
+        const vName = ev.variation || ev.title;
+        if (vName && ev._id) {
+          existingVarMap.set(vName, ev._id);
+        }
+        for (const ep of (ev.problems || [])) {
+          if (ep.name && ep._id) {
+            existingProbMap.set(`${vName}:::${ep.name}`, ep._id);
+            if (!existingProbMap.has(ep.name)) {
+              existingProbMap.set(ep.name, ep._id);
+            }
+          }
+        }
+      }
+    }
+
     const doc = {
       title: data.pattern,
       slug: patternSlug,
@@ -41,28 +63,37 @@ async function main() {
       explanation: data.explanation || '',
       important_details: data.important_details || [],
       other_relevant_details: data.other_relevant_details || '',
-      variations: (data.variations || []).map((v: any) => ({
-        variation: v.variation || v.title,
-        description: v.description || v.concept || '',
-        important_details: v.important_details || [],
-        template_code: v.template_code || v.templateCode || '',
-        other_relevant_details: v.other_relevant_details || '',
-        problems: (v.problems || []).filter((p: any) => p.name).map((p: any) => ({
-          name: p.name,
-          difficulty: p.difficulty,
-          platform: p.platform,
-          link: p.link,
-          priority: p.priority,
-          company_tags: p.company_tags || []
-        }))
-      }))
+      variations: (data.variations || []).map((v: any) => {
+        const varTitle = v.variation || v.title;
+        const existingVarId = existingVarMap.get(varTitle);
+        return {
+          ...(existingVarId ? { _id: existingVarId } : {}),
+          variation: varTitle,
+          description: v.description || v.concept || '',
+          important_details: v.important_details || [],
+          template_code: v.template_code || v.templateCode || '',
+          other_relevant_details: v.other_relevant_details || '',
+          problems: (v.problems || []).filter((p: any) => p.name).map((p: any) => {
+            const existingProbId = existingProbMap.get(`${varTitle}:::${p.name}`) || existingProbMap.get(p.name);
+            return {
+              ...(existingProbId ? { _id: existingProbId } : {}),
+              name: p.name,
+              difficulty: p.difficulty,
+              platform: p.platform,
+              link: p.link,
+              priority: p.priority,
+              company_tags: p.company_tags || []
+            };
+          })
+        };
+      })
     };
 
     try {
       await Pattern.findOneAndUpdate(
         { slug: patternSlug },
         doc,
-        { upsert: true, new: true }
+        { upsert: true, returnDocument: 'after' }
       );
       console.log(`✅ Upserted Pattern: ${data.pattern}`);
     } catch (err) {
