@@ -19,6 +19,7 @@ import {
   X,
   FileCode,
   BarChart2,
+  LayoutDashboard,
 } from 'lucide-react';
 import { authClient } from '@/lib/auth-client';
 import { UserMenu } from '@/components/shell/UserMenu';
@@ -188,7 +189,7 @@ export function Navbar() {
       transition={{ duration: 0.5, ease: 'easeOut' }}
       className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-8 py-3.5"
     >
-      <div className="max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 py-2.5 rounded-2xl bg-card/75 dark:bg-card/60 backdrop-blur-2xl border border-border/60 shadow-[0_8px_32px_rgba(0,0,0,0.06)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)] transition-all duration-300 relative before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-emerald-500/30 before:to-transparent">
+      <div className="max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 py-2 rounded-full bg-card/85 dark:bg-card/70 backdrop-blur-2xl border border-border/60 shadow-[0_8px_32px_rgba(0,0,0,0.06)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)] transition-all duration-300 relative before:pointer-events-none before:absolute before:inset-x-8 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-emerald-500/30 before:to-transparent">
         
         {/* Brand Logo */}
         <Link href="/" className="flex items-center gap-3 group">
@@ -197,7 +198,7 @@ export function Navbar() {
 
         {/* Desktop Nav with Hovering Smooth Dropdowns */}
         <nav
-          className="hidden md:flex items-center gap-1.5 p-1 rounded-xl bg-foreground/[0.03] dark:bg-white/[0.04] border border-border/40 relative"
+          className="hidden md:flex items-center gap-1 p-1 rounded-full bg-foreground/[0.03] dark:bg-white/[0.04] border border-border/40 relative"
           onMouseLeave={handleMouseLeave}
         >
           {NAV_CATEGORIES.map((category) => {
@@ -212,7 +213,7 @@ export function Navbar() {
                   type="button"
                   onClick={() => setActiveDropdown(isOpen ? null : category.id)}
                   className={cn(
-                    'flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl transition-all duration-200 outline-none cursor-pointer',
+                    'flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-full transition-all duration-200 outline-none cursor-pointer',
                     isOpen
                       ? 'text-primary bg-primary/10 dark:bg-primary/15'
                       : 'text-muted-foreground hover:text-foreground hover:bg-card/80'
@@ -236,7 +237,7 @@ export function Navbar() {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 6, scale: 0.98 }}
                       transition={{ duration: 0.2, ease: [0.25, 1, 0.5, 1] }}
-                      className="absolute top-full left-0 mt-2 w-[540px] -translate-x-12 rounded-2xl bg-card/95 backdrop-blur-2xl border border-border/80 p-4 shadow-2xl z-50 overflow-hidden"
+                      className="absolute top-full left-0 mt-2 w-[540px] -translate-x-12 rounded-3xl bg-card/95 backdrop-blur-2xl border border-border/80 p-4 shadow-2xl z-50 overflow-hidden"
                       onMouseEnter={() => handleMouseEnter(category.id)}
                       onMouseLeave={handleMouseLeave}
                     >
@@ -253,7 +254,7 @@ export function Navbar() {
                                 key={item.title}
                                 href={item.href}
                                 onClick={() => setActiveDropdown(null)}
-                                className="group flex items-start gap-3 p-2.5 rounded-xl hover:bg-primary/10 transition-colors"
+                                className="group flex items-start gap-3 p-2.5 rounded-2xl hover:bg-primary/10 transition-colors"
                               >
                                 <div className="mt-0.5 flex size-5 shrink-0 items-center justify-center text-muted-foreground group-hover:text-primary transition-colors">
                                   <Icon className="size-4" />
@@ -280,7 +281,7 @@ export function Navbar() {
 
                         {/* Featured Sidebar Column */}
                         {category.featured && (
-                          <div className="col-span-5 flex flex-col justify-between rounded-xl bg-surface-sunken/80 border border-border/60 p-4">
+                          <div className="col-span-5 flex flex-col justify-between rounded-2xl bg-surface-sunken/80 border border-border/60 p-4">
                             <div className="space-y-2">
                               <span className="inline-block px-2 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase tracking-wider bg-primary/15 text-primary">
                                 {category.featured.tag}
@@ -314,32 +315,55 @@ export function Navbar() {
           {/* Direct Link: Pricing */}
           <Link
             href="/pricing"
-            className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors rounded-xl hover:bg-card/80"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors rounded-full hover:bg-card/80"
           >
             <span>Pricing</span>
             <span className="px-1.5 py-0.2 rounded-full text-[9px] font-mono font-bold uppercase tracking-wider bg-amber-500/15 text-amber-500 border border-amber-500/30">
               PRO
             </span>
           </Link>
+
+          {/* Direct Link: Go to Dashboard */}
+          <Link
+            href="/dashboard"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors rounded-full hover:bg-card/80"
+          >
+            <LayoutDashboard className="size-3.5 text-primary" />
+            <span>Dashboard</span>
+          </Link>
         </nav>
 
         {/* Right Controls: Theme Toggle & Auth */}
-        <div className="flex items-center gap-3">
-          <AnimatedThemeToggle />
+        <div className="flex items-center gap-2 sm:gap-3">
+          <AnimatedThemeToggle className="rounded-full [&>div]:rounded-full" />
 
           {session ? (
-            <div className="w-10 h-10 flex items-center justify-center">
-              <UserMenu collapsed={true} isAdmin={(session.user as { role?: string })?.role === 'admin'} />
+            <div className="flex items-center gap-2">
+              <Link href="/dashboard">
+                <button className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-primary/10 text-primary hover:bg-primary/20 border border-primary/25 transition-all active:scale-95 cursor-pointer">
+                  <LayoutDashboard className="size-3.5" />
+                  <span>Dashboard</span>
+                </button>
+              </Link>
+              <div className="w-10 h-10 flex items-center justify-center">
+                <UserMenu collapsed={true} isAdmin={(session.user as { role?: string })?.role === 'admin'} />
+              </div>
             </div>
           ) : (
             <div className="hidden sm:flex items-center gap-2">
+              <Link href="/dashboard">
+                <button className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors rounded-full hover:bg-accent/50 cursor-pointer">
+                  <LayoutDashboard className="size-3.5 text-primary" />
+                  <span>Dashboard</span>
+                </button>
+              </Link>
               <Link href="/sign-in">
-                <button className="px-4 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors rounded-xl hover:bg-accent/50 cursor-pointer">
+                <button className="px-4 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors rounded-full hover:bg-accent/50 cursor-pointer">
                   Log In
                 </button>
               </Link>
               <Link href="/sign-up">
-                <button className="px-5 py-2 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary-hover shadow-sm hover:shadow-[0_0_20px_rgba(16,185,129,0.35)] border-t border-white/20 transition-all active:scale-95 cursor-pointer">
+                <button className="px-5 py-2 rounded-full text-xs font-bold bg-primary text-primary-foreground hover:bg-primary-hover shadow-sm hover:shadow-[0_0_20px_rgba(16,185,129,0.35)] border-t border-white/20 transition-all active:scale-95 cursor-pointer">
                   <span>Get Started</span>
                 </button>
               </Link>
@@ -350,7 +374,7 @@ export function Navbar() {
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden flex size-9 items-center justify-center rounded-xl border border-border/60 bg-card/60 text-foreground"
+            className="md:hidden flex size-9 items-center justify-center rounded-full border border-border/60 bg-card/60 text-foreground cursor-pointer"
             aria-label="Toggle Navigation Menu"
           >
             {mobileMenuOpen ? <X className="size-4" /> : <Menu className="size-4" />}
@@ -366,13 +390,26 @@ export function Navbar() {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.25 }}
-            className="md:hidden mt-2 max-w-7xl mx-auto rounded-2xl bg-card/95 backdrop-blur-2xl border border-border/60 p-4 shadow-2xl overflow-hidden"
+            className="md:hidden mt-2 max-w-7xl mx-auto rounded-3xl bg-card/95 backdrop-blur-2xl border border-border/60 p-4 shadow-2xl overflow-hidden"
           >
             <div className="flex flex-col gap-2">
+              {/* Go to Dashboard Mobile Button */}
+              <Link
+                href="/dashboard"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center justify-between p-3 rounded-full border border-primary/30 bg-primary/10 text-xs font-bold text-foreground hover:bg-primary/20 transition-colors"
+              >
+                <div className="flex items-center gap-2.5">
+                  <LayoutDashboard className="size-4 text-primary" />
+                  <span>Go to Dashboard</span>
+                </div>
+                <ArrowRight className="size-3.5 text-primary" />
+              </Link>
+
               {NAV_CATEGORIES.map((cat) => {
                 const isExpanded = expandedMobileCategory === cat.id;
                 return (
-                  <div key={cat.id} className="rounded-xl border border-border/40 overflow-hidden">
+                  <div key={cat.id} className="rounded-2xl border border-border/40 overflow-hidden">
                     <button
                       type="button"
                       onClick={() => setExpandedMobileCategory(isExpanded ? null : cat.id)}
@@ -399,7 +436,7 @@ export function Navbar() {
                                 key={item.title}
                                 href={item.href}
                                 onClick={() => setMobileMenuOpen(false)}
-                                className="flex items-center justify-between p-2 rounded-lg hover:bg-primary/10 text-muted-foreground hover:text-foreground transition-colors"
+                                className="flex items-center justify-between p-2 rounded-xl hover:bg-primary/10 text-muted-foreground hover:text-foreground transition-colors"
                               >
                                 <div className="flex items-center gap-2.5">
                                   <Icon className="size-4 text-muted-foreground" />
@@ -423,10 +460,10 @@ export function Navbar() {
               <Link
                 href="/pricing"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-between p-3 rounded-xl border border-border/40 text-xs font-bold text-foreground hover:bg-muted/40"
+                className="flex items-center justify-between p-3 rounded-full border border-border/40 text-xs font-bold text-foreground hover:bg-muted/40"
               >
                 <span>Pricing & Pro Access</span>
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-amber-500/15 text-amber-500 border border-amber-500/30">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-amber-500/15 text-amber-500 border border-amber-500/30">
                   PRO
                 </span>
               </Link>
@@ -434,12 +471,12 @@ export function Navbar() {
               {!session && (
                 <div className="flex flex-col gap-2 pt-3 border-t border-border/40 mt-2">
                   <Link href="/sign-in" onClick={() => setMobileMenuOpen(false)}>
-                    <button className="w-full py-2.5 text-center text-xs font-bold text-foreground rounded-xl border border-border/60 bg-card hover:bg-muted/60">
+                    <button className="w-full py-2.5 text-center text-xs font-bold text-foreground rounded-full border border-border/60 bg-card hover:bg-muted/60 cursor-pointer">
                       Log In
                     </button>
                   </Link>
                   <Link href="/sign-up" onClick={() => setMobileMenuOpen(false)}>
-                    <button className="w-full py-2.5 text-center text-xs font-bold bg-primary text-primary-foreground hover:bg-primary-hover rounded-xl shadow-sm">
+                    <button className="w-full py-2.5 text-center text-xs font-bold bg-primary text-primary-foreground hover:bg-primary-hover rounded-full shadow-sm cursor-pointer">
                       Get Started
                     </button>
                   </Link>

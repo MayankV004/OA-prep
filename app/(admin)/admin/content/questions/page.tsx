@@ -51,7 +51,7 @@ function DifficultyBadge({ value }: { value?: string }) {
       : key === 'medium'
         ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
         : key === 'hard'
-          ? 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
+          ? 'bg-red-500/15 text-red-400 border border-red-500/30'
           : 'bg-muted text-muted-foreground';
 
   return (

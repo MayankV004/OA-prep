@@ -56,9 +56,9 @@ interface Pattern {
 }
 
 const DIFF_STYLE: Record<string, string> = {
-  Easy: 'bg-success-muted text-success',
-  Medium: 'bg-warning-muted text-warning',
-  Hard: 'bg-destructive/10 text-destructive',
+  Easy: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25',
+  Medium: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/25',
+  Hard: 'bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/25',
 };
 
 const EMPTY_VARIATION = { variation: '', description: '', important_details: '', template_code: '', other_relevant_details: '' };

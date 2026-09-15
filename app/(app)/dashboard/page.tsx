@@ -241,7 +241,7 @@ export default function DashboardPage() {
                 <span className="font-display text-3xl font-black text-foreground tabular-nums">
                   {stats?.difficultyMix?.Hard ?? 0}
                 </span>
-                <span className="text-xs font-bold text-rose-500 font-mono">Hard Solved</span>
+                <span className="text-xs font-bold text-red-500 font-mono">Hard Solved</span>
               </div>
             )}
 
@@ -250,7 +250,7 @@ export default function DashboardPage() {
               <span className="text-muted-foreground/60">·</span>
               <span className="text-amber-500">{stats?.difficultyMix?.Medium ?? 0}M</span>
               <span className="text-muted-foreground/60">·</span>
-              <span className="text-rose-500">{stats?.difficultyMix?.Hard ?? 0}H</span>
+              <span className="text-red-500">{stats?.difficultyMix?.Hard ?? 0}H</span>
             </div>
           </div>
 

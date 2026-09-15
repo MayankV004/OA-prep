@@ -10,6 +10,16 @@ import { Heading, Text } from '@/components/ui/typography';
 import { MarkdownEditor } from '@/components/markdown/Editor';
 import { MarkdownView } from '@/components/markdown/View';
 import { Problem } from './ProblemRow';
+import { cn } from '@/lib/utils';
+
+const DIFF_STYLES: Record<string, string> = {
+  Easy: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25',
+  Medium: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25',
+  Hard: 'bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/25',
+  easy: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25',
+  medium: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25',
+  hard: 'bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/25',
+};
 
 interface NotesDrawerProps {
   problem: Problem;
@@ -175,7 +185,9 @@ export function NotesDrawer({ problem, queryKey, onClose }: NotesDrawerProps) {
           >
             Open problem ↗
           </a>
-          <Badge variant="secondary">{problem.difficulty}</Badge>
+          <Badge variant="secondary" className={cn('font-semibold', DIFF_STYLES[problem.difficulty])}>
+            {problem.difficulty}
+          </Badge>
           {problem.pattern && (
             <Text as="span" size="micro" tone="muted">
               {problem.pattern}

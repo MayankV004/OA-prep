@@ -526,7 +526,7 @@ export default function ProfilePage() {
                     <span className="text-foreground">{mediumStats.completed}/{mediumStats.total}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-rose-500 font-semibold">Hard</span>
+                    <span className="text-red-500 font-semibold">Hard</span>
                     <span className="text-foreground">{hardStats.completed}/{hardStats.total}</span>
                   </div>
                 </div>

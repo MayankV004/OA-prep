@@ -39,9 +39,9 @@ interface PracticePageClientProps {
 
 /* ── Difficulty colour tokens ───────────────────────────────────────────── */
 const DIFF_STYLE = {
-  Easy: 'bg-success-muted text-success border border-success/20',
-  Medium: 'bg-warning-muted text-warning border border-warning/20',
-  Hard: 'bg-destructive/10 text-destructive border border-destructive/20',
+  Easy: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25',
+  Medium: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25',
+  Hard: 'bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/25',
 } as const;
 
 /* ── Individual problem row ─────────────────────────────────────────────── */

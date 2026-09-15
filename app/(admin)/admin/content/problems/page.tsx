@@ -42,11 +42,11 @@ function DifficultyBadge({ value }: { value?: string }) {
   const key = (value ?? '').toLowerCase();
   const tone =
     key === 'easy'
-      ? 'bg-success-muted text-success'
+      ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25'
       : key === 'medium'
-        ? 'bg-warning-muted text-warning'
+        ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/25'
         : key === 'hard'
-          ? 'bg-danger-muted text-destructive'
+          ? 'bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/25'
           : 'bg-muted text-text-secondary';
 
   return (

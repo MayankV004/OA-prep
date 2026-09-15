@@ -31,7 +31,7 @@ export function DifficultyMix({ data }: DifficultyMixProps) {
   const items = [
     { label: 'Easy', count: easy, pct: easyPct, color: 'bg-emerald-500', textColor: 'text-emerald-500' },
     { label: 'Medium', count: medium, pct: medPct, color: 'bg-amber-500', textColor: 'text-amber-500' },
-    { label: 'Hard', count: hard, pct: hardPct, color: 'bg-rose-500', textColor: 'text-rose-500' },
+    { label: 'Hard', count: hard, pct: hardPct, color: 'bg-red-500', textColor: 'text-red-500' },
   ];
 
   return (
@@ -51,7 +51,7 @@ export function DifficultyMix({ data }: DifficultyMixProps) {
           />
           <div
             style={{ width: `${hardPct}%` }}
-            className="h-full bg-rose-500 rounded-r-full transition-all duration-500"
+            className="h-full bg-red-500 rounded-r-full transition-all duration-500"
             title={`Hard: ${hard} (${hardPct}%)`}
           />
         </div>
