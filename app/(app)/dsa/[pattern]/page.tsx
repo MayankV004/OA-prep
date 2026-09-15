@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { TemplateCodeBlock } from '@/components/dsa/TemplateCodeBlock';
 import { ExplanationBlock } from '@/components/dsa/ExplanationBlock';
 import { PatternContentClient } from '@/components/dsa/PatternContentClient';
@@ -10,6 +11,58 @@ import { MarkdownView } from '@/components/markdown/View';
 import { ArrowLeft, Code2, BookOpen, Layers, Terminal } from 'lucide-react';
 
 export const revalidate = 60;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ pattern: string }>;
+}): Promise<Metadata> {
+  const { pattern: slug } = await params;
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://bigoprep.tech';
+
+  try {
+    await dbConnect();
+    const patternDoc = await Pattern.findOne({ slug })
+      .select('title description concept timeComplexity spaceComplexity')
+      .lean();
+    const pattern = patternDoc as any;
+
+    if (!pattern) {
+      return {
+        title: 'Pattern Not Found',
+      };
+    }
+
+    const title = `${pattern.title} - DSA Pattern Breakdown & Variations`;
+    const description =
+      pattern.concept?.slice(0, 160) ||
+      pattern.description?.slice(0, 160) ||
+      `Master the ${pattern.title} algorithmic pattern, code templates, and problem variations for coding interviews.`;
+
+    return {
+      title,
+      description,
+      alternates: {
+        canonical: `${siteUrl}/dsa/${slug}`,
+      },
+      openGraph: {
+        title: `${pattern.title} | BigO DSA Patterns`,
+        description,
+        url: `${siteUrl}/dsa/${slug}`,
+        type: 'article',
+      },
+      twitter: {
+        card: 'summary',
+        title: `${pattern.title} Pattern Breakdown`,
+        description,
+      },
+    };
+  } catch {
+    return {
+      title: 'DSA Pattern Details',
+    };
+  }
+}
 
 export default async function DSAPatternPage({ params }: { params: Promise<{ pattern: string }> }) {
   const { pattern: slug } = await params;
@@ -39,9 +92,50 @@ export default async function DSAPatternPage({ params }: { params: Promise<{ pat
     0
   );
 
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://bigoprep.tech';
+
+  const patternJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'TechArticle',
+    '@id': `${siteUrl}/dsa/${slug}#article`,
+    headline: `${pattern.title} - Algorithmic Pattern Guide & Variations`,
+    description: pattern.concept || pattern.description || `Master the ${pattern.title} pattern for coding interviews.`,
+    inLanguage: 'en-US',
+    learningResourceType: 'Algorithm Pattern Blueprint',
+    educationalLevel: 'Intermediate to Advanced',
+    about: [
+      {
+        '@type': 'Thing',
+        name: pattern.title,
+        description: pattern.concept,
+      },
+      ...(pattern.timeComplexity ? [{
+        '@type': 'PropertyValue',
+        name: 'Time Complexity',
+        value: pattern.timeComplexity,
+      }] : []),
+      ...(pattern.spaceComplexity ? [{
+        '@type': 'PropertyValue',
+        name: 'Space Complexity',
+        value: pattern.spaceComplexity,
+      }] : []),
+    ],
+    keywords: [pattern.title, 'DSA Pattern', 'Algorithmic Optimization', ...(pattern.useCases || [])].join(', '),
+    hasPart: (pattern.variations || []).map((v: any) => ({
+      '@type': 'HowTo',
+      name: v.variation || v.title,
+      description: `Implementation variation for ${pattern.title}`,
+    })),
+  };
+
   return (
-    <div className="pb-24 space-y-8">
-      {/* 1. Breadcrumb & Navigation Header */}
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(patternJsonLd) }}
+      />
+      <div className="pb-24 space-y-8">
+        {/* 1. Breadcrumb & Navigation Header */}
       <div className="flex flex-col gap-4 pt-2">
         <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground">
           <Link
@@ -245,5 +339,6 @@ export default async function DSAPatternPage({ params }: { params: Promise<{ pat
         )}
       </div>
     </div>
+    </>
   );
 }

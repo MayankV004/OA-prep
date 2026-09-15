@@ -19,9 +19,71 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://bigoprep.tech';
+
 export const metadata: Metadata = {
-  title: "BigO - Master DSA Patterns & Core CS",
-  description: "Master algorithms, DSA patterns, and core Computer Science subjects for top tech interviews.",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: 'BigO - Master DSA Patterns & Technical Online Assessments',
+    template: '%s | BigO',
+  },
+  description:
+    'Master algorithms, DSA patterns, and core Computer Science subjects for top tech interviews. Zero-distraction roadmaps, timed OA simulations, and spaced-repetition flashcards.',
+  applicationName: 'BigO',
+  authors: [{ name: 'BigO Team' }],
+  creator: 'BigO',
+  publisher: 'BigO',
+  keywords: [
+    'DSA Patterns',
+    'Online Assessment Prep',
+    'Coding Interview Preparation',
+    'Data Structures and Algorithms',
+    'Computer Science Core Subjects',
+    'Operating Systems',
+    'DBMS',
+    'Computer Networks',
+    'System Design',
+    'Competitive Programming',
+    'Mock OA Tests',
+  ],
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: siteUrl,
+    siteName: 'BigO',
+    title: 'BigO - Master DSA Patterns & Technical Online Assessments',
+    description:
+      'Master algorithms, DSA patterns, and core Computer Science subjects for top tech interviews. Zero-distraction roadmaps, timed OA simulations, and spaced-repetition flashcards.',
+    images: [
+      {
+        url: '/icon.png',
+        width: 512,
+        height: 512,
+        alt: 'BigO - Master DSA Patterns & Core CS',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'BigO - Master DSA Patterns & Technical Online Assessments',
+    description:
+      'Master algorithms, DSA patterns, and core Computer Science subjects for top tech interviews.',
+    images: ['/icon.png'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
   icons: {
     icon: [
       { url: '/favicon.ico' },

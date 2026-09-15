@@ -1,9 +1,23 @@
 import type { ReactNode } from 'react';
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { BigOLogo } from '@/components/ui/big-o-logo';
 import { AnimatedThemeToggle } from '@/components/ui/animated-theme-toggle';
 import { AuthParallaxShowcase } from '@/components/auth/AuthParallaxShowcase';
+
+export const metadata: Metadata = {
+  title: {
+    default: 'Candidate Authentication',
+    template: '%s | BigO',
+  },
+  description:
+    'Sign in or create your BigO account to access OA simulations, DSA pattern roadmaps, and interview flashcards.',
+  robots: {
+    index: false,
+    follow: true,
+  },
+};
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (

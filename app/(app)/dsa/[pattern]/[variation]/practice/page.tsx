@@ -1,9 +1,53 @@
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import dbConnect from '@/lib/db';
 import { Pattern } from '@/models';
 import PracticePageClient from '@/components/dsa/PracticePageClient';
 
 export const revalidate = 60;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ pattern: string; variation: string }>;
+}): Promise<Metadata> {
+  const { pattern: patternSlug, variation: variationId } = await params;
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://bigoprep.tech';
+
+  try {
+    await dbConnect();
+    const patternDoc = await Pattern.findOne({ slug: patternSlug }).lean();
+    const pattern = patternDoc as any;
+
+    if (!pattern) return { title: 'Practice Session' };
+
+    const variation = (pattern.variations || []).find(
+      (v: any) => (v._id?.toString() || v.id?.toString()) === variationId
+    );
+
+    const varTitle = variation?.variation || variation?.title || 'Practice Session';
+    const title = `${varTitle} - ${pattern.title} Practice`;
+    const description = `Interactive coding practice for ${varTitle} under the ${pattern.title} pattern. Solve high-frequency interview problems with pattern templates.`;
+
+    return {
+      title,
+      description,
+      alternates: {
+        canonical: `${siteUrl}/dsa/${patternSlug}/${variationId}/practice`,
+      },
+      openGraph: {
+        title: `${title} | BigO`,
+        description,
+        url: `${siteUrl}/dsa/${patternSlug}/${variationId}/practice`,
+        type: 'article',
+      },
+    };
+  } catch {
+    return {
+      title: 'Practice Session',
+    };
+  }
+}
 
 export default async function PracticePage({
   params,
