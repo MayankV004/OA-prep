@@ -338,25 +338,11 @@ export function Navbar() {
           <AnimatedThemeToggle className="rounded-full [&>div]:rounded-full" />
 
           {session ? (
-            <div className="flex items-center gap-2">
-              <Link href="/dashboard">
-                <button className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-primary/10 text-primary hover:bg-primary/20 border border-primary/25 transition-all active:scale-95 cursor-pointer">
-                  <LayoutDashboard className="size-3.5" />
-                  <span>Dashboard</span>
-                </button>
-              </Link>
-              <div className="w-10 h-10 flex items-center justify-center">
-                <UserMenu collapsed={true} isAdmin={(session.user as { role?: string })?.role === 'admin'} />
-              </div>
+            <div className="w-10 h-10 flex items-center justify-center">
+              <UserMenu collapsed={true} isAdmin={(session.user as { role?: string })?.role === 'admin'} />
             </div>
           ) : (
             <div className="hidden sm:flex items-center gap-2">
-              <Link href="/dashboard">
-                <button className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors rounded-full hover:bg-accent/50 cursor-pointer">
-                  <LayoutDashboard className="size-3.5 text-primary" />
-                  <span>Dashboard</span>
-                </button>
-              </Link>
               <Link href="/sign-in">
                 <button className="px-4 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors rounded-full hover:bg-accent/50 cursor-pointer">
                   Log In
