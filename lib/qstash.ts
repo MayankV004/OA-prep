@@ -84,6 +84,9 @@ export async function dispatchEmail(job: EmailJob): Promise<void> {
     case 'contest_weekly_digest':
       await email.sendWeeklyContestDigestEmail(job);
       break;
+    case 'revision_weekly_digest':
+      await email.sendWeeklyRevisionDigestEmail(job);
+      break;
     default: {
       const _exhaustive: never = job;
       throw new Error(`Unknown email job type`);

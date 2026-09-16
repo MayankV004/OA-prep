@@ -85,3 +85,23 @@ export interface WeeklyContestDigestEmailProps {
   preferencesUrl: string;
   appName?: string;
 }
+
+export interface WeeklyRevisionItem {
+  problemId: string;
+  title: string;
+  patternTitle: string;
+  difficulty: 'Easy' | 'Medium' | 'Hard' | string;
+  practiceUrl: string;
+  userNotesExcerpt?: string;
+  timesRevised?: number;
+}
+
+export interface WeeklyRevisionDigestEmailProps {
+  userName?: string;
+  weekLabel?: string;
+  totalRevisionCount: number;
+  problems: WeeklyRevisionItem[];
+  practiceHubUrl: string;
+  appName?: string;
+}
+

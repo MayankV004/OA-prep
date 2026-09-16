@@ -1,25 +1,25 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import {
   ExternalLink,
   Check,
   Star,
-  ChevronDown,
-  ChevronUp,
   Eye,
   Pencil,
   Save,
   StickyNote,
   Loader2,
+  Sparkles,
+  CheckCircle2,
 } from 'lucide-react';
 import { MarkdownView } from '@/components/markdown/View';
-import remarkGfm from 'remark-gfm';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Text } from '@/components/ui/typography';
+import { toast } from 'sonner';
 
 interface Problem {
   _id: string;
@@ -51,8 +51,10 @@ function ProblemRow({
   completed,
   revision,
   userNotes,
+  patternTitle,
   onToggleComplete,
   onToggleRevision,
+  onMarkRevised,
   onSaveNotes,
 }: {
   problem: Problem;
@@ -60,15 +62,46 @@ function ProblemRow({
   completed: boolean;
   revision: boolean;
   userNotes: string;
+  patternTitle: string;
   onToggleComplete: (id: string, val: boolean) => void;
   onToggleRevision: (id: string, val: boolean) => void;
+  onMarkRevised?: (id: string) => void;
   onSaveNotes: (id: string, notes: string) => Promise<void>;
 }) {
   const [notesOpen, setNotesOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [draft, setDraft] = useState(userNotes);
   const [saving, setSaving] = useState(false);
+  const [generatingAi, setGeneratingAi] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const handleGenerateAiNotes = async () => {
+    setGeneratingAi(true);
+    try {
+      const res = await fetch('/api/problems/ai-notes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          problemId: problem._id,
+          problemTitle: problem.name,
+          patternTitle,
+          difficulty: problem.difficulty,
+          existingNotes: draft || userNotes,
+        }),
+      });
+      if (!res.ok) throw new Error('Failed to generate AI notes');
+      const data = await res.json();
+      if (data.notes) {
+        setDraft(data.notes);
+        setEditMode(true);
+        toast.success('AI Revision Notes generated! Click Save to keep.');
+      }
+    } catch {
+      toast.error('Could not generate AI notes. Please try again.');
+    } finally {
+      setGeneratingAi(false);
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -188,6 +221,19 @@ function ProblemRow({
             />
           </button>
 
+          {/* Mark Revised quick button (when revision is active) */}
+          {revision && (
+            <button
+              type="button"
+              onClick={() => onMarkRevised?.(problem._id)}
+              title="Mark problem as revised (reschedules next revision interval)"
+              className="press hidden sm:inline-flex items-center gap-1 rounded-lg border border-warning/30 bg-warning/10 px-2 py-1 text-2xs font-semibold text-warning transition-colors hover:bg-warning/20"
+            >
+              <CheckCircle2 className="size-3" />
+              <span>Revised</span>
+            </button>
+          )}
+
           {/* Notes toggle */}
           <button
             type="button"
@@ -208,11 +254,32 @@ function ProblemRow({
       {/* Notes panel — expandable */}
       {notesOpen && (
         <div className="border-t border-divider px-3 pb-3 pt-3 sm:px-4">
-          {/* Edit/Preview toggle */}
-          <div className="mb-2 flex items-center justify-between gap-2">
-            <Text size="micro" tone="muted" weight="medium" className="uppercase tracking-wider">
-              📝 Notes
-            </Text>
+          {/* Edit/Preview/AI toggle */}
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Text size="micro" tone="muted" weight="medium" className="uppercase tracking-wider">
+                📝 Notes
+              </Text>
+              <button
+                type="button"
+                onClick={handleGenerateAiNotes}
+                disabled={generatingAi}
+                title="Generate concise high-yield revision notes using AI"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-primary/25 bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary transition-all hover:bg-primary/20 hover:shadow-xs disabled:opacity-50"
+              >
+                {generatingAi ? (
+                  <>
+                    <Loader2 className="size-3 animate-spin" />
+                    <span>Generating...</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="size-3 text-amber-500 fill-amber-500/20" />
+                    <span>{draft || userNotes ? 'Refine with AI' : 'Generate AI Notes'}</span>
+                  </>
+                )}
+              </button>
+            </div>
             <div className="flex items-center gap-1 rounded-lg bg-surface-sunken p-0.5">
               <button
                 type="button"
@@ -305,7 +372,7 @@ export default function PracticePageClient({
   variationTitle,
 }: PracticePageClientProps) {
   const queryClient = useQueryClient();
-  const progressKey = ['problems', 'practice-progress', variationTitle];
+  const progressKey = useMemo(() => ['problems', 'practice-progress', variationTitle], [variationTitle]);
 
   /* Fetch all progress for this variation in a single call */
   const { data: progressData = {} } = useQuery<Record<string, { completed: boolean; revision: boolean; userNotes: string }>>({
@@ -374,6 +441,29 @@ export default function PracticePageClient({
         [problemId]: { ...old[problemId], revision },
       }));
     },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: progressKey });
+    },
+  });
+
+  /* Mark as Revised mutation */
+  const markRevisedMutation = useMutation({
+    mutationFn: async (problemId: string) => {
+      const res = await fetch('/api/problems/revision', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ problemId, action: 'mark_revised' }),
+      });
+      if (!res.ok) throw new Error('Failed to mark revised');
+      return res.json();
+    },
+    onSuccess: () => {
+      toast.success('Marked as revised! Next review scheduled.');
+      queryClient.invalidateQueries({ queryKey: progressKey });
+    },
+    onError: () => {
+      toast.error('Failed to mark problem as revised');
+    },
   });
 
   /* Save notes */
@@ -390,10 +480,22 @@ export default function PracticePageClient({
     }));
   }, [queryClient, progressKey]);
 
-  /* Aggregate stats */
+  /* Aggregate stats & filters */
+  type FilterType = 'all' | 'unsolved' | 'solved' | 'revision';
+  const [filter, setFilter] = useState<FilterType>('all');
+
   const completedCount = problems.filter((p) => progressData[p._id]?.completed).length;
   const revisionCount = problems.filter((p) => progressData[p._id]?.revision).length;
   const progressPct = problems.length > 0 ? Math.round((completedCount / problems.length) * 100) : 0;
+
+  const filteredProblems = problems.filter((p) => {
+    const isCompleted = progressData[p._id]?.completed ?? false;
+    const isRevision = progressData[p._id]?.revision ?? false;
+    if (filter === 'solved') return isCompleted;
+    if (filter === 'unsolved') return !isCompleted;
+    if (filter === 'revision') return isRevision;
+    return true;
+  });
 
   return (
     <div className="space-y-6">
@@ -439,6 +541,48 @@ export default function PracticePageClient({
         </div>
       </div>
 
+      {/* Filter Tabs / Pills */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+          {[
+            { id: 'all', label: 'All Problems', count: problems.length },
+            { id: 'unsolved', label: 'Unsolved', count: problems.length - completedCount },
+            { id: 'solved', label: 'Solved', count: completedCount },
+            { id: 'revision', label: '⭐ Revision', count: revisionCount },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setFilter(tab.id as FilterType)}
+              className={cn(
+                'inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all',
+                filter === tab.id
+                  ? 'bg-primary text-primary-foreground shadow-e1'
+                  : 'bg-card text-text-muted hover:bg-accent hover:text-foreground border border-border/60'
+              )}
+            >
+              <span>{tab.label}</span>
+              <span
+                className={cn(
+                  'rounded-full px-1.5 py-0.5 text-2xs font-mono tabular-nums leading-none',
+                  filter === tab.id
+                    ? 'bg-primary-foreground/20 text-primary-foreground'
+                    : 'bg-muted text-text-muted'
+                )}
+              >
+                {tab.count}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        {filter === 'revision' && revisionCount > 0 && (
+          <p className="text-xs text-text-muted">
+            Showing <span className="font-semibold text-foreground">{revisionCount}</span> problem{revisionCount !== 1 ? 's' : ''} queued for revision
+          </p>
+        )}
+      </div>
+
       {/* Problem table header */}
       <div className="hidden grid-cols-[24px_32px_1fr_80px_32px_32px] items-center gap-3 px-4 text-xs font-semibold uppercase tracking-wider text-text-muted sm:grid sm:px-5">
         <span>#</span>
@@ -452,27 +596,39 @@ export default function PracticePageClient({
       {/* Problems list */}
       <div className="rounded-xl bg-card shadow-e1 overflow-hidden">
         <ul className="divide-y divide-divider">
-          {problems.map((p, i) => (
+          {filteredProblems.map((p, i) => (
             <ProblemRow
               key={p._id}
               problem={p}
               index={i}
+              patternTitle={patternTitle}
               completed={progressData[p._id]?.completed ?? false}
               revision={progressData[p._id]?.revision ?? false}
               userNotes={progressData[p._id]?.userNotes ?? ''}
               onToggleComplete={(id, val) => completeMutation.mutate({ problemId: id, completed: val })}
               onToggleRevision={(id, val) => revisionMutation.mutate({ problemId: id, revision: val })}
+              onMarkRevised={(id) => markRevisedMutation.mutate(id)}
               onSaveNotes={saveNotes}
             />
           ))}
         </ul>
       </div>
 
-      {problems.length === 0 && (
+      {filteredProblems.length === 0 && (
         <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-surface-sunken py-16 text-center">
-          <span className="text-4xl">🎯</span>
-          <p className="mt-3 text-sm font-medium text-foreground">No problems yet</p>
-          <p className="mt-1 text-xs text-text-muted">Problems for this variation haven't been added yet.</p>
+          <span className="text-4xl">{filter === 'revision' ? '⭐' : '🎯'}</span>
+          <p className="mt-3 text-sm font-medium text-foreground">
+            {filter === 'revision'
+              ? 'No problems marked for revision'
+              : filter === 'unsolved'
+              ? 'All problems completed!'
+              : 'No problems found'}
+          </p>
+          <p className="mt-1 text-xs text-text-muted">
+            {filter === 'revision'
+              ? 'Click the star icon ⭐ on any problem to queue it for revision.'
+              : 'Problems for this variation haven\'t been added yet.'}
+          </p>
         </div>
       )}
     </div>

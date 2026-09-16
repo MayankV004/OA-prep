@@ -8,7 +8,8 @@ import { OTPEmail } from '@/emails/OTPEmail';
 import { FeedbackNotificationEmail } from '@/emails/FeedbackNotification';
 import { ContestAlertEmail } from '@/emails/ContestAlertEmail';
 import { WeeklyContestDigestEmail } from '@/emails/WeeklyContestDigestEmail';
-import { ContestAlertEmailProps, WeeklyContestDigestEmailProps } from '@/types/email';
+import { WeeklyRevisionDigestEmail } from '@/emails/WeeklyRevisionDigestEmail';
+import { ContestAlertEmailProps, WeeklyContestDigestEmailProps, WeeklyRevisionDigestEmailProps } from '@/types/email';
 import React from 'react';
 import { env } from '@/lib/config';
 
@@ -469,5 +470,53 @@ export async function sendWeeklyContestDigestEmail(args: {
     throw error;
   }
 }
+
+/**
+ * 9. Send Weekly Revision Digest Email
+ */
+export async function sendWeeklyRevisionDigestEmail(args: {
+  to: string;
+} & WeeklyRevisionDigestEmailProps) {
+  const appUrl = env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const practiceHubUrl = `${appUrl}/dsa`;
+
+  const html = await render(
+    React.createElement(WeeklyRevisionDigestEmail, {
+      ...args,
+      appName: APP_NAME,
+      practiceHubUrl: args.practiceHubUrl || practiceHubUrl,
+    })
+  );
+
+  const { fromEmail, replyTo } = getEmailHeaders();
+  const subject = `⭐ Weekly Revision Radar: ${args.totalRevisionCount} problem${args.totalRevisionCount !== 1 ? 's' : ''} due for review`;
+  const resend = getResendClient();
+
+  if (!resend) {
+    console.log('\n----------------------------------------------------');
+    console.log('[DEV EMAIL MOCK] Weekly Revision Digest Email Triggered');
+    console.log(`To: ${args.to}`);
+    console.log(`From: ${fromEmail}`);
+    console.log(`Subject: ${subject}`);
+    console.log(`Revision Count: ${args.totalRevisionCount}`);
+    console.log('----------------------------------------------------\n');
+    return { id: 'mock_weekly_revision_digest_id', mock: true };
+  }
+
+  try {
+    const data = await resend.emails.send({
+      from: fromEmail,
+      replyTo: replyTo || undefined,
+      to: args.to,
+      subject,
+      html,
+    });
+    return data;
+  } catch (error) {
+    console.error('Failed to send weekly revision digest email via Resend API:', error);
+    throw error;
+  }
+}
+
 
 

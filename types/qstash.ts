@@ -1,4 +1,4 @@
-import { ContestAlertEmailProps, WeeklyContestDigestEmailProps } from './email';
+import { ContestAlertEmailProps, WeeklyContestDigestEmailProps, WeeklyRevisionDigestEmailProps } from './email';
 
 export type EmailJob =
   | {
@@ -29,4 +29,9 @@ export type EmailJob =
   | ({
       type: 'contest_weekly_digest';
       to: string;
-    } & WeeklyContestDigestEmailProps);
+    } & WeeklyContestDigestEmailProps)
+  | ({
+      type: 'revision_weekly_digest';
+      to: string;
+    } & WeeklyRevisionDigestEmailProps);
+
