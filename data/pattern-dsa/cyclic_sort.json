@@ -1,73 +1,133 @@
 {
   "pattern": "Cyclic Sort",
-  "description": "Cyclic Sort exploits arrays whose values are constrained to a known range (typically 1..n or 0..n-1) by repeatedly swapping each element into its 'correct' index. Once sorted this way in-place, a single pass reveals missing, duplicate, or misplaced values in O(n) time and O(1) space.",
+  "description": "Cyclic Sort exploits arrays whose values are constrained to a known range tied to the array's length (1..n or 0..n-1) by swapping each element directly into its correct index. After one in-place pass, a linear scan reveals missing values, duplicates, and misplacements in O(n) time and O(1) space — beating both sorting and HashSet-based approaches.",
   "important_details": [
-    "Only applicable when values are bounded within a range tied to the array's length (e.g., 1 to n, or 0 to n-1).",
-    "The core loop: while nums[i] is not already at its correct home index, swap it there.",
-    "After the sort pass, a second pass checks index i against expected value (i+1 or i) to spot anomalies — missing numbers, duplicates, or misplacements.",
-    "Achieves O(n) time and O(1) extra space, beating both sorting (O(n log n)) and hashset approaches (O(n) space) for this class of problems."
+    "Trigger condition: the problem states values lie in a range like [1, n] or [0, n] where n is the array length. Without that constraint the pattern does not apply.",
+    "Core loop: while nums[i] is not already at its home index, swap it there. Use while, not if.",
+    "Guard against infinite loops by comparing VALUES (nums[i] != nums[correctIdx]) rather than indices — with duplicates present, index comparison loops forever.",
+    "The second pass is where the answer comes from: compare index i against its expected value and collect every mismatch.",
+    "The related in-place technique of negating nums[abs(x)-1] as a visited marker solves the same problems without swaps and is worth knowing as an alternative."
   ],
-  "other_relevant_details": "Recognize this pattern from constraints like 'array contains n numbers from 1 to n' or 'numbers in range [0, n]' — that specific range-tied-to-length signal is the trigger, distinguishing it from generic sorting problems.",
+  "other_relevant_details": "Amortized O(n) holds because each swap places at least one element permanently into its final position, so at most n swaps occur overall despite the nested-looking structure. The main trade-off to state in an interview: cyclic sort MUTATES the input. If the problem forbids modification, switch to Floyd's cycle detection (for duplicates) or XOR/Gauss-sum tricks (for a single missing value).",
   "variations": [
     {
       "variation": "Basic Cyclic Sort (Place Every Number at Its Index)",
-      "description": "Rearrange an array of 1..n (or 0..n-1) so that each value ends up at its natural index, using repeated in-place swaps rather than a comparison sort.",
+      "description": "Rearrange an array containing 1..n (or 0..n-1) so each value sits at its natural index, using repeated in-place swaps instead of a comparison sort.",
       "important_details": [
-        "The while loop (not if) at each index is critical — one swap may bring in a value that also needs to move.",
-        "Each element is swapped into place at most once overall, which is what keeps this O(n) despite the nested-looking loop.",
-        "Skip the swap if the value is already correctly placed or is a duplicate of the target slot's value (to avoid infinite loops)."
+        "The while loop at each index is essential — one swap may bring in another out-of-place value that also needs relocating.",
+        "Advance i only when the current slot is settled; otherwise stay and keep swapping.",
+        "Each element is swapped into its final home at most once, which is what keeps the total at O(n).",
+        "For 0-indexed ranges use correctIdx = nums[i]; for 1-indexed use correctIdx = nums[i] - 1. Mixing these up is the most common bug."
       ],
-      "template_code": "public void cyclicSort(int[] nums) {\n    int i = 0;\n    while (i < nums.length) {\n        int correctIdx = nums[i] - 1;\n        if (nums[i] != nums[correctIdx]) {\n            int tmp = nums[i];\n            nums[i] = nums[correctIdx];\n            nums[correctIdx] = tmp;\n        } else {\n            i++;\n        }\n    }\n}",
-      "other_relevant_details": "Time Complexity: O(n) amortized (each element moved a bounded number of times). Space: O(1).",
+      "template_code": "public void cyclicSort(int[] nums) {\n    int i = 0;\n    while (i < nums.length) {\n        int correctIdx = nums[i] - 1;\n        if (nums[i] != nums[correctIdx]) {\n            swap(nums, i, correctIdx);\n        } else {\n            i++;\n        }\n    }\n}\nprivate void swap(int[] nums, int i, int j) {\n    int tmp = nums[i]; nums[i] = nums[j]; nums[j] = tmp;\n}",
+      "other_relevant_details": "Time Complexity: O(n) amortized. Space: O(1).",
       "problems": [
+        {"name": "Missing Number", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/missing-number/", "company_tags": null},
         {"name": "Set Mismatch", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/set-mismatch/", "company_tags": null},
-        {"name": "Couples Holding Hands", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/couples-holding-hands/", "company_tags": null}
+        {"name": "Couples Holding Hands", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/couples-holding-hands/", "company_tags": null},
+        {"name": "Minimum Number of Swaps to Make the String Balanced", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/minimum-number-of-swaps-to-make-the-string-balanced/", "company_tags": null}
       ]
     },
     {
-      "variation": "Find the Missing Number",
-      "description": "After cyclic-sorting a 0..n or 1..n range array, scan once to find the single index whose value doesn't match, revealing the missing number.",
+      "variation": "Find the Single Missing Number",
+      "description": "After cyclic-sorting a 0..n or 1..n array, scan once for the index whose value does not match, revealing the missing number.",
       "important_details": [
-        "Handles the off-by-one boundary carefully depending on whether the range is 0..n (n+1 slots, values 0..n) or 1..n.",
-        "If every index matches after sorting, the missing number is the one 'past the end' (n itself).",
-        "Alternative O(n) solutions exist via XOR or Gauss sum, but cyclic sort generalizes better to 'find ALL missing' variants."
+        "For the 0..n range with n+1 possible values but only n slots, skip any value equal to n during the sort (it has no home index).",
+        "If every index matches after sorting, the missing number is n itself — handle this after the scan loop.",
+        "XOR and Gauss-sum alternatives also run in O(n)/O(1) but do not generalize to the find-ALL-missing variant; cyclic sort does.",
+        "Gauss sum risks integer overflow for large n — mention using long or the XOR variant if asked."
       ],
-      "template_code": "public int missingNumber(int[] nums) {\n    int i = 0, n = nums.length;\n    while (i < n) {\n        int correctIdx = nums[i];\n        if (correctIdx < n && nums[i] != nums[correctIdx]) {\n            int tmp = nums[i];\n            nums[i] = nums[correctIdx];\n            nums[correctIdx] = tmp;\n        } else {\n            i++;\n        }\n    }\n    for (i = 0; i < n; i++) {\n        if (nums[i] != i) return i;\n    }\n    return n;\n}",
+      "template_code": "public int missingNumber(int[] nums) {\n    int i = 0, n = nums.length;\n    while (i < n) {\n        int correctIdx = nums[i];\n        if (correctIdx < n && nums[i] != nums[correctIdx]) {\n            swap(nums, i, correctIdx);\n        } else {\n            i++;\n        }\n    }\n    for (i = 0; i < n; i++) {\n        if (nums[i] != i) return i;\n    }\n    return n;\n}\nprivate void swap(int[] nums, int i, int j) {\n    int tmp = nums[i]; nums[i] = nums[j]; nums[j] = tmp;\n}",
       "other_relevant_details": "Time Complexity: O(n). Space: O(1).",
       "problems": [
         {"name": "Missing Number", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/missing-number/", "company_tags": null},
+        {"name": "Kth Missing Positive Number", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/kth-missing-positive-number/", "company_tags": null},
+        {"name": "Missing Element in Sorted Array", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/missing-element-in-sorted-array/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Find All Missing Numbers",
+      "description": "When several values from 1..n are absent, cyclic-sort the array and collect every index whose value fails to match, producing all missing numbers in one scan.",
+      "important_details": [
+        "Duplicates occupy slots that missing numbers would otherwise fill — the sort naturally leaves those slots holding wrong values.",
+        "The output list is not counted against the O(1) space claim, per standard problem conventions.",
+        "The negation-marker alternative is often shorter: for each value x, mark nums[abs(x)-1] negative; indices still positive at the end are missing.",
+        "Remember to use Math.abs when reading values during the negation-marker pass, since earlier marks corrupted the signs."
+      ],
+      "template_code": "public List<Integer> findDisappearedNumbers(int[] nums) {\n    int i = 0;\n    while (i < nums.length) {\n        int correctIdx = nums[i] - 1;\n        if (nums[i] != nums[correctIdx]) {\n            swap(nums, i, correctIdx);\n        } else {\n            i++;\n        }\n    }\n    List<Integer> missing = new ArrayList<>();\n    for (i = 0; i < nums.length; i++) {\n        if (nums[i] != i + 1) missing.add(i + 1);\n    }\n    return missing;\n}\nprivate void swap(int[] nums, int i, int j) {\n    int tmp = nums[i]; nums[i] = nums[j]; nums[j] = tmp;\n}",
+      "other_relevant_details": "Time Complexity: O(n). Space: O(1) excluding the output list.",
+      "problems": [
         {"name": "Find All Numbers Disappeared in an Array", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/find-all-numbers-disappeared-in-an-array/", "company_tags": null},
+        {"name": "Find Missing and Repeated Values", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/find-missing-and-repeated-values/", "company_tags": null},
         {"name": "Kth Missing Positive Number", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/kth-missing-positive-number/", "company_tags": null}
       ]
     },
     {
-      "variation": "Find the Duplicate(s)",
-      "description": "Cyclic-sort the array, then scan for indices where the value doesn't match — those mismatches point directly to duplicate values, without needing extra space.",
+      "variation": "Find the Duplicate Number(s)",
+      "description": "Cyclic-sort the array and collect values that could not be placed because their home index was already occupied by an identical value — those are exactly the duplicates.",
       "important_details": [
-        "Works when there's exactly one duplicate (possibly repeated many times) or multiple duplicates, with a small tweak to how mismatches are collected.",
-        "Contrast with the Fast & Slow Pointers 'Find the Duplicate Number' trick — cyclic sort is simpler to reason about but mutates the input array.",
-        "If the array cannot be modified, prefer the Floyd's cycle-detection variant instead."
+        "For a single duplicate, you can return as soon as you detect nums[i] == nums[correctIdx] with i != correctIdx.",
+        "For all duplicates, complete the sort first, then scan: any index i holding a value != i+1 holds a duplicate of some other value.",
+        "This mutates the input. If the problem explicitly says the array is read-only, use Floyd's cycle detection instead (see the Fast & Slow Pointers pattern).",
+        "Binary search on the value range (counting elements <= mid) is a third O(n log n) read-only alternative worth mentioning."
       ],
-      "template_code": "public int findDuplicate(int[] nums) {\n    int i = 0;\n    while (i < nums.length) {\n        if (nums[i] != i + 1) {\n            int correctIdx = nums[i] - 1;\n            if (nums[i] != nums[correctIdx]) {\n                int tmp = nums[i];\n                nums[i] = nums[correctIdx];\n                nums[correctIdx] = tmp;\n            } else {\n                return nums[i];\n            }\n        } else {\n            i++;\n        }\n    }\n    return -1;\n}",
-      "other_relevant_details": "Time Complexity: O(n). Space: O(1). Mutates the input array — call out this trade-off if the problem forbids mutation.",
+      "template_code": "public List<Integer> findDuplicates(int[] nums) {\n    int i = 0;\n    while (i < nums.length) {\n        int correctIdx = nums[i] - 1;\n        if (nums[i] != nums[correctIdx]) {\n            swap(nums, i, correctIdx);\n        } else {\n            i++;\n        }\n    }\n    List<Integer> duplicates = new ArrayList<>();\n    for (i = 0; i < nums.length; i++) {\n        if (nums[i] != i + 1) duplicates.add(nums[i]);\n    }\n    return duplicates;\n}\nprivate void swap(int[] nums, int i, int j) {\n    int tmp = nums[i]; nums[i] = nums[j]; nums[j] = tmp;\n}",
+      "other_relevant_details": "Time Complexity: O(n). Space: O(1) excluding output. Mutates the input array — state this trade-off explicitly.",
       "problems": [
-        {"name": "Find the Duplicate Number", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/find-the-duplicate-number/", "company_tags": null},
         {"name": "Find All Duplicates in an Array", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/find-all-duplicates-in-an-array/", "company_tags": null},
-        {"name": "Set Mismatch", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/set-mismatch/", "company_tags": null}
+        {"name": "Find the Duplicate Number", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/find-the-duplicate-number/", "company_tags": null},
+        {"name": "Set Mismatch", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/set-mismatch/", "company_tags": null},
+        {"name": "Find the Difference of Two Arrays", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/find-the-difference-of-two-arrays/", "company_tags": null}
       ]
     },
     {
-      "variation": "First Missing Positive",
-      "description": "The hardest variant: find the smallest missing positive integer in O(n) time and O(1) space by cyclic-sorting only the values that could possibly matter (1..n), ignoring negatives, zero, and out-of-range values.",
+      "variation": "Find the Corrupt Pair (Missing + Duplicate Together)",
+      "description": "When exactly one value is duplicated and exactly one is missing, a single cyclic-sort pass plus one scan yields both at once: the mismatched index gives the duplicate (its value) and the missing number (its index + 1).",
       "important_details": [
-        "Only values in range [1, n] are worth placing — negatives, 0, and values > n are simply skipped during the sort phase.",
-        "This is the classic 'Hard'-rated interview question that directly tests mastery of cyclic sort's edge-case handling.",
-        "After sorting, the answer is the first index i where nums[i] != i+1, or n+1 if the array is fully 1..n."
+        "There will be exactly one index i where nums[i] != i + 1 — that slot holds the duplicate, and i+1 is the missing value.",
+        "This is strictly better than two separate passes or a frequency array, and it is the intended O(1)-space solution.",
+        "Alternative closed-form solution: use the sum and sum-of-squares equations to solve for the two unknowns algebraically, but watch for overflow.",
+        "The 2D grid version of this problem (values in an n*n matrix) is solved identically after flattening."
       ],
-      "template_code": "public int firstMissingPositive(int[] nums) {\n    int n = nums.length, i = 0;\n    while (i < n) {\n        int correctIdx = nums[i] - 1;\n        if (nums[i] > 0 && nums[i] <= n && nums[i] != nums[correctIdx]) {\n            int tmp = nums[i];\n            nums[i] = nums[correctIdx];\n            nums[correctIdx] = tmp;\n        } else {\n            i++;\n        }\n    }\n    for (i = 0; i < n; i++) {\n        if (nums[i] != i + 1) return i + 1;\n    }\n    return n + 1;\n}",
-      "other_relevant_details": "Time Complexity: O(n). Space: O(1) — meets the problem's strict constraint that rules out sorting-based or hashset-based solutions.",
+      "template_code": "public int[] findErrorNums(int[] nums) {\n    int i = 0;\n    while (i < nums.length) {\n        int correctIdx = nums[i] - 1;\n        if (nums[i] != nums[correctIdx]) {\n            swap(nums, i, correctIdx);\n        } else {\n            i++;\n        }\n    }\n    for (i = 0; i < nums.length; i++) {\n        if (nums[i] != i + 1) {\n            return new int[]{nums[i], i + 1};\n        }\n    }\n    return new int[]{-1, -1};\n}\nprivate void swap(int[] nums, int i, int j) {\n    int tmp = nums[i]; nums[i] = nums[j]; nums[j] = tmp;\n}",
+      "other_relevant_details": "Time Complexity: O(n). Space: O(1).",
       "problems": [
-        {"name": "First Missing Positive", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/first-missing-positive/", "company_tags": null}
+        {"name": "Set Mismatch", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/set-mismatch/", "company_tags": null},
+        {"name": "Find Missing and Repeated Values", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/find-missing-and-repeated-values/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "First Missing Positive (Filtered Range)",
+      "description": "The hardest variation: find the smallest absent positive integer in O(n) time and O(1) space by cyclic-sorting only values in [1, n] and ignoring negatives, zero, and anything larger than n.",
+      "important_details": [
+        "Only values in [1, n] can possibly be the answer's neighbours — everything else is noise and is skipped during the sort.",
+        "The answer is the first index i where nums[i] != i + 1; if no such index exists, the answer is n + 1.",
+        "The bounds check nums[i] > 0 && nums[i] <= n must come BEFORE computing correctIdx, or you get an ArrayIndexOutOfBoundsException.",
+        "This is the classic Hard-rated question that specifically tests whether you understand cyclic sort rather than having memorized it."
+      ],
+      "template_code": "public int firstMissingPositive(int[] nums) {\n    int n = nums.length, i = 0;\n    while (i < n) {\n        int correctIdx = nums[i] - 1;\n        if (nums[i] > 0 && nums[i] <= n && nums[i] != nums[correctIdx]) {\n            swap(nums, i, correctIdx);\n        } else {\n            i++;\n        }\n    }\n    for (i = 0; i < n; i++) {\n        if (nums[i] != i + 1) return i + 1;\n    }\n    return n + 1;\n}\nprivate void swap(int[] nums, int i, int j) {\n    int tmp = nums[i]; nums[i] = nums[j]; nums[j] = tmp;\n}",
+      "other_relevant_details": "Time Complexity: O(n). Space: O(1) — meets the strict constraint that rules out sorting and HashSet solutions.",
+      "problems": [
+        {"name": "First Missing Positive", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/first-missing-positive/", "company_tags": null},
+        {"name": "Smallest Missing Non-negative Integer After Operations", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/smallest-missing-non-negative-integer-after-operations/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Index-as-Hash (Negation Marker Alternative)",
+      "description": "A sibling technique to cyclic sort: instead of swapping values into place, mark presence by negating the value at index abs(x)-1, then read off which indices remain positive.",
+      "important_details": [
+        "Preserves the multiset of absolute values, so the original data is recoverable by taking absolute values afterward.",
+        "Always read values through Math.abs during the marking pass, since earlier marks flipped signs.",
+        "Only works when the array contains no meaningful negatives and no zeros; pre-process out-of-range values first if needed.",
+        "Often shorter and less bug-prone than swap-based cyclic sort under OA time pressure — worth having both in your toolkit."
+      ],
+      "template_code": "public List<Integer> findDisappearedNumbers(int[] nums) {\n    for (int num : nums) {\n        int idx = Math.abs(num) - 1;\n        if (nums[idx] > 0) nums[idx] = -nums[idx];\n    }\n    List<Integer> missing = new ArrayList<>();\n    for (int i = 0; i < nums.length; i++) {\n        if (nums[i] > 0) missing.add(i + 1);\n    }\n    return missing;\n}",
+      "other_relevant_details": "Time Complexity: O(n) in two passes. Space: O(1) excluding output.",
+      "problems": [
+        {"name": "Find All Numbers Disappeared in an Array", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/find-all-numbers-disappeared-in-an-array/", "company_tags": null},
+        {"name": "Find All Duplicates in an Array", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/find-all-duplicates-in-an-array/", "company_tags": null},
+        {"name": "First Missing Positive", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/first-missing-positive/", "company_tags": null},
+        {"name": "Set Matrix Zeroes", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/set-matrix-zeroes/", "company_tags": null}
       ]
     }
   ]

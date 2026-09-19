@@ -1,78 +1,158 @@
 {
   "pattern": "Trie (Prefix Tree)",
-  "description": "A Trie is a tree where each path from the root spells out a prefix of some inserted string, letting insert/search/prefix-check run in O(L) time (L = word length) regardless of how many words are stored — far better than scanning a list of strings.",
+  "description": "A Trie is a tree in which each root-to-node path spells a prefix of some inserted string, giving O(L) insert, search, and prefix-check regardless of how many strings are stored. It converts repeated dictionary lookups, prefix queries, and grid word searches from per-word scans into a single shared traversal, and its bitwise variant unlocks O(32) max-XOR queries.",
   "important_details": [
-    "Each node holds children (commonly a 26-size array for lowercase letters, or a HashMap for larger alphabets) and an 'isEndOfWord' flag.",
-    "Prefix queries (startsWith) are the trie's superpower — no other structure answers 'does any word start with X' this efficiently.",
-    "Combines naturally with DFS/backtracking for grid word-search problems (prune search paths that aren't valid prefixes).",
-    "A bitwise trie (storing binary representations of numbers) unlocks O(32) or O(64) max-XOR-pair queries."
+    "Each node holds children (a 26-slot array for lowercase, or a HashMap for larger/unknown alphabets) plus an isEndOfWord flag.",
+    "Prefix queries are the trie's unique strength: no hash-based structure answers 'does any stored word start with X' as cheaply.",
+    "search() must check isEndOfWord at the terminal node; startsWith() must NOT — conflating them is the standard bug.",
+    "Storing the full word (or a payload) at terminal nodes often removes the need to rebuild strings during traversal.",
+    "A bitwise trie over the 32-bit representation of integers turns O(n^2) pairwise-XOR problems into O(n * 32)."
   ],
-  "other_relevant_details": "Recognize the pattern from phrases like 'prefix', 'starts with', 'autocomplete', 'dictionary of words', or repeated prefix lookups against a fixed word list.",
+  "other_relevant_details": "Trigger words: 'prefix', 'starts with', 'autocomplete', 'dictionary', 'word list', or repeated queries against a fixed set of strings. Space is the main cost — a 26-slot array per node is fast but memory-hungry; switch to a HashMap when the alphabet is large or the trie is sparse. When memory is tight and the word set is static, a sorted array plus binary search on prefixes is a valid lighter alternative.",
   "variations": [
     {
       "variation": "Basic Trie (Insert / Search / StartsWith)",
-      "description": "The foundational trie supporting three operations: insert a word, check if an exact word exists, and check if any word has a given prefix.",
+      "description": "The foundational trie supporting exact-word insertion, exact-word lookup, and prefix existence checks, all in O(L).",
       "important_details": [
-        "insert() walks/creates nodes for each character, marking isEndOfWord=true only at the final character.",
-        "search() must check isEndOfWord at the final node; startsWith() does NOT — reaching the node is sufficient.",
-        "A failed traversal (child doesn't exist) short-circuits both search and startsWith to false immediately."
+        "insert() walks and creates nodes per character, marking isEnd only at the final character.",
+        "A failed traversal (missing child) short-circuits both search and startsWith immediately.",
+        "Use a 26-slot array for guaranteed-lowercase input; use HashMap<Character, Node> when the alphabet is unknown or large.",
+        "Deletion is the rarely-practiced operation: unmark isEnd, then prune nodes bottom-up only while they have no children and are not terminal for another word."
       ],
       "template_code": "class Trie {\n    class Node { Node[] children = new Node[26]; boolean isEnd; }\n    private Node root = new Node();\n    public void insert(String word) {\n        Node curr = root;\n        for (char c : word.toCharArray()) {\n            int idx = c - 'a';\n            if (curr.children[idx] == null) curr.children[idx] = new Node();\n            curr = curr.children[idx];\n        }\n        curr.isEnd = true;\n    }\n    public boolean search(String word) {\n        Node node = find(word);\n        return node != null && node.isEnd;\n    }\n    public boolean startsWith(String prefix) {\n        return find(prefix) != null;\n    }\n    private Node find(String s) {\n        Node curr = root;\n        for (char c : s.toCharArray()) {\n            int idx = c - 'a';\n            if (curr.children[idx] == null) return null;\n            curr = curr.children[idx];\n        }\n        return curr;\n    }\n}",
-      "other_relevant_details": "Time Complexity: O(L) per operation (L = word/prefix length). Space: O(total characters inserted * 26) worst case.",
+      "other_relevant_details": "Time Complexity: O(L) per operation. Space: O(total characters inserted * alphabet size) worst case.",
       "problems": [
         {"name": "Implement Trie (Prefix Tree)", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/implement-trie-prefix-tree/", "company_tags": null},
-        {"name": "Design Add and Search Words Data Structure", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/design-add-and-search-words-data-structure/", "company_tags": null},
+        {"name": "Implement Trie II (Prefix Tree)", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/implement-trie-ii-prefix-tree/", "company_tags": null},
         {"name": "Longest Word in Dictionary", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/longest-word-in-dictionary/", "company_tags": null},
+        {"name": "Index Pairs of a String", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/index-pairs-of-a-string/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Trie with Wildcard Search (Dot Matching)",
+      "description": "Extend search to support a wildcard character that matches any single letter, requiring DFS branching into every child whenever a wildcard is encountered.",
+      "important_details": [
+        "On a normal character, descend into exactly one child; on a wildcard, recurse into ALL non-null children.",
+        "Worst-case time degrades to O(26^L) when the pattern is all wildcards, but real inputs prune heavily.",
+        "The recursion must pass the current index through, since the wildcard branch explores multiple subtrees at the same depth.",
+        "Return true as soon as any branch succeeds — do not keep exploring after a match is found."
+      ],
+      "template_code": "class WordDictionary {\n    class Node { Node[] children = new Node[26]; boolean isEnd; }\n    private Node root = new Node();\n    public void addWord(String word) {\n        Node curr = root;\n        for (char c : word.toCharArray()) {\n            int idx = c - 'a';\n            if (curr.children[idx] == null) curr.children[idx] = new Node();\n            curr = curr.children[idx];\n        }\n        curr.isEnd = true;\n    }\n    public boolean search(String word) {\n        return dfs(word, 0, root);\n    }\n    private boolean dfs(String word, int i, Node node) {\n        if (node == null) return false;\n        if (i == word.length()) return node.isEnd;\n        char c = word.charAt(i);\n        if (c == '.') {\n            for (Node child : node.children) {\n                if (dfs(word, i + 1, child)) return true;\n            }\n            return false;\n        }\n        return dfs(word, i + 1, node.children[c - 'a']);\n    }\n}",
+      "other_relevant_details": "Time Complexity: O(L) with no wildcards, up to O(26^L) in the pathological all-wildcard case. Space: O(L) recursion depth.",
+      "problems": [
+        {"name": "Design Add and Search Words Data Structure", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/design-add-and-search-words-data-structure/", "company_tags": null},
+        {"name": "Prefix and Suffix Search", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/prefix-and-suffix-search/", "company_tags": null},
+        {"name": "Stream of Characters", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/stream-of-characters/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Trie + Backtracking on a Grid (Word Search II)",
+      "description": "Search a 2D letter grid for an entire dictionary at once by building one trie of all target words and running a single DFS that prunes any path which stops matching a trie prefix.",
+      "important_details": [
+        "One shared trie means one DFS pass finds all words, instead of O(words) separate searches.",
+        "Store the complete word at its terminal node so you can add it to the result without rebuilding the string.",
+        "Set the terminal node's word to null after collecting it, which both de-duplicates results and prunes future search.",
+        "Mark visited cells by temporarily mutating the grid (e.g. to '#') and restore on backtrack — an explicit visited matrix also works but costs more space.",
+        "Advanced pruning: physically remove leaf nodes from the trie once their word is found, shrinking the search space as you go."
+      ],
+      "template_code": "class Solution {\n    class TrieNode { TrieNode[] children = new TrieNode[26]; String word; }\n    public List<String> findWords(char[][] board, String[] words) {\n        TrieNode root = buildTrie(words);\n        List<String> result = new ArrayList<>();\n        for (int i = 0; i < board.length; i++)\n            for (int j = 0; j < board[0].length; j++)\n                dfs(board, i, j, root, result);\n        return result;\n    }\n    private TrieNode buildTrie(String[] words) {\n        TrieNode root = new TrieNode();\n        for (String w : words) {\n            TrieNode curr = root;\n            for (char c : w.toCharArray()) {\n                int idx = c - 'a';\n                if (curr.children[idx] == null) curr.children[idx] = new TrieNode();\n                curr = curr.children[idx];\n            }\n            curr.word = w;\n        }\n        return root;\n    }\n    private void dfs(char[][] board, int r, int c, TrieNode node, List<String> result) {\n        if (r < 0 || c < 0 || r >= board.length || c >= board[0].length) return;\n        char ch = board[r][c];\n        if (ch == '#' || node.children[ch - 'a'] == null) return;\n        TrieNode next = node.children[ch - 'a'];\n        if (next.word != null) { result.add(next.word); next.word = null; }\n        board[r][c] = '#';\n        dfs(board, r + 1, c, next, result);\n        dfs(board, r - 1, c, next, result);\n        dfs(board, r, c + 1, next, result);\n        dfs(board, r, c - 1, next, result);\n        board[r][c] = ch;\n    }\n}",
+      "other_relevant_details": "Time Complexity: O(rows * cols * 4^L) worst case, but trie pruning makes real runtimes far lower. Space: O(sum of word lengths).",
+      "problems": [
+        {"name": "Word Search II", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/word-search-ii/", "company_tags": null},
+        {"name": "Word Search", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/word-search/", "company_tags": null},
+        {"name": "Word Squares", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/word-squares/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Trie for Word Segmentation & Composition",
+      "description": "Use a trie to accelerate dictionary membership tests inside DP or DFS word-breaking problems, walking the trie character by character instead of slicing substrings and hashing them.",
+      "important_details": [
+        "In Word Break, for each start index walk the trie forward; every terminal node encountered marks a valid split point for the DP.",
+        "This avoids building O(n^2) substring objects, which matters for long strings even though both approaches are asymptotically similar.",
+        "Word Break II must memoize by start index, caching the list of sentences from that index, or it blows up exponentially on adversarial input.",
+        "Concatenated Words is the same machinery with the rule that a word must decompose into at least two OTHER dictionary words — sort by length and build the trie incrementally."
+      ],
+      "template_code": "public boolean wordBreak(String s, List<String> wordDict) {\n    TrieNode root = new TrieNode();\n    for (String w : wordDict) {\n        TrieNode curr = root;\n        for (char c : w.toCharArray()) {\n            int idx = c - 'a';\n            if (curr.children[idx] == null) curr.children[idx] = new TrieNode();\n            curr = curr.children[idx];\n        }\n        curr.isEnd = true;\n    }\n    int n = s.length();\n    boolean[] dp = new boolean[n + 1];\n    dp[0] = true;\n    for (int i = 0; i < n; i++) {\n        if (!dp[i]) continue;\n        TrieNode curr = root;\n        for (int j = i; j < n; j++) {\n            int idx = s.charAt(j) - 'a';\n            if (curr.children[idx] == null) break;\n            curr = curr.children[idx];\n            if (curr.isEnd) dp[j + 1] = true;\n        }\n    }\n    return dp[n];\n}\nclass TrieNode { TrieNode[] children = new TrieNode[26]; boolean isEnd; }",
+      "other_relevant_details": "Time Complexity: O(n^2) worst case but with much smaller constants and early termination than substring hashing. Space: O(dictionary size + n).",
+      "problems": [
+        {"name": "Word Break", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/word-break/", "company_tags": null},
+        {"name": "Word Break II", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/word-break-ii/", "company_tags": null},
+        {"name": "Concatenated Words", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/concatenated-words/", "company_tags": null},
         {"name": "Replace Words", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/replace-words/", "company_tags": null}
       ]
     },
     {
-      "variation": "Word Search II (Trie + Backtracking on Grid)",
-      "description": "Search a 2D letter grid for multiple dictionary words simultaneously by building a trie of all target words first, then doing one combined DFS/backtracking pass that prunes any path not matching a trie prefix.",
+      "variation": "Autocomplete / Top-K Suggestions",
+      "description": "Support prefix-based suggestion queries by descending to the prefix node and either DFS-collecting all words below it, or reading a precomputed top-k list cached at every node.",
       "important_details": [
-        "Building a single trie of all words lets one DFS pass find all matches, instead of running a separate DFS per word (which would be O(words * cells * 4^L)).",
-        "Mark cells visited during DFS by temporarily mutating the grid (e.g., to '#'), then restore on backtrack.",
-        "An optimization: remove a word from the trie (or mark its node) once found, to avoid duplicate results and prune further search."
+        "DFS-on-demand: O(prefix length + size of subtree), simple but slow when the subtree is huge.",
+        "Precomputed top-k: store a small sorted list at each node during insertion, giving O(prefix length + k) queries at the cost of extra space.",
+        "For ranked suggestions, store a frequency/hotness score at terminal nodes and use a bounded min-heap while collecting.",
+        "Lexicographic ordering comes free if you iterate children in alphabetical order during the DFS."
       ],
-      "template_code": "public List<String> findWords(char[][] board, String[] words) {\n    TrieNode root = buildTrie(words);\n    List<String> result = new ArrayList<>();\n    for (int i = 0; i < board.length; i++)\n        for (int j = 0; j < board[0].length; j++)\n            dfs(board, i, j, root, result);\n    return result;\n}\nclass TrieNode { TrieNode[] children = new TrieNode[26]; String word; }\nprivate TrieNode buildTrie(String[] words) {\n    TrieNode root = new TrieNode();\n    for (String w : words) {\n        TrieNode curr = root;\n        for (char c : w.toCharArray()) {\n            int idx = c - 'a';\n            if (curr.children[idx] == null) curr.children[idx] = new TrieNode();\n            curr = curr.children[idx];\n        }\n        curr.word = w;\n    }\n    return root;\n}\nprivate void dfs(char[][] board, int r, int c, TrieNode node, List<String> result) {\n    if (r < 0 || c < 0 || r >= board.length || c >= board[0].length || board[r][c] == '#') return;\n    char ch = board[r][c];\n    TrieNode next = node.children[ch - 'a'];\n    if (next == null) return;\n    if (next.word != null) { result.add(next.word); next.word = null; }\n    board[r][c] = '#';\n    dfs(board, r + 1, c, next, result);\n    dfs(board, r - 1, c, next, result);\n    dfs(board, r, c + 1, next, result);\n    dfs(board, r, c - 1, next, result);\n    board[r][c] = ch;\n}",
-      "other_relevant_details": "Time Complexity: O(rows*cols*4^L) worst case, but trie pruning makes it far faster in practice. Space: O(sum of word lengths) for the trie.",
+      "template_code": "class AutocompleteTrie {\n    class Node {\n        Map<Character, Node> children = new HashMap<>();\n        List<String> top = new ArrayList<>();\n    }\n    private Node root = new Node();\n    private static final int K = 3;\n    public void insert(String word) {\n        Node curr = root;\n        for (char c : word.toCharArray()) {\n            curr = curr.children.computeIfAbsent(c, x -> new Node());\n            curr.top.add(word);\n            Collections.sort(curr.top);\n            if (curr.top.size() > K) curr.top.remove(curr.top.size() - 1);\n        }\n    }\n    public List<String> suggest(String prefix) {\n        Node curr = root;\n        for (char c : prefix.toCharArray()) {\n            curr = curr.children.get(c);\n            if (curr == null) return new ArrayList<>();\n        }\n        return curr.top;\n    }\n}",
+      "other_relevant_details": "Time Complexity: O(prefix length + k) per query with precomputation. Space: O(total characters * k).",
       "problems": [
-        {"name": "Word Search II", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/word-search-ii/", "company_tags": null},
-        {"name": "Word Search", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/word-search/", "company_tags": null},
-        {"name": "Concatenated Words", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/concatenated-words/", "company_tags": null}
+        {"name": "Search Suggestions System", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/search-suggestions-system/", "company_tags": null},
+        {"name": "Design Search Autocomplete System", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/design-search-autocomplete-system/", "company_tags": null},
+        {"name": "Top K Frequent Words", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/top-k-frequent-words/", "company_tags": null},
+        {"name": "Design File System", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/design-file-system/", "company_tags": null}
       ]
     },
     {
       "variation": "Bitwise Trie (Max XOR Queries)",
-      "description": "A trie built over the binary representation of numbers (bit by bit, MSB to LSB) enabling O(32) queries for the maximum XOR pair or the max XOR of a number against a growing set.",
+      "description": "Build a binary trie over the bit representations of integers (MSB to LSB) so that the maximum XOR against any stored number is found greedily in O(32) instead of O(n) per query.",
       "important_details": [
-        "At each node, greedily try to descend into the OPPOSITE bit of the query number to maximize the XOR at that position.",
-        "Fixed depth of 32 (or 31/64 depending on constraints) regardless of how many numbers are stored — this is what makes it faster than brute-force O(n^2) pairwise XOR.",
-        "Insert every number into the trie first (as a preprocessing step) before running queries against it."
+        "At each bit, greedily descend into the OPPOSITE bit of the query number to set that bit of the XOR result to 1.",
+        "If the opposite branch is absent, you are forced down the same-bit branch and that XOR bit is 0.",
+        "Depth is fixed at 32 (or fewer if constraints bound the values), independent of how many numbers are inserted — this is why it beats O(n^2) brute force.",
+        "For offline queries with an upper-bound constraint (XOR with elements <= m), sort both the array and the queries and insert incrementally.",
+        "Storing a subtree minimum at each node lets you answer bounded-value queries without rebuilding the trie."
       ],
       "template_code": "class BitTrie {\n    class Node { Node[] children = new Node[2]; }\n    private Node root = new Node();\n    public void insert(int num) {\n        Node curr = root;\n        for (int i = 31; i >= 0; i--) {\n            int bit = (num >> i) & 1;\n            if (curr.children[bit] == null) curr.children[bit] = new Node();\n            curr = curr.children[bit];\n        }\n    }\n    public int maxXor(int num) {\n        Node curr = root;\n        int result = 0;\n        for (int i = 31; i >= 0; i--) {\n            int bit = (num >> i) & 1;\n            int desired = 1 - bit;\n            if (curr.children[desired] != null) {\n                result |= (1 << i);\n                curr = curr.children[desired];\n            } else {\n                curr = curr.children[bit];\n            }\n        }\n        return result;\n    }\n}",
       "other_relevant_details": "Time Complexity: O(n * 32) to build, O(32) per query. Space: O(n * 32) nodes worst case.",
       "problems": [
         {"name": "Maximum XOR of Two Numbers in an Array", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-xor-of-two-numbers-in-an-array/", "company_tags": null},
         {"name": "Maximum XOR With an Element From Array", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-xor-with-an-element-from-array/", "company_tags": null},
-        {"name": "Maximum Genetic Difference Query", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-genetic-difference-query/", "company_tags": null}
+        {"name": "Maximum Genetic Difference Query", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-genetic-difference-query/", "company_tags": null},
+        {"name": "Count Pairs With XOR in a Range", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/count-pairs-with-xor-in-a-range/", "company_tags": null}
       ]
     },
     {
-      "variation": "Autocomplete / Word Break with Trie",
-      "description": "Use a trie to efficiently support prefix-based suggestions (autocomplete) or to accelerate dictionary lookups inside a DP/backtracking word-segmentation problem.",
+      "variation": "Suffix Trie / Suffix-Based Matching",
+      "description": "Insert every suffix of a string (or reversed words) into a trie so that substring queries, suffix matching, and combined prefix-suffix lookups become prefix queries on the trie.",
       "important_details": [
-        "For autocomplete, DFS from the prefix's end node collecting all complete words below it (often combined with a frequency count for ranking).",
-        "For Word Break, a trie of dictionary words lets the DP transition check 'does s[j..i] exist in dictionary' in O(L) instead of a hashset lookup with string-slicing overhead — mainly a performance optimization over the standard HashSet-based DP.",
-        "Storing top-k suggestions at each trie node (precomputed) trades space for O(k) query time instead of a DFS per query."
+        "Inserting all n suffixes costs O(n^2) time and space — acceptable only for short strings; a suffix automaton or suffix array is the scalable alternative.",
+        "For 'search by suffix', insert reversed words so a suffix becomes a prefix.",
+        "Prefix-and-Suffix Search is elegantly solved by inserting every 'suffix#word' concatenation, turning a two-sided query into a single prefix lookup.",
+        "Stream of Characters inserts reversed dictionary words and queries the reversed recent-character stream."
       ],
-      "template_code": "public List<List<String>> suggestedProducts(String[] products, String searchWord) {\n    Arrays.sort(products);\n    List<List<String>> result = new ArrayList<>();\n    String prefix = \"\";\n    for (char c : searchWord.toCharArray()) {\n        prefix += c;\n        List<String> matches = new ArrayList<>();\n        int idx = Arrays.binarySearch(products, prefix);\n        if (idx < 0) idx = -(idx + 1);\n        for (int i = idx; i < Math.min(products.length, idx + 3); i++) {\n            if (products[i].startsWith(prefix)) matches.add(products[i]);\n        }\n        result.add(matches);\n    }\n    return result;\n}",
-      "other_relevant_details": "Time Complexity: A true trie-DFS approach is O(prefix length + matches found) per query. Space: O(total characters across all words).",
+      "template_code": "class StreamChecker {\n    class Node { Node[] children = new Node[26]; boolean isEnd; }\n    private Node root = new Node();\n    private StringBuilder stream = new StringBuilder();\n    public StreamChecker(String[] words) {\n        for (String w : words) {\n            Node curr = root;\n            for (int i = w.length() - 1; i >= 0; i--) {\n                int idx = w.charAt(i) - 'a';\n                if (curr.children[idx] == null) curr.children[idx] = new Node();\n                curr = curr.children[idx];\n            }\n            curr.isEnd = true;\n        }\n    }\n    public boolean query(char letter) {\n        stream.append(letter);\n        Node curr = root;\n        for (int i = stream.length() - 1; i >= 0; i--) {\n            int idx = stream.charAt(i) - 'a';\n            if (curr.children[idx] == null) return false;\n            curr = curr.children[idx];\n            if (curr.isEnd) return true;\n        }\n        return false;\n    }\n}",
+      "other_relevant_details": "Time Complexity: O(maximum word length) per query. Space: O(sum of word lengths * alphabet size).",
       "problems": [
-        {"name": "Search Suggestions System", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/search-suggestions-system/", "company_tags": null},
-        {"name": "Word Break", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/word-break/", "company_tags": null},
-        {"name": "Word Break II", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/word-break-ii/", "company_tags": null},
-        {"name": "Design Search Autocomplete System", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/design-search-autocomplete-system/", "company_tags": null}
+        {"name": "Stream of Characters", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/stream-of-characters/", "company_tags": null},
+        {"name": "Prefix and Suffix Search", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/prefix-and-suffix-search/", "company_tags": null},
+        {"name": "Short Encoding of Words", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/short-encoding-of-words/", "company_tags": null},
+        {"name": "Camelcase Matching", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/camelcase-matching/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Trie with Counts & Deletion",
+      "description": "Augment each node with a prefix count and a word count so you can report how many stored words share a prefix, and delete words correctly by decrementing counts rather than blindly pruning.",
+      "important_details": [
+        "prefixCount at a node = how many inserted words pass through it; wordCount = how many words terminate exactly there.",
+        "countWordsStartingWith is then an O(L) lookup returning prefixCount, with no subtree traversal at all.",
+        "Deletion decrements prefixCount along the path and wordCount at the terminal; only physically remove a node when its prefixCount reaches zero.",
+        "Never delete a node just because isEnd became false — other longer words may still pass through it. This is the single most common trie-deletion bug."
+      ],
+      "template_code": "class TrieWithCounts {\n    class Node {\n        Node[] children = new Node[26];\n        int wordCount, prefixCount;\n    }\n    private Node root = new Node();\n    public void insert(String word) {\n        Node curr = root;\n        for (char c : word.toCharArray()) {\n            int idx = c - 'a';\n            if (curr.children[idx] == null) curr.children[idx] = new Node();\n            curr = curr.children[idx];\n            curr.prefixCount++;\n        }\n        curr.wordCount++;\n    }\n    public int countWordsEqualTo(String word) {\n        Node node = find(word);\n        return node == null ? 0 : node.wordCount;\n    }\n    public int countWordsStartingWith(String prefix) {\n        Node node = find(prefix);\n        return node == null ? 0 : node.prefixCount;\n    }\n    public void erase(String word) {\n        Node curr = root;\n        for (char c : word.toCharArray()) {\n            int idx = c - 'a';\n            Node next = curr.children[idx];\n            if (next == null) return;\n            next.prefixCount--;\n            if (next.prefixCount == 0) { curr.children[idx] = null; return; }\n            curr = next;\n        }\n        curr.wordCount--;\n    }\n    private Node find(String s) {\n        Node curr = root;\n        for (char c : s.toCharArray()) {\n            int idx = c - 'a';\n            if (curr.children[idx] == null) return null;\n            curr = curr.children[idx];\n        }\n        return curr;\n    }\n}",
+      "other_relevant_details": "Time Complexity: O(L) for insert, count, and erase. Space: O(total characters * alphabet size).",
+      "problems": [
+        {"name": "Implement Trie II (Prefix Tree)", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/implement-trie-ii-prefix-tree/", "company_tags": null},
+        {"name": "Map Sum Pairs", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/map-sum-pairs/", "company_tags": null},
+        {"name": "Count Prefix and Suffix Pairs I", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/count-prefix-and-suffix-pairs-i/", "company_tags": null},
+        {"name": "Sum of Prefix Scores of Strings", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/sum-of-prefix-scores-of-strings/", "company_tags": null},
+        {"name": "Longest Common Prefix", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/longest-common-prefix/", "company_tags": null}
       ]
     }
   ]

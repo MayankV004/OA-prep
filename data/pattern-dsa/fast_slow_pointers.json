@@ -1,21 +1,23 @@
 {
   "pattern": "Fast & Slow Pointers",
-  "description": "Also called Floyd's Tortoise and Hare, this pattern uses two pointers moving at different speeds (typically 1 step vs 2 steps) through a linked structure or implicit sequence to detect cycles, find midpoints, or locate cycle entry points without extra space.",
+  "description": "Also called Floyd's Tortoise and Hare, this pattern runs two pointers at different speeds through a linked structure or an implicit sequence to detect cycles, locate midpoints, find the Nth node from the end, and identify cycle entry points — all in O(1) extra space where the naive solution needs a HashSet or an array copy.",
   "important_details": [
-    "Works on linked lists, arrays interpreted as a 'next pointer' function (e.g. index-hopping), or any implicit functional graph.",
-    "If a cycle exists, the fast pointer will eventually lap the slow pointer and they meet inside the cycle.",
-    "No cycle exists if the fast pointer reaches null/a terminal state first.",
-    "Finding the cycle's start requires a second phase: reset one pointer to the head and move both one step at a time until they meet again."
+    "Applies to linked lists, arrays interpreted as a next-pointer function (index hopping), and any deterministic state machine (functional graph).",
+    "If a cycle exists, the fast pointer eventually laps the slow pointer and they meet inside the cycle; if fast reaches null, there is no cycle.",
+    "Finding the cycle's start needs a second phase: reset one pointer to the head and advance both one step at a time.",
+    "A fixed GAP between pointers (rather than a speed difference) solves Nth-from-end problems in a single pass.",
+    "The mathematical core: after meeting inside a cycle, the distance from head to cycle-start equals the distance from meeting-point to cycle-start going forward around the loop."
   ],
-  "other_relevant_details": "The core mathematical insight: after the pointers meet inside a cycle, the distance from the list head to the cycle start equals the distance from the meeting point to the cycle start (going around the cycle). This is why resetting one pointer to head and advancing both by 1 works.",
+  "other_relevant_details": "The O(1) space guarantee is the whole point — a HashSet of visited nodes solves most of these problems in O(n) space and is the answer an interviewer will ask you to improve on. Many Medium and Hard linked-list problems are a composition of two of these variations (e.g. Reorder List = find middle + reverse second half + merge alternately).",
   "variations": [
     {
       "variation": "Cycle Detection (Has Cycle)",
-      "description": "Determine whether a linked structure contains a cycle by checking if a fast pointer (2x speed) ever meets a slow pointer (1x speed).",
+      "description": "Determine whether a structure contains a cycle by checking whether a 2x-speed pointer ever meets a 1x-speed pointer.",
       "important_details": [
-        "If fast or fast.next becomes null, there is no cycle — return false immediately.",
-        "The pointers are guaranteed to meet within one full loop of the cycle if one exists (no need to bound iterations).",
-        "O(1) space beats the naive hashset-of-visited-nodes approach which needs O(n)."
+        "Guard both fast != null and fast.next != null before advancing two steps, or you get a NullPointerException on even-length acyclic lists.",
+        "The pointers are guaranteed to meet within one full traversal of the cycle if one exists — no iteration bound is needed.",
+        "Why speed 2 works: the gap between fast and slow shrinks by exactly 1 per step once both are inside the cycle, so a meeting is inevitable.",
+        "Beats the HashSet-of-visited-nodes approach on space (O(1) vs O(n)) with identical O(n) time."
       ],
       "template_code": "public boolean hasCycle(ListNode head) {\n    ListNode slow = head, fast = head;\n    while (fast != null && fast.next != null) {\n        slow = slow.next;\n        fast = fast.next.next;\n        if (slow == fast) return true;\n    }\n    return false;\n}",
       "other_relevant_details": "Time Complexity: O(n). Space: O(1).",
@@ -27,49 +29,110 @@
     },
     {
       "variation": "Find Cycle Start / Entry Point",
-      "description": "After detecting a cycle, locate the exact node where the cycle begins using the reset-and-re-meet phase.",
+      "description": "After detecting a meeting point, locate the exact node where the cycle begins by resetting one pointer to the head and advancing both at equal speed until they meet again.",
       "important_details": [
-        "Phase 1: detect meeting point using standard fast/slow.",
-        "Phase 2: reset slow to head; advance both slow and a pointer starting at the meeting point one step at a time.",
-        "They meet exactly at the cycle's entry node — this is a direct consequence of the distance relationship in Floyd's algorithm."
+        "Phase 1 finds any meeting point inside the cycle; phase 2 converts that into the cycle's entry node.",
+        "Proof sketch: let a = distance head-to-entry, b = entry-to-meeting, c = meeting-to-entry. Then a = c (mod cycle length), so walking a steps from head and c steps from the meeting point lands on the same node.",
+        "Both pointers move ONE step at a time in phase 2 — using speed 2 again is a common and silent bug.",
+        "The same two-phase structure answers 'find the duplicate number' when an array is reinterpreted as a linked list."
       ],
       "template_code": "public ListNode detectCycle(ListNode head) {\n    ListNode slow = head, fast = head;\n    while (fast != null && fast.next != null) {\n        slow = slow.next;\n        fast = fast.next.next;\n        if (slow == fast) {\n            ListNode ptr = head;\n            while (ptr != slow) {\n                ptr = ptr.next;\n                slow = slow.next;\n            }\n            return ptr;\n        }\n    }\n    return null;\n}",
       "other_relevant_details": "Time Complexity: O(n). Space: O(1).",
       "problems": [
         {"name": "Linked List Cycle II", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/linked-list-cycle-ii/", "company_tags": null},
-        {"name": "Find the Duplicate Number", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/find-the-duplicate-number/", "company_tags": null}
+        {"name": "Find the Duplicate Number", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/find-the-duplicate-number/", "company_tags": null},
+        {"name": "Circular Array Loop", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/circular-array-loop/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Cycle Length Measurement",
+      "description": "Once the pointers meet inside a cycle, measure the cycle's length by keeping one pointer fixed and walking the other around until it returns, counting steps.",
+      "important_details": [
+        "Cycle length is needed for problems asking for the loop's size, or for the maximum cycle length across a functional graph.",
+        "In a functional graph (every node has exactly one outgoing edge), each connected component contains exactly one cycle, so you can measure them independently.",
+        "Combining length with the entry point gives you the full structure: a 'rho' shape of a tail plus a loop.",
+        "For 'longest cycle in a graph' style problems, a visit-timestamp DFS is usually cleaner than Floyd's, but the counting idea is the same."
+      ],
+      "template_code": "public int cycleLength(ListNode head) {\n    ListNode slow = head, fast = head;\n    while (fast != null && fast.next != null) {\n        slow = slow.next;\n        fast = fast.next.next;\n        if (slow == fast) {\n            int length = 1;\n            ListNode curr = slow.next;\n            while (curr != slow) {\n                curr = curr.next;\n                length++;\n            }\n            return length;\n        }\n    }\n    return 0;\n}",
+      "other_relevant_details": "Time Complexity: O(n). Space: O(1).",
+      "problems": [
+        {"name": "Longest Cycle in a Graph", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/longest-cycle-in-a-graph/", "company_tags": null},
+        {"name": "Maximum Employees to Be Invited to a Meeting", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-employees-to-be-invited-to-a-meeting/", "company_tags": null},
+        {"name": "Linked List Cycle II", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/linked-list-cycle-ii/", "company_tags": null}
       ]
     },
     {
       "variation": "Find the Middle Node",
-      "description": "Locate the middle of a linked list in a single pass: when the fast pointer reaches the end, the slow pointer is exactly at the midpoint.",
+      "description": "Locate the midpoint of a linked list in a single pass: when the fast pointer reaches the end, the slow pointer sits at the middle.",
       "important_details": [
-        "For even-length lists, decide upfront whether you want the first or second middle node — the loop condition (fast != null vs fast.next != null) controls this.",
-        "Frequently used as a subroutine inside other problems (e.g., splitting a list before merge-sorting it, or before reversing the second half for a palindrome check)."
+        "For even-length lists you must decide which middle you want: starting fast at head gives the SECOND middle, starting fast at head.next (or looping while fast.next != null && fast.next.next != null) gives the FIRST middle.",
+        "Splitting problems (merge sort on a list, converting to a balanced BST) usually want the first middle so the left half stays non-empty.",
+        "Frequently a subroutine, not the whole answer — pair it with reversal for palindrome checks and reordering.",
+        "Avoids the two-pass 'count the length, then walk n/2 steps' approach, which is also O(n) but touches the list twice."
       ],
       "template_code": "public ListNode middleNode(ListNode head) {\n    ListNode slow = head, fast = head;\n    while (fast != null && fast.next != null) {\n        slow = slow.next;\n        fast = fast.next.next;\n    }\n    return slow;\n}",
-      "other_relevant_details": "Time Complexity: O(n). Space: O(1) — avoids a two-pass 'count then walk n/2 times' approach.",
+      "other_relevant_details": "Time Complexity: O(n) single pass. Space: O(1).",
       "problems": [
         {"name": "Middle of the Linked List", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/middle-of-the-linked-list/", "company_tags": null},
         {"name": "Palindrome Linked List", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/palindrome-linked-list/", "company_tags": null},
         {"name": "Reorder List", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/reorder-list/", "company_tags": null},
-        {"name": "Sort List", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/sort-list/", "company_tags": null}
+        {"name": "Sort List", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/sort-list/", "company_tags": null},
+        {"name": "Convert Sorted List to Binary Search Tree", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/convert-sorted-list-to-binary-search-tree/", "company_tags": null},
+        {"name": "Delete the Middle Node of a Linked List", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/delete-the-middle-node-of-a-linked-list/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Fixed-Gap Pointers (Nth From End)",
+      "description": "Instead of differing speeds, advance one pointer exactly N steps ahead and then move both at the same speed — when the leader hits the end, the follower is exactly N nodes from the end.",
+      "important_details": [
+        "Start both pointers at a dummy node so that removing the head itself needs no special case.",
+        "The follower ends up at the node BEFORE the target when you want to delete, so advance the leader N+1 times (or start from dummy) depending on your convention.",
+        "This is the one-pass solution to a problem whose naive answer is two passes (count length, then walk length-n).",
+        "Validate that N does not exceed the list length if the problem does not guarantee it."
+      ],
+      "template_code": "public ListNode removeNthFromEnd(ListNode head, int n) {\n    ListNode dummy = new ListNode(0, head);\n    ListNode fast = dummy, slow = dummy;\n    for (int i = 0; i < n; i++) fast = fast.next;\n    while (fast.next != null) {\n        fast = fast.next;\n        slow = slow.next;\n    }\n    slow.next = slow.next.next;\n    return dummy.next;\n}",
+      "other_relevant_details": "Time Complexity: O(n) single pass. Space: O(1).",
+      "problems": [
+        {"name": "Remove Nth Node From End of List", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/remove-nth-node-from-end-of-list/", "company_tags": null},
+        {"name": "Delete N Nodes After M Nodes of a Linked List", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/delete-n-nodes-after-m-nodes-of-a-linked-list/", "company_tags": null},
+        {"name": "Swapping Nodes in a Linked List", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/swapping-nodes-in-a-linked-list/", "company_tags": null},
+        {"name": "Rotate List", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/rotate-list/", "company_tags": null}
       ]
     },
     {
       "variation": "Cycle in Implicit / Functional Graph",
-      "description": "Applies Floyd's algorithm where 'next' isn't a literal pointer but a function of the current value — e.g., digit-squares (Happy Number), array index hopping, or duplicate-finding treated as a linked-list-in-disguise.",
+      "description": "Applies Floyd's algorithm where 'next' is not a pointer but a function of the current value — digit-square sums, array index hopping, or duplicate detection where values are reinterpreted as pointers.",
       "important_details": [
-        "Model the state transition (e.g., nums[i] as the 'next' index) as if it were a linked list node.",
-        "The classic 'Find the Duplicate Number' problem treats array values as pointers: index i points to index nums[i], and the duplicate value is exactly the cycle's entry point.",
-        "Requires recognizing that a seemingly unrelated array/number problem is secretly a cycle-detection problem."
+        "Model the state transition as if it were a linked list: the 'next' of state x is f(x).",
+        "In 'Find the Duplicate Number', index i points to index nums[i]; because some value repeats, two indices point to the same place, creating a cycle whose ENTRY is the duplicate value.",
+        "Happy Number works the same way with f(x) = sum of squares of digits; a cycle that does not contain 1 means the number is unhappy.",
+        "The hard part is recognizing that an array or number problem is secretly a cycle-detection problem — the code afterward is mechanical."
       ],
       "template_code": "public int findDuplicate(int[] nums) {\n    int slow = nums[0], fast = nums[0];\n    do {\n        slow = nums[slow];\n        fast = nums[nums[fast]];\n    } while (slow != fast);\n    slow = nums[0];\n    while (slow != fast) {\n        slow = nums[slow];\n        fast = nums[fast];\n    }\n    return slow;\n}",
-      "other_relevant_details": "Time Complexity: O(n). Space: O(1) — satisfies constraints that forbid modifying the array or using extra space, unlike sorting or a hashset.",
+      "other_relevant_details": "Time Complexity: O(n). Space: O(1) — satisfies constraints that forbid modifying the array, unlike the cyclic-sort solution to the same problem.",
       "problems": [
         {"name": "Find the Duplicate Number", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/find-the-duplicate-number/", "company_tags": null},
         {"name": "Happy Number", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/happy-number/", "company_tags": null},
-        {"name": "Circular Array Loop", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/circular-array-loop/", "company_tags": null}
+        {"name": "Circular Array Loop", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/circular-array-loop/", "company_tags": null},
+        {"name": "Longest Cycle in a Graph", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/longest-cycle-in-a-graph/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Composite: Middle + Reverse + Compare/Merge",
+      "description": "The most common Medium/Hard linked-list composition: split at the middle with fast/slow, reverse the second half in place, then walk both halves in parallel to compare (palindrome) or interleave (reorder).",
+      "important_details": [
+        "Three distinct sub-routines chained together — practice each independently before combining them.",
+        "For palindrome checks, stopping the comparison when the second (reversed) half runs out handles both odd and even lengths cleanly.",
+        "Interviewers often ask you to restore the list to its original state afterward; be ready to reverse the second half back.",
+        "This composite achieves O(n) time and O(1) space where the naive approach copies values into an ArrayList for O(n) space."
+      ],
+      "template_code": "public boolean isPalindrome(ListNode head) {\n    ListNode slow = head, fast = head;\n    while (fast != null && fast.next != null) {\n        slow = slow.next;\n        fast = fast.next.next;\n    }\n    ListNode second = reverse(slow);\n    ListNode first = head;\n    while (second != null) {\n        if (first.val != second.val) return false;\n        first = first.next;\n        second = second.next;\n    }\n    return true;\n}\nprivate ListNode reverse(ListNode head) {\n    ListNode prev = null, curr = head;\n    while (curr != null) {\n        ListNode next = curr.next;\n        curr.next = prev;\n        prev = curr;\n        curr = next;\n    }\n    return prev;\n}",
+      "other_relevant_details": "Time Complexity: O(n). Space: O(1), versus O(n) for the array-copy approach.",
+      "problems": [
+        {"name": "Palindrome Linked List", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/palindrome-linked-list/", "company_tags": null},
+        {"name": "Reorder List", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/reorder-list/", "company_tags": null},
+        {"name": "Maximum Twin Sum of a Linked List", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-twin-sum-of-a-linked-list/", "company_tags": null},
+        {"name": "Split Linked List in Parts", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/split-linked-list-in-parts/", "company_tags": null}
       ]
     }
   ]

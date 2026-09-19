@@ -48,41 +48,52 @@ Keep it concise, rigorous, and professional.`;
  */
 export async function callGroqLlama(input: IActivityAnalysisInput, apiKey: string): Promise<string> {
   const prompt = buildProctorPrompt(input);
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 6000);
+  const candidateModels = [
+    process.env.GROQ_MODEL,
+    'qwen/qwen3.8-27b',
+    'groq/compound',
+    'llama-3.3-70b-versatile',
+  ].filter(Boolean) as string[];
 
-  try {
-    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      signal: controller.signal,
-      body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        messages: [
-          {
-            role: 'system',
-            content:
-              'You are an expert Technical Assessment Proctor and Senior Engineering Hiring Auditor. Your job is to analyze candidate telemetry during an algorithmic online assessment and write a professional, objective behavioral forensic report.',
-          },
-          { role: 'user', content: prompt },
-        ],
-        temperature: 0.3,
-        max_tokens: 800,
-      }),
-    });
+  for (const model of candidateModels) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 20000);
 
-    clearTimeout(timeoutId);
-    if (!res.ok) return '';
+    try {
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        signal: controller.signal,
+        body: JSON.stringify({
+          model,
+          messages: [
+            {
+              role: 'system',
+              content:
+                'You are an expert Technical Assessment Proctor and Senior Engineering Hiring Auditor. Your job is to analyze candidate telemetry during an algorithmic online assessment and write a professional, objective behavioral forensic report.',
+            },
+            { role: 'user', content: prompt },
+          ],
+          temperature: 0.3,
+          max_tokens: 800,
+        }),
+      });
 
-    const data = await res.json();
-    return data.choices?.[0]?.message?.content || '';
-  } catch {
-    clearTimeout(timeoutId);
-    return '';
+      clearTimeout(timeoutId);
+      if (!res.ok) continue;
+
+      const data = await res.json();
+      const content = data.choices?.[0]?.message?.content;
+      if (content) return content;
+    } catch {
+      clearTimeout(timeoutId);
+    }
   }
+
+  return '';
 }
 
 /**

@@ -5,7 +5,7 @@ const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://bigoprep.tech';
 export const metadata: Metadata = {
   title: 'Core Computer Science Subjects',
   description:
-    'Comprehensive curricula and interview revision notes for core Computer Science topics: Operating Systems, DBMS, Computer Networks, and System Design.',
+    'Master Operating Systems, DBMS, Networks, and System Design with high-yield revision decks and placement interview question breakdowns.',
   alternates: {
     canonical: `${siteUrl}/subjects`,
   },

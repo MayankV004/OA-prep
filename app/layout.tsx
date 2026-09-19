@@ -4,6 +4,8 @@ import "./globals.css";
 import { Providers } from "@/components/Providers";
 import { ThemeProvider } from "next-themes";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { CookieConsentBanner } from "@/components/legal/CookieConsentBanner";
+import { AnalyticsProvider } from "@/components/analytics/AnalyticsProvider";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-sans",
@@ -28,7 +30,7 @@ export const metadata: Metadata = {
     template: '%s | BigO',
   },
   description:
-    'Master algorithms, DSA patterns, and core Computer Science subjects for top tech interviews. Zero-distraction roadmaps, timed OA simulations, and spaced-repetition flashcards.',
+    'Master algorithmic patterns, timed OA simulations, and core CS subjects for top tech placements with zero-distraction roadmaps and flashcards.',
   applicationName: 'BigO',
   authors: [{ name: 'BigO Team' }],
   creator: 'BigO',
@@ -56,13 +58,13 @@ export const metadata: Metadata = {
     siteName: 'BigO',
     title: 'BigO - Master DSA Patterns & Technical Online Assessments',
     description:
-      'Master algorithms, DSA patterns, and core Computer Science subjects for top tech interviews. Zero-distraction roadmaps, timed OA simulations, and spaced-repetition flashcards.',
+      'Master algorithmic patterns, timed OA simulations, and core CS subjects for top tech placements with zero-distraction roadmaps and flashcards.',
     images: [
       {
-        url: '/icon.png',
-        width: 512,
-        height: 512,
-        alt: 'BigO - Master DSA Patterns & Core CS',
+        url: '/opengraph-image',
+        width: 1200,
+        height: 630,
+        alt: 'BigO - Master DSA Patterns & Technical Online Assessments',
       },
     ],
   },
@@ -71,7 +73,7 @@ export const metadata: Metadata = {
     title: 'BigO - Master DSA Patterns & Technical Online Assessments',
     description:
       'Master algorithms, DSA patterns, and core Computer Science subjects for top tech interviews.',
-    images: ['/icon.png'],
+    images: ['/opengraph-image'],
   },
   robots: {
     index: true,
@@ -91,8 +93,9 @@ export const metadata: Metadata = {
       { url: '/icon.svg', type: 'image/svg+xml' },
     ],
     shortcut: '/favicon.ico',
-    apple: '/icon.png',
+    apple: '/apple-touch-icon.png',
   },
+  manifest: '/site.webmanifest',
 };
 
 export default function RootLayout({
@@ -109,6 +112,8 @@ export default function RootLayout({
           <TooltipProvider>
             <Providers>
               {children}
+              <CookieConsentBanner />
+              <AnalyticsProvider />
             </Providers>
           </TooltipProvider>
         </ThemeProvider>

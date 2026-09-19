@@ -6,22 +6,22 @@ const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://bigoprep.tech';
 export const metadata: Metadata = {
   title: 'BigO - Master DSA Patterns & Technical Online Assessments',
   description:
-    'Structured DSA pattern roadmaps, interactive CS core modules, spaced-repetition flashcards, and real-time coding environments designed to help you crack engineering placements.',
+    'Master 90+ DSA patterns, full-screen OA simulations, and CS core subjects. Practice with spaced repetition and multi-language code execution.',
   alternates: {
     canonical: siteUrl,
   },
   openGraph: {
     title: 'BigO - Master DSA Patterns & Technical Online Assessments',
     description:
-      'Structured DSA pattern roadmaps, interactive CS core modules, spaced-repetition flashcards, and real-time coding environments designed to help you land top engineering roles.',
+      'Master 90+ DSA patterns, full-screen OA simulations, and CS core subjects. Practice with spaced repetition and multi-language code execution.',
     url: siteUrl,
     type: 'website',
     siteName: 'BigO',
     images: [
       {
-        url: '/icon.png',
-        width: 512,
-        height: 512,
+        url: '/opengraph-image',
+        width: 1200,
+        height: 630,
         alt: 'BigO Technical Assessment Platform',
       },
     ],
@@ -30,8 +30,8 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'BigO - Master DSA Patterns & Technical Online Assessments',
     description:
-      'Structured DSA pattern roadmaps, interactive CS core modules, and timed OA simulations.',
-    images: ['/icon.png'],
+      'Master 90+ DSA patterns, full-screen OA simulations, and CS core subjects.',
+    images: ['/opengraph-image'],
   },
 };
 

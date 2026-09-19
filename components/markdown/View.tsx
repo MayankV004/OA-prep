@@ -18,8 +18,11 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { highlightCode } from '@/lib/shiki';
+import { cn } from '@/lib/utils';
+import { visit } from 'unist-util-visit';
 
 const InsidePreContext = createContext<boolean>(false);
+const InsideCodeTabsContext = createContext<boolean>(false);
 
 interface MarkdownConfig {
   allowCopy: boolean;
@@ -31,9 +34,143 @@ const MarkdownConfigContext = createContext<MarkdownConfig>({
   variant: 'default',
 });
 
+/* ── Language label formatter ───────────────────────────────────────────── */
+function formatLanguageLabel(lang: string): string {
+  const lower = (lang || '').toLowerCase();
+  switch (lower) {
+    case 'cpp':
+    case 'c++':
+      return 'C++';
+    case 'java':
+      return 'Java';
+    case 'python':
+    case 'python3':
+    case 'py':
+      return 'Python3';
+    case 'typescript':
+    case 'ts':
+      return 'TypeScript';
+    case 'javascript':
+    case 'js':
+      return 'JavaScript';
+    case 'c':
+      return 'C';
+    case 'csharp':
+    case 'cs':
+      return 'C#';
+    case 'go':
+    case 'golang':
+      return 'Go';
+    case 'rust':
+    case 'rs':
+      return 'Rust';
+    case 'kotlin':
+    case 'kt':
+      return 'Kotlin';
+    default:
+      return lang ? lang.toUpperCase() : 'CODE';
+  }
+}
+
+/* ── LeetCode-style Code Tabs Group ─────────────────────────────────────── */
+function CodeTabsGroup({ children }: { children: React.ReactNode }) {
+  const childArray = React.Children.toArray(children);
+  const [activeIdx, setActiveIdx] = useState(0);
+  const [copied, setCopied] = useState(false);
+  const { allowCopy, variant } = useContext(MarkdownConfigContext);
+
+  const tabs = childArray.map((child: any) => {
+    const codeChild = child?.props?.children;
+    const className = codeChild?.props?.className || child?.props?.className || '';
+    const match = /language-([a-zA-Z0-9_+-]+)/.exec(className);
+    const rawLang = match ? match[1] : '';
+    return {
+      rawLang,
+      label: formatLanguageLabel(rawLang),
+    };
+  });
+
+  const activeChild = childArray[activeIdx] || childArray[0];
+
+  const handleCopy = async () => {
+    try {
+      const activeCode = extractText(activeChild);
+      await navigator.clipboard.writeText(activeCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Fallback
+    }
+  };
+
+  return (
+    <div
+      onClick={(e) => e.stopPropagation()}
+      className="my-6 overflow-hidden rounded-2xl border border-border/80 bg-[#090D12] text-zinc-100 shadow-e2 relative group"
+    >
+      {/* Specular Top Border Beam */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+
+      {/* LeetCode-style Tab Header Toolbar */}
+      <div className="flex items-center justify-between border-b border-white/[0.08] bg-[#0D1219]/90 px-3 py-2 text-xs select-none backdrop-blur-md">
+        <div className="flex items-center gap-1.5 overflow-x-auto">
+          {tabs.map((tab, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveIdx(idx);
+              }}
+              className={cn(
+                'px-3 py-1 rounded-lg text-xs font-mono font-medium transition-all cursor-pointer',
+                activeIdx === idx
+                  ? 'bg-primary/15 text-primary border border-primary/30 shadow-xs font-semibold'
+                  : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/5 border border-transparent'
+              )}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {allowCopy && variant !== 'exam' && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleCopy();
+            }}
+            className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-mono font-medium text-zinc-400 transition-all hover:bg-white/10 hover:text-white active:scale-95 cursor-pointer"
+            aria-label={copied ? 'Code copied' : 'Copy code'}
+          >
+            {copied ? (
+              <>
+                <Check className="size-3.5 text-primary" />
+                <span className="text-primary font-bold text-[11px]">Copied!</span>
+              </>
+            ) : (
+              <>
+                <Copy className="size-3.5" />
+                <span className="text-[11px]">Copy</span>
+              </>
+            )}
+          </button>
+        )}
+      </div>
+
+      {/* Code Body */}
+      <InsideCodeTabsContext.Provider value={true}>
+        {activeChild}
+      </InsideCodeTabsContext.Provider>
+    </div>
+  );
+}
+
 /* ── Code Block Component ───────────────────────────────────────────────── */
 function CodeBlock({ code, language }: { code: string; language: string }) {
   const { allowCopy, variant } = useContext(MarkdownConfigContext);
+  const isInsideTabs = useContext(InsideCodeTabsContext);
   const [copied, setCopied] = useState(false);
   const [highlightedHtml, setHighlightedHtml] = useState<string | null>(null);
 
@@ -69,11 +206,35 @@ function CodeBlock({ code, language }: { code: string; language: string }) {
     return <Mermaid chart={code} />;
   }
 
+  // Inside a tabbed group: render only the code body without duplicate container/header
+  if (isInsideTabs) {
+    return (
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="p-4 sm:p-5 overflow-x-auto font-mono text-xs sm:text-sm leading-relaxed text-zinc-100"
+      >
+        {highlightedHtml ? (
+          <div
+            dangerouslySetInnerHTML={{ __html: highlightedHtml }}
+            className="[&_pre]:m-0! [&_pre]:bg-transparent! [&_pre]:p-0! [&_code]:bg-transparent! [&_code]:p-0!"
+          />
+        ) : (
+          <pre className="m-0 bg-transparent p-0 font-mono text-xs sm:text-sm whitespace-pre text-zinc-100">
+            <code>{code}</code>
+          </pre>
+        )}
+      </div>
+    );
+  }
+
   // In exam / test mode, or when copy is disabled:
   // Render a clean monospace example card matching LeetCode / HackerRank (no window dots, no Copy button)
   if (variant === 'exam' || !allowCopy) {
     return (
-      <div className="my-3 overflow-hidden rounded-xl border border-border/70 bg-card/60 p-3.5 font-mono text-xs sm:text-sm text-foreground/90 leading-relaxed shadow-2xs">
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="my-3 overflow-hidden rounded-xl border border-border/70 bg-card/60 p-3.5 font-mono text-xs sm:text-sm text-foreground/90 leading-relaxed shadow-2xs"
+      >
         {highlightedHtml ? (
           <div
             dangerouslySetInnerHTML={{ __html: highlightedHtml }}
@@ -91,7 +252,10 @@ function CodeBlock({ code, language }: { code: string; language: string }) {
   const displayLang = language ? language.toUpperCase() : 'CODE';
 
   return (
-    <div className="my-6 overflow-hidden rounded-2xl border border-border/80 bg-[#090D12] text-zinc-100 shadow-e2 relative group">
+    <div
+      onClick={(e) => e.stopPropagation()}
+      className="my-6 overflow-hidden rounded-2xl border border-border/80 bg-[#090D12] text-zinc-100 shadow-e2 relative group"
+    >
       {/* Specular Top Border Beam */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
 
@@ -106,7 +270,10 @@ function CodeBlock({ code, language }: { code: string; language: string }) {
 
         <button
           type="button"
-          onClick={handleCopy}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleCopy();
+          }}
           className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-mono font-medium text-zinc-400 transition-all hover:bg-white/10 hover:text-white active:scale-95 cursor-pointer"
           aria-label={copied ? 'Code copied' : 'Copy code'}
         >
@@ -343,6 +510,16 @@ export const defaultMarkdownComponents = {
   li: ({ children }: any) => (
     <li className="leading-[1.75] pl-1 text-foreground/90">{children}</li>
   ),
+  div: ({ className, children, ...props }: any) => {
+    if (className?.includes('code-tabs-group')) {
+      return <CodeTabsGroup>{children}</CodeTabsGroup>;
+    }
+    return (
+      <div className={className} {...props}>
+        {children}
+      </div>
+    );
+  },
   details: ({ children, ...props }: any) => (
     <details
       className="group my-5 rounded-2xl border border-border/70 bg-card/60 p-4 sm:p-5 transition-all open:bg-card open:shadow-e1"
@@ -397,6 +574,55 @@ export const defaultMarkdownComponents = {
   ),
 };
 
+/* ── Rehype plugin to group consecutive code blocks into code-tabs-group ── */
+function rehypeCodeTabs() {
+  return (tree: any) => {
+    visit(tree, (node: any) => {
+      if (!node.children || !Array.isArray(node.children)) return;
+      if (node.tagName === 'div' && node.properties?.className?.includes('code-tabs-group')) return;
+
+      const newChildren: any[] = [];
+      let currentGroup: any[] = [];
+
+      for (let i = 0; i < node.children.length; i++) {
+        const child = node.children[i];
+
+        if (child.type === 'element' && child.tagName === 'pre') {
+          currentGroup.push(child);
+        } else if (child.type === 'text' && child.value.trim() === '' && currentGroup.length > 0) {
+          continue;
+        } else {
+          if (currentGroup.length > 1) {
+            newChildren.push({
+              type: 'element',
+              tagName: 'div',
+              properties: { className: ['code-tabs-group'] },
+              children: currentGroup,
+            });
+          } else if (currentGroup.length === 1) {
+            newChildren.push(currentGroup[0]);
+          }
+          currentGroup = [];
+          newChildren.push(child);
+        }
+      }
+
+      if (currentGroup.length > 1) {
+        newChildren.push({
+          type: 'element',
+          tagName: 'div',
+          properties: { className: ['code-tabs-group'] },
+          children: currentGroup,
+        });
+      } else if (currentGroup.length === 1) {
+        newChildren.push(currentGroup[0]);
+      }
+
+      node.children = newChildren;
+    });
+  };
+}
+
 interface MarkdownViewProps {
   content: string;
   allowCopy?: boolean;
@@ -424,7 +650,7 @@ export function MarkdownView({
       <div className={`prose dark:prose-invert max-w-none text-foreground ${fontClass} ${className}`}>
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
-          rehypePlugins={[[rehypeSanitize, sanitizeSchema]]}
+          rehypePlugins={[[rehypeSanitize, sanitizeSchema], rehypeCodeTabs]}
           components={defaultMarkdownComponents}
         >
           {content}

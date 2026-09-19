@@ -1,77 +1,209 @@
 {
   "pattern": "Math & Number Theory",
-  "description": "A grab-bag of classical number-theory techniques (primality, modular exponentiation, GCD/LCM, meet-in-the-middle search space splitting) that show up repeatedly in Hard OA questions and competitive programming, often as a subroutine inside a bigger problem.",
+  "description": "Classical number-theoretic and combinatorial techniques — sieves, modular arithmetic, GCD, combinatorics, randomized sampling, geometry, and search-space splitting — that appear as the unlocking subroutine inside harder OA and interview problems rather than as problems in their own right.",
   "important_details": [
-    "The Sieve of Eratosthenes precomputes primality for a whole range in O(n log log n), far better than trial-division per query.",
-    "Fast (binary) exponentiation computes a^b mod m in O(log b) instead of O(b) by squaring the base and halving the exponent each step.",
-    "GCD via the Euclidean algorithm runs in O(log(min(a,b))); LCM = (a*b) / gcd(a,b).",
-    "Meet in the Middle splits an exponential search space (2^n) into two halves (2^(n/2) each), trading a little space for a massive time reduction on subset-sum-like problems."
+    "The Sieve of Eratosthenes precomputes primality across a whole range in O(n log log n); trial division per query is O(sqrt(n)) each and does not scale.",
+    "Fast exponentiation computes a^b mod m in O(log b) by squaring the base and halving the exponent.",
+    "Under a modulus you cannot divide directly — you multiply by the modular inverse, obtained via Fermat's Little Theorem when the modulus is prime.",
+    "Meet in the Middle splits a 2^n search space into two 2^(n/2) halves, which is the standard rescue when n sits around 30 to 40.",
+    "Overflow is the silent killer in this pattern: use long for intermediate products and take the modulus after every multiplication."
   ],
-  "other_relevant_details": "These techniques rarely stand alone in interviews — they're usually the 'unlock' inside a bigger DP, graph, or combinatorics problem. Recognize them from constraints mentioning huge numbers (need modular arithmetic), 'divisors/primes up to N', or n around 30-40 (a meet-in-the-middle signal, since 2^40 is too slow but 2^20 x 2 is fine).",
+  "other_relevant_details": "These techniques rarely form the whole question. Recognize them from constraints: 'answer modulo 1e9+7' implies modular arithmetic and possibly modular inverses; 'primes/divisors up to N' implies a sieve; n around 30-40 implies meet in the middle; 'random pick with unknown stream length' implies reservoir sampling. Learning to spot the constraint-to-technique mapping is worth more than memorizing any single algorithm here.",
   "variations": [
     {
       "variation": "Sieve of Eratosthenes",
-      "description": "Precompute which numbers up to N are prime by iteratively marking multiples of each found prime as composite, avoiding per-number trial division.",
+      "description": "Precompute primality for every number up to N by iteratively marking multiples of each discovered prime as composite.",
       "important_details": [
-        "Start marking multiples from p*p (not 2*p) since smaller multiples are already marked by earlier primes.",
-        "Once built, the boolean sieve array answers 'is X prime?' in O(1) for any X <= N.",
-        "Extended variants compute the smallest prime factor (SPF) of every number, enabling O(log n) prime factorization afterward."
+        "Start marking from p*p rather than 2*p, since all smaller multiples were already marked by smaller primes.",
+        "The outer loop only needs to run while p*p <= n; cast to long in that comparison to avoid overflow for large n.",
+        "Once built, primality is an O(1) array lookup for any value up to N.",
+        "A segmented sieve handles ranges too large for memory by sieving fixed-size blocks using the primes up to sqrt(high)."
       ],
-      "template_code": "public boolean[] sieveOfEratosthenes(int n) {\n    boolean[] isComposite = new boolean[n + 1];\n    for (int p = 2; (long) p * p <= n; p++) {\n        if (!isComposite[p]) {\n            for (int multiple = p * p; multiple <= n; multiple += p) {\n                isComposite[multiple] = true;\n            }\n        }\n    }\n    boolean[] isPrime = new boolean[n + 1];\n    for (int i = 2; i <= n; i++) isPrime[i] = !isComposite[i];\n    return isPrime;\n}",
-      "other_relevant_details": "Time Complexity: O(n log log n) to build. Space: O(n). Vastly faster than checking each number individually (O(n * sqrt(n))) when you need primality for many numbers.",
+      "template_code": "public boolean[] sieve(int n) {\n    boolean[] isPrime = new boolean[n + 1];\n    Arrays.fill(isPrime, true);\n    if (n >= 0) isPrime[0] = false;\n    if (n >= 1) isPrime[1] = false;\n    for (int p = 2; (long) p * p <= n; p++) {\n        if (isPrime[p]) {\n            for (int multiple = p * p; multiple <= n; multiple += p) {\n                isPrime[multiple] = false;\n            }\n        }\n    }\n    return isPrime;\n}",
+      "other_relevant_details": "Time Complexity: O(n log log n). Space: O(n).",
       "problems": [
         {"name": "Count Primes", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/count-primes/", "company_tags": null},
+        {"name": "Closest Prime Numbers in Range", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/closest-prime-numbers-in-range/", "company_tags": null},
+        {"name": "Prime Arrangements", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/prime-arrangements/", "company_tags": null},
+        {"name": "Prime Subtraction Operation", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/prime-subtraction-operation/", "company_tags": null},
+        {"name": "Find the Count of Numbers Which Are Not Special", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/find-the-count-of-numbers-which-are-not-special/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Prime Factorization & Divisors (SPF Sieve)",
+      "description": "Factor numbers efficiently either by trial division up to sqrt(n) for a single value, or by precomputing the smallest prime factor for every number up to N so any factorization takes O(log n).",
+      "important_details": [
+        "Trial division only needs to test up to sqrt(n); after the loop, any remaining value greater than 1 is itself a prime factor.",
+        "The SPF sieve stores each number's smallest prime factor during a modified sieve pass, then factorization is repeated division by spf[x].",
+        "Divisor counting follows from the exponents: if n = p1^a * p2^b, the divisor count is (a+1)(b+1).",
+        "Divisors come in pairs around sqrt(n), so enumerating divisors also costs only O(sqrt(n))."
+      ],
+      "template_code": "public List<Integer> primeFactors(int n) {\n    List<Integer> factors = new ArrayList<>();\n    for (int p = 2; (long) p * p <= n; p++) {\n        while (n % p == 0) {\n            factors.add(p);\n            n /= p;\n        }\n    }\n    if (n > 1) factors.add(n);\n    return factors;\n}\npublic int[] buildSPF(int n) {\n    int[] spf = new int[n + 1];\n    for (int i = 2; i <= n; i++) {\n        if (spf[i] == 0) {\n            for (int j = i; j <= n; j += i) {\n                if (spf[j] == 0) spf[j] = i;\n            }\n        }\n    }\n    return spf;\n}",
+      "other_relevant_details": "Time Complexity: O(sqrt(n)) per number by trial division, O(log n) per number after an O(n log log n) SPF sieve. Space: O(n) for the SPF table.",
+      "problems": [
         {"name": "Four Divisors", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/four-divisors/", "company_tags": null},
-        {"name": "Prime Arrangements", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/prime-arrangements/", "company_tags": null},
-        {"name": "Closest Prime Numbers in Range", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/closest-prime-numbers-in-range/", "company_tags": null}
+        {"name": "Largest Component Size by Common Factor", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/largest-component-size-by-common-factor/", "company_tags": null},
+        {"name": "Distinct Prime Factors of Product of Array", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/distinct-prime-factors-of-product-of-array/", "company_tags": null},
+        {"name": "Number of Common Factors", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/number-of-common-factors/", "company_tags": null},
+        {"name": "Minimize the Maximum of Two Arrays", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/minimize-the-maximum-of-two-arrays/", "company_tags": null}
       ]
     },
     {
       "variation": "Fast (Modular) Exponentiation",
-      "description": "Compute a^b (mod m) in O(log b) by repeated squaring: at each step, square the base and halve the exponent, multiplying the result whenever the current exponent bit is 1.",
+      "description": "Compute a^b, optionally modulo m, in O(log b) by repeated squaring — multiply the accumulator whenever the current exponent bit is set, then square the base and shift.",
       "important_details": [
-        "Take the modulus after every multiplication to prevent integer overflow when working with large exponents.",
-        "The recursive/iterative doubling insight — a^b = (a^(b/2))^2 if b is even, else a * a^(b-1) — is a common building block for combinatorics (nCr mod p using modular inverses).",
-        "Also directly usable for problems like 'pow(x, n)' without any modulus, just skip the mod step."
+        "Take the modulus after every multiplication and use long arithmetic, or you overflow silently on 32-bit ints.",
+        "Reduce the base modulo m before the loop starts to keep intermediate values small.",
+        "For negative exponents (as in pow(x, n) with n < 0), compute the positive power and invert; guard against Integer.MIN_VALUE, whose negation overflows.",
+        "This is the engine behind modular inverses and therefore behind any nCr-mod-p computation."
       ],
       "template_code": "public long fastPow(long base, long exp, long mod) {\n    long result = 1;\n    base %= mod;\n    while (exp > 0) {\n        if ((exp & 1) == 1) {\n            result = (result * base) % mod;\n        }\n        base = (base * base) % mod;\n        exp >>= 1;\n    }\n    return result;\n}",
-      "other_relevant_details": "Time Complexity: O(log b). Space: O(1) iterative (O(log b) if written recursively).",
+      "other_relevant_details": "Time Complexity: O(log b). Space: O(1) iterative.",
       "problems": [
         {"name": "Pow(x, n)", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/powx-n/", "company_tags": null},
         {"name": "Super Pow", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/super-pow/", "company_tags": null},
-        {"name": "Count Good Numbers", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/count-good-numbers/", "company_tags": null}
+        {"name": "Count Good Numbers", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/count-good-numbers/", "company_tags": null},
+        {"name": "Number of Ways to Stay in the Same Place After Some Steps", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/number-of-ways-to-stay-in-the-same-place-after-some-steps/", "company_tags": null}
       ]
     },
     {
-      "variation": "GCD, LCM & Modular Arithmetic",
-      "description": "Use the Euclidean algorithm for GCD (and the derived LCM formula) as a building block for fraction simplification, cycle-length problems, and any computation requiring results modulo a large prime.",
+      "variation": "GCD, LCM & the Euclidean Algorithm",
+      "description": "Compute greatest common divisors via repeated remainder, derive LCM from it, and use both for fraction reduction, cycle alignment, and grid-lattice problems.",
       "important_details": [
-        "gcd(a, b) = gcd(b, a % b), base case gcd(a, 0) = a — runs in O(log(min(a,b))) via the Euclidean algorithm.",
-        "lcm(a, b) = (a / gcd(a,b)) * b — divide before multiplying to reduce overflow risk.",
-        "For 'answer mod 1e9+7' problems involving division, you need modular inverse (via Fermat's Little Theorem: a^(p-2) mod p when p is prime) since you can't directly divide under a modulus."
+        "gcd(a, b) = gcd(b, a % b) with base case gcd(a, 0) = a, running in O(log(min(a,b))).",
+        "lcm(a, b) = (a / gcd(a,b)) * b — divide BEFORE multiplying to avoid overflow.",
+        "The extended Euclidean algorithm additionally returns coefficients x, y with ax + by = gcd(a,b), which gives modular inverses for non-prime moduli.",
+        "A linear Diophantine equation ax + by = c has integer solutions exactly when gcd(a,b) divides c — this single fact solves the water-jug problem outright."
       ],
-      "template_code": "public int gcd(int a, int b) {\n    return b == 0 ? a : gcd(b, a % b);\n}\npublic long lcm(long a, long b) {\n    return (a / gcd((int) a, (int) b)) * b;\n}",
-      "other_relevant_details": "Time Complexity: O(log(min(a,b))) for gcd. Space: O(log(min(a,b))) recursive stack, or O(1) iterative.",
+      "template_code": "public int gcd(int a, int b) {\n    while (b != 0) {\n        int tmp = b;\n        b = a % b;\n        a = tmp;\n    }\n    return a;\n}\npublic long lcm(int a, int b) {\n    return (long) (a / gcd(a, b)) * b;\n}",
+      "other_relevant_details": "Time Complexity: O(log(min(a,b))). Space: O(1) iterative.",
       "problems": [
         {"name": "Greatest Common Divisor of Strings", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/greatest-common-divisor-of-strings/", "company_tags": null},
+        {"name": "Water and Jug Problem", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/water-and-jug-problem/", "company_tags": null},
         {"name": "Nth Magical Number", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/nth-magical-number/", "company_tags": null},
-        {"name": "Water and Jug Problem", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/water-and-jug-problem/", "company_tags": null}
+        {"name": "Ugly Number III", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/ugly-number-iii/", "company_tags": null},
+        {"name": "Find Greatest Common Divisor of Array", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/find-greatest-common-divisor-of-array/", "company_tags": null},
+        {"name": "Replace Non-Coprime Numbers in Array", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/replace-non-coprime-numbers-in-array/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Modular Inverse & Combinatorics (nCr mod p)",
+      "description": "Compute binomial coefficients, permutations, and Catalan numbers under a prime modulus by precomputing factorials and their modular inverses via Fermat's Little Theorem.",
+      "important_details": [
+        "Fermat's Little Theorem: for prime p, the inverse of a is a^(p-2) mod p, computed with fast exponentiation.",
+        "Precompute factorial[i] and invFactorial[i] up to the maximum n once, then every nCr query is O(1).",
+        "Build the inverse factorial array backwards from invFactorial[n] using invFactorial[i-1] = invFactorial[i] * i, which costs one exponentiation total rather than n.",
+        "Catalan(n) = C(2n, n) / (n+1) counts balanced-parenthesis strings, distinct BSTs, and valid triangulations — recognize these shapes.",
+        "For a non-prime modulus, Fermat does not apply; use the extended Euclidean algorithm instead."
+      ],
+      "template_code": "class Combinatorics {\n    private static final int MOD = 1_000_000_007;\n    private long[] fact, invFact;\n    public Combinatorics(int n) {\n        fact = new long[n + 1];\n        invFact = new long[n + 1];\n        fact[0] = 1;\n        for (int i = 1; i <= n; i++) fact[i] = fact[i - 1] * i % MOD;\n        invFact[n] = power(fact[n], MOD - 2);\n        for (int i = n; i > 0; i--) invFact[i - 1] = invFact[i] * i % MOD;\n    }\n    public long nCr(int n, int r) {\n        if (r < 0 || r > n) return 0;\n        return fact[n] * invFact[r] % MOD * invFact[n - r] % MOD;\n    }\n    private long power(long base, long exp) {\n        long result = 1;\n        base %= MOD;\n        while (exp > 0) {\n            if ((exp & 1) == 1) result = result * base % MOD;\n            base = base * base % MOD;\n            exp >>= 1;\n        }\n        return result;\n    }\n}",
+      "other_relevant_details": "Time Complexity: O(n) precomputation, O(1) per query. Space: O(n).",
+      "problems": [
+        {"name": "Unique Paths", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/unique-paths/", "company_tags": null},
+        {"name": "Unique Binary Search Trees", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/unique-binary-search-trees/", "company_tags": null},
+        {"name": "Count Sorted Vowel Strings", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/count-sorted-vowel-strings/", "company_tags": null},
+        {"name": "Number of Ways to Reorder Array to Get Same BST", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/number-of-ways-to-reorder-array-to-get-same-bst/", "company_tags": null},
+        {"name": "Count Anagrams", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/count-anagrams/", "company_tags": null},
+        {"name": "Building Boxes", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/building-boxes/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Digit Manipulation & Base Conversion",
+      "description": "Operate on a number's decimal or arbitrary-base digits directly — extracting, reversing, summing, or converting — without string conversion, watching carefully for overflow.",
+      "important_details": [
+        "Extract digits with n % base and n /= base; this naturally produces them least-significant first.",
+        "Reversing an integer overflows easily: check result > (Integer.MAX_VALUE - digit) / 10 BEFORE the multiplication, not after.",
+        "Palindrome checks on integers can avoid string conversion by reversing only the second half and comparing.",
+        "Digit DP (counting numbers with a digit property up to N) builds on this and pairs with memoization over position, tightness, and accumulated state."
+      ],
+      "template_code": "public int reverse(int x) {\n    int result = 0;\n    while (x != 0) {\n        int digit = x % 10;\n        x /= 10;\n        if (result > Integer.MAX_VALUE / 10 || (result == Integer.MAX_VALUE / 10 && digit > 7)) return 0;\n        if (result < Integer.MIN_VALUE / 10 || (result == Integer.MIN_VALUE / 10 && digit < -8)) return 0;\n        result = result * 10 + digit;\n    }\n    return result;\n}",
+      "other_relevant_details": "Time Complexity: O(number of digits) = O(log n). Space: O(1).",
+      "problems": [
+        {"name": "Reverse Integer", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/reverse-integer/", "company_tags": null},
+        {"name": "Palindrome Number", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/palindrome-number/", "company_tags": null},
+        {"name": "Excel Sheet Column Title", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/excel-sheet-column-title/", "company_tags": null},
+        {"name": "Excel Sheet Column Number", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/excel-sheet-column-number/", "company_tags": null},
+        {"name": "Integer to Roman", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/integer-to-roman/", "company_tags": null},
+        {"name": "Number of Digit One", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/number-of-digit-one/", "company_tags": null},
+        {"name": "Numbers With Repeated Digits", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/numbers-with-repeated-digits/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Reservoir Sampling",
+      "description": "Select k items uniformly at random from a stream of unknown length in a single pass using O(k) memory, replacing a held item with probability k/i at the i-th element.",
+      "important_details": [
+        "Algorithm R: keep the first k items; for each subsequent item i (1-indexed), pick j uniformly in [0, i) and replace reservoir[j] if j < k.",
+        "The uniformity proof is an induction showing every seen item retains probability k/n of being in the reservoir at any point.",
+        "For k = 1 the rule simplifies to: replace the held item with probability 1/i — this is the linked-list random-node problem.",
+        "Essential when the stream length is unknown or too large to store, which is exactly how these problems are phrased."
+      ],
+      "template_code": "class ReservoirSampler {\n    private Random rand = new Random();\n    public int[] sample(Iterator<Integer> stream, int k) {\n        int[] reservoir = new int[k];\n        int i = 0;\n        while (stream.hasNext() && i < k) {\n            reservoir[i++] = stream.next();\n        }\n        while (stream.hasNext()) {\n            int val = stream.next();\n            int j = rand.nextInt(++i);\n            if (j < k) reservoir[j] = val;\n        }\n        return reservoir;\n    }\n}",
+      "other_relevant_details": "Time Complexity: O(n) single pass. Space: O(k), independent of the stream length.",
+      "problems": [
+        {"name": "Linked List Random Node", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/linked-list-random-node/", "company_tags": null},
+        {"name": "Random Pick Index", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/random-pick-index/", "company_tags": null},
+        {"name": "Random Pick with Weight", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/random-pick-with-weight/", "company_tags": null},
+        {"name": "Random Pick with Blacklist", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/random-pick-with-blacklist/", "company_tags": null},
+        {"name": "Insert Delete GetRandom O(1)", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/insert-delete-getrandom-o1/", "company_tags": null}
       ]
     },
     {
       "variation": "Meet in the Middle",
-      "description": "Split an exponential search space (typically 2^n subsets) into two halves, brute-force each half separately (2^(n/2) each), then combine the two halves efficiently (usually via sorting + binary search or a hashmap) to answer the original question.",
+      "description": "Split an exponential search space into two halves, brute-force each half at 2^(n/2) cost, then combine the halves with sorting plus binary search or a hash map.",
       "important_details": [
-        "Turns an infeasible O(2^n) brute force into a feasible O(2^(n/2) * log(2^(n/2))) solution — the key unlock for n around 30-40.",
-        "Common pattern: split array into two halves, enumerate all subset sums of each half, sort one half's sums, then for each sum in the other half binary-search for the complement.",
-        "Requires the combination step (matching two halves) to be efficient — otherwise you've just moved the exponential cost elsewhere."
+        "Reduces O(2^n) to roughly O(2^(n/2) * n), which is the difference between infeasible and instant for n around 40.",
+        "Standard shape: enumerate all subset sums of each half, sort one side, then binary search each value from the other side for its complement.",
+        "The combination step must be efficient (log or constant per item), or you have simply relocated the exponential cost.",
+        "Memory is the real constraint — 2^20 entries is about a million longs, which is fine, but 2^25 is not."
       ],
-      "template_code": "public boolean canPartition(int[] nums, int target) {\n    int n = nums.length, half = n / 2;\n    List<Integer> leftSums = enumerateSums(nums, 0, half);\n    List<Integer> rightSums = enumerateSums(nums, half, n);\n    Collections.sort(rightSums);\n    for (int ls : leftSums) {\n        int need = target - ls;\n        if (Collections.binarySearch(rightSums, need) >= 0) return true;\n    }\n    return false;\n}\nprivate List<Integer> enumerateSums(int[] nums, int start, int end) {\n    List<Integer> sums = new ArrayList<>();\n    int len = end - start;\n    for (int mask = 0; mask < (1 << len); mask++) {\n        int sum = 0;\n        for (int i = 0; i < len; i++) {\n            if ((mask & (1 << i)) != 0) sum += nums[start + i];\n        }\n        sums.add(sum);\n    }\n    return sums;\n}",
-      "other_relevant_details": "Time Complexity: O(2^(n/2) * log(2^(n/2))) instead of O(2^n). Space: O(2^(n/2)) to store one half's enumerated sums.",
+      "template_code": "public int closestSubsequenceSum(int[] nums, int goal) {\n    int n = nums.length, half = n / 2;\n    long[] left = subsetSums(nums, 0, half);\n    long[] right = subsetSums(nums, half, n);\n    Arrays.sort(right);\n    long best = Long.MAX_VALUE;\n    for (long l : left) {\n        long need = goal - l;\n        int idx = lowerBound(right, need);\n        if (idx < right.length) best = Math.min(best, Math.abs(l + right[idx] - goal));\n        if (idx > 0) best = Math.min(best, Math.abs(l + right[idx - 1] - goal));\n    }\n    return (int) best;\n}\nprivate long[] subsetSums(int[] nums, int start, int end) {\n    int len = end - start;\n    long[] sums = new long[1 << len];\n    for (int mask = 0; mask < (1 << len); mask++) {\n        long sum = 0;\n        for (int i = 0; i < len; i++) {\n            if ((mask & (1 << i)) != 0) sum += nums[start + i];\n        }\n        sums[mask] = sum;\n    }\n    return sums;\n}\nprivate int lowerBound(long[] arr, long target) {\n    int lo = 0, hi = arr.length;\n    while (lo < hi) {\n        int mid = lo + (hi - lo) / 2;\n        if (arr[mid] < target) lo = mid + 1;\n        else hi = mid;\n    }\n    return lo;\n}",
+      "other_relevant_details": "Time Complexity: O(2^(n/2) * n). Space: O(2^(n/2)).",
       "problems": [
-        {"name": "Partition Equal Subset Sum", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/partition-equal-subset-sum/", "company_tags": null},
         {"name": "Closest Subsequence Sum", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/closest-subsequence-sum/", "company_tags": null},
-        {"name": "Split Array Into Fibonacci Sequence", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/split-array-into-fibonacci-sequence/", "company_tags": null}
+        {"name": "Partition Array Into Two Arrays to Minimize Sum Difference", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/partition-array-into-two-arrays-to-minimize-sum-difference/", "company_tags": null},
+        {"name": "Split Array With Same Average", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/split-array-with-same-average/", "company_tags": null},
+        {"name": "Ways to Split Array Into Good Subarrays", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/ways-to-split-array-into-good-subarrays/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Geometry & Coordinate Math",
+      "description": "Handle points, lines, slopes, areas, and overlaps using exact integer arithmetic wherever possible to avoid floating-point precision failures.",
+      "important_details": [
+        "Compare slopes as cross products (dy1 * dx2 == dy2 * dx1) rather than dividing — this keeps everything in integers and avoids division by zero.",
+        "The cross product's sign gives orientation (clockwise, counter-clockwise, collinear), which is the primitive behind convex hull and segment intersection.",
+        "Compare squared distances instead of distances to skip the square root entirely.",
+        "Rectangle overlap is easiest as its negation: two rectangles do NOT overlap if one is entirely left, right, above, or below the other.",
+        "For collinear-points problems, normalize slope fractions by their GCD and keep the sign in a consistent position before hashing them."
+      ],
+      "template_code": "public int maxPoints(int[][] points) {\n    int n = points.length;\n    if (n <= 2) return n;\n    int best = 2;\n    for (int i = 0; i < n; i++) {\n        Map<String, Integer> slopes = new HashMap<>();\n        for (int j = i + 1; j < n; j++) {\n            int dy = points[j][1] - points[i][1];\n            int dx = points[j][0] - points[i][0];\n            int g = gcd(Math.abs(dy), Math.abs(dx));\n            if (g != 0) { dy /= g; dx /= g; }\n            if (dx < 0) { dx = -dx; dy = -dy; }\n            String key = dy + \"/\" + dx;\n            slopes.merge(key, 1, Integer::sum);\n            best = Math.max(best, slopes.get(key) + 1);\n        }\n    }\n    return best;\n}\nprivate int gcd(int a, int b) {\n    return b == 0 ? a : gcd(b, a % b);\n}",
+      "other_relevant_details": "Time Complexity: O(n^2) for pairwise slope problems. Space: O(n).",
+      "problems": [
+        {"name": "Max Points on a Line", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/max-points-on-a-line/", "company_tags": null},
+        {"name": "Rectangle Overlap", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/rectangle-overlap/", "company_tags": null},
+        {"name": "Rectangle Area", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/rectangle-area/", "company_tags": null},
+        {"name": "Erect the Fence", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/erect-the-fence/", "company_tags": null},
+        {"name": "Valid Square", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/valid-square/", "company_tags": null},
+        {"name": "Minimum Area Rectangle", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/minimum-area-rectangle/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Integer Overflow & Numerical Edge Cases",
+      "description": "Defensive numerical technique: detect or prevent overflow before it happens, handle Integer.MIN_VALUE asymmetry, and choose safe idioms for midpoints, negation, and accumulation.",
+      "important_details": [
+        "Compute midpoints as low + (high - low) / 2, never (low + high) / 2, which overflows for large indices.",
+        "Integer.MIN_VALUE has no positive counterpart: Math.abs(Integer.MIN_VALUE) returns itself, and negating it overflows. Cast to long first.",
+        "Check before multiplying: if (result > LIMIT / factor) it will overflow — checking after the fact reads a corrupted value.",
+        "Java silently wraps on integer overflow rather than throwing, so these bugs pass small tests and fail on the judge's large cases.",
+        "Prefer long for accumulators such as running sums and products whenever the constraints allow values near 10^9."
+      ],
+      "template_code": "public int myAtoi(String s) {\n    int i = 0, n = s.length(), sign = 1;\n    while (i < n && s.charAt(i) == ' ') i++;\n    if (i < n && (s.charAt(i) == '+' || s.charAt(i) == '-')) {\n        sign = s.charAt(i) == '-' ? -1 : 1;\n        i++;\n    }\n    int result = 0;\n    while (i < n && Character.isDigit(s.charAt(i))) {\n        int digit = s.charAt(i) - '0';\n        if (result > (Integer.MAX_VALUE - digit) / 10) {\n            return sign == 1 ? Integer.MAX_VALUE : Integer.MIN_VALUE;\n        }\n        result = result * 10 + digit;\n        i++;\n    }\n    return result * sign;\n}",
+      "other_relevant_details": "Time Complexity: O(n). Space: O(1). These checks cost nothing asymptotically and prevent an entire class of judge failures.",
+      "problems": [
+        {"name": "String to Integer (atoi)", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/string-to-integer-atoi/", "company_tags": null},
+        {"name": "Divide Two Integers", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/divide-two-integers/", "company_tags": null},
+        {"name": "Reverse Integer", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/reverse-integer/", "company_tags": null},
+        {"name": "Sqrt(x)", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/sqrtx/", "company_tags": null},
+        {"name": "Valid Number", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/valid-number/", "company_tags": null}
       ]
     }
   ]

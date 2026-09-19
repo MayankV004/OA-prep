@@ -18,6 +18,7 @@ import { PlacementLoopSection } from '@/components/landing/PlacementLoopSection'
 import { InteractiveWorkspaceSection } from '@/components/landing/InteractiveWorkspaceSection';
 import { FaqSection } from '@/components/landing/FaqSection';
 import { CtaSection } from '@/components/landing/CtaSection';
+import { MobileStickyCta } from '@/components/landing/MobileStickyCta';
 
 export function LandingPageClient() {
   const [liveStats, setLiveStats] = useState({
@@ -101,6 +102,9 @@ export function LandingPageClient() {
 
         {/* 12. Glassmorphic Footer */}
         <Footer variant="public" />
+
+        {/* 13. Mobile-Only Sticky Bottom CTA */}
+        <MobileStickyCta />
       </div>
     </SmoothScrollProvider>
   );

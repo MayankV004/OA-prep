@@ -316,7 +316,7 @@ export function ContactPageClient() {
                       placeholder="Mayank Verma"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="w-full h-11 px-4 rounded-xl bg-surface-sunken/60 dark:bg-surface-sunken/40 border border-border/70 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                      className="w-full h-11 px-4 rounded-xl bg-surface-sunken/60 dark:bg-surface-sunken/40 border border-border/70 text-base md:text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -330,7 +330,7 @@ export function ContactPageClient() {
                       placeholder="you@college.edu"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full h-11 px-4 rounded-xl bg-surface-sunken/60 dark:bg-surface-sunken/40 border border-border/70 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                      className="w-full h-11 px-4 rounded-xl bg-surface-sunken/60 dark:bg-surface-sunken/40 border border-border/70 text-base md:text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
                     />
                   </div>
                 </div>
@@ -345,7 +345,7 @@ export function ContactPageClient() {
                     placeholder="E.g., Question about Company OA Diagnostic Tests"
                     value={subject}
                     onChange={(e) => setSubject(e.target.value)}
-                    className="w-full h-11 px-4 rounded-xl bg-surface-sunken/60 dark:bg-surface-sunken/40 border border-border/70 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                    className="w-full h-11 px-4 rounded-xl bg-surface-sunken/60 dark:bg-surface-sunken/40 border border-border/70 text-base md:text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
                   />
                 </div>
 
@@ -360,7 +360,7 @@ export function ContactPageClient() {
                     placeholder="Please include relevant details, URLs, or assessment slugs if applicable..."
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
-                    className="w-full p-4 rounded-xl bg-surface-sunken/60 dark:bg-surface-sunken/40 border border-border/70 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all resize-none"
+                    className="w-full p-4 rounded-xl bg-surface-sunken/60 dark:bg-surface-sunken/40 border border-border/70 text-base md:text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all resize-none"
                   />
                 </div>
 

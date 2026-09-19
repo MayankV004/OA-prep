@@ -21,6 +21,7 @@ Personal placement-prep tracker, Online Assessment (OA) simulator, and computer 
 | [scalability.md](./scalability.md) | Scalable architecture plan for 2,000+ DAU target on MongoDB M0/M10, multi-tier caching (L1 + L2 Redis + Edge CDN), connection pooling, and QStash worker offload |
 | [metrics.md](./metrics.md) | **Engineering Metrics & Benchmarks**: Testing metrics, scalability & caching benchmarks, neural proctoring stats, code runner latency, and resume-ready bullet points |
 | [novelity.md](./novelity.md) | Core novelty angles: failure forensics, high-fidelity OA simulation environment, reasoning capture, and post-OA replay debriefs |
+| [production-audit.md](./production-audit.md) | **Production Launch Checklist & Audit**: 20-point launch checklist, trust-breaking ranking, 5-phase quality playbook, SEO benchmarks, and verification commands |
 
 Start with **[PRD.md](./PRD.md)**. Review **[architecture.md](./architecture.md)** and **[proctoring.md](./proctoring.md)** for system design. Use **[schema.md](./schema.md)** and **[api.md](./api.md)** as reference while developing. For billing, see **[monetization.md](./monetization.md)**, and for operations, see **[setup.md](./setup.md)**, **[deployment.md](./deployment.md)**, and **[admin.md](./admin.md)**.
 

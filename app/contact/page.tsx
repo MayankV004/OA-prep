@@ -6,14 +6,14 @@ const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://bigoprep.tech';
 export const metadata: Metadata = {
   title: 'Contact & Engineering Support',
   description:
-    'Get in touch with the BigO team for technical support, bug reports, online assessment feedback, and general inquiries. We prioritize code execution and OA simulation issues.',
+    'Get in touch with the BigO team for technical support, bug reports, and placement platform feedback. Rapid response for active OA issues.',
   alternates: {
     canonical: `${siteUrl}/contact`,
   },
   openGraph: {
     title: 'Contact & Engineering Support | BigO',
     description:
-      'Get in touch with the BigO team for technical support, bug reports, and online assessment inquiries.',
+      'Get in touch with the BigO team for technical support, bug reports, and placement platform feedback.',
     url: `${siteUrl}/contact`,
     type: 'website',
   },

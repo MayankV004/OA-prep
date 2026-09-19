@@ -1,82 +1,182 @@
 {
   "pattern": "Sliding Window",
-  "description": "Sliding Window maintains a contiguous range (window) over an array or string and slides its boundaries to avoid recomputing overlapping work, turning O(n^2) or O(n*k) brute-force subarray/substring scans into O(n).",
+  "description": "Sliding Window maintains a contiguous range over an array or string and slides its boundaries to reuse overlapping work, turning O(n*k) or O(n^2) subarray/substring scans into O(n). The window's validity is tracked incrementally by a frequency map, running sum, or auxiliary structure so each expansion or contraction costs O(1).",
   "important_details": [
-    "Fixed-size windows keep width constant and slide by one, removing the outgoing element while adding the incoming one.",
-    "Variable-size windows expand the right pointer to include more elements and shrink the left pointer when a constraint is violated.",
-    "The 'at most K' trick converts an 'exactly K' count into atMost(K) - atMost(K-1), a very common competitive-programming rewrite.",
-    "Almost always paired with a hashmap/array frequency counter or a running sum to check the window's validity in O(1) per step."
+    "Fixed-size windows keep width constant: add the incoming element, remove the outgoing one, never recompute.",
+    "Variable-size windows expand the right pointer greedily and shrink the left pointer only when the constraint breaks.",
+    "The 'at most K' trick rewrites an exact-count requirement as atMost(K) - atMost(K-1) — one of the highest-leverage rewrites in competitive programming.",
+    "Amortized O(n) holds because each element enters and leaves the window at most once; a nested while-loop does not make it O(n^2).",
+    "The pattern requires CONTIGUITY. If the problem allows non-contiguous subsequences, this is a DP problem, not a sliding window."
   ],
-  "other_relevant_details": "The core signal for this pattern is a phrase like 'contiguous subarray/substring' combined with a constraint (sum, distinct count, character frequency). If the subsequence need not be contiguous, this is NOT a sliding window problem — it's likely DP.",
+  "other_relevant_details": "Trigger phrases: 'contiguous subarray', 'substring', combined with a constraint on sum, distinct count, or character frequency. A second signal is a constraint that is monotonic — if a window of size L is valid, every sub-window of it is also valid — which is what lets the left pointer move forward without ever needing to backtrack. When monotonicity fails (e.g. negative numbers with a sum constraint), reach for prefix sums plus a HashMap instead.",
   "variations": [
     {
       "variation": "Fixed Size Window",
-      "description": "The window width k is given upfront; slide it across the array exactly once, maintaining a running aggregate (sum/count/max) in O(1) per shift.",
+      "description": "The window width k is given upfront; slide it across the array exactly once, maintaining a running aggregate in O(1) per shift.",
       "important_details": [
-        "Build the initial window of size k first, then slide one step at a time for the rest of the array.",
-        "Update the aggregate incrementally: add the new right element, remove the leaving left element.",
-        "Never recompute the whole window's aggregate from scratch on each slide."
+        "Build the initial window of size k first, then slide one step at a time through the remainder.",
+        "Update incrementally: add nums[i], subtract nums[i-k]. Never recompute the whole window.",
+        "For character-frequency fixed windows (anagram detection), maintain a matched-count integer rather than comparing two full maps on every slide.",
+        "Watch the boundary: the number of valid windows is n - k + 1, and the loop must not run past it."
       ],
       "template_code": "public double findMaxAverage(int[] nums, int k) {\n    int sum = 0;\n    for (int i = 0; i < k; i++) sum += nums[i];\n    int maxSum = sum;\n    for (int i = k; i < nums.length; i++) {\n        sum += nums[i] - nums[i - k];\n        maxSum = Math.max(maxSum, sum);\n    }\n    return (double) maxSum / k;\n}",
-      "other_relevant_details": "Time Complexity: O(n). Space: O(1) (excluding any frequency map needed for more complex fixed windows).",
+      "other_relevant_details": "Time Complexity: O(n). Space: O(1), or O(charset) when a frequency map is needed.",
       "problems": [
         {"name": "Maximum Average Subarray I", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-average-subarray-i/", "company_tags": null},
         {"name": "Maximum Number of Vowels in a Substring of Given Length", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-number-of-vowels-in-a-substring-of-given-length/", "company_tags": null},
-        {"name": "Permutation in String", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/permutation-in-string/", "company_tags": null},
+        {"name": "Repeated DNA Sequences", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/repeated-dna-sequences/", "company_tags": null},
+        {"name": "Number of Sub-arrays of Size K and Average Greater than or Equal to Threshold", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/number-of-sub-arrays-of-size-k-and-average-greater-than-or-equal-to-threshold/", "company_tags": null},
+        {"name": "Grumpy Bookstore Owner", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/grumpy-bookstore-owner/", "company_tags": null},
+        {"name": "Maximum Points You Can Obtain from Cards", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-points-you-can-obtain-from-cards/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Fixed Window with Frequency Matching (Anagram Windows)",
+      "description": "A fixed-size window over a string where validity means the window's character frequencies exactly match a target multiset — solved by tracking a single 'matches' counter instead of comparing maps.",
+      "important_details": [
+        "Maintain two count arrays of size 26 and an integer 'matches' counting how many letters currently have equal counts.",
+        "On each slide, only two letters change, so 'matches' is updated in O(1) rather than re-scanning all 26 slots.",
+        "A window is a valid anagram exactly when matches == 26 (or equals the number of distinct target letters, depending on the formulation).",
+        "This is the efficient answer to 'find all anagrams' and 'permutation in string' — the naive sort-every-window approach is O(n * k log k)."
+      ],
+      "template_code": "public List<Integer> findAnagrams(String s, String p) {\n    List<Integer> result = new ArrayList<>();\n    if (s.length() < p.length()) return result;\n    int[] need = new int[26], window = new int[26];\n    for (char c : p.toCharArray()) need[c - 'a']++;\n    int k = p.length();\n    for (int i = 0; i < s.length(); i++) {\n        window[s.charAt(i) - 'a']++;\n        if (i >= k) window[s.charAt(i - k) - 'a']--;\n        if (i >= k - 1 && Arrays.equals(need, window)) result.add(i - k + 1);\n    }\n    return result;\n}",
+      "other_relevant_details": "Time Complexity: O(n * 26) which is O(n). Space: O(26) = O(1).",
+      "problems": [
         {"name": "Find All Anagrams in a String", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/find-all-anagrams-in-a-string/", "company_tags": null},
-        {"name": "Sliding Window Maximum", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/sliding-window-maximum/", "company_tags": null},
-        {"name": "Repeated DNA Sequences", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/repeated-dna-sequences/", "company_tags": null}
+        {"name": "Permutation in String", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/permutation-in-string/", "company_tags": null},
+        {"name": "Substring with Concatenation of All Words", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/substring-with-concatenation-of-all-words/", "company_tags": null},
+        {"name": "Contains Duplicate II", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/contains-duplicate-ii/", "company_tags": null}
       ]
     },
     {
       "variation": "Variable Size — Longest Valid Window",
-      "description": "Expand the right pointer greedily; only shrink from the left when the window becomes invalid. Track the max window length seen.",
+      "description": "Expand the right pointer greedily; shrink from the left only when the window becomes invalid; record the maximum width achieved.",
       "important_details": [
-        "Right pointer never moves backward — this is what keeps the algorithm O(n) instead of O(n^2).",
-        "The shrink step is typically a while-loop (not an if), since one expansion can require multiple contractions.",
-        "Update the answer AFTER the window is restored to a valid state."
+        "The right pointer never moves backward — this is what keeps the algorithm O(n).",
+        "The shrink step must be a while-loop, not an if, because one expansion may require several contractions.",
+        "Update the answer AFTER restoring validity, or you will count invalid windows.",
+        "In the 'longest repeating character replacement' family, a subtle optimization never decreases maxCount — the window can only grow, so a stale maxCount is harmless and the code stays O(n)."
       ],
-      "template_code": "public int lengthOfLongestSubstring(String s) {\n    Set<Character> window = new HashSet<>();\n    int left = 0, maxLen = 0;\n    for (int right = 0; right < s.length(); right++) {\n        char c = s.charAt(right);\n        while (window.contains(c)) {\n            window.remove(s.charAt(left));\n            left++;\n        }\n        window.add(c);\n        maxLen = Math.max(maxLen, right - left + 1);\n    }\n    return maxLen;\n}",
-      "other_relevant_details": "Time Complexity: O(n) — each character is added and removed from the window at most once. Space: O(min(n, charset size)).",
+      "template_code": "public int lengthOfLongestSubstring(String s) {\n    Map<Character, Integer> lastSeen = new HashMap<>();\n    int left = 0, maxLen = 0;\n    for (int right = 0; right < s.length(); right++) {\n        char c = s.charAt(right);\n        if (lastSeen.containsKey(c) && lastSeen.get(c) >= left) {\n            left = lastSeen.get(c) + 1;\n        }\n        lastSeen.put(c, right);\n        maxLen = Math.max(maxLen, right - left + 1);\n    }\n    return maxLen;\n}",
+      "other_relevant_details": "Time Complexity: O(n) amortized. Space: O(min(n, charset size)).",
       "problems": [
         {"name": "Longest Substring Without Repeating Characters", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/longest-substring-without-repeating-characters/", "company_tags": null},
         {"name": "Longest Repeating Character Replacement", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/longest-repeating-character-replacement/", "company_tags": null},
         {"name": "Max Consecutive Ones III", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/max-consecutive-ones-iii/", "company_tags": null},
         {"name": "Fruit Into Baskets", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/fruit-into-baskets/", "company_tags": null},
         {"name": "Longest Subarray of 1's After Deleting One Element", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/longest-subarray-of-1s-after-deleting-one-element/", "company_tags": null},
-        {"name": "Subarray Product Less Than K", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/subarray-product-less-than-k/", "company_tags": null}
+        {"name": "Longest Substring with At Least K Repeating Characters", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/longest-substring-with-at-least-k-repeating-characters/", "company_tags": null},
+        {"name": "Maximum Erasure Value", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-erasure-value/", "company_tags": null}
       ]
     },
     {
       "variation": "Variable Size — Shortest Valid Window (Minimum Window)",
-      "description": "Expand until the window first becomes valid, then greedily shrink from the left as much as possible while it stays valid, recording the minimum length.",
+      "description": "Expand until the window first satisfies the requirement, then shrink aggressively from the left while it remains valid, recording the minimum width.",
       "important_details": [
-        "Uses a 'need' frequency map and a counter of how many required characters are currently satisfied.",
-        "Shrink aggressively once valid — the goal is the smallest valid window, the opposite objective of the longest-window variant.",
-        "Track the best window's start index and length to reconstruct the actual substring at the end."
+        "Uses a 'need' frequency map plus a 'formed' counter tracking how many distinct requirements are currently fully satisfied.",
+        "The objective is the opposite of the longest-window variant: shrink as much as possible once valid, rather than as little as possible.",
+        "Track the best window's start index and length so you can reconstruct the substring at the end.",
+        "Use .intValue() or explicit int comparison when comparing boxed Integers in Java — == on Integer objects above 127 silently fails."
       ],
-      "template_code": "public String minWindow(String s, String t) {\n    Map<Character, Integer> need = new HashMap<>();\n    for (char c : t.toCharArray()) need.merge(c, 1, Integer::sum);\n    int required = need.size(), formed = 0;\n    Map<Character, Integer> windowCounts = new HashMap<>();\n    int left = 0, bestLen = Integer.MAX_VALUE, bestLeft = 0;\n    for (int right = 0; right < s.length(); right++) {\n        char c = s.charAt(right);\n        windowCounts.merge(c, 1, Integer::sum);\n        if (need.containsKey(c) && windowCounts.get(c).intValue() == need.get(c).intValue()) formed++;\n        while (formed == required) {\n            if (right - left + 1 < bestLen) {\n                bestLen = right - left + 1;\n                bestLeft = left;\n            }\n            char lc = s.charAt(left);\n            windowCounts.put(lc, windowCounts.get(lc) - 1);\n            if (need.containsKey(lc) && windowCounts.get(lc) < need.get(lc)) formed--;\n            left++;\n        }\n    }\n    return bestLen == Integer.MAX_VALUE ? \"\" : s.substring(bestLeft, bestLeft + bestLen);\n}",
+      "template_code": "public String minWindow(String s, String t) {\n    Map<Character, Integer> need = new HashMap<>();\n    for (char c : t.toCharArray()) need.merge(c, 1, Integer::sum);\n    int required = need.size(), formed = 0;\n    Map<Character, Integer> window = new HashMap<>();\n    int left = 0, bestLen = Integer.MAX_VALUE, bestLeft = 0;\n    for (int right = 0; right < s.length(); right++) {\n        char c = s.charAt(right);\n        window.merge(c, 1, Integer::sum);\n        if (need.containsKey(c) && window.get(c).intValue() == need.get(c).intValue()) formed++;\n        while (formed == required) {\n            if (right - left + 1 < bestLen) {\n                bestLen = right - left + 1;\n                bestLeft = left;\n            }\n            char lc = s.charAt(left);\n            window.put(lc, window.get(lc) - 1);\n            if (need.containsKey(lc) && window.get(lc) < need.get(lc)) formed--;\n            left++;\n        }\n    }\n    return bestLen == Integer.MAX_VALUE ? \"\" : s.substring(bestLeft, bestLeft + bestLen);\n}",
       "other_relevant_details": "Time Complexity: O(|s| + |t|). Space: O(charset size).",
       "problems": [
         {"name": "Minimum Window Substring", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/minimum-window-substring/", "company_tags": null},
         {"name": "Minimum Size Subarray Sum", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/minimum-size-subarray-sum/", "company_tags": null},
-        {"name": "Smallest Range Covering Elements from K Lists", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/smallest-range-covering-elements-from-k-lists/", "company_tags": null}
+        {"name": "Minimum Operations to Reduce X to Zero", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/minimum-operations-to-reduce-x-to-zero/", "company_tags": null},
+        {"name": "Minimum Window Subsequence", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/minimum-window-subsequence/", "company_tags": null},
+        {"name": "Shortest Subarray with Sum at Least K", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/shortest-subarray-with-sum-at-least-k/", "company_tags": null}
       ]
     },
     {
-      "variation": "Exactly K Distinct (atMost(K) - atMost(K-1))",
-      "description": "Counts subarrays satisfying an exact constraint by computing the count of subarrays satisfying 'at most K' twice and subtracting, since 'at most' windows are much easier to slide than 'exactly' windows.",
+      "variation": "Counting Subarrays — At Most K",
+      "description": "Counts how many subarrays satisfy an 'at most K' constraint by adding (right - left + 1) at each step, which counts every valid subarray ending at the current right pointer in O(1).",
       "important_details": [
-        "atMost(K) counts all valid windows ending at each right pointer as (right - left + 1) once the window has at most K distinct elements.",
-        "exactly(K) = atMost(K) - atMost(K-1) is a general trick applicable to sums, distinct counts, or any monotonic constraint.",
-        "This avoids a much trickier direct 'exactly K' sliding window implementation."
+        "The key counting identity: once the window [left, right] is valid, every subarray ending at right and starting at or after left is also valid — that is exactly (right - left + 1) subarrays.",
+        "This works only because the constraint is monotonic: shrinking a valid window keeps it valid.",
+        "Forms the base case for the exactly-K subtraction trick in the next variation.",
+        "Applies to distinct-count constraints, product constraints, and sum constraints over non-negative values."
+      ],
+      "template_code": "public int numSubarrayProductLessThanK(int[] nums, int k) {\n    if (k <= 1) return 0;\n    int product = 1, left = 0, count = 0;\n    for (int right = 0; right < nums.length; right++) {\n        product *= nums[right];\n        while (product >= k) {\n            product /= nums[left++];\n        }\n        count += right - left + 1;\n    }\n    return count;\n}",
+      "other_relevant_details": "Time Complexity: O(n). Space: O(1) or O(distinct elements) if a frequency map is needed.",
+      "problems": [
+        {"name": "Subarray Product Less Than K", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/subarray-product-less-than-k/", "company_tags": null},
+        {"name": "Count Subarrays With Score Less Than K", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/count-subarrays-with-score-less-than-k/", "company_tags": null},
+        {"name": "Number of Substrings Containing All Three Characters", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/number-of-substrings-containing-all-three-characters/", "company_tags": null},
+        {"name": "Count Number of Homogenous Substrings", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/count-number-of-homogenous-substrings/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Exactly K (atMost(K) - atMost(K-1))",
+      "description": "Converts an exact-count requirement into the difference of two at-most computations, because sliding a window for 'exactly K' directly is far harder than for 'at most K'.",
+      "important_details": [
+        "exactly(K) = atMost(K) - atMost(K-1). This identity holds for any constraint where at-most counting is valid.",
+        "Guard atMost against negative K (return 0) so the K=0 edge case does not crash.",
+        "Costs two linear passes, so the total is still O(n).",
+        "Recognizing this rewrite is often the entire difficulty of a Hard-rated counting problem — the implementation afterward is routine."
       ],
       "template_code": "public int subarraysWithKDistinct(int[] nums, int k) {\n    return atMost(nums, k) - atMost(nums, k - 1);\n}\nprivate int atMost(int[] nums, int k) {\n    if (k < 0) return 0;\n    Map<Integer, Integer> count = new HashMap<>();\n    int left = 0, result = 0;\n    for (int right = 0; right < nums.length; right++) {\n        count.merge(nums[right], 1, Integer::sum);\n        while (count.size() > k) {\n            int leftVal = nums[left];\n            count.put(leftVal, count.get(leftVal) - 1);\n            if (count.get(leftVal) == 0) count.remove(leftVal);\n            left++;\n        }\n        result += right - left + 1;\n    }\n    return result;\n}",
-      "other_relevant_details": "Time Complexity: O(n) (two linear passes). Space: O(distinct elements).",
+      "other_relevant_details": "Time Complexity: O(n) across two passes. Space: O(distinct elements).",
       "problems": [
         {"name": "Subarrays with K Different Integers", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/subarrays-with-k-different-integers/", "company_tags": null},
         {"name": "Count Number of Nice Subarrays", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/count-number-of-nice-subarrays/", "company_tags": null},
-        {"name": "Binary Subarrays With Sum", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/binary-subarrays-with-sum/", "company_tags": null}
+        {"name": "Binary Subarrays With Sum", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/binary-subarrays-with-sum/", "company_tags": null},
+        {"name": "Count Complete Subarrays in an Array", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/count-complete-subarrays-in-an-array/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Sliding Window with Monotonic Deque",
+      "description": "Maintains a deque of indices in monotonic order so the window's maximum or minimum is always at the front, enabling O(1) extremum queries as the window slides.",
+      "important_details": [
+        "Store INDICES, not values, so you can tell when the front element has fallen out of the window.",
+        "Before pushing a new index, pop from the back every index whose value is worse (smaller for a max-deque) — those can never be the maximum again.",
+        "Pop from the front when front <= right - k, meaning it has slid out of the window.",
+        "Each index is pushed and popped exactly once, giving amortized O(n) despite the inner while-loops. A heap-based alternative is O(n log n) and needs lazy deletion."
+      ],
+      "template_code": "public int[] maxSlidingWindow(int[] nums, int k) {\n    int n = nums.length;\n    int[] result = new int[n - k + 1];\n    Deque<Integer> deque = new ArrayDeque<>();\n    for (int i = 0; i < n; i++) {\n        while (!deque.isEmpty() && deque.peekFirst() <= i - k) {\n            deque.pollFirst();\n        }\n        while (!deque.isEmpty() && nums[deque.peekLast()] < nums[i]) {\n            deque.pollLast();\n        }\n        deque.offerLast(i);\n        if (i >= k - 1) result[i - k + 1] = nums[deque.peekFirst()];\n    }\n    return result;\n}",
+      "other_relevant_details": "Time Complexity: O(n) amortized. Space: O(k) for the deque.",
+      "problems": [
+        {"name": "Sliding Window Maximum", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/sliding-window-maximum/", "company_tags": null},
+        {"name": "Longest Continuous Subarray With Absolute Diff Less Than or Equal to Limit", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/longest-continuous-subarray-with-absolute-diff-less-than-or-equal-to-limit/", "company_tags": null},
+        {"name": "Shortest Subarray with Sum at Least K", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/shortest-subarray-with-sum-at-least-k/", "company_tags": null},
+        {"name": "Constrained Subsequence Sum", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/constrained-subsequence-sum/", "company_tags": null},
+        {"name": "Jump Game VI", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/jump-game-vi/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Sliding Window on a Circular Array",
+      "description": "Handles windows that may wrap around the end of the array, either by duplicating the array (concatenating it with itself) or by reframing the problem as its complement over a contiguous middle section.",
+      "important_details": [
+        "Duplication approach: work on an array of length 2n and cap the window width at n — simple, costs O(n) extra space.",
+        "Complement approach: a wrapping window of size k is the complement of a contiguous window of size n-k, which is often far easier to slide.",
+        "The complement trick is the intended solution for 'maximum points from cards' (take from both ends) and for circular subarray maxima.",
+        "Watch the degenerate cases: window size equal to 0 or to n, and all-negative arrays in the circular-maximum-subarray problem."
+      ],
+      "template_code": "public int maxScore(int[] cardPoints, int k) {\n    int n = cardPoints.length;\n    int total = 0;\n    for (int p : cardPoints) total += p;\n    if (k == n) return total;\n    int windowSize = n - k;\n    int windowSum = 0;\n    for (int i = 0; i < windowSize; i++) windowSum += cardPoints[i];\n    int minWindow = windowSum;\n    for (int i = windowSize; i < n; i++) {\n        windowSum += cardPoints[i] - cardPoints[i - windowSize];\n        minWindow = Math.min(minWindow, windowSum);\n    }\n    return total - minWindow;\n}",
+      "other_relevant_details": "Time Complexity: O(n). Space: O(1) for the complement approach, O(n) for the duplication approach.",
+      "problems": [
+        {"name": "Maximum Points You Can Obtain from Cards", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-points-you-can-obtain-from-cards/", "company_tags": null},
+        {"name": "Maximum Sum Circular Subarray", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-sum-circular-subarray/", "company_tags": null},
+        {"name": "Minimum Swaps to Group All 1's Together II", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/minimum-swaps-to-group-all-1s-together-ii/", "company_tags": null},
+        {"name": "Defuse the Bomb", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/defuse-the-bomb/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Window with Auxiliary Ordered Structure (TreeMap / Multiset)",
+      "description": "When the window needs both a maximum and a minimum simultaneously, or needs ordered lookups, back it with a TreeMap or balanced multiset that supports O(log k) insert, remove, firstKey, and lastKey.",
+      "important_details": [
+        "TreeMap<value, count> acts as a multiset: increment on insert, decrement and remove-on-zero when the value leaves the window.",
+        "firstKey() and lastKey() give the window's current min and max in O(log k), enough to check constraints like max - min <= limit.",
+        "Slower than the two-monotonic-deque solution (O(n) vs O(n log k)) but far shorter to write and harder to get wrong under OA time pressure.",
+        "Also the natural structure for 'contains nearby almost duplicate' style problems needing floorKey/ceilingKey range queries."
+      ],
+      "template_code": "public int longestSubarray(int[] nums, int limit) {\n    TreeMap<Integer, Integer> window = new TreeMap<>();\n    int left = 0, best = 0;\n    for (int right = 0; right < nums.length; right++) {\n        window.merge(nums[right], 1, Integer::sum);\n        while (window.lastKey() - window.firstKey() > limit) {\n            int leftVal = nums[left];\n            if (window.merge(leftVal, -1, Integer::sum) == 0) window.remove(leftVal);\n            left++;\n        }\n        best = Math.max(best, right - left + 1);\n    }\n    return best;\n}",
+      "other_relevant_details": "Time Complexity: O(n log k). Space: O(k).",
+      "problems": [
+        {"name": "Longest Continuous Subarray With Absolute Diff Less Than or Equal to Limit", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/longest-continuous-subarray-with-absolute-diff-less-than-or-equal-to-limit/", "company_tags": null},
+        {"name": "Contains Duplicate III", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/contains-duplicate-iii/", "company_tags": null},
+        {"name": "Sliding Window Median", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/sliding-window-median/", "company_tags": null},
+        {"name": "Find Median from Data Stream", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/find-median-from-data-stream/", "company_tags": null}
       ]
     }
   ]

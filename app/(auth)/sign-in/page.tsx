@@ -188,7 +188,7 @@ export default function SignInPage() {
               onChange={(e) => setEmail(e.target.value)}
               onBlur={() => setTouched((t) => ({ ...t, email: true }))}
               disabled={loading}
-              className="w-full bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-white placeholder:text-zinc-500 text-sm py-1"
+              className="w-full bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-white placeholder:text-zinc-500 text-base md:text-sm py-1"
             />
           </div>
           {emailError && (
@@ -210,7 +210,7 @@ export default function SignInPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={loading}
-              className="w-full bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-white placeholder:text-zinc-500 text-sm py-1 pr-9"
+              className="w-full bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-white placeholder:text-zinc-500 text-base md:text-sm py-1 pr-9"
             />
             <button
               type="button"

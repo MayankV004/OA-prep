@@ -20,6 +20,8 @@ import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Text } from '@/components/ui/typography';
 import { toast } from 'sonner';
+import { useSubscription } from '@/hooks/useSubscription';
+import { ProBadge } from '@/components/pricing/ProBadge';
 
 interface Problem {
   _id: string;
@@ -74,8 +76,20 @@ function ProblemRow({
   const [saving, setSaving] = useState(false);
   const [generatingAi, setGeneratingAi] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { isPro } = useSubscription();
 
   const handleGenerateAiNotes = async () => {
+    if (!isPro) {
+      toast.error('AI Revision Notes are exclusive to BigO Pro members.', {
+        description: 'Upgrade to unlock instant multi-language revision notes, edge-case cards, and code toggles.',
+        action: {
+          label: 'Upgrade to Pro',
+          onClick: () => { window.location.href = '/pricing'; },
+        },
+      });
+      return;
+    }
+
     setGeneratingAi(true);
     try {
       const res = await fetch('/api/problems/ai-notes', {
@@ -89,6 +103,18 @@ function ProblemRow({
           existingNotes: draft || userNotes,
         }),
       });
+
+      if (res.status === 403) {
+        const errData = await res.json().catch(() => ({}));
+        toast.error(errData.error?.message || 'Pro subscription required to generate AI notes.', {
+          action: {
+            label: 'Upgrade to Pro',
+            onClick: () => { window.location.href = '/pricing'; },
+          },
+        });
+        return;
+      }
+
       if (!res.ok) throw new Error('Failed to generate AI notes');
       const data = await res.json();
       if (data.notes) {
@@ -265,17 +291,23 @@ function ProblemRow({
                 onClick={handleGenerateAiNotes}
                 disabled={generatingAi}
                 title="Generate concise high-yield revision notes using AI"
-                className="inline-flex items-center gap-1.5 rounded-lg border border-primary/25 bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary transition-all hover:bg-primary/20 hover:shadow-xs disabled:opacity-50"
+                className={cn(
+                  'inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-semibold transition-all',
+                  generatingAi
+                    ? 'border-primary/50 bg-primary/20 text-primary cursor-wait animate-pulse shadow-xs'
+                    : 'border-primary/25 bg-primary/10 text-primary hover:bg-primary/20 hover:shadow-xs disabled:opacity-50'
+                )}
               >
                 {generatingAi ? (
                   <>
-                    <Loader2 className="size-3 animate-spin" />
-                    <span>Generating...</span>
+                    <Loader2 className="size-3.5 animate-spin text-primary" />
+                    <span>Generating Notes...</span>
                   </>
                 ) : (
                   <>
                     <Sparkles className="size-3 text-amber-500 fill-amber-500/20" />
                     <span>{draft || userNotes ? 'Refine with AI' : 'Generate AI Notes'}</span>
+                    {!isPro && <ProBadge size="sm" className="ml-1" />}
                   </>
                 )}
               </button>
@@ -303,6 +335,13 @@ function ProblemRow({
               </button>
             </div>
           </div>
+
+          {generatingAi && (
+            <div className="mb-2.5 flex items-center gap-2.5 rounded-lg border border-primary/25 bg-primary/10 px-3 py-2 text-xs text-primary shadow-2xs animate-pulse">
+              <Loader2 className="size-3.5 animate-spin shrink-0 text-primary" />
+              <span>Generating AI revision notes (Approach, C++, Java, Python, and Edge Cases)...</span>
+            </div>
+          )}
 
           {editMode ? (
             <div className="space-y-2">
@@ -340,13 +379,19 @@ function ProblemRow({
           ) : (
             <div
               className={cn(
-                'min-h-[60px] cursor-text rounded-lg border border-dashed border-border bg-surface-sunken/60 px-3 py-2.5',
-                !userNotes && 'flex items-center justify-center'
+                'min-h-[60px] rounded-lg border border-dashed border-border bg-surface-sunken/60 px-3 py-2.5',
+                !userNotes
+                  ? 'flex items-center justify-center cursor-pointer hover:bg-surface-sunken/80 transition-colors'
+                  : ''
               )}
-              onClick={() => setEditMode(true)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => e.key === 'Enter' && setEditMode(true)}
+              {...(!userNotes
+                ? {
+                    onClick: () => setEditMode(true),
+                    role: 'button',
+                    tabIndex: 0,
+                    onKeyDown: (e: React.KeyboardEvent) => e.key === 'Enter' && setEditMode(true),
+                  }
+                : {})}
             >
               {userNotes ? (
                 <div className="prose prose-sm dark:prose-invert max-w-none text-foreground">

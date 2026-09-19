@@ -1,81 +1,182 @@
 {
   "pattern": "Bit Manipulation",
-  "description": "Bit manipulation exploits binary properties (XOR self-cancellation, AND/OR masking, shifting) to solve problems in O(1) extra space or O(2^n) enumeration far faster than array/hashset approaches — a frequent optimization lever in Hard-rated problems.",
+  "description": "Bit manipulation exploits binary structure — XOR self-cancellation, AND/OR masking, shifting, and two's-complement identities — to solve problems in O(1) space or to compress exponential state into a single integer. It appears both as a standalone trick and as the enabling substrate for bitmask DP in Hard-rated problems.",
   "important_details": [
-    "XOR is its own inverse: a ^ a = 0 and a ^ 0 = a — this cancels out paired values, isolating whatever appears an odd number of times.",
-    "n & (n-1) clears the lowest set bit — the basis of Brian Kernighan's bit-counting algorithm.",
-    "A bitmask of length n (0 to 2^n - 1) can represent every possible subset of an n-element set, letting you enumerate all subsets iteratively.",
-    "Combining a bitmask with DP (bitmask DP) lets you track 'which items have been used/visited' as a single integer state, common in TSP-style and assignment problems."
+    "XOR is its own inverse: a ^ a = 0 and a ^ 0 = a, so XOR-ing a whole collection cancels every paired value.",
+    "n & (n-1) clears the lowest set bit; n & -n isolates it. These two identities underpin most counting and traversal tricks.",
+    "A bitmask over n items enumerates all 2^n subsets, making n <= 20 a strong hint that a bitmask solution is intended.",
+    "Java has no unsigned int: use >>> for logical right shift and be careful with the sign bit when iterating all 32 positions.",
+    "Bitmask DP compresses 'which items have been used' into one integer index, turning permutation search into polynomial-per-state DP."
   ],
-  "other_relevant_details": "Recognize the pattern from small constraints like n <= 20 (hinting at 2^n bitmask enumeration), 'appears once/twice/three times', or explicit mentions of XOR/AND/OR in the problem statement.",
+  "other_relevant_details": "Recognition signals: constraints with n <= 20 or 22, phrases like 'appears once/twice/three times', explicit XOR/AND/OR in the statement, or a requirement of O(1) extra space where counting would naturally need a map. Always sanity check operator precedence in Java — comparison binds tighter than &, so conditions like (x & 1) == 1 need those parentheses.",
   "variations": [
     {
-      "variation": "XOR Tricks (Single Number Family)",
-      "description": "Use XOR's self-cancelling property to find the one element that appears an odd number of times when every other element appears an even number of times (typically twice).",
+      "variation": "XOR Cancellation (Single Number I)",
+      "description": "Find the one element appearing an odd number of times when all others appear exactly twice, by XOR-ing the entire collection so pairs annihilate.",
       "important_details": [
-        "XOR-ing the entire array collapses all paired duplicates to 0, leaving only the unpaired element.",
-        "For 'appears three times except one' variants, track bits via a state machine (ones/twos) or count each bit position mod 3 across all numbers.",
-        "For 'exactly two unique numbers appear once', first XOR everything to get a^b, then use the lowest set bit of that result to split the array into two groups."
+        "XOR is commutative and associative, so the order of traversal is irrelevant — pairs cancel wherever they sit.",
+        "The same idea finds a missing number: XOR all indices with all values, and only the missing one survives.",
+        "Achieves O(1) space where a HashMap frequency count needs O(n) — that space reduction is the entire point of the question.",
+        "Extends to finding the XOR of a range or detecting a single mismatch between two arrays."
       ],
       "template_code": "public int singleNumber(int[] nums) {\n    int result = 0;\n    for (int num : nums) result ^= num;\n    return result;\n}",
-      "other_relevant_details": "Time Complexity: O(n). Space: O(1) — the entire appeal versus a hashmap-based frequency count.",
+      "other_relevant_details": "Time Complexity: O(n). Space: O(1).",
       "problems": [
         {"name": "Single Number", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/single-number/", "company_tags": null},
-        {"name": "Single Number II", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/single-number-ii/", "company_tags": null},
-        {"name": "Single Number III", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/single-number-iii/", "company_tags": null},
         {"name": "Missing Number", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/missing-number/", "company_tags": null},
-        {"name": "Maximum XOR of Two Numbers in an Array", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-xor-of-two-numbers-in-an-array/", "company_tags": null}
+        {"name": "Find the Difference", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/find-the-difference/", "company_tags": null},
+        {"name": "Find the Original Array of Prefix Xor", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/find-the-original-array-of-prefix-xor/", "company_tags": null},
+        {"name": "XOR Operation in an Array", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/xor-operation-in-an-array/", "company_tags": null}
       ]
     },
     {
-      "variation": "Bit Counting & Manipulation Tricks",
-      "description": "Efficiently count, check, or manipulate individual set bits using shift/AND tricks like n & (n-1), n & -n, and building up a DP table of bit counts.",
+      "variation": "Bit-Position Counting (Single Number II, mod-k)",
+      "description": "When every element except one appears exactly k times, count set bits at each of the 32 positions modulo k; the leftover bits reconstruct the unique element.",
       "important_details": [
-        "n & (n-1) removes the lowest set bit — repeat until n becomes 0 to count set bits in O(number of set bits).",
-        "n & -n isolates the lowest set bit — useful in Fenwick/BIT trees and for splitting XOR results into groups.",
-        "dp[i] = dp[i >> 1] + (i & 1) builds a full 0..n bit-count table in O(n) using previously computed results (a DP-on-bits trick)."
+        "For each bit position 0..31, sum that bit across all numbers and take the result mod k — non-zero remainders belong to the unique number.",
+        "Handle negative numbers: after building the result, if bit 31 is set, the value is already correct in two's complement in Java.",
+        "The alternative is a two-variable state machine (ones, twos) using ones = (ones ^ x) & ~twos; twos = (twos ^ x) & ~ones — O(1) space and very fast, but hard to derive under pressure.",
+        "The counting version generalizes to any k, while the state machine must be redesigned per k — prefer counting unless asked for constant-variable space."
       ],
-      "template_code": "public int[] countBits(int n) {\n    int[] dp = new int[n + 1];\n    for (int i = 1; i <= n; i++) {\n        dp[i] = dp[i >> 1] + (i & 1);\n    }\n    return dp;\n}",
-      "other_relevant_details": "Time Complexity: O(n) for the full table (O(log n) per single popcount query). Space: O(n) for the table, O(1) for a single count.",
+      "template_code": "public int singleNumberII(int[] nums) {\n    int result = 0;\n    for (int i = 0; i < 32; i++) {\n        int count = 0;\n        for (int num : nums) {\n            count += (num >> i) & 1;\n        }\n        if (count % 3 != 0) {\n            result |= (1 << i);\n        }\n    }\n    return result;\n}",
+      "other_relevant_details": "Time Complexity: O(32n) = O(n). Space: O(1).",
+      "problems": [
+        {"name": "Single Number II", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/single-number-ii/", "company_tags": null},
+        {"name": "Maximum Product of Word Lengths", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-product-of-word-lengths/", "company_tags": null},
+        {"name": "Number of Valid Words for Each Puzzle", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/number-of-valid-words-for-each-puzzle/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "XOR Partitioning (Single Number III)",
+      "description": "When exactly two elements appear once and all others twice, XOR everything to get a^b, isolate any set bit of that result, and use it to split the array into two groups each containing one unique element.",
+      "important_details": [
+        "Any set bit in a^b is a position where a and b differ — that bit is a perfect discriminator for partitioning.",
+        "Isolate the lowest set bit with xorAll & -xorAll, which is the cleanest way to pick a discriminating bit.",
+        "XOR each group separately; the pairs still cancel within their group, leaving a and b.",
+        "Two passes over the array, O(1) space — the HashMap solution is O(n) space and is what this is meant to improve on."
+      ],
+      "template_code": "public int[] singleNumberIII(int[] nums) {\n    int xorAll = 0;\n    for (int num : nums) xorAll ^= num;\n    int diffBit = xorAll & -xorAll;\n    int a = 0, b = 0;\n    for (int num : nums) {\n        if ((num & diffBit) != 0) a ^= num;\n        else b ^= num;\n    }\n    return new int[]{a, b};\n}",
+      "other_relevant_details": "Time Complexity: O(n) across two passes. Space: O(1).",
+      "problems": [
+        {"name": "Single Number III", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/single-number-iii/", "company_tags": null},
+        {"name": "Maximum XOR of Two Numbers in an Array", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-xor-of-two-numbers-in-an-array/", "company_tags": null},
+        {"name": "Decode XORed Array", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/decode-xored-array/", "company_tags": null},
+        {"name": "Decode XORed Permutation", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/decode-xored-permutation/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Bit Counting (Popcount & DP on Bits)",
+      "description": "Count set bits efficiently using Brian Kernighan's n & (n-1) loop for a single number, or a DP recurrence to build a full 0..n table in linear time.",
+      "important_details": [
+        "Brian Kernighan: each n &= (n-1) removes exactly one set bit, so the loop runs once per set bit rather than 32 times.",
+        "DP recurrence dp[i] = dp[i >> 1] + (i & 1) reuses the already-computed answer for i/2 — a neat DP-on-bits result.",
+        "An alternative recurrence dp[i] = dp[i & (i-1)] + 1 is equally valid and sometimes easier to remember.",
+        "Integer.bitCount() exists in Java, but interviewers usually want the manual derivation."
+      ],
+      "template_code": "public int[] countBits(int n) {\n    int[] dp = new int[n + 1];\n    for (int i = 1; i <= n; i++) {\n        dp[i] = dp[i >> 1] + (i & 1);\n    }\n    return dp;\n}\npublic int hammingWeight(int n) {\n    int count = 0;\n    while (n != 0) {\n        n &= (n - 1);\n        count++;\n    }\n    return count;\n}",
+      "other_relevant_details": "Time Complexity: O(n) for the table, O(set bits) per single popcount. Space: O(n) for the table, O(1) otherwise.",
       "problems": [
         {"name": "Number of 1 Bits", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/number-of-1-bits/", "company_tags": null},
         {"name": "Counting Bits", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/counting-bits/", "company_tags": null},
-        {"name": "Reverse Bits", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/reverse-bits/", "company_tags": null},
+        {"name": "Hamming Distance", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/hamming-distance/", "company_tags": null},
+        {"name": "Total Hamming Distance", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/total-hamming-distance/", "company_tags": null},
+        {"name": "Sort Integers by The Number of 1 Bits", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/sort-integers-by-the-number-of-1-bits/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Power-of-Two & Bit Property Checks",
+      "description": "Recognize structural properties of a number from a single bitwise expression: powers of two, alternating bits, complements, and bit reversal.",
+      "important_details": [
+        "n > 0 && (n & (n-1)) == 0 identifies a power of two, since exactly one bit is set.",
+        "Powers of four additionally require the set bit to be at an even position: (n & 0x55555555) != 0.",
+        "Complement of a number within its own bit length: compute the mask of all ones up to its highest bit, then XOR.",
+        "Bit reversal is done by shifting the result left while shifting the input right, appending the extracted bit each iteration — remember to use >>> to avoid sign extension."
+      ],
+      "template_code": "public boolean isPowerOfTwo(int n) {\n    return n > 0 && (n & (n - 1)) == 0;\n}\npublic int reverseBits(int n) {\n    int result = 0;\n    for (int i = 0; i < 32; i++) {\n        result <<= 1;\n        result |= (n & 1);\n        n >>>= 1;\n    }\n    return result;\n}",
+      "other_relevant_details": "Time Complexity: O(1) for property checks, O(32) for reversal. Space: O(1).",
+      "problems": [
         {"name": "Power of Two", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/power-of-two/", "company_tags": null},
-        {"name": "Sum of Two Integers", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/sum-of-two-integers/", "company_tags": null}
+        {"name": "Power of Four", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/power-of-four/", "company_tags": null},
+        {"name": "Reverse Bits", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/reverse-bits/", "company_tags": null},
+        {"name": "Binary Number with Alternating Bits", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/binary-number-with-alternating-bits/", "company_tags": null},
+        {"name": "Number Complement", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/number-complement/", "company_tags": null},
+        {"name": "Complement of Base 10 Integer", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/complement-of-base-10-integer/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Arithmetic Without Operators (Adders & Dividers)",
+      "description": "Implement addition, subtraction, multiplication, or division using only bitwise operations, simulating a hardware full-adder with XOR for the sum and AND-shift for the carry.",
+      "important_details": [
+        "Sum without carry = a ^ b; carry = (a & b) << 1. Loop until the carry becomes zero.",
+        "Subtraction is addition of the two's complement: a - b = a + (~b + 1).",
+        "Division without the divide operator uses repeated doubling of the divisor (binary long division) for O(log n) instead of O(quotient) repeated subtraction.",
+        "Overflow is the classic trap in divide-two-integers: Integer.MIN_VALUE / -1 must be special-cased to return Integer.MAX_VALUE."
+      ],
+      "template_code": "public int getSum(int a, int b) {\n    while (b != 0) {\n        int carry = (a & b) << 1;\n        a = a ^ b;\n        b = carry;\n    }\n    return a;\n}\npublic int divide(int dividend, int divisor) {\n    if (dividend == Integer.MIN_VALUE && divisor == -1) return Integer.MAX_VALUE;\n    boolean negative = (dividend < 0) ^ (divisor < 0);\n    long a = Math.abs((long) dividend), b = Math.abs((long) divisor);\n    long result = 0;\n    while (a >= b) {\n        long temp = b, multiple = 1;\n        while (a >= (temp << 1)) {\n            temp <<= 1;\n            multiple <<= 1;\n        }\n        a -= temp;\n        result += multiple;\n    }\n    return negative ? (int) -result : (int) result;\n}",
+      "other_relevant_details": "Time Complexity: O(32) for addition, O(log n * log n) for division. Space: O(1).",
+      "problems": [
+        {"name": "Sum of Two Integers", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/sum-of-two-integers/", "company_tags": null},
+        {"name": "Divide Two Integers", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/divide-two-integers/", "company_tags": null},
+        {"name": "Add Binary", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/add-binary/", "company_tags": null},
+        {"name": "Multiply Strings", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/multiply-strings/", "company_tags": null}
       ]
     },
     {
       "variation": "Bitmask Subset Enumeration",
-      "description": "Represent every possible subset of an n-element set as an integer from 0 to 2^n - 1, where bit i indicates whether element i is included — enabling exhaustive subset enumeration in O(2^n * n).",
+      "description": "Represent each of the 2^n subsets of an n-element set as an integer where bit i means 'element i is included', enabling exhaustive enumeration without recursion.",
       "important_details": [
-        "Iterate mask from 0 to (1<<n)-1; for each mask, check bit i via (mask >> i) & 1 to know if element i is in this subset.",
-        "Only feasible when n is small (typically n <= 20), since 2^n grows explosively.",
-        "Can be combined with memoization (bitmask DP) when subsets need to be revisited across different problem states."
+        "Iterate mask from 0 to (1<<n)-1; test membership with (mask & (1 << i)) != 0.",
+        "Only feasible for n up to roughly 20, since 2^20 is about a million and 2^25 is already too slow.",
+        "Encoding a word's character set as a 26-bit mask makes 'do these two words share a letter' an O(1) AND test — the trick behind maximum-product-of-word-lengths.",
+        "Enumerating all SUBMASKS of a mask uses the idiom for (int sub = mask; sub > 0; sub = (sub - 1) & mask), which runs in O(3^n) across all masks and is essential for set-partition DP."
       ],
       "template_code": "public List<List<Integer>> subsets(int[] nums) {\n    int n = nums.length;\n    List<List<Integer>> result = new ArrayList<>();\n    for (int mask = 0; mask < (1 << n); mask++) {\n        List<Integer> subset = new ArrayList<>();\n        for (int i = 0; i < n; i++) {\n            if ((mask & (1 << i)) != 0) subset.add(nums[i]);\n        }\n        result.add(subset);\n    }\n    return result;\n}",
-      "other_relevant_details": "Time Complexity: O(2^n * n). Space: O(2^n * n) to store all subsets.",
+      "other_relevant_details": "Time Complexity: O(2^n * n) for full enumeration, O(3^n) for all submask enumeration. Space: O(2^n * n) for stored output.",
       "problems": [
         {"name": "Subsets", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/subsets/", "company_tags": null},
-        {"name": "Partition to K Equal Sum Subsets", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/partition-to-k-equal-sum-subsets/", "company_tags": null},
-        {"name": "Maximum Students Taking Exam", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-students-taking-exam/", "company_tags": null}
+        {"name": "Maximum Product of Word Lengths", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-product-of-word-lengths/", "company_tags": null},
+        {"name": "Maximum Length of a Concatenated String with Unique Characters", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-length-of-a-concatenated-string-with-unique-characters/", "company_tags": null},
+        {"name": "Number of Valid Words for Each Puzzle", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/number-of-valid-words-for-each-puzzle/", "company_tags": null},
+        {"name": "Count Number of Maximum Bitwise-OR Subsets", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/count-number-of-maximum-bitwise-or-subsets/", "company_tags": null}
       ]
     },
     {
       "variation": "Bitmask DP (State Compression)",
-      "description": "Use a bitmask as the DP state to represent 'which items/nodes have been visited or assigned so far', compressing an exponential state space into a single integer index — the standard technique for TSP-style and assignment problems.",
+      "description": "Use a bitmask as a DP dimension representing which items or nodes have been used, turning factorial-time permutation search into O(2^n * n) or O(2^n * n^2) dynamic programming.",
       "important_details": [
-        "dp[mask][i] typically means 'minimum cost to have visited exactly the set in mask, currently at node/item i'.",
-        "Transitions try adding one more unvisited bit to the mask and moving to that item, updating dp[newMask][newItem].",
-        "Time complexity is O(2^n * n^2) or O(2^n * n) depending on the transition — only tractable for n up to ~15-20."
+        "dp[mask][i] usually means 'best cost having covered exactly the set mask, currently positioned at i'.",
+        "Transitions add one unset bit at a time: newMask = mask | (1 << j) for each unvisited j.",
+        "Iterate masks in increasing order so that every predecessor state is already final when you read it.",
+        "Popcount of the mask often encodes 'how many items are placed', which lets you index a second dimension implicitly rather than storing it.",
+        "Feasible only to roughly n = 20; beyond that, look for a greedy, flow, or approximation formulation instead."
       ],
-      "template_code": "public int shortestPathLength(int[][] graph) {\n    int n = graph.length;\n    int allVisited = (1 << n) - 1;\n    int[][] dist = new int[1 << n][n];\n    for (int[] row : dist) Arrays.fill(row, Integer.MAX_VALUE);\n    Queue<int[]> queue = new LinkedList<>();\n    for (int i = 0; i < n; i++) {\n        dist[1 << i][i] = 0;\n        queue.offer(new int[]{1 << i, i});\n    }\n    while (!queue.isEmpty()) {\n        int[] curr = queue.poll();\n        int mask = curr[0], node = curr[1];\n        if (mask == allVisited) return dist[mask][node];\n        for (int next : graph[node]) {\n            int newMask = mask | (1 << next);\n            if (dist[mask][node] + 1 < dist[newMask][next]) {\n                dist[newMask][next] = dist[mask][node] + 1;\n                queue.offer(new int[]{newMask, next});\n            }\n        }\n    }\n    return -1;\n}",
-      "other_relevant_details": "Time Complexity: O(2^n * n^2) typical for TSP-style DP. Space: O(2^n * n).",
+      "template_code": "public int shortestPathLength(int[][] graph) {\n    int n = graph.length;\n    int allVisited = (1 << n) - 1;\n    int[][] dist = new int[1 << n][n];\n    for (int[] row : dist) Arrays.fill(row, Integer.MAX_VALUE);\n    Queue<int[]> queue = new LinkedList<>();\n    for (int i = 0; i < n; i++) {\n        dist[1 << i][i] = 0;\n        queue.offer(new int[]{1 << i, i});\n    }\n    while (!queue.isEmpty()) {\n        int[] curr = queue.poll();\n        int mask = curr[0], node = curr[1];\n        if (mask == allVisited) return dist[mask][node];\n        for (int next : graph[node]) {\n            int newMask = mask | (1 << next);\n            if (dist[mask][node] + 1 < dist[newMask][next]) {\n                dist[newMask][next] = dist[mask][node] + 1;\n                queue.offer(new int[]{newMask, next});\n            }\n        }\n    }\n    return 0;\n}",
+      "other_relevant_details": "Time Complexity: O(2^n * n^2) typical. Space: O(2^n * n).",
       "problems": [
         {"name": "Shortest Path Visiting All Nodes", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/shortest-path-visiting-all-nodes/", "company_tags": null},
         {"name": "Partition to K Equal Sum Subsets", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/partition-to-k-equal-sum-subsets/", "company_tags": null},
+        {"name": "Smallest Sufficient Team", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/smallest-sufficient-team/", "company_tags": null},
         {"name": "Minimum Cost to Connect Two Groups of Points", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/minimum-cost-to-connect-two-groups-of-points/", "company_tags": null},
-        {"name": "Smallest Sufficient Team", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/smallest-sufficient-team/", "company_tags": null}
+        {"name": "Find Minimum Time to Finish All Jobs", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/find-minimum-time-to-finish-all-jobs/", "company_tags": null},
+        {"name": "Maximum Students Taking Exam", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/maximum-students-taking-exam/", "company_tags": null},
+        {"name": "Number of Ways to Wear Different Hats to Each Other", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/number-of-ways-to-wear-different-hats-to-each-other/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Gray Code & Bit Sequence Construction",
+      "description": "Generate sequences where consecutive entries differ by exactly one bit, using the reflect-and-prefix construction or the closed form i ^ (i >> 1).",
+      "important_details": [
+        "Closed form: the i-th Gray code is i ^ (i >> 1) — a one-line generator for the whole sequence.",
+        "Reflection construction: take the previous sequence, mirror it, and prefix the mirrored half with a 1 bit. This is the constructive proof of correctness.",
+        "Gray codes show up in circular-arrangement problems and in hardware/encoder contexts where single-bit transitions matter.",
+        "Verify your output by checking that the popcount of (a ^ b) is exactly 1 for every consecutive pair, including the wraparound pair."
+      ],
+      "template_code": "public List<Integer> grayCode(int n) {\n    List<Integer> result = new ArrayList<>();\n    for (int i = 0; i < (1 << n); i++) {\n        result.add(i ^ (i >> 1));\n    }\n    return result;\n}",
+      "other_relevant_details": "Time Complexity: O(2^n). Space: O(2^n) for the output.",
+      "problems": [
+        {"name": "Gray Code", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/gray-code/", "company_tags": null},
+        {"name": "Circular Permutation in Binary Representation", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/circular-permutation-in-binary-representation/", "company_tags": null},
+        {"name": "Minimum One Bit Operations to Make Integers Zero", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/minimum-one-bit-operations-to-make-integers-zero/", "company_tags": null}
       ]
     }
   ]

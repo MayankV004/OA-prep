@@ -266,7 +266,7 @@ export function FeedbackModal({
                       placeholder="Mayank Verma"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="w-full h-10 px-3.5 rounded-xl bg-surface-sunken/60 dark:bg-surface-sunken/40 border border-border/70 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                      className="w-full h-10 px-3.5 rounded-xl bg-surface-sunken/60 dark:bg-surface-sunken/40 border border-border/70 text-base md:text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
                     />
                   </div>
                   <div className="space-y-1">
@@ -280,7 +280,7 @@ export function FeedbackModal({
                       placeholder="you@college.edu"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full h-10 px-3.5 rounded-xl bg-surface-sunken/60 dark:bg-surface-sunken/40 border border-border/70 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                      className="w-full h-10 px-3.5 rounded-xl bg-surface-sunken/60 dark:bg-surface-sunken/40 border border-border/70 text-base md:text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
                     />
                   </div>
                 </div>
@@ -300,7 +300,7 @@ export function FeedbackModal({
                   }
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full h-10 px-3.5 rounded-xl bg-surface-sunken/60 dark:bg-surface-sunken/40 border border-border/70 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                  className="w-full h-10 px-3.5 rounded-xl bg-surface-sunken/60 dark:bg-surface-sunken/40 border border-border/70 text-base md:text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
                 />
               </div>
 
@@ -313,7 +313,7 @@ export function FeedbackModal({
                     id="fb-category"
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    className="w-full h-10 px-3.5 rounded-xl bg-surface-sunken/60 dark:bg-surface-sunken/40 border border-border/70 text-xs sm:text-sm text-foreground outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all cursor-pointer"
+                    className="w-full h-10 px-3.5 rounded-xl bg-surface-sunken/60 dark:bg-surface-sunken/40 border border-border/70 text-base md:text-sm text-foreground outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all cursor-pointer"
                   >
                     <option value="dsa">DSA Patterns & Practice</option>
                     <option value="oa">Company OA Mock Simulator</option>
@@ -335,7 +335,7 @@ export function FeedbackModal({
                       id="fb-severity"
                       value={severity}
                       onChange={(e) => setSeverity(e.target.value as any)}
-                      className="w-full h-10 px-3.5 rounded-xl bg-surface-sunken/60 dark:bg-surface-sunken/40 border border-border/70 text-xs sm:text-sm text-foreground outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all cursor-pointer"
+                      className="w-full h-10 px-3.5 rounded-xl bg-surface-sunken/60 dark:bg-surface-sunken/40 border border-border/70 text-base md:text-sm text-foreground outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all cursor-pointer"
                     >
                       <option value="low">Low - Minor cosmetic / typo</option>
                       <option value="medium">Medium - Functional glitch</option>
@@ -367,7 +367,7 @@ export function FeedbackModal({
                   }
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full p-3.5 rounded-xl bg-surface-sunken/60 dark:bg-surface-sunken/40 border border-border/70 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all resize-none"
+                  className="w-full p-3.5 rounded-xl bg-surface-sunken/60 dark:bg-surface-sunken/40 border border-border/70 text-base md:text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all resize-none"
                 />
               </div>
 

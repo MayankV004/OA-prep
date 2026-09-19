@@ -1,86 +1,190 @@
 {
   "pattern": "Two Pointers",
-  "description": "The Two Pointers technique uses two indices moving through a data structure (usually a sorted array or string) to reduce nested-loop O(n^2) brute force scans into a single O(n) pass. Pointers can move toward each other, in the same direction at different speeds, or across two separate arrays.",
+  "description": "The Two Pointers technique uses two (or three) indices moving through a data structure to collapse nested-loop O(n^2) scans into a single O(n) pass. Pointers may converge from both ends, travel in the same direction at different speeds, walk two separate arrays, or expand outward from a center. The unifying idea is a monotonic decision rule that tells you which pointer to move without ever backtracking.",
   "important_details": [
-    "Pre-condition: Works best when the array is sorted or when a monotonic property lets you decide deterministically which pointer to move.",
-    "Opposite Direction: One pointer starts at index 0, the other at n-1; move based on a comparison against a target/condition.",
-    "Same Direction: A 'slow' pointer marks the boundary of a valid region while a 'fast' pointer scans ahead (in-place array modification).",
-    "Two Arrays: Independent pointers on two different sorted arrays/strings, advancing whichever is 'behind'."
+    "Pre-condition: the input must be sorted, or possess a monotonic property that makes the 'which pointer moves' decision deterministic.",
+    "Opposite Direction: pointers start at 0 and n-1 and converge; move based on comparison against a target.",
+    "Same Direction: a slow pointer marks the boundary of the valid/processed region while a fast pointer scans ahead — used for in-place O(1)-space modification.",
+    "Two Arrays: independent pointers over two sorted inputs, advancing whichever is lagging.",
+    "Expand from Center: a pointer pair grows outward from every possible center — the standard O(n^2) palindrome technique.",
+    "Critical invariant: no pointer ever moves backward. If your solution requires backtracking a pointer, it is not a two-pointer solution."
   ],
-  "other_relevant_details": "Always ask: can sorting the input first unlock a two-pointer approach even if the problem doesn't mention 'sorted'? Many array/string problems that look like they need O(n^2) or a hashmap can be solved with two pointers in O(n log n) with a sort + O(n) scan.",
+  "other_relevant_details": "Always ask whether sorting the input first unlocks two pointers, even when the problem never says 'sorted' — an O(n log n) sort plus an O(n) scan beats an O(n^2) brute force. Also watch for problems where two pointers replaces a HashMap: it trades O(n) space for O(1) space, which is often the actual follow-up question in an interview.",
   "variations": [
     {
       "variation": "Opposite Direction (Converging Pointers)",
       "description": "Start pointers at both ends of a sorted array and move them toward the center based on how the current pair compares to a target condition (sum, area, capacity).",
       "important_details": [
-        "Requires the array to be sorted (or sortable without losing needed info like original indices).",
-        "At each step, exactly one pointer moves — determined by comparing the current pair's value to the target.",
-        "Guarantees O(n) after an O(n log n) sort, versus O(n^2) brute force."
+        "Requires the array to be sorted, or sortable without losing information you need (e.g. original indices).",
+        "At each step exactly one pointer moves, chosen by comparing the current pair's value to the target.",
+        "Correctness argument: when sum < target, no pair using the current left can be better, so left is safely discarded — this greedy elimination is why O(n) is sufficient."
       ],
       "template_code": "public int[] twoSumSorted(int[] arr, int target) {\n    int left = 0, right = arr.length - 1;\n    while (left < right) {\n        int sum = arr[left] + arr[right];\n        if (sum == target) return new int[]{left, right};\n        else if (sum < target) left++;\n        else right--;\n    }\n    return new int[]{-1, -1};\n}",
-      "other_relevant_details": "Time Complexity: O(n) for the scan (O(n log n) if sorting is needed). Space: O(1).",
+      "other_relevant_details": "Time Complexity: O(n) for the scan, O(n log n) if a sort is required. Space: O(1).",
       "problems": [
         {"name": "Two Sum II - Input Array Is Sorted", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/two-sum-ii-input-array-is-sorted/", "company_tags": null},
-        {"name": "3Sum", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/3sum/", "company_tags": null},
-        {"name": "3Sum Closest", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/3sum-closest/", "company_tags": null},
-        {"name": "4Sum", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/4sum/", "company_tags": null},
         {"name": "Container With Most Water", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/container-with-most-water/", "company_tags": null},
-        {"name": "Trapping Rain Water", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/trapping-rain-water/", "company_tags": null},
-        {"name": "Valid Palindrome", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/valid-palindrome/", "company_tags": null},
-        {"name": "Boats to Save People", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/boats-to-save-people/", "company_tags": null}
+        {"name": "Boats to Save People", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/boats-to-save-people/", "company_tags": null},
+        {"name": "Two Sum Less Than K", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/two-sum-less-than-k/", "company_tags": null},
+        {"name": "Sum of Square Numbers", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/sum-of-square-numbers/", "company_tags": null},
+        {"name": "Reverse String", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/reverse-string/", "company_tags": null}
       ]
     },
     {
-      "variation": "Same Direction (Slow-Fast In-Place)",
-      "description": "A slow pointer tracks the boundary of the 'processed/valid' portion of the array while a fast pointer scans ahead, used for in-place array/string modification without extra space.",
+      "variation": "K-Sum (Sort + Nested Two Pointers)",
+      "description": "Generalizes two-sum to triplets, quadruplets, and beyond by sorting the array, fixing k-2 outer loop indices, and running a converging two-pointer scan on the remaining suffix.",
       "important_details": [
-        "Slow pointer only advances when a valid element is found; fast pointer always advances.",
-        "Common for de-duplication, moving elements to one side, or partitioning in-place.",
-        "Final answer length is usually (slow index) after the scan completes."
+        "3Sum = sort + one outer loop + inner two-pointer, giving O(n^2) instead of O(n^3); 4Sum adds another outer loop for O(n^3).",
+        "Duplicate skipping is the number one source of wrong answers: after fixing an outer value, skip identical adjacent values; after finding a valid pair, advance both pointers past their duplicates.",
+        "Early-exit pruning matters for OA time limits: if the smallest possible remaining sum exceeds the target, break out of the outer loop entirely.",
+        "For 'closest' variants, track the best absolute difference rather than searching for an exact match."
       ],
-      "template_code": "public int removeDuplicates(int[] nums) {\n    if (nums.length == 0) return 0;\n    int slow = 0;\n    for (int fast = 1; fast < nums.length; fast++) {\n        if (nums[fast] != nums[slow]) {\n            slow++;\n            nums[slow] = nums[fast];\n        }\n    }\n    return slow + 1;\n}",
-      "other_relevant_details": "Time Complexity: O(n). Space: O(1) — the key selling point over a hashset-based approach.",
+      "template_code": "public List<List<Integer>> threeSum(int[] nums) {\n    Arrays.sort(nums);\n    List<List<Integer>> result = new ArrayList<>();\n    for (int i = 0; i < nums.length - 2; i++) {\n        if (i > 0 && nums[i] == nums[i - 1]) continue;\n        if (nums[i] > 0) break;\n        int left = i + 1, right = nums.length - 1;\n        while (left < right) {\n            int sum = nums[i] + nums[left] + nums[right];\n            if (sum == 0) {\n                result.add(Arrays.asList(nums[i], nums[left], nums[right]));\n                while (left < right && nums[left] == nums[left + 1]) left++;\n                while (left < right && nums[right] == nums[right - 1]) right--;\n                left++; right--;\n            } else if (sum < 0) left++;\n            else right--;\n        }\n    }\n    return result;\n}",
+      "other_relevant_details": "Time Complexity: O(n^(k-1)) for k-Sum. Space: O(1) excluding the output and sort overhead.",
+      "problems": [
+        {"name": "3Sum", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/3sum/", "company_tags": null},
+        {"name": "3Sum Closest", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/3sum-closest/", "company_tags": null},
+        {"name": "3Sum Smaller", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/3sum-smaller/", "company_tags": null},
+        {"name": "4Sum", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/4sum/", "company_tags": null},
+        {"name": "3Sum With Multiplicity", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/3sum-with-multiplicity/", "company_tags": null},
+        {"name": "Valid Triangle Number", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/valid-triangle-number/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Same Direction (Slow-Fast In-Place Write)",
+      "description": "A slow pointer tracks the write position for the valid portion of the array while a fast pointer scans ahead reading candidates, enabling in-place filtering and de-duplication with O(1) space.",
+      "important_details": [
+        "Slow only advances when a keeper element is written; fast always advances.",
+        "The returned length is the slow index (or slow+1 depending on whether slow points at the last written slot or the next free slot — pick one convention and stay consistent).",
+        "For the 'allow at most k duplicates' generalization, compare nums[fast] against nums[slow - k] instead of nums[slow].",
+        "Elements past the returned length are allowed to be garbage in most problem statements — do not waste time clearing them."
+      ],
+      "template_code": "public int removeDuplicatesAtMostTwice(int[] nums) {\n    int k = 2, slow = 0;\n    for (int num : nums) {\n        if (slow < k || num != nums[slow - k]) {\n            nums[slow++] = num;\n        }\n    }\n    return slow;\n}",
+      "other_relevant_details": "Time Complexity: O(n). Space: O(1) — the key advantage over building a new array or using a HashSet.",
       "problems": [
         {"name": "Remove Duplicates from Sorted Array", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/remove-duplicates-from-sorted-array/", "company_tags": null},
         {"name": "Remove Duplicates from Sorted Array II", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/remove-duplicates-from-sorted-array-ii/", "company_tags": null},
         {"name": "Move Zeroes", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/move-zeroes/", "company_tags": null},
         {"name": "Remove Element", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/remove-element/", "company_tags": null},
-        {"name": "Sort Colors", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/sort-colors/", "company_tags": null},
-        {"name": "Squares of a Sorted Array", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/squares-of-a-sorted-array/", "company_tags": null}
+        {"name": "Duplicate Zeros", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/duplicate-zeros/", "company_tags": null},
+        {"name": "Apply Operations to an Array", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/apply-operations-to-an-array/", "company_tags": null}
       ]
     },
     {
       "variation": "Two Arrays / Merge-Style Pointers",
-      "description": "Independent pointers traverse two separate sorted arrays or strings simultaneously, advancing whichever pointer is behind, to merge, intersect, or compare them in one linear pass.",
+      "description": "Independent pointers traverse two separate sorted sequences at once, advancing whichever is behind, to merge, intersect, or compare them in a single linear pass.",
       "important_details": [
-        "Both inputs must be sorted (or become sorted during the algorithm, e.g. merge sort's merge step).",
-        "Loop invariant: elements before each pointer have already been fully processed.",
-        "After the main loop, remember to flush any remaining elements from the longer array."
+        "Both inputs must be sorted, or become sorted during the algorithm (as in merge sort's merge step).",
+        "Merging into a fixed-size first array is done from the BACK to avoid overwriting unread elements — a classic interview gotcha.",
+        "After the main loop, flush whatever remains in the longer sequence.",
+        "For subsequence checking, only one pointer conditionally advances (the pattern pointer moves only on a match) — a degenerate but very common case."
       ],
-      "template_code": "public int[] merge(int[] nums1, int m, int[] nums2, int n) {\n    int i = m - 1, j = n - 1, k = m + n - 1;\n    while (j >= 0) {\n        if (i >= 0 && nums1[i] > nums2[j]) {\n            nums1[k--] = nums1[i--];\n        } else {\n            nums1[k--] = nums2[j--];\n        }\n    }\n    return nums1;\n}",
-      "other_relevant_details": "Time Complexity: O(m + n). Space: O(1) when merging in-place from the back (as above) to avoid overwriting unread elements.",
+      "template_code": "public void merge(int[] nums1, int m, int[] nums2, int n) {\n    int i = m - 1, j = n - 1, k = m + n - 1;\n    while (j >= 0) {\n        if (i >= 0 && nums1[i] > nums2[j]) {\n            nums1[k--] = nums1[i--];\n        } else {\n            nums1[k--] = nums2[j--];\n        }\n    }\n}",
+      "other_relevant_details": "Time Complexity: O(m + n). Space: O(1) when merging in-place from the back.",
       "problems": [
         {"name": "Merge Sorted Array", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/merge-sorted-array/", "company_tags": null},
         {"name": "Intersection of Two Arrays II", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/intersection-of-two-arrays-ii/", "company_tags": null},
         {"name": "Is Subsequence", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/is-subsequence/", "company_tags": null},
-        {"name": "Merge Two Sorted Lists", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/merge-two-sorted-lists/", "company_tags": null},
-        {"name": "Find the Duplicate Number", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/find-the-duplicate-number/", "company_tags": null}
+        {"name": "Backspace String Compare", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/backspace-string-compare/", "company_tags": null},
+        {"name": "Interval List Intersections", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/interval-list-intersections/", "company_tags": null},
+        {"name": "Longest Word in Dictionary through Deleting", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/longest-word-in-dictionary-through-deleting/", "company_tags": null},
+        {"name": "Heaters", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/heaters/", "company_tags": null}
       ]
     },
     {
       "variation": "Dutch National Flag (Three-Way Partition)",
-      "description": "A special three-pointer variant (low, mid, high) that partitions an array into three regions in a single pass, most famously for sorting an array of only 0s, 1s, and 2s.",
+      "description": "A three-pointer variant (low, mid, high) that partitions an array into three regions in a single pass — famously for sorting 0s, 1s, and 2s, and as the partition step of three-way quicksort.",
       "important_details": [
-        "Three pointers: 'low' boundary of the 0-region, 'mid' current scanner, 'high' boundary of the 2-region.",
-        "When swapping with 'high', do NOT advance 'mid' (the swapped-in value is unexamined); when swapping with 'low', advance both.",
-        "Generalizes to any 'partition around a pivot' problem, not just 0/1/2."
+        "low marks the end of the 0-region, high marks the start of the 2-region, mid is the scanner.",
+        "When swapping with high, do NOT advance mid — the value swapped in has not been examined yet. When swapping with low, advance both.",
+        "Loop condition is mid <= high, not mid < high — getting this wrong silently drops the last element.",
+        "Generalizes to partitioning around any pivot value, which is the core of quickselect for Kth-element problems."
       ],
       "template_code": "public void sortColors(int[] nums) {\n    int low = 0, mid = 0, high = nums.length - 1;\n    while (mid <= high) {\n        if (nums[mid] == 0) {\n            swap(nums, low++, mid++);\n        } else if (nums[mid] == 1) {\n            mid++;\n        } else {\n            swap(nums, mid, high--);\n        }\n    }\n}\nprivate void swap(int[] nums, int i, int j) {\n    int tmp = nums[i]; nums[i] = nums[j]; nums[j] = tmp;\n}",
-      "other_relevant_details": "Time Complexity: O(n), single pass. Space: O(1).",
+      "other_relevant_details": "Time Complexity: O(n) single pass. Space: O(1).",
       "problems": [
         {"name": "Sort Colors", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/sort-colors/", "company_tags": null},
         {"name": "Partition Array According to Given Pivot", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/partition-array-according-to-given-pivot/", "company_tags": null},
-        {"name": "Wiggle Sort II", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/wiggle-sort-ii/", "company_tags": null}
+        {"name": "Wiggle Sort II", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/wiggle-sort-ii/", "company_tags": null},
+        {"name": "Sort Array By Parity", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/sort-array-by-parity/", "company_tags": null},
+        {"name": "Sort Array By Parity II", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/sort-array-by-parity-ii/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Expand Around Center",
+      "description": "For each of the 2n-1 possible centers (n single characters plus n-1 gaps between characters), grow a pointer pair outward while the palindrome condition holds.",
+      "important_details": [
+        "You must handle both odd-length centers (a single index) and even-length centers (a gap between two indices) — forgetting even centers is the classic bug.",
+        "Each expansion is O(n) and there are O(n) centers, giving O(n^2) total — acceptable for n up to a few thousand.",
+        "For counting palindromic substrings, each successful expansion step contributes exactly one substring to the count.",
+        "Manacher's algorithm solves the same problem in O(n) but is rarely required; know that it exists and mention it as the optimal follow-up."
+      ],
+      "template_code": "public String longestPalindrome(String s) {\n    if (s == null || s.length() < 1) return \"\";\n    int start = 0, end = 0;\n    for (int i = 0; i < s.length(); i++) {\n        int len1 = expand(s, i, i);\n        int len2 = expand(s, i, i + 1);\n        int len = Math.max(len1, len2);\n        if (len > end - start) {\n            start = i - (len - 1) / 2;\n            end = i + len / 2;\n        }\n    }\n    return s.substring(start, end + 1);\n}\nprivate int expand(String s, int left, int right) {\n    while (left >= 0 && right < s.length() && s.charAt(left) == s.charAt(right)) {\n        left--; right++;\n    }\n    return right - left - 1;\n}",
+      "other_relevant_details": "Time Complexity: O(n^2). Space: O(1) — beats the O(n^2)-space interval DP solution for the same problem.",
+      "problems": [
+        {"name": "Longest Palindromic Substring", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/longest-palindromic-substring/", "company_tags": null},
+        {"name": "Palindromic Substrings", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/palindromic-substrings/", "company_tags": null},
+        {"name": "Valid Palindrome II", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/valid-palindrome-ii/", "company_tags": null},
+        {"name": "Longest Palindrome by Concatenating Two Letter Words", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/longest-palindrome-by-concatenating-two-letter-words/", "company_tags": null},
+        {"name": "Palindrome Partitioning", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/palindrome-partitioning/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Two Pointers on Strings (Validation & Comparison)",
+      "description": "Converging or parallel pointers over one or two strings to validate palindromes, compare after applying edits (backspaces, deletions), or check character-level structural properties, all in O(1) space.",
+      "important_details": [
+        "Skip non-alphanumeric characters inline rather than pre-building a cleaned string — that is what keeps space at O(1).",
+        "For 'valid palindrome with at most one deletion', on the first mismatch branch into two checks: skip the left character, or skip the right character.",
+        "Backspace-comparison problems are best solved by scanning from the RIGHT, maintaining a skip counter, since a backspace affects what came before it.",
+        "Case-folding and Unicode assumptions should be clarified with the interviewer before coding."
+      ],
+      "template_code": "public boolean validPalindrome(String s) {\n    int left = 0, right = s.length() - 1;\n    while (left < right) {\n        if (s.charAt(left) != s.charAt(right)) {\n            return isPalindrome(s, left + 1, right) || isPalindrome(s, left, right - 1);\n        }\n        left++; right--;\n    }\n    return true;\n}\nprivate boolean isPalindrome(String s, int left, int right) {\n    while (left < right) {\n        if (s.charAt(left++) != s.charAt(right--)) return false;\n    }\n    return true;\n}",
+      "other_relevant_details": "Time Complexity: O(n). Space: O(1).",
+      "problems": [
+        {"name": "Valid Palindrome", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/valid-palindrome/", "company_tags": null},
+        {"name": "Valid Palindrome II", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/valid-palindrome-ii/", "company_tags": null},
+        {"name": "Backspace String Compare", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/backspace-string-compare/", "company_tags": null},
+        {"name": "Reverse Vowels of a String", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/reverse-vowels-of-a-string/", "company_tags": null},
+        {"name": "Reverse Words in a String", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/reverse-words-in-a-string/", "company_tags": null},
+        {"name": "String Compression", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/string-compression/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Two Pointers with Precomputed Prefix/Suffix",
+      "description": "Combines converging pointers with running maxima or precomputed prefix/suffix arrays so each step's decision uses aggregate information about everything seen so far from each side.",
+      "important_details": [
+        "Trapping Rain Water is the canonical case: maintain leftMax and rightMax, and always process the side with the smaller max, because that side's answer is already fully determined.",
+        "The insight is that if leftMax < rightMax, water above the left pointer depends only on leftMax — the taller right wall is guaranteed to exist.",
+        "This converts an O(n)-space prefix/suffix-array solution into an O(1)-space two-pointer solution, which is the standard follow-up.",
+        "The same restructuring applies to any problem where a prefix array and a suffix array are consumed in opposite directions."
+      ],
+      "template_code": "public int trap(int[] height) {\n    int left = 0, right = height.length - 1;\n    int leftMax = 0, rightMax = 0, water = 0;\n    while (left < right) {\n        if (height[left] < height[right]) {\n            leftMax = Math.max(leftMax, height[left]);\n            water += leftMax - height[left];\n            left++;\n        } else {\n            rightMax = Math.max(rightMax, height[right]);\n            water += rightMax - height[right];\n            right--;\n        }\n    }\n    return water;\n}",
+      "other_relevant_details": "Time Complexity: O(n). Space: O(1), down from O(n) for the prefix/suffix-array version.",
+      "problems": [
+        {"name": "Trapping Rain Water", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/trapping-rain-water/", "company_tags": null},
+        {"name": "Container With Most Water", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/container-with-most-water/", "company_tags": null},
+        {"name": "Squares of a Sorted Array", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/squares-of-a-sorted-array/", "company_tags": null},
+        {"name": "Shortest Unsorted Continuous Subarray", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/shortest-unsorted-continuous-subarray/", "company_tags": null},
+        {"name": "Maximize Distance to Closest Person", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/maximize-distance-to-closest-person/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Partition / Quickselect (Kth Element)",
+      "description": "Uses the Lomuto or Hoare partition scheme — itself a two-pointer routine — to place a pivot in its final sorted position, then recurses into only one side to find the Kth smallest/largest in expected O(n).",
+      "important_details": [
+        "Partitioning is a two-pointer sweep: one pointer scans, the other marks the boundary of the 'less than pivot' region.",
+        "After partitioning, compare the pivot's final index to k to decide which half to recurse into — you discard the other half entirely, which is why it is O(n) expected rather than O(n log n).",
+        "Worst case is O(n^2) on adversarial input; randomizing the pivot choice makes that vanishingly unlikely and is expected in interviews.",
+        "Compare against the heap approach (O(n log k), O(k) space) — quickselect wins on time, heaps win when data streams in or k is tiny."
+      ],
+      "template_code": "public int findKthLargest(int[] nums, int k) {\n    int target = nums.length - k;\n    int left = 0, right = nums.length - 1;\n    Random rand = new Random();\n    while (left <= right) {\n        int pivotIdx = left + rand.nextInt(right - left + 1);\n        int finalIdx = partition(nums, left, right, pivotIdx);\n        if (finalIdx == target) return nums[finalIdx];\n        else if (finalIdx < target) left = finalIdx + 1;\n        else right = finalIdx - 1;\n    }\n    return -1;\n}\nprivate int partition(int[] nums, int left, int right, int pivotIdx) {\n    int pivot = nums[pivotIdx];\n    swap(nums, pivotIdx, right);\n    int store = left;\n    for (int i = left; i < right; i++) {\n        if (nums[i] < pivot) swap(nums, store++, i);\n    }\n    swap(nums, store, right);\n    return store;\n}\nprivate void swap(int[] nums, int i, int j) {\n    int tmp = nums[i]; nums[i] = nums[j]; nums[j] = tmp;\n}",
+      "other_relevant_details": "Time Complexity: O(n) expected, O(n^2) worst case. Space: O(1) iterative.",
+      "problems": [
+        {"name": "Kth Largest Element in an Array", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/kth-largest-element-in-an-array/", "company_tags": null},
+        {"name": "K Closest Points to Origin", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/k-closest-points-to-origin/", "company_tags": null},
+        {"name": "Top K Frequent Elements", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/top-k-frequent-elements/", "company_tags": null},
+        {"name": "Wiggle Sort II", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/wiggle-sort-ii/", "company_tags": null},
+        {"name": "Third Maximum Number", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/third-maximum-number/", "company_tags": null}
       ]
     }
   ]

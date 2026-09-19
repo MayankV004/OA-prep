@@ -418,6 +418,7 @@ For in-depth architectural specifications and subsystem guides, refer to the [`d
 | 🛡️ **[Admin Panel](./docs/admin.md)** | Administrative features, user management, invite token workflows, company assessment editor, billing analytics dashboard, feedback moderation, dynamic taxonomies, and audit logging. |
 | 📈 **[Scalability](./docs/scalability.md)** | Scalability architecture, Upstash Redis caching, connection pooling, and database optimization. |
 | 💡 **[Novelty](./docs/novelity.md)** | Core novelty angles: failure forensics, high-fidelity OA simulation environment, reasoning capture, and post-OA replay debriefs. |
+| 📋 **[Production Audit](./docs/production-audit.md)** | **Production Launch Checklist & Audit**: 20-point launch checklist, trust-breaking ranking, 5-phase quality playbook, and verification commands. |
 
 ---
 

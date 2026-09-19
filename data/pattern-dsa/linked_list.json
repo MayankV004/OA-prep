@@ -1,81 +1,211 @@
 {
   "pattern": "Linked List Manipulation",
-  "description": "Covers the core techniques for rewiring linked list pointers in-place: full and partial reversal, using a dummy head node to simplify edge cases, and merging/reordering multiple lists — all without converting to an array (O(1) extra space).",
+  "description": "Covers the full set of pointer-rewiring techniques for linked lists: full and partial reversal, dummy-node scaffolding, merging and partitioning, deep copying with auxiliary pointers, and building composite structures like LRU caches. The unifying constraint is that you cannot index randomly — everything is done by carefully re-pointing next references in O(1) extra space.",
   "important_details": [
-    "Always draw the pointer rewiring on paper first (prev/curr/next) — off-by-one pointer bugs are the most common failure mode.",
-    "A dummy node placed before the real head eliminates special-casing 'the head itself changes' (removal, insertion, merging).",
-    "Reversal is the building block for many other patterns: palindrome checks, reordering, and add-two-numbers style problems.",
-    "Two-pass (count length first) vs one-pass (fast/slow) solutions both appear frequently — know when each is asked for."
+    "Draw prev / curr / next on paper before writing any reversal code — pointer-order bugs are the dominant failure mode.",
+    "A dummy node placed before the head removes every 'what if the head itself changes' special case in insertion, deletion, merging, and partitioning.",
+    "Always save curr.next BEFORE overwriting curr.next, or the rest of the list becomes unreachable.",
+    "Recursive solutions are shorter but cost O(n) call-stack space — know the iterative version, since the O(1)-space requirement is the standard follow-up.",
+    "This pattern composes heavily with Fast & Slow Pointers: most Medium/Hard list problems are 'find a position' plus 'rewire around it'."
   ],
-  "other_relevant_details": "This pattern pairs heavily with Fast & Slow Pointers (finding the middle/nth-from-end) — many hard linked-list problems combine both techniques in one solution.",
+  "other_relevant_details": "Linked list questions are disproportionately common in phone screens because they test pointer discipline rather than algorithmic insight. The highest-value practice is writing reverse, merge, and remove-with-dummy from memory until they are automatic, since almost every harder problem decomposes into those three.",
   "variations": [
     {
-      "variation": "Reverse the Entire List (In-Place)",
-      "description": "Iteratively re-point each node's 'next' to its predecessor using three tracking pointers (prev, curr, next), producing a fully reversed list in one O(n) pass.",
+      "variation": "Reverse the Entire List (Iterative & Recursive)",
+      "description": "Re-point each node's next to its predecessor using three tracking pointers, producing a fully reversed list in one O(n) pass with O(1) space.",
       "important_details": [
-        "Save curr.next BEFORE overwriting curr.next = prev, or the rest of the list is lost.",
-        "prev starts as null (it becomes the new tail's next); the loop ends when curr is null and prev is the new head.",
-        "A recursive version exists too but uses O(n) call-stack space — mention the trade-off in interviews."
+        "prev starts as null — it becomes the new tail's next, correctly terminating the reversed list.",
+        "The loop ends when curr is null, at which point prev is the new head. Returning curr or head instead of prev is the classic mistake.",
+        "The recursive version reverses the sublist after head, then sets head.next.next = head and head.next = null — elegant but O(n) stack space.",
+        "Be ready to state both versions and their space trade-off without being asked."
       ],
       "template_code": "public ListNode reverseList(ListNode head) {\n    ListNode prev = null, curr = head;\n    while (curr != null) {\n        ListNode next = curr.next;\n        curr.next = prev;\n        prev = curr;\n        curr = next;\n    }\n    return prev;\n}",
-      "other_relevant_details": "Time Complexity: O(n). Space: O(1) iterative (O(n) if recursive).",
+      "other_relevant_details": "Time Complexity: O(n). Space: O(1) iterative, O(n) recursive.",
       "problems": [
         {"name": "Reverse Linked List", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/reverse-linked-list/", "company_tags": null},
         {"name": "Palindrome Linked List", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/palindrome-linked-list/", "company_tags": null},
-        {"name": "Add Two Numbers II", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/add-two-numbers-ii/", "company_tags": null}
+        {"name": "Add Two Numbers II", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/add-two-numbers-ii/", "company_tags": null},
+        {"name": "Reverse Nodes in Even Length Groups", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/reverse-nodes-in-even-length-groups/", "company_tags": null}
       ]
     },
     {
-      "variation": "Reverse a Sublist / Reverse in Groups of K",
-      "description": "Reverse only a bounded segment of the list (positions m to n, or every consecutive group of k nodes), requiring careful reconnection of the reversed segment back to the untouched parts of the list.",
+      "variation": "Reverse a Sublist (Positions m to n)",
+      "description": "Reverse only a bounded segment of the list while leaving the prefix and suffix intact, requiring careful reconnection at both seams.",
       "important_details": [
-        "Use a dummy node before the segment so you always have a stable 'node before the reversal' to reconnect to, even if the segment starts at the head.",
-        "For group-of-k reversal, first check that at least k nodes remain — if fewer remain, leave that final partial group unreversed (per the classic problem statement).",
-        "Track four pointers conceptually: the node before the segment, the segment's original head (which becomes the new tail), the segment's new head, and the node after the segment."
+        "Use a dummy node so that a segment starting at position 1 needs no special handling.",
+        "Track four conceptual pointers: the node before the segment, the segment's original head (which becomes its tail), the segment's new head, and the node after the segment.",
+        "The head-insertion approach is cleaner than a full reverse-then-reconnect: repeatedly move the node after curr to the front of the segment.",
+        "Verify with a 2-node list and with m == n, both of which expose off-by-one seam errors."
       ],
-      "template_code": "public ListNode reverseKGroup(ListNode head, int k) {\n    ListNode node = head;\n    int count = 0;\n    while (node != null && count < k) { node = node.next; count++; }\n    if (count < k) return head;\n    ListNode prev = reverseKGroup(node, k);\n    ListNode curr = head;\n    while (count-- > 0) {\n        ListNode next = curr.next;\n        curr.next = prev;\n        prev = curr;\n        curr = next;\n    }\n    return prev;\n}",
-      "other_relevant_details": "Time Complexity: O(n). Space: O(1) iterative version (the recursive sample above uses O(n/k) stack frames).",
+      "template_code": "public ListNode reverseBetween(ListNode head, int left, int right) {\n    if (head == null || left == right) return head;\n    ListNode dummy = new ListNode(0, head);\n    ListNode prev = dummy;\n    for (int i = 1; i < left; i++) prev = prev.next;\n    ListNode curr = prev.next;\n    for (int i = 0; i < right - left; i++) {\n        ListNode moved = curr.next;\n        curr.next = moved.next;\n        moved.next = prev.next;\n        prev.next = moved;\n    }\n    return dummy.next;\n}",
+      "other_relevant_details": "Time Complexity: O(n) single pass. Space: O(1).",
       "problems": [
         {"name": "Reverse Linked List II", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/reverse-linked-list-ii/", "company_tags": null},
+        {"name": "Swap Nodes in Pairs", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/swap-nodes-in-pairs/", "company_tags": null},
+        {"name": "Reverse Nodes in Even Length Groups", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/reverse-nodes-in-even-length-groups/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Reverse in Groups of K",
+      "description": "Repeatedly reverse every consecutive block of k nodes, leaving any final partial block untouched, and stitching each reversed block back to the previous one.",
+      "important_details": [
+        "Before reversing a block, walk ahead k nodes to confirm a full block exists; if fewer remain, stop and leave them as-is.",
+        "Maintain a groupPrev pointer to the node preceding the current block, and compute groupNext (the node after the block) before reversing.",
+        "After reversing, the block's original first node becomes its last — update groupPrev to that node for the next iteration.",
+        "The recursive version is much shorter and is acceptable in most interviews, but note its O(n/k) stack usage."
+      ],
+      "template_code": "public ListNode reverseKGroup(ListNode head, int k) {\n    ListNode dummy = new ListNode(0, head);\n    ListNode groupPrev = dummy;\n    while (true) {\n        ListNode kth = groupPrev;\n        for (int i = 0; i < k && kth != null; i++) kth = kth.next;\n        if (kth == null) break;\n        ListNode groupNext = kth.next;\n        ListNode prev = groupNext, curr = groupPrev.next;\n        while (curr != groupNext) {\n            ListNode next = curr.next;\n            curr.next = prev;\n            prev = curr;\n            curr = next;\n        }\n        ListNode newGroupPrev = groupPrev.next;\n        groupPrev.next = kth;\n        groupPrev = newGroupPrev;\n    }\n    return dummy.next;\n}",
+      "other_relevant_details": "Time Complexity: O(n) — each node is visited a constant number of times. Space: O(1) iterative.",
+      "problems": [
         {"name": "Reverse Nodes in k-Group", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/reverse-nodes-in-k-group/", "company_tags": null},
         {"name": "Swap Nodes in Pairs", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/swap-nodes-in-pairs/", "company_tags": null},
+        {"name": "Reverse Nodes in Even Length Groups", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/reverse-nodes-in-even-length-groups/", "company_tags": null},
         {"name": "Rotate List", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/rotate-list/", "company_tags": null}
       ]
     },
     {
-      "variation": "Dummy Node Technique",
-      "description": "Prepend a placeholder 'dummy' node before the real head so that insertion, deletion, or merge logic never needs a special case for 'the head node itself is changing'.",
+      "variation": "Dummy Node Scaffolding (Deletion & Insertion)",
+      "description": "Prepend a placeholder node before the real head so deletion, insertion, and filtering logic never needs a special case for changes at the head.",
       "important_details": [
-        "Always return dummy.next at the end, never the original head variable (which may have been removed or is no longer first).",
-        "Especially useful for 'remove Nth from end', 'remove all nodes with value X', and merge/partition problems.",
-        "Combine with fast/slow pointers for the 'Nth from end' family: advance fast n steps ahead of slow, starting both from dummy."
+        "Always return dummy.next, never the original head reference, which may no longer be first.",
+        "For deleting ALL nodes with a given value, keep a prev pointer and only advance it when the current node survives.",
+        "For deleting all nodes that appear more than once (not just extras), you must skip an entire run and link prev directly past it.",
+        "Combining a dummy node with a fixed-gap fast pointer gives the one-pass 'remove Nth from end' solution."
       ],
-      "template_code": "public ListNode removeNthFromEnd(ListNode head, int n) {\n    ListNode dummy = new ListNode(0, head);\n    ListNode fast = dummy, slow = dummy;\n    for (int i = 0; i < n; i++) fast = fast.next;\n    while (fast.next != null) {\n        fast = fast.next;\n        slow = slow.next;\n    }\n    slow.next = slow.next.next;\n    return dummy.next;\n}",
-      "other_relevant_details": "Time Complexity: O(n), single pass. Space: O(1).",
+      "template_code": "public ListNode deleteDuplicates(ListNode head) {\n    ListNode dummy = new ListNode(0, head);\n    ListNode prev = dummy, curr = head;\n    while (curr != null) {\n        if (curr.next != null && curr.val == curr.next.val) {\n            int dupVal = curr.val;\n            while (curr != null && curr.val == dupVal) curr = curr.next;\n            prev.next = curr;\n        } else {\n            prev = curr;\n            curr = curr.next;\n        }\n    }\n    return dummy.next;\n}",
+      "other_relevant_details": "Time Complexity: O(n). Space: O(1).",
       "problems": [
         {"name": "Remove Nth Node From End of List", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/remove-nth-node-from-end-of-list/", "company_tags": null},
         {"name": "Remove Linked List Elements", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/remove-linked-list-elements/", "company_tags": null},
-        {"name": "Partition List", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/partition-list/", "company_tags": null},
-        {"name": "Remove Duplicates from Sorted List II", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/remove-duplicates-from-sorted-list-ii/", "company_tags": null}
+        {"name": "Remove Duplicates from Sorted List", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/remove-duplicates-from-sorted-list/", "company_tags": null},
+        {"name": "Remove Duplicates from Sorted List II", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/remove-duplicates-from-sorted-list-ii/", "company_tags": null},
+        {"name": "Remove Zero Sum Consecutive Nodes from Linked List", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/remove-zero-sum-consecutive-nodes-from-linked-list/", "company_tags": null},
+        {"name": "Delete Node in a Linked List", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/delete-node-in-a-linked-list/", "company_tags": null}
       ]
     },
     {
-      "variation": "Merge / Reorder Multiple Lists",
-      "description": "Combine or interleave two or more linked lists into a single list, either by merging two sorted lists node-by-node or by reordering a single list's nodes (e.g., alternating front/back).",
+      "variation": "Merge Two Sorted Lists",
+      "description": "Weave two sorted lists into one by repeatedly appending whichever head is smaller, using a dummy node and a tail pointer.",
       "important_details": [
-        "Merging two sorted lists is the merge-step of merge sort applied directly to linked lists — O(1) space unlike arrays.",
-        "For k-way merge, a min-heap of the current head of each list gives O(N log k) instead of O(N*k) pairwise merging.",
-        "Reordering (e.g., L0→Ln→L1→Ln-1...) typically combines find-middle + reverse-second-half + merge-alternately."
+        "This is merge sort's merge step, but on lists it needs only O(1) extra space because nodes are relinked rather than copied.",
+        "After one list is exhausted, attach the remainder of the other in a single assignment — do not loop through it.",
+        "Use <= rather than < when comparing to keep the merge stable, which matters if nodes carry extra payload.",
+        "Serves as the subroutine for both k-way merging and merge sort on a linked list."
       ],
       "template_code": "public ListNode mergeTwoLists(ListNode l1, ListNode l2) {\n    ListNode dummy = new ListNode(-1);\n    ListNode tail = dummy;\n    while (l1 != null && l2 != null) {\n        if (l1.val <= l2.val) { tail.next = l1; l1 = l1.next; }\n        else { tail.next = l2; l2 = l2.next; }\n        tail = tail.next;\n    }\n    tail.next = (l1 != null) ? l1 : l2;\n    return dummy.next;\n}",
-      "other_relevant_details": "Time Complexity: O(m + n) for two lists; O(N log k) for k-way merge with a heap. Space: O(1) for two-list merge, O(k) for the heap.",
+      "other_relevant_details": "Time Complexity: O(m + n). Space: O(1).",
       "problems": [
         {"name": "Merge Two Sorted Lists", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/merge-two-sorted-lists/", "company_tags": null},
-        {"name": "Merge k Sorted Lists", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/merge-k-sorted-lists/", "company_tags": null},
-        {"name": "Reorder List", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/reorder-list/", "company_tags": null},
-        {"name": "Sort List", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/sort-list/", "company_tags": null},
+        {"name": "Merge In Between Linked Lists", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/merge-in-between-linked-lists/", "company_tags": null},
         {"name": "Add Two Numbers", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/add-two-numbers/", "company_tags": null},
-        {"name": "Copy List with Random Pointer", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/copy-list-with-random-pointer/", "company_tags": null}
+        {"name": "Merge Nodes in Between Zeros", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/merge-nodes-in-between-zeros/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Merge K Sorted Lists (Heap or Divide & Conquer)",
+      "description": "Combine k sorted lists either by seeding a min-heap with each list's head (O(N log k)) or by repeatedly merging pairs of lists in a divide-and-conquer tournament (also O(N log k), O(1) space).",
+      "important_details": [
+        "Heap approach: push each list's current head; pop the global minimum, append it, and push its successor.",
+        "Divide-and-conquer approach: merge lists pairwise, halving the list count each round — O(1) space and often faster in practice.",
+        "Naive sequential merging (merge list 1 with 2, then with 3...) is O(N*k) and is the answer to avoid.",
+        "Skip null lists when seeding the heap, or you will get a NullPointerException on the first poll."
+      ],
+      "template_code": "public ListNode mergeKLists(ListNode[] lists) {\n    if (lists == null || lists.length == 0) return null;\n    int interval = 1;\n    while (interval < lists.length) {\n        for (int i = 0; i + interval < lists.length; i += interval * 2) {\n            lists[i] = mergeTwoLists(lists[i], lists[i + interval]);\n        }\n        interval *= 2;\n    }\n    return lists[0];\n}\nprivate ListNode mergeTwoLists(ListNode l1, ListNode l2) {\n    ListNode dummy = new ListNode(-1), tail = dummy;\n    while (l1 != null && l2 != null) {\n        if (l1.val <= l2.val) { tail.next = l1; l1 = l1.next; }\n        else { tail.next = l2; l2 = l2.next; }\n        tail = tail.next;\n    }\n    tail.next = (l1 != null) ? l1 : l2;\n    return dummy.next;\n}",
+      "other_relevant_details": "Time Complexity: O(N log k) where N is the total node count. Space: O(k) for the heap approach, O(1) for divide and conquer.",
+      "problems": [
+        {"name": "Merge k Sorted Lists", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/merge-k-sorted-lists/", "company_tags": null},
+        {"name": "Sort List", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/sort-list/", "company_tags": null},
+        {"name": "Smallest Range Covering Elements from K Lists", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/smallest-range-covering-elements-from-k-lists/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Partition & Split Lists",
+      "description": "Split a single list into two or more chains based on a predicate (value threshold, odd/even position, equal part sizes), then reconnect the chains in the required order.",
+      "important_details": [
+        "Build each output chain with its own dummy node and tail pointer, then join them at the end.",
+        "CRITICAL: terminate the final chain by setting its tail.next = null, or you create a cycle and the judge hangs.",
+        "Order preservation within each partition is usually required — appending to tails rather than heads gives this for free.",
+        "For splitting into k equal parts, the first (n mod k) parts get one extra node each."
+      ],
+      "template_code": "public ListNode partition(ListNode head, int x) {\n    ListNode lessDummy = new ListNode(0), greaterDummy = new ListNode(0);\n    ListNode less = lessDummy, greater = greaterDummy;\n    while (head != null) {\n        if (head.val < x) { less.next = head; less = less.next; }\n        else { greater.next = head; greater = greater.next; }\n        head = head.next;\n    }\n    greater.next = null;\n    less.next = greaterDummy.next;\n    return lessDummy.next;\n}",
+      "other_relevant_details": "Time Complexity: O(n). Space: O(1).",
+      "problems": [
+        {"name": "Partition List", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/partition-list/", "company_tags": null},
+        {"name": "Odd Even Linked List", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/odd-even-linked-list/", "company_tags": null},
+        {"name": "Split Linked List in Parts", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/split-linked-list-in-parts/", "company_tags": null},
+        {"name": "Rotate List", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/rotate-list/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Sort a Linked List (Merge Sort on Lists)",
+      "description": "Sort a list in O(n log n) time and O(1) extra space by recursively splitting at the middle (fast/slow) and merging the sorted halves — quicksort is a poor fit because lists lack random access.",
+      "important_details": [
+        "Split using fast/slow, but you must CUT the list: set the node before slow to null, or the recursion never terminates.",
+        "Merge sort is preferred over quicksort here because merging lists is O(1) space while partitioning lists is awkward.",
+        "The recursive version uses O(log n) stack space; a bottom-up iterative merge sort achieves true O(1) space and is the strict answer to the follow-up.",
+        "Insertion sort on a list is O(n^2) but appears as its own easier problem — know both."
+      ],
+      "template_code": "public ListNode sortList(ListNode head) {\n    if (head == null || head.next == null) return head;\n    ListNode slow = head, fast = head, prev = null;\n    while (fast != null && fast.next != null) {\n        prev = slow;\n        slow = slow.next;\n        fast = fast.next.next;\n    }\n    prev.next = null;\n    ListNode left = sortList(head);\n    ListNode right = sortList(slow);\n    return mergeTwoLists(left, right);\n}\nprivate ListNode mergeTwoLists(ListNode l1, ListNode l2) {\n    ListNode dummy = new ListNode(-1), tail = dummy;\n    while (l1 != null && l2 != null) {\n        if (l1.val <= l2.val) { tail.next = l1; l1 = l1.next; }\n        else { tail.next = l2; l2 = l2.next; }\n        tail = tail.next;\n    }\n    tail.next = (l1 != null) ? l1 : l2;\n    return dummy.next;\n}",
+      "other_relevant_details": "Time Complexity: O(n log n). Space: O(log n) recursion stack, O(1) for the bottom-up iterative version.",
+      "problems": [
+        {"name": "Sort List", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/sort-list/", "company_tags": null},
+        {"name": "Insertion Sort List", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/insertion-sort-list/", "company_tags": null},
+        {"name": "Merge k Sorted Lists", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/merge-k-sorted-lists/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Deep Copy with Auxiliary Pointers (Interleaving Trick)",
+      "description": "Clone a list whose nodes carry an extra arbitrary pointer, using the O(1)-space interleaving technique: weave copies into the original list, wire the extra pointers by adjacency, then unweave.",
+      "important_details": [
+        "Pass 1: insert each copy immediately after its original, so copy = original.next for every node.",
+        "Pass 2: set copy.random = original.random.next — the adjacency makes the mapping free, replacing a HashMap.",
+        "Pass 3: unweave the two interleaved lists, restoring the original AND producing the clone.",
+        "The HashMap approach (original -> copy) is simpler and O(n) space; the interleaving version is the O(1)-space follow-up interviewers ask for.",
+        "Handle null random pointers explicitly in pass 2 or you get a NullPointerException."
+      ],
+      "template_code": "public Node copyRandomList(Node head) {\n    if (head == null) return null;\n    for (Node curr = head; curr != null; curr = curr.next.next) {\n        Node copy = new Node(curr.val);\n        copy.next = curr.next;\n        curr.next = copy;\n    }\n    for (Node curr = head; curr != null; curr = curr.next.next) {\n        if (curr.random != null) curr.next.random = curr.random.next;\n    }\n    Node dummy = new Node(0), copyTail = dummy;\n    for (Node curr = head; curr != null; curr = curr.next) {\n        copyTail.next = curr.next;\n        copyTail = copyTail.next;\n        curr.next = curr.next.next;\n    }\n    return dummy.next;\n}",
+      "other_relevant_details": "Time Complexity: O(n) across three passes. Space: O(1) excluding the output, versus O(n) for the HashMap approach.",
+      "problems": [
+        {"name": "Copy List with Random Pointer", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/copy-list-with-random-pointer/", "company_tags": null},
+        {"name": "Clone Graph", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/clone-graph/", "company_tags": null},
+        {"name": "Flatten a Multilevel Doubly Linked List", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/flatten-a-multilevel-doubly-linked-list/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Doubly Linked List Design (LRU / LFU Cache)",
+      "description": "Build a custom doubly linked list paired with a HashMap so that lookup, insertion, and eviction of the least-recently-used entry all run in O(1) — the canonical system-design-flavoured list question.",
+      "important_details": [
+        "HashMap gives O(1) lookup from key to node; the doubly linked list gives O(1) removal and re-insertion because each node knows its predecessor.",
+        "Use sentinel head and tail nodes so add and remove never need null checks.",
+        "On get: move the node to the front (most recent). On put when at capacity: evict the node just before the tail sentinel.",
+        "A singly linked list cannot do this in O(1) — you would need the previous node, which is exactly why the list must be doubly linked.",
+        "LFU extends this with a frequency-to-list map plus a minFrequency counter, and is a common Hard follow-up."
+      ],
+      "template_code": "class LRUCache {\n    class Node { int key, val; Node prev, next; Node(int k, int v) { key = k; val = v; } }\n    private Map<Integer, Node> map = new HashMap<>();\n    private Node head = new Node(0, 0), tail = new Node(0, 0);\n    private int capacity;\n    public LRUCache(int capacity) {\n        this.capacity = capacity;\n        head.next = tail;\n        tail.prev = head;\n    }\n    private void remove(Node node) {\n        node.prev.next = node.next;\n        node.next.prev = node.prev;\n    }\n    private void addFirst(Node node) {\n        node.next = head.next;\n        node.prev = head;\n        head.next.prev = node;\n        head.next = node;\n    }\n    public int get(int key) {\n        if (!map.containsKey(key)) return -1;\n        Node node = map.get(key);\n        remove(node);\n        addFirst(node);\n        return node.val;\n    }\n    public void put(int key, int value) {\n        if (map.containsKey(key)) {\n            Node node = map.get(key);\n            node.val = value;\n            remove(node);\n            addFirst(node);\n            return;\n        }\n        if (map.size() == capacity) {\n            Node lru = tail.prev;\n            remove(lru);\n            map.remove(lru.key);\n        }\n        Node node = new Node(key, value);\n        map.put(key, node);\n        addFirst(node);\n    }\n}",
+      "other_relevant_details": "Time Complexity: O(1) for both get and put. Space: O(capacity).",
+      "problems": [
+        {"name": "LRU Cache", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/lru-cache/", "company_tags": null},
+        {"name": "LFU Cache", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/lfu-cache/", "company_tags": null},
+        {"name": "Flatten a Multilevel Doubly Linked List", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/flatten-a-multilevel-doubly-linked-list/", "company_tags": null},
+        {"name": "Design Browser History", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/design-browser-history/", "company_tags": null},
+        {"name": "All O`one Data Structure", "difficulty": "Hard", "platform": "leetcode", "link": "https://leetcode.com/problems/all-oone-data-structure/", "company_tags": null}
+      ]
+    },
+    {
+      "variation": "Intersection & Structural Comparison",
+      "description": "Find where two lists converge, or compare their structure, using length alignment or the two-pass pointer-switching trick that equalizes traversal distance without computing lengths.",
+      "important_details": [
+        "Pointer-switching trick: when pointer A reaches the end, redirect it to headB, and vice versa. Both travel lenA + lenB steps and meet at the intersection (or at null).",
+        "The trick works precisely because both pointers cover the same total distance, cancelling out any length difference.",
+        "The explicit alternative is: compute both lengths, advance the longer list's pointer by the difference, then walk in lockstep.",
+        "If the lists do not intersect, both pointers become null simultaneously, so the loop terminates correctly with a null return."
+      ],
+      "template_code": "public ListNode getIntersectionNode(ListNode headA, ListNode headB) {\n    if (headA == null || headB == null) return null;\n    ListNode a = headA, b = headB;\n    while (a != b) {\n        a = (a == null) ? headB : a.next;\n        b = (b == null) ? headA : b.next;\n    }\n    return a;\n}",
+      "other_relevant_details": "Time Complexity: O(m + n). Space: O(1), versus O(n) for a HashSet of visited nodes.",
+      "problems": [
+        {"name": "Intersection of Two Linked Lists", "difficulty": "Easy", "platform": "leetcode", "link": "https://leetcode.com/problems/intersection-of-two-linked-lists/", "company_tags": null},
+        {"name": "Linked List Components", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/linked-list-components/", "company_tags": null},
+        {"name": "Next Greater Node In Linked List", "difficulty": "Medium", "platform": "leetcode", "link": "https://leetcode.com/problems/next-greater-node-in-linked-list/", "company_tags": null}
       ]
     }
   ]

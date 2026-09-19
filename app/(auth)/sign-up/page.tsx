@@ -172,7 +172,7 @@ export default function SignUpPage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               disabled={loading}
-              className="w-full bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-white placeholder:text-zinc-500 text-sm py-1"
+              className="w-full bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-white placeholder:text-zinc-500 text-base md:text-sm py-1"
             />
           </div>
         </motion.div>
@@ -192,7 +192,7 @@ export default function SignUpPage() {
               onChange={(e) => setEmail(e.target.value)}
               onBlur={() => setTouched((t) => ({ ...t, email: true }))}
               disabled={loading}
-              className="w-full bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-white placeholder:text-zinc-500 text-sm py-1"
+              className="w-full bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-white placeholder:text-zinc-500 text-base md:text-sm py-1"
             />
           </div>
           {emailError && (
@@ -215,7 +215,7 @@ export default function SignUpPage() {
               onChange={(e) => setPassword(e.target.value)}
               onBlur={() => setTouched((t) => ({ ...t, password: true }))}
               disabled={loading}
-              className="w-full bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-white placeholder:text-zinc-500 text-sm py-1 pr-9"
+              className="w-full bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-white placeholder:text-zinc-500 text-base md:text-sm py-1 pr-9"
             />
             <button
               type="button"
