@@ -75,6 +75,30 @@
 - **Feedback & Bug Moderation**: Review candidate feedback, bug reports with severity tags and URLs, and track resolution status (`/admin/feedback`).
 - **Audit Log**: Global activity log capturing administrative and user actions.
 
+### 2.12 AI-Powered Revision Notes & Spaced Repetition Engine
+- **Pro-Tier AI Generation**: On-demand generation of structured problem revision notes (`POST /api/problems/ai-notes`) gated strictly to BigO Pro subscribers.
+- **Multi-Model Fallback Architecture**: High-speed inference prioritizing NVIDIA NIM (Nemotron-3-Ultra-550B, Nemotron-4-340B), Groq Llama-3.3-70B, and Hugging Face, with a zero-downtime deterministic fallback.
+- **Multi-Language Solution Tabs**: Produces optimal solution implementations in C++, Java, and Python formatted as consecutive code blocks that render as interactive language switcher tabs in the Markdown viewer.
+- **Algorithm Intuition & Edge Cases**: Highlights 2–3 bullet core intuitions, critical edge cases, and exact Big-O Time/Space complexity breakdown.
+- **Spaced Repetition Scheduler (`POST /api/problems/revision`)**: Retain algorithmic concepts with confidence-based intervals (`struggled`: 2 days, `good`: 7 days, `mastered`: 30 days) and automated review counters (`timesRevised`).
+- **Weekly Revision Digest Email**: Automated cron (`/api/cron/revision-alerts` scheduled Sundays at 18:00 UTC) sending personalized due problem digests via Upstash QStash and Resend.
+
+### 2.13 Interactive Interview Flashcards & Mastery Tracking
+- **3D Card Flip Interface (`FlashcardDeck.tsx`)**: Fluid, accessible card flip deck with full keyboard shortcuts (`Space` to flip, `1`–`4` for confidence rating, arrows to navigate).
+- **Leitner Spaced-Repetition System**: 4 confidence levels (1: Again/1 day, 2: Hard/3 days, 3: Good/7 days, 4: Easy/21 days) updating `UserQuestionProgress`.
+- **Subject Mastery Analytics (`/api/questions/stats`)**: Real-time aggregated statistics across OS, DBMS, Networks, and OOP (Mastered %, In-Review %, Unseen, Overdue, Bookmarked).
+- **Curated Question Seeding & Administration**: 100+ curated system flashcards seeded via `scripts/seed-interview-questions.ts`, with full administrative authoring in `/admin/content/questions`.
+
+### 2.14 Generative Engine Optimization (GEO) & Machine-Readable Interfaces
+- **Machine-Readable LLM Manifests**: `/llms.txt` and `/llms-full.txt` endpoints delivering structured educational metadata, pattern maps, and topic descriptions for AI agents (ChatGPT, Claude, Perplexity).
+- **Dynamic SEO & XML Sitemap**: Auto-generated `/sitemap.xml` with canonical `bigoprep.tech` domain integration, alongside crawler-specific `/robots.txt` access rules.
+- **Schema.org Structured Data**: Granular JSON-LD data graphs (`Course`, `SoftwareApplication`, `EducationalOrganization`, `FAQPage`, `BreadcrumbList`) embedded on public pages.
+
+### 2.15 Production Observability, Privacy & Mobile Experience
+- **Granular Cookie Consent**: `CookieConsentBanner` enforcing GDPR/ePrivacy consent before activating third-party analytics.
+- **Multi-Provider Analytics**: Support for Google Analytics 4 and PostHog (`AnalyticsProvider`) without tracking biometric proctoring telemetry.
+- **Mobile Ergonomics**: Sticky landing action CTA (`MobileStickyCta`), 16px form input hardening preventing iOS Safari zoom, and dynamic OpenGraph social preview images (`app/opengraph-image.tsx`).
+
 ---
 
 ## 3. Non-Functional Requirements

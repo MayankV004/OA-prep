@@ -37,11 +37,12 @@
    *(If skipped, BigO automatically falls back to its deterministic heuristic/regex mock runner).*
 
 5. **Seed Database:**
-   Seed initial DSA patterns, advanced CS topics, and company assessments:
+   Seed initial DSA patterns, advanced CS topics, company assessments, and interview flashcards:
    ```bash
    npx tsx scripts/seed-mongo-patterns.ts
    npx tsx scripts/seed-advanced-topics.ts
    npx tsx scripts/seed-assessments.ts
+   npx tsx scripts/seed-interview-questions.ts
    ```
 
 6. **Run Development Server:**
@@ -87,8 +88,13 @@
 | `R2_SECRET_ACCESS_KEY` | Cloudflare R2 Secret Access Key | No (Dev) | `r2_secret_key` |
 | `R2_BUCKET_NAME` | Cloudflare R2 Bucket Name | No (Dev) | `bigo-proctor-snapshots` |
 | `R2_PUBLIC_URL` | Cloudflare R2 Public CDN URL | No (Dev) | `https://r2.bigoprep.tech` |
-| `GROQ_API_KEY` | Groq API Key for Llama-3.3 forensic report synthesis | No (Dev) | `gsk_xxx` |
+| `NVIDIA_API_KEY` | NVIDIA NIM API Key for Nemotron LLM inference (AI Revision Notes) | No (Dev) | `nvapi-xxx` |
+| `NVIDIA_MODEL` | Preferred NVIDIA NIM model | No | `nvidia/nemotron-3-ultra-550b-a55b` |
+| `GROQ_API_KEY` | Groq API Key for Llama-3.3 forensic report & AI notes | No (Dev) | `gsk_xxx` |
 | `HUGGINGFACE_API_KEY` | Hugging Face fallback API Key | No (Dev) | `hf_xxx` |
+| `NEXT_PUBLIC_GA_MEASUREMENT_ID` | Google Analytics 4 Measurement ID | No | `G-XXXXXXXXXX` |
+| `NEXT_PUBLIC_POSTHOG_KEY` | PostHog Client API Key | No | `phc_xxx` |
+| `NEXT_PUBLIC_POSTHOG_HOST` | PostHog Instance Host URL | No | `https://us.i.posthog.com` |
 | `NEXT_PUBLIC_ALLOW_COPY_PASTE` | Development flag to allow clipboard paste in Monaco | No | `false` |
 
 ## 4. Emergency Admin Promotion

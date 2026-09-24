@@ -19,11 +19,15 @@
 | Evidence Storage | Cloudflare R2 (S3-compatible, native AWS SigV4 signed uploads via Node crypto) |
 | Payment & Billing | Stripe (Checkout Sessions, Customer Portal, Webhooks, mock fallback) + Dynamic Pricing Plans & Promo Codes (`models/pricingPlan.ts`, `models/promoCode.ts`) |
 | Behavioral Forensic | Groq (Llama-3.3-70B) / Hugging Face / Deterministic Synthesizer fallback |
+| AI Revision Notes | Multi-Model Failover: NVIDIA NIM (Nemotron-3-Ultra-550B, Nemotron-4-340B) + Groq (Llama-3.3-70B) + Hugging Face with multi-language code tabs (C++, Java, Python) |
+| Interview Flashcards | 3D Interactive Flip Deck (`FlashcardDeck.tsx`) + 4-tier Leitner Spaced Repetition + MongoDB `UserQuestionProgress` |
+| Machine-Readable GEO | `/llms.txt` + `/llms-full.txt` + Dynamic `/sitemap.xml` + Custom `/robots.txt` for AI crawlers |
+| Privacy & Analytics | `AnalyticsProvider` (Google Analytics 4 + PostHog) with GDPR `CookieConsentBanner` opt-in gating |
 | API | Next.js Route Handlers under `app/api/**` + Typed Services in `lib/api/**` |
 | Client data | TanStack Query v5 with `queryOptions()` (`lib/queries/**`) & `STALE_TIMES` |
 | Domain Types | Centralized interfaces under `types/**`, `lib/proctor/types.ts`, and `lib/runner/types.ts` |
 | Markdown edit | `@uiw/react-md-editor` (edit + preview toggle built in) |
-| Markdown read | `react-markdown` + `remark-gfm` + `rehype-sanitize` |
+| Markdown read | `react-markdown` + `remark-gfm` + `rehype-sanitize` with copy code triggers & syntax tabs |
 | Styling | Tailwind CSS v4 + Base UI / shadcn |
 | Charts | Recharts (lazy loaded via `next/dynamic`) |
 | Telemetry | OpenTelemetry (`instrumentation.ts` + `docker-compose.telemetry.yml`) |
@@ -239,11 +243,29 @@ Located under `app/(admin)/admin/proctoring/` and `app/api/admin/proctoring/`:
 ## 14. Dedicated Student Career & Interview Preparation Architecture
 
 BigO is dedicated exclusively to individual student preparation for technical interviews:
-- **DSA Pattern Hub (`/dsa`)**: 12+ industry patterns with variation tracking and spaced repetition.
+- **DSA Pattern Hub (`/dsa`)**: 12+ industry patterns with variation tracking, problem solution deep dives, and spaced repetition.
+- **AI-Powered Revision Notes Engine (`lib/ai/revision-notes.ts`)**:
+  - Gated to BigO Pro subscribers via server-side entitlement checks (`getUserEntitlement(userId)`).
+  - Multi-tier LLM failover pipeline prioritizing NVIDIA NIM (Nemotron-3-Ultra-550B, Nemotron-4-340B) -> Groq Cloud (Llama-3.3-70B) -> Hugging Face -> deterministic fallback.
+  - Automatically synthesizes candidate draft notes into four structured sections: Approach (2–3 bullet points), Correct Code (consecutive C++, Java, and Python solution classes rendered as interactive tabs in the Markdown viewer), Edge Cases, and Big-O Complexity.
+- **Spaced-Repetition Problem Scheduler & Weekly Digest**:
+  - Problem-level spaced repetition engine tracking `revisionStatus`, `timesRevised`, `lastRevisedAt`, and `nextReviewAt` in `UserProgress`.
+  - Confidence-driven interval scheduling: `struggled` (2 days), `good` (7 days), `mastered` (30 days).
+  - Automated weekly cron (`/api/cron/revision-alerts` scheduled Sundays at 18:00 UTC) identifies overdue problems and dispatches `WeeklyRevisionDigestEmail` via Upstash QStash and Resend.
+- **Interactive Interview Flashcard Subsystem (`/interview`, `/interview/[subject]`)**:
+  - 3D interactive flip card deck (`components/interview/FlashcardDeck.tsx`) with keyboard navigation (`Space` to flip, `1`–`4` for confidence, arrows for pagination).
+  - 4-tier Leitner confidence intervals (1: Again/1d, 2: Hard/3d, 3: Good/7d, 4: Easy/21d) stored in `UserQuestionProgress`.
+  - Subject-level mastery analytics (`/api/questions/stats`) calculating mastery percentages, overdue review queues, and bookmarked questions.
+- **Generative Engine Optimization (GEO) & Machine-Readable Interfaces**:
+  - Dynamic `/llms.txt` and `/llms-full.txt` endpoints delivering platform curriculums directly to AI search agents and LLM scrapers.
+  - Dynamic `/sitemap.xml` and crawler-specific `/robots.txt` protecting authenticated and proctoring exam endpoints while maximizing public curriculum visibility.
 - **Multi-Platform Competitive Programming Hub (`/cp`)**: Profile synchronization across Codeforces, LeetCode, CodeChef, and AtCoder with automated contest calendar and readiness analytics.
-- **Core CS & Advanced Revision (`/subjects`, `/advanced`)**: Deep conceptual revision for OS, DBMS, Networks, OOP, and System Design in dedicated distraction-free reader mode.
-- **Interview Q&A Flashcards (`/interview`) & Cheat Sheets (`/cheatsheets`)**.
+- **Core CS & Advanced Revision (`/subjects`, `/advanced`)**: Deep conceptual revision for OS, DBMS, Networks, OOP, and System Design in dedicated distraction-free reader mode (`ReaderLayout`).
 - **Proctored Online Assessment (OA) Simulation (`/oa`)**: Practice real company OA test cases under proctored corporate exam conditions (Monaco editor, Docker Piston execution, dual-engine biometric HUD, fullscreen lockdown).
+- **Privacy, Analytics & Cookie Consent Subsystem**:
+  - `CookieConsentBanner` enforcing explicit opt-in for Google Analytics 4 and PostHog.
+  - Zero biometric or proctoring telemetry is ever dispatched to external analytics.
+
 
 ## 15. Folder Structure
 

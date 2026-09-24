@@ -77,20 +77,23 @@ REST API via Next.js Route Handlers under `/api/*`. Route handlers enforce authe
 
 ---
 
-## Questions & Cheat Sheets
+## Questions & Cheat Sheets (Interview Flashcards)
 
-| Method | Path | Auth | Description |
-| --- | --- | --- | --- |
-| GET | `/api/questions` | Auth | List interview questions (`?subjectId=...`) |
-| GET | `/api/questions/:id` | Auth | Get single question details |
-| POST | `/api/questions` | Auth | Create interview question |
-| PATCH | `/api/questions/:id` | Auth | Update interview question |
-| DELETE | `/api/questions/:id` | Auth | Delete interview question |
-| GET | `/api/cheatsheets` | Auth | List cheat sheets (`?subjectId=...`) |
-| GET | `/api/cheatsheets/:id` | Auth | Get single cheat sheet |
-| POST | `/api/cheatsheets` | Auth | Create cheat sheet |
-| PATCH | `/api/cheatsheets/:id` | Auth | Update cheat sheet |
-| DELETE | `/api/cheatsheets/:id` | Auth | Delete cheat sheet |
+| Method | Path | Auth | Body / Query | Description |
+| --- | --- | --- | --- | --- |
+| GET | `/api/questions` | Auth | `?subjectId=...&scope=all\|curated\|mine\|bookmarked\|due&difficulty=...&company=...&tag=...&q=...` | List interview questions with query filters and merged user progress overlay (`status`, `confidence`, `bookmarked`, `timesReviewed`, `nextReviewAt`, `userNotes`) |
+| GET | `/api/questions/:id` | Auth | — | Get single question details |
+| POST | `/api/questions` | Auth | `{ subjectId, question, answer?, difficulty?, keyPoints?, companyTags?, tags?, isSystem? }` | Create interview question (sets `isSystem: true` if admin, otherwise sandboxed to user) |
+| PATCH | `/api/questions/:id` | Auth | Partial question fields | Update interview question |
+| DELETE | `/api/questions/:id` | Auth | — | Delete interview question |
+| POST | `/api/questions/:id/progress` | Auth | `{ status?, confidence?, bookmarked?, userNotes? }` | Update user question mastery; calculates Leitner spaced-repetition intervals (1: Again/1d, 2: Hard/3d, 3: Good/7d, 4: Easy/21d) and sets `nextReviewAt` |
+| GET | `/api/questions/stats` | Auth | — | Fetch aggregated overall and per-subject flashcard mastery metrics (`mastered`, `learning`, `reviewing`, `unseen`, `bookmarked`, `due`, `masteryPercentage`) |
+| GET | `/api/cheatsheets` | Auth | `?subjectId=...` | List cheat sheets |
+| GET | `/api/cheatsheets/:id` | Auth | — | Get single cheat sheet |
+| POST | `/api/cheatsheets` | Auth | `{ subjectId?, title, slug, body?, tags? }` | Create cheat sheet |
+| PATCH | `/api/cheatsheets/:id` | Auth | `{ title?, slug?, body?, tags? }` | Update cheat sheet |
+| DELETE | `/api/cheatsheets/:id` | Auth | — | Delete cheat sheet |
+
 
 ---
 
@@ -197,6 +200,7 @@ REST API via Next.js Route Handlers under `/api/*`. Route handlers enforce authe
 | GET/POST | `/api/cron/contests-sync` | Cron Secret | Daily scrape of upcoming contests from Codeforces, LeetCode, CodeChef, and AtCoder APIs (Vercel Cron) |
 | GET/POST | `/api/cron/contest-alerts` | Cron Secret | Evaluates user alert timings (24h, 2h, 30m prior) and enqueues notification emails (GitHub Actions every 15 min) |
 | GET/POST | `/api/cron/user-contests-sync` | Cron Secret | Synchronizes linked user CP profiles and updates rating history (Vercel Cron daily) |
+| GET/POST | `/api/cron/revision-alerts` | Cron Secret | Weekly Sunday revision digest (18:00 UTC / `0 18 * * 0`). Scans overdue problem revisions per candidate and enqueues `WeeklyRevisionDigestEmail` via QStash to Resend |
 | POST | `/api/workers/email` | QStash Sign | Verifies `upstash-signature` and dispatches React Email templates via Resend |
 
 ---
@@ -216,12 +220,25 @@ REST API via Next.js Route Handlers under `/api/*`. Route handlers enforce authe
 
 ---
 
-## Problem Revision, Progress & Notes
+## Problem Revision, Spaced Repetition & AI Notes
 
 | Method | Path | Auth | Body / Query | Description |
 | --- | --- | --- | --- | --- |
-| PATCH | `/api/problems/revision` | Auth | `{ problemId, revision: boolean }` | Toggle one-click star bookmark for pre-interview revision |
-| GET | `/api/problems/progress` | Auth | — | Fetch full map of user completion statuses and revision bookmarks |
+| POST | `/api/problems/revision` | Auth | `{ problemId, revision?, action?: "toggle" \| "mark_revised" \| "set", confidence?: "struggled" \| "good" \| "mastered", clearBookmark?: boolean }` | Toggle revision star bookmark or log spaced repetition revision. Schedules `nextReviewAt` (`struggled`: 2d, `good`: 7d, `mastered`: 30d) and increments `timesRevised` |
+| GET | `/api/problems/revision` | Auth | `?detailed=true` | Fetch revision items. When `detailed=true`, returns array with `timesRevised`, `lastRevisedAt`, `nextReviewAt`, `revisionConfidence`; default returns string array of problem IDs |
+| POST | `/api/problems/ai-notes` | Auth (Pro) | `{ problemId, problemTitle, patternTitle?, difficulty?, existingNotes?, language? }` | Generate structured AI revision notes (Approach, Multi-Language Code tabs in C++/Java/Python, Edge Cases, Big-O Complexity). Multi-model failover across NVIDIA Nemotron, Groq Llama-3.3, Hugging Face, deterministic. Gated to BigO Pro subscribers (`403 UPGRADE_REQUIRED`) |
+| GET | `/api/problems/progress` | Auth | — | Fetch full map of user completion statuses, bookmarks, and per-problem notes |
+
+---
+
+## Machine-Readable Discovery & SEO (GEO)
+
+| Method | Path | Auth | Description |
+| --- | --- | --- | --- |
+| GET | `/llms.txt` | Public | Machine-readable overview of BigO curricula, pattern structures, and public API capabilities for AI search agents (Perplexity, ChatGPT, Claude) |
+| GET | `/llms-full.txt` | Public | Full comprehensive educational export and content hierarchy in Markdown for Generative Engine Optimization (GEO) |
+| GET | `/sitemap.xml` | Public | Dynamically generated XML sitemap indexing all public patterns, variations, subjects, cheatsheets, and interview questions |
+| GET | `/robots.txt` | Public | Crawler instructions granting public access to educational modules while blocking internal admin, auth, and active proctoring test paths |
 
 ---
 
@@ -232,4 +249,5 @@ REST API via Next.js Route Handlers under `/api/*`. Route handlers enforce authe
 | POST | `/api/feedback` | Auth | `{ type: "bug" \| "feedback", title, description, category?, severity?, pageUrl? }` | Submit user feedback, bug reports, or feature requests with severity and URL context |
 | GET | `/api/metrics` | Auth | — | System telemetry, database metrics, and OpenTelemetry diagnostic counters |
 | GET | `/api/export` | Auth | `?format=json\|csv` | Export complete user revision notes, problem bookmarks, and progress data |
+
 

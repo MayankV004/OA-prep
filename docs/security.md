@@ -82,5 +82,35 @@ The proctoring system enforces exam integrity while preserving candidate privacy
 - **Sliding-Window Abuse Prevention**:
   - `POST /api/oa/execute`: Gated by user-keyed sliding window rate limiting (max 12 executions per minute) preventing denial-of-service or crypto-mining attacks.
   - `POST /api/promo/validate`: Gated by IP/session sliding window rate limiting (max 15 attempts per minute) mitigating brute-force promo code enumeration.
-- **Admin Mutation Validation**: All administrative mutation routes (`/api/admin/assessments`, `/api/admin/billing`, `/api/admin/promos`) enforce strict Zod schema validation, slug collision checks, and `admin` session role authorization.
+- **Admin Mutation Validation**: All administrative mutation routes (`/api/admin/assessments`, `/api/admin/billing`, `/api/admin/promos`, `/api/admin/content/questions`, `/api/admin/content/non-standard`) enforce strict Zod schema validation, slug collision checks, and `admin` session role authorization.
+
+## 10. AI Revision Notes & Prompt Injection Defense
+
+- **Server-Side Entitlement Gate**: `POST /api/problems/ai-notes` strictly evaluates candidate subscription state via `getUserEntitlement(userId)` before contacting upstream LLM inference providers. Requests lacking an active `isPro` or `isAdmin` status are rejected with HTTP 403 `UPGRADE_REQUIRED`.
+- **Prompt Injection Containment**: User-provided draft notes and problem titles are sanitized, bounded in size, and encased in strict multi-line Markdown delimiter blocks (`"""..."""`) within the system prompt. System instructions prohibit conversational filler, outputting untrusted instructions, or referencing external URLs.
+- **Multi-Tier Model Failover**: Inference fails over predictably across NVIDIA NIM (`NVIDIA_API_KEY`), Groq Cloud (`GROQ_API_KEY`), Hugging Face (`HUGGINGFACE_API_KEY`), and an offline deterministic synthesizer, preventing denial of service if upstream AI providers experience rate-limiting or outages.
+- **Output Sanitization**: Generated Markdown and multi-language code snippets are parsed and sanitized client-side using `rehype-sanitize` before rendering, mitigating any HTML injection or malicious tag execution embedded in LLM responses.
+
+## 11. Spaced Repetition & Progress Data Isolation
+
+- **Tenant Boundary Enforcement**: `POST /api/problems/revision`, `GET /api/problems/revision`, and `POST /api/questions/[id]/progress` extract `userId` directly from verified session cookies. Users cannot read, query, or mutate another candidate's revision intervals, mastery confidence scores, or notes.
+- **Server-Authoritative Interval Scheduling**: Retention interval shifts (`struggled`: 2 days, `good`: 7 days, `mastered`: 30 days for DSA; 1, 3, 7, 21 days for interview cards) are computed strictly server-side, preventing clients from injecting arbitrary cron due dates or corrupting scheduling queues.
+- **System Curated Content Segregation**: In the Question collection, only administrators can toggle `isSystem: true`. Non-admin users are restricted to authoring private questions tagged exclusively with their own `userId`.
+
+## 12. Scheduled Cron & Worker Authentication
+
+- **Bearer Token Verification**: All scheduled automation routes (`/api/cron/revision-alerts`, `/api/cron/contests-sync`, `/api/cron/user-contests-sync`) require a matching `Authorization: Bearer <CRON_SECRET>` header. In production, unauthenticated requests are immediately rejected with HTTP 401.
+- **Cryptographic QStash Signature Verification**: Worker route `/api/workers/email` validates incoming `Upstash-Signature` headers using `QSTASH_CURRENT_SIGNING_KEY` and `QSTASH_NEXT_SIGNING_KEY` to guarantee that email dispatch tasks originate strictly from the verified Upstash task queue.
+- **Email Content Sanitization**: Candidate draft note excerpts embedded within weekly revision digest emails are stripped of all Markdown formatting and truncated to a maximum of 100 characters to prevent email client HTML injection or layout breakage.
+
+## 13. Privacy, Cookie Consent & Analytics Governance
+
+- **Explicit Opt-In Cookie Consent**: `CookieConsentBanner` enforces GDPR and ePrivacy compliance by halting the initialization of Google Analytics 4 and PostHog until explicit user consent is recorded in `localStorage`.
+- **Granular Consent Categories**: Candidates retain individual control over `necessary`, `analytics`, and `marketing` cookies. Disabling analytics revokes telemetry tracking immediately.
+- **Zero Biometric Telemetry Leakage**: Client-side computer vision telemetry (BlazeFace coordinates, COCO-SSD bounding boxes, Web Audio RMS volumes) is strictly confined to exam report generation and Cloudflare R2 evidence storage. No biometric telemetry is ever transmitted to marketing or analytics providers.
+
+## 14. Search Engine, Bot & LLM Crawler Controls
+
+- **Robots.txt Boundary Protection**: `/robots.txt` explicitly disallows web bots and AI crawlers (including `GPTBot`, `ClaudeBot`, `PerplexityBot`, and `Google-Extended`) from indexing administrative interfaces (`/admin/*`), private API routes (`/api/*`), authentication flows (`/sign-in`, `/sign-up`, `/invite/*`), and live proctored exams (`/oa/*/test`).
+- **Controlled Machine-Readable Indexing**: `/llms.txt` and `/llms-full.txt` expose public educational curricula, pattern taxonomies, and practice topics in clean Markdown for Generative Engine Optimization (GEO), while omitting all private candidate records, internal secrets, and administrative schemas.
 

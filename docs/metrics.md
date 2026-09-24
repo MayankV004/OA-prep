@@ -6,26 +6,23 @@
 
 ## 1. Executive Summary & Codebase Scale
 
-BigO is an enterprise-grade, invite-only placement preparation application and proctored Online Assessment (OA) simulator built with Next.js 16 (App Router), React 19, TypeScript, MongoDB Atlas, Upstash Redis/QStash, and client-side TensorFlow.js.
-
-```
+BigO is an enterprise-grade, invite-only placement preparation application and proctored Online Assessment (OA) simulator built with Next.js 16 (App Router), React 19, TypeScript, MongoDB Atlas, Upstash Redis/QStash, and client-side TensorFlow.js.```
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │                            CODEBASE AT A GLANCE                              │
-├─────────────────────────┬──────────────────────────┬─────────────────────────┤
-│ 57,950+ Lines of Code   │ 381 TypeScript/TSX Files │ 78 REST API Routes      │
-│ 24 Mongoose Data Models │ 97 UI Components         │ 63 Next.js App Pages    │
-│ 22 Automated Tests      │ < 2.0s Test Suite Time   │ 100% Strict Type Safety │
-└─────────────────────────┴──────────────────────────┴─────────────────────────┘
+│ 64,500+ Lines of Code   │ 432 TypeScript/TSX Files │ 84 REST API Routes      │
+│ 25 Mongoose Data Models │ 102 UI Components        │ 68 Next.js App Pages    │
+│ 32 Automated Tests      │ ~2.2s Test Suite Time    │ 100% Strict Type Safety │
+└──────────────────────────────────────────────────────────────────────────────┘
 ```
 
 | Dimension | Metric | Engineering Detail |
 |---|---|---|
-| **Total Source Code** | **57,956 lines** | Clean TypeScript and TSX codebase adhering to strict type safety. |
-| **Source Files** | **381 files** | Modular architecture across `app/`, `components/`, `lib/`, and `models/`. |
-| **API Endpoints** | **78 routes** | RESTful route handlers under `app/api/**` with Zod schema validation. |
-| **Database Models** | **24 models** | Mongoose 9 schemas with discriminator-backed polymorphism. |
-| **UI Components** | **97 components** | Accessible Base UI & shadcn primitives styled with Tailwind CSS v4. |
-| **Frontend Pages** | **63 pages** | Next.js 16 App Router pages supporting SSR, RSC streaming, and client hubs. |
+| **Total Source Code** | **64,580 lines** | Clean TypeScript and TSX codebase adhering to strict type safety. |
+| **Source Files** | **432 files** | Modular architecture across `app/`, `components/`, `lib/`, and `models/`. |
+| **API Endpoints** | **84 routes** | RESTful route handlers under `app/api/**`, `/llms.txt`, and `/llms-full.txt` with Zod validation. |
+| **Database Models** | **25 models** | Mongoose 9 schemas including `UserQuestionProgress` and discriminator models. |
+| **UI Components** | **102 components**| Base UI & shadcn primitives with 3D flashcards, analytics, and cookie consent. |
+| **Frontend Pages** | **68 pages** | Next.js 16 App Router pages with ISR, SSR, streaming RSC, and reader layouts. |
 | **Target Scale** | **2,000 DAU** | Architecture verified for 120–200 concurrent users on budget cloud tiers. |
 
 ---
@@ -35,16 +32,18 @@ BigO is an enterprise-grade, invite-only placement preparation application and p
 The test suite is built on **Vitest 4**, `@testing-library/react`, `@testing-library/jest-dom`, and `jsdom`.
 
 ```
-✓ tests/unit/testcaseParser.test.ts   (3 tests)   10ms
-✓ tests/unit/runner.test.ts           (5 tests)   10ms
-✓ tests/unit/cache.test.ts            (3 tests)    7ms
-✓ tests/integration/auth-gate.test.ts (5 tests)   15ms
-✓ tests/components/Badge.test.tsx     (4 tests)   52ms
-✓ tests/components/ThemeToggle.test.tsx(2 tests)  143ms
+✓ tests/unit/testcaseParser.test.ts        (3 tests)    9ms
+✓ tests/unit/runner.test.ts                (5 tests)    9ms
+✓ tests/unit/cache.test.ts                 (3 tests)    7ms
+✓ tests/integration/auth-gate.test.ts      (5 tests)   17ms
+✓ tests/components/Badge.test.tsx          (4 tests)   58ms
+✓ tests/components/ThemeToggle.test.tsx     (2 tests)  143ms
+✓ tests/unit/interview-flashcards.test.ts  (6 tests)    8ms
+✓ tests/unit/revision-notes.test.ts        (4 tests)   15ms
 
-Test Files:  6 passed (6)
-Tests:       22 passed (22)
-Duration:    1.95s (transform: 788ms, setup: 1.43s, test runtime: 236ms)
+Test Files:  8 passed (8)
+Tests:       32 passed (32)
+Duration:    2.24s (transform: 943ms, setup: 2.04s, test runtime: 265ms)
 Pass Rate:   100%
 ```
 
@@ -52,16 +51,18 @@ Pass Rate:   100%
 
 | Test Suite | Type | Tests | Execution Time | Coverage Focus |
 |---|---|---|---|---|
-| [`testcaseParser.test.ts`](../tests/unit/testcaseParser.test.ts) | Unit | 3 | **10ms** | Parameter string parsing (`target = 7, nums = [2,3,1,2,4,3]`), matrices, raw stdin. |
-| [`runner.test.ts`](../tests/unit/runner.test.ts) | Unit | 5 | **10ms** | Language harness generation for C++, Python, Java; syntax wrapping and JSON serialization. |
+| [`testcaseParser.test.ts`](../tests/unit/testcaseParser.test.ts) | Unit | 3 | **9ms** | Parameter string parsing (`target = 7, nums = [2,3,1,2,4,3]`), matrices, raw stdin. |
+| [`runner.test.ts`](../tests/unit/runner.test.ts) | Unit | 5 | **9ms** | Language harness generation for C++, Python, Java; syntax wrapping and JSON serialization. |
 | [`cache.test.ts`](../tests/unit/cache.test.ts) | Unit | 3 | **7ms** | L1 memory cache TTL, L2 Redis passthrough, and key invalidation logic. |
-| [`auth-gate.test.ts`](../tests/integration/auth-gate.test.ts) | Integration | 5 | **15ms** | Role-Based Access Control (RBAC): 401 unauthenticated, 403 forbidden on `withRole('admin')`. |
-| [`Badge.test.tsx`](../tests/components/Badge.test.tsx) | Component | 4 | **52ms** | Variant rendering (`default`, `secondary`, `destructive`, `outline`), DOM snapshot integrity. |
+| [`auth-gate.test.ts`](../tests/integration/auth-gate.test.ts) | Integration | 5 | **17ms** | Role-Based Access Control (RBAC): 401 unauthenticated, 403 forbidden on `withRole('admin')`. |
+| [`Badge.test.tsx`](../tests/components/Badge.test.tsx) | Component | 4 | **58ms** | Variant rendering (`default`, `secondary`, `destructive`, `outline`), DOM snapshot integrity. |
 | [`ThemeToggle.test.tsx`](../tests/components/ThemeToggle.test.tsx) | Component | 2 | **143ms** | Next-themes context switching, accessibility aria labels, user event triggers. |
+| [`interview-flashcards.test.ts`](../tests/unit/interview-flashcards.test.ts) | Unit | 6 | **8ms** | Card flip mechanics, 4-tier Leitner spaced interval calculations, and question progress schema validation. |
+| [`revision-notes.test.ts`](../tests/unit/revision-notes.test.ts) | Unit | 4 | **15ms** | Multi-tier AI failover (NVIDIA NIM / Groq / deterministic), Markdown syntax structure, multi-language code blocks. |
 
 ### 2.2 Quality & Reliability Highlights
 
-- **Sub-2-Second Feedback Loop**: Complete test execution finishes in **1.95s**, enabling instant pre-commit verification and continuous integration in GitHub Actions.
+- **Sub-3-Second Feedback Loop**: Complete test execution finishes in **2.24s**, enabling instant pre-commit verification and continuous integration in GitHub Actions.
 - **End-to-End Type Safety**: 100% TypeScript strict mode enabled (`strict: true`, `noImplicitAny: true`); zero unvalidated `any` casts in core database services.
 - **Zod Schema Boundary Validation**: Shared validation schemas between client forms (`react-hook-form`) and API route handlers prevent malformed payloads before database execution.
 - **Zero-Dependency AWS SigV4 Engine**: Handcrafted S3-compatible SigV4 signing utility using native Node.js `crypto` (`lib/proctor/storage.ts`), eliminating **~40MB of `@aws-sdk/client-s3` dependencies** and cutting cold start bundle size.

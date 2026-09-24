@@ -14,8 +14,9 @@ Timestamps (`createdAt`, `updatedAt`) are managed by Mongoose's `timestamps: tru
 | `groups` | Shared (admin-writable, everyone reads) |
 | `topics` | Per user (`userId` required) |
 | `problems` | Per user |
-| `userprogress` | Per user (`userId` + `problemId`) |
-| `questions` | Per user |
+| `userprogress` | Per user (`userId` + `problemId`) with spaced repetition |
+| `questions` | Shared system-curated (`isSystem: true`) or user-owned |
+| `userquestionprogresses` | Per user (`userId` + `questionId`) with Leitner confidence & intervals |
 | `cheatsheets` | Per user |
 | `activities` | Per user (both `actorId` and `targetUserId`) |
 | `invites` | System (admin-managed) |
@@ -90,21 +91,27 @@ Subdocument `IVariation`:
 
 ### `userprogress` (`models/progress.ts`)
 
-Tracks individual user completion state, bookmarks, and notes per problem.
+Tracks individual user completion state, bookmarks, notes, and spaced repetition review intervals per problem.
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `_id` | ObjectId | |
+| `_id` | ObjectId | Auto-generated |
 | `userId` | ObjectId | ref `User`, required, indexed |
-| `problemId` | string | required, indexed |
+| `problemId` | string | Problem identifier, required, indexed |
 | `completed` | boolean | default `false` |
 | `completedAt` | Date? | timestamp when completed |
 | `notes` | string | default `''` |
-| `revision` | boolean | default `false` (bookmark for revision) |
-| `userNotes` | string | Markdown notes per problem |
+| `revision` | boolean | default `false` (one-click ⭐ bookmark for revision) |
+| `timesRevised` | number | default `0` (count of spaced repetition reviews completed) |
+| `lastRevisedAt` | Date? | timestamp of the most recent revision review |
+| `nextReviewAt` | Date? | target date for next spaced revision (indexed) |
+| `revisionConfidence` | `"struggled" \| "good" \| "mastered"` | default `"good"`; drives interval computation (2d / 7d / 30d) |
+| `userNotes` | string | Per-problem personal Markdown notes |
 
 Indexes:
 - `{ userId: 1, problemId: 1 }` unique
+- `{ userId: 1, revision: 1, nextReviewAt: 1 }` (fast query for overdue/active revision items in cron & UI)
+
 
 ### `taxonomies`
 
@@ -168,16 +175,52 @@ Discriminator additions:
 - `nonstandard`: `{ bucket: string }`
 - `cp`: `{ platform?: string, contest?: string, rating?: number }`
 
-### `questions`
+### `questions` (`models/question.ts`)
+
+Interview Q&A flashcard questions associated with core CS subjects (OS, DBMS, CN, OOP) and interview topics.
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `_id` | ObjectId | |
-| `userId` | ObjectId | ref `users` |
-| `subjectId` | ObjectId | ref `groups` |
-| `question` | string | required |
-| `answer` | string | Markdown |
-| `tags` | string[] | |
+| `_id` | ObjectId | Auto-generated |
+| `userId` | ObjectId? | ref `User`, null/empty for system-curated questions; populated for personal cards |
+| `subjectId` | ObjectId | ref `Group` (subject), required, indexed |
+| `isSystem` | boolean | default `false`; `true` denotes verified platform curated question (indexed) |
+| `difficulty` | `"Easy" \| "Medium" \| "Hard"` | default `"Medium"`, indexed |
+| `question` | string | Interview question text, required |
+| `answer` | string | Complete answer explanation in Markdown |
+| `keyPoints` | string[] | Bullet takeaways for rapid pre-interview recall |
+| `companyTags` | string[] | Target companies (e.g. Google, Amazon, Uber), indexed |
+| `tags` | string[] | Concept tags (e.g. `Deadlock`, `B-Tree`, `TCP`) |
+
+Indexes:
+- `{ subjectId: 1, isSystem: 1 }`
+- `{ userId: 1, subjectId: 1 }`
+- `{ companyTags: 1 }`
+- Text index: `{ question: 'text', answer: 'text' }`
+
+### `userquestionprogresses` (`models/userQuestionProgress.ts`)
+
+Tracks individual candidate flashcard review history, Leitner spaced-repetition intervals, and mastery states per interview question.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `_id` | ObjectId | Auto-generated |
+| `userId` | ObjectId | ref `User`, required, indexed |
+| `questionId` | ObjectId | ref `Question`, required, indexed |
+| `subjectId` | ObjectId | ref `Group` (subject), required, indexed |
+| `status` | `"unseen" \| "learning" \| "reviewing" \| "mastered"` | default `"unseen"`, indexed |
+| `confidence` | number | 0–4 rating (1: Again/1d, 2: Hard/3d, 3: Good/7d, 4: Easy/21d) |
+| `bookmarked` | boolean | default `false` (bookmark for rapid pre-round drill, indexed) |
+| `timesReviewed` | number | default `0` (review frequency counter) |
+| `lastReviewedAt` | Date? | timestamp of most recent review |
+| `nextReviewAt` | Date? | next spaced review date, indexed |
+| `userNotes` | string | Candidate's personal revision notes |
+
+Indexes:
+- `{ userId: 1, questionId: 1 }` unique
+- `{ userId: 1, subjectId: 1, status: 1 }` (drives subject mastery progress bars)
+- `{ userId: 1, subjectId: 1, bookmarked: 1 }` (drives bookmarked filter query)
+
 
 ### `cheatsheets`
 

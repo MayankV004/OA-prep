@@ -1,8 +1,8 @@
 # BigO — Documentation
 
-Personal placement-prep tracker, Online Assessment (OA) simulator, and computer science knowledge base. Features multi-user RBAC, invite-only access, pattern-based DSA tracking, automated CP profile synchronization, contest alert engines, dynamic monetization & promo codes, sandboxed code execution harness (Judge0 / Piston), ReaderLayout for deep reading, and client-side enterprise dual-engine neural proctoring.
+Personal placement-prep tracker, Online Assessment (OA) simulator, and computer science knowledge base. Features multi-user RBAC, invite-only access, pattern-based DSA tracking with spaced repetition, AI-powered revision notes with multi-language code tabs, 3D interactive interview flashcards, automated CP profile synchronization, contest alert engines, dynamic monetization & promo codes, sandboxed code execution harness (Judge0 / Piston), ReaderLayout for deep reading, client-side enterprise dual-engine neural proctoring, and machine-readable Generative Engine Optimization (GEO via llms.txt).
 
-**Stack:** Next.js 16 (App Router) + TypeScript · BetterAuth · MongoDB Atlas + Mongoose 9 · TanStack Query v5 · Judge0 / Docker Piston Runner · TensorFlow.js (BlazeFace + COCO-SSD) · Cloudflare R2 · Stripe · Monaco Editor · `@uiw/react-md-editor` · Tailwind CSS v4 + Base UI / shadcn · Recharts · Resend + React Email · Upstash Redis & QStash · GitHub Actions Crons · OpenTelemetry · Vercel.
+**Stack:** Next.js 16 (App Router) + TypeScript · BetterAuth · MongoDB Atlas + Mongoose 9 · TanStack Query v5 · Judge0 / Docker Piston Runner · TensorFlow.js (BlazeFace + COCO-SSD) · NVIDIA NIM & Groq Llama-3.3 · Cloudflare R2 · Stripe · Monaco Editor · `@uiw/react-md-editor` · Tailwind CSS v4 + Base UI / shadcn · Recharts · Resend + React Email · Upstash Redis & QStash · GitHub Actions & Vercel Crons · OpenTelemetry · Google Analytics & PostHog · Vercel.
 
 ## Docs Index
 
@@ -20,9 +20,10 @@ Personal placement-prep tracker, Online Assessment (OA) simulator, and computer 
 | [monetization.md](./monetization.md) | Monetization architecture, dynamic pricing plans (`pricing_plans`), promo code validation (`promo_codes`), revenue analytics, and B2B campus rollout |
 | [scalability.md](./scalability.md) | Scalable architecture plan for 2,000+ DAU target on MongoDB M0/M10, multi-tier caching (L1 + L2 Redis + Edge CDN), connection pooling, and QStash worker offload |
 | [metrics.md](./metrics.md) | **Engineering Metrics & Benchmarks**: Testing metrics, scalability & caching benchmarks, neural proctoring stats, code runner latency, and resume-ready bullet points |
+| [tech-stack.md](./tech-stack.md) | **Complete Technology Stack Specification**: Detailed matrix of frontend, runtime, database, AI inference, runner, security, and cloud technologies |
 | [novelity.md](./novelity.md) | Core novelty angles: failure forensics, high-fidelity OA simulation environment, reasoning capture, and post-OA replay debriefs |
 | [production-audit.md](./production-audit.md) | **Production Launch Checklist & Audit**: 20-point launch checklist, trust-breaking ranking, 5-phase quality playbook, SEO benchmarks, and verification commands |
 
-Start with **[PRD.md](./PRD.md)**. Review **[architecture.md](./architecture.md)** and **[proctoring.md](./proctoring.md)** for system design. Use **[schema.md](./schema.md)** and **[api.md](./api.md)** as reference while developing. For billing, see **[monetization.md](./monetization.md)**, and for operations, see **[setup.md](./setup.md)**, **[deployment.md](./deployment.md)**, and **[admin.md](./admin.md)**.
+Start with **[PRD.md](./PRD.md)** and **[tech-stack.md](./tech-stack.md)**. Review **[architecture.md](./architecture.md)** and **[proctoring.md](./proctoring.md)** for system design. Use **[schema.md](./schema.md)** and **[api.md](./api.md)** as reference while developing. For billing, see **[monetization.md](./monetization.md)**, and for operations, see **[setup.md](./setup.md)**, **[deployment.md](./deployment.md)**, and **[admin.md](./admin.md)**.
 
 

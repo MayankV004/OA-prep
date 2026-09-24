@@ -103,21 +103,29 @@ Unlike traditional problem trackers, BigO integrates **pattern-oriented DSA trac
 
 ---
 
-### 🧩 6. Pattern-Based DSA Tracker & Problem Base
-- **12+ Core Patterns**: Sliding Window, Two Pointers, Binary Search, Backtracking, Dynamic Programming, Graphs, Trees, Monotonic Stack, Overlapping Intervals, Prefix Sum, Segment Tree, and Greedy.
-- **Pattern Variations**: Problems are grouped by fundamental variation rather than isolated questions, allowing candidates to master underlying solution patterns.
-- **Rich Problem Metadata**: Difficulty tiers (`Easy`, `Medium`, `Hard`), platform links (LeetCode, Codeforces, AtCoder), priority rankings, and company tags.
-- **Personal Notes & Revision Bookmarks**: Per-problem Markdown notes editor with live preview and one-click revision bookmarks (`⭐`).
-- **Non-Standard & Custom DSA**: Discriminator-backed tracking for ad-hoc algorithm challenges and personal problem buckets.
+### 🧩 6. Pattern-Based DSA Tracker, Spaced Repetition & AI Notes
+- **12+ Core Patterns**: Sliding Window, Two Pointers, Fast & Slow Pointers, Linked List, Cyclic Sort, Heap & Priority Queue, Trie, Bit Manipulation, Math & Number Theory, Binary Search, Backtracking, and DP.
+- **Pattern Variations**: Problems are grouped by fundamental algorithmic variation rather than isolated questions, allowing candidates to master underlying solution archetypes.
+- **AI-Powered High-Yield Revision Notes (`POST /api/problems/ai-notes`)**:
+  - Gated exclusively to **BigO Pro** subscribers (`isPro || isAdmin`).
+  - Multi-tier LLM generation prioritizing **NVIDIA NIM** (`Nemotron-3-Ultra-550B`, `Nemotron-4-340B`), **Groq Cloud** (`Llama-3.3-70B`), **Hugging Face**, and an offline deterministic synthesizer.
+  - Generates structured revision summaries with 2–3 bullet core approaches, key edge cases, exact Big-O complexity, and consecutive C++, Java, and Python solution code blocks that render as interactive language switchers in the Markdown viewer.
+- **Spaced-Repetition Problem Scheduler (`POST /api/problems/revision`)**: Retention intervals driven by confidence feedback (`struggled`: 2 days, `good`: 7 days, `mastered`: 30 days) with automated revision counters (`timesRevised`).
+- **Weekly Revision Digest Email**: Automated cron (`/api/cron/revision-alerts` scheduled Sundays at 18:00 UTC) dispatching personalized digests of overdue problems via Upstash QStash and Resend.
+- **Non-Standard & Custom DSA Studio**: Dedicated admin studio (`/admin/content/non-standard`) supporting 9 canonical buckets, on-the-fly custom bucket creation, and pedagogical "Why Non-Standard?" rationales.
 
 ---
 
-### 📚 7. Core CS Subjects & Advanced Topics
+### 📚 7. Core CS Subjects, 3D Flashcards & Advanced Topics
 - **Core CS Modules**: Comprehensive concept notes and interview revision for Operating Systems (OS), Database Management Systems (DBMS), Computer Networks (CN), and Object-Oriented Programming (OOP).
+- **Interactive 3D Interview Flashcards (`/interview`, `/interview/[subject]`)**:
+  - Fluid 3D card flip interface (`FlashcardDeck.tsx`) with full keyboard shortcuts (`Space` to flip, `1`–`4` for confidence rating, arrows to navigate).
+  - 4-tier Leitner confidence intervals (1: Again/1d, 2: Hard/3d, 3: Good/7d, 4: Easy/21d) stored in `UserQuestionProgress`.
+  - Aggregated subject mastery statistics (`/api/questions/stats`) calculating mastery percentages, overdue review queues, and bookmarked questions.
+  - 100+ curated system flashcards seeded via `scripts/seed-interview-questions.ts`, with full administrative authoring in `/admin/content/questions`.
 - **Advanced Topics & System Design**: Deep dives into DevOps, Docker, Kubernetes, Distributed Systems, API Gateways, and Generative AI.
-- **Markdown Editor**: Integrated `@uiw/react-md-editor` with sanitization, auto-saving, and syntax highlighting via Shiki.
-- **Interview Q&A Flashcards**: Quick-flip interview question lists grouped by subject for rapid pre-interview revision.
-- **Cheat Sheets**: Topic-wise reference sheets with code snippets, formula summaries, and quick commands.
+- **ReaderLayout Subsystem**: Distraction-free, responsive reading interface with scrollspy table of contents, progress indicators, and fullscreen reading mode for both topics and cheatsheets.
+- **Markdown Editor**: Integrated `@uiw/react-md-editor` with sanitization, auto-saving, and syntax highlighting.
 
 ---
 
@@ -142,6 +150,22 @@ Unlike traditional problem trackers, BigO integrates **pattern-oriented DSA trac
 
 ---
 
+### 🌐 11. Generative Engine Optimization (GEO) & Machine-Readable APIs
+- **Machine-Readable LLM Manifests**: `/llms.txt` and `/llms-full.txt` endpoints delivering structured educational metadata, pattern maps, and topic descriptions for AI agents (ChatGPT, Claude, Perplexity).
+- **Dynamic SEO & XML Sitemap**: Auto-generated `/sitemap.xml` with canonical `bigoprep.tech` domain integration, alongside crawler-specific `/robots.txt` access rules.
+- **Schema.org Structured Data**: Granular JSON-LD data graphs (`Course`, `SoftwareApplication`, `EducationalOrganization`, `FAQPage`, `BreadcrumbList`) embedded on public pages.
+
+---
+
+### 📱 12. Production Polish, Privacy & Mobile Experience
+- **Granular Cookie Consent**: `CookieConsentBanner` enforcing GDPR/ePrivacy consent before activating third-party analytics.
+- **Multi-Provider Analytics**: Privacy-focused wrapper (`AnalyticsProvider`) supporting Google Analytics 4 and PostHog without capturing any biometric telemetry.
+- **Mobile Ergonomics**: Sticky landing action CTA (`MobileStickyCta`), 16px form input hardening preventing iOS Safari auto-zoom, and dynamic OpenGraph social preview images (`app/opengraph-image.tsx`).
+- **Production Audit Checklist**: 20-point verified production launch checklist documented in `docs/production-audit.md`.
+
+
+---
+
 ## 🛠️ Technology Stack
 
 | Layer | Technology | Purpose & Description |
@@ -157,15 +181,20 @@ Unlike traditional problem trackers, BigO integrates **pattern-oriented DSA trac
 | **Reader Layout** | `ReaderLayout` Subsystem | Immersive distraction-free reading experience for CS subjects and cheatsheets with dynamic table of contents |
 | **Evidence Storage** | Cloudflare R2 | S3-compatible, ultra-low-cost private object storage via native Node.js crypto AWS SigV4 signed PUT uploads |
 | **Behavioral LLM Forensics**| Groq (Llama-3.3-70B) / Hugging Face | Sub-second telemetry evaluation and integrity report generation with deterministic offline fallbacks |
+| **AI Revision Notes Engine** | NVIDIA NIM + Groq + Hugging Face | Multi-model failover generating structured notes with multi-language solution tabs (C++, Java, Python) |
+| **Interview Flashcards Engine**| 3D CSS Card Flip + Leitner Spacing | Fluid interactive flashcard deck (`FlashcardDeck.tsx`) with 4-tier confidence intervals and mastery stats |
+| **Machine-Readable GEO** | `llms.txt` + Dynamic XML Sitemap | AI web discovery manifest and comprehensive search crawler directives (`robots.txt`) |
+| **Analytics & Privacy** | Google Analytics 4 + PostHog | Privacy-focused `AnalyticsProvider` gated behind explicit GDPR `CookieConsentBanner` |
 | **Payment Gateway & Promos**| Stripe + Dynamic Pricing Models | Dynamic MongoDB pricing plans, promotional discount codes, Checkout Sessions, Customer Portal, and Webhooks |
 | **Authentication** | Better Auth | MongoDB adapter with session tokens, RBAC (`admin` / `user`), and database-backed rate limiting |
 | **Database & ODM** | MongoDB Atlas + Mongoose 9 | Document database with discriminators for `Problem` and `Group` entities, pool size capped at 3 for M0 |
 | **Caching & CDN Headers** | Multi-Tier (Memory + Redis + CDN) | L1 memory cache + L2 Upstash Redis (`lib/cache.ts`) + `CDN-Cache-Control` / `Vercel-CDN-Cache-Control` edge headers |
-| **Async Task Queue & Crons**| Upstash QStash + GitHub Actions | Decoupled background task queue for email dispatch plus 15-minute GitHub Actions contest alert crons |
+| **Async Task Queue & Crons**| Upstash QStash + GitHub Actions | Decoupled background task queue for email dispatch, 15-minute contest alerts, and Sunday revision digest |
 | **Styling** | Tailwind CSS v4 + Base UI + Shadcn | Modern UI primitives, dark mode, custom color ramps, and micro-animations |
 | **Charts** | Recharts | Responsive completion trend charts, difficulty mix charts, CP rating graphs, and 6-month revenue trends |
 | **Email Service** | Resend + React Email | Transactional emails with React Email templates dispatched asynchronously via QStash |
 | **Observability** | OpenTelemetry | Distributed tracing, instrumentation, Prometheus & Grafana support |
+
 
 ---
 

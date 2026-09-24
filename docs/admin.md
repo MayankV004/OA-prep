@@ -99,3 +99,27 @@ Managed via `GET/POST /api/admin/system/runner`:
 - **Cluster Latency Gauges**: Real-time health chips for MongoDB Atlas replica sets, Upstash Redis distributed caches, and Cloudflare R2 evidence storage.
 - **Throughput & Language Breakdown**: Recharts visualizations of candidate submission volume across programming languages and pass/fail/TLE ratios.
 - **Interactive Sandbox Benchmark Terminal**: In-browser diagnostic terminal to execute test payloads directly in the container sandbox to measure live compiler performance.
+
+## 10. Interview Flashcards & Question Studio (`/admin/content/questions`)
+
+Managed via `GET /api/questions`, `POST /api/questions`, and `PATCH/DELETE /api/questions/:id`:
+- **Subject-Partitioned Question Directory**: Filter questions across core CS domains (Operating Systems, Database Management Systems, Computer Networks, Object-Oriented Programming).
+- **System-Curated Content Publishing**: Administrators can publish questions with `isSystem: true`, making them universally accessible across candidate flashcard decks.
+- **Rich Question Authoring**: Author question prompts, formatted Markdown answer guides, quick bullet-point takeaways (`keyPoints`), company tags (Google, Amazon, Meta, Uber, etc.), and difficulty tiers (`Easy`, `Medium`, `Hard`).
+- **Full-Text Search & Filtration**: Real-time filtering across question titles, Markdown answers, and tags.
+- **Automated Seeding Integration**: CLI utility `npx tsx scripts/seed-interview-questions.ts` provides bulk seeding of 100+ curated industry-standard interview cards.
+
+## 11. Non-Standard DSA & Dynamic Buckets Studio (`/admin/content/non-standard`)
+
+Managed via `/api/admin/content/non-standard`:
+- **Canonical Buckets & Custom Buckets**: Supports 9 canonical problem categories (Bit Manipulation, Binary Search Invariants, Math & Number Theory, Monotonic Stack/Queue, Constructive & Ad-Hoc, Two Pointers/Sliding Window Invariants, Coordinate Compression, Interval Scheduling, Probability & Game Theory) plus dynamic on-the-fly bucket creation.
+- **Pedagogical Rationales**: Enforces the "Why Non-Standard?" educational rationale for each problem, highlighting algorithmic intuition that transcends cookie-cutter patterns.
+- **Starter Code & Company Metadata**: Configure starter code templates (C++, Python, Java) and employer tagging for each challenge.
+
+## 12. Pattern DSA & Variation Hierarchy (`/admin/content/patterns`)
+
+Managed via `/api/admin/content/patterns`:
+- **12+ Core Patterns**: Sliding Window, Two Pointers, Fast & Slow Pointers, Linked List, Cyclic Sort, Heap & Priority Queue, Trie, Bit Manipulation, Math & Number Theory, etc.
+- **Nested Variation Trees**: Manage sub-variations under each pattern, complete with concept explanations, time/space complexity notes, and curated practice problem links.
+- **Practice Deep Linking**: Direct synchronization between administrative variations and candidate practice pages (`/dsa/[pattern]/[variation]/practice`).
+
