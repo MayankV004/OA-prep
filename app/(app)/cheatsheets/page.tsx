@@ -41,52 +41,54 @@ export default function CheatsheetsPage() {
     });
   }, [cheatsheets, tagFilter, debouncedSearch]);
 
+  const handleResetFilters = () => {
+    setSearchQuery('');
+    setTagFilter('');
+  };
+
   return (
     <div className="space-y-8 pb-16 w-full">
-      {/* 1. Header Section */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-1 pb-2">
-        <div className="space-y-1.5 min-w-0">
-          <div className="flex items-center gap-2 text-2xs font-bold text-emerald-400 font-mono uppercase tracking-wider">
-            <span>Engineering Quick Reference</span>
-            <span className="text-border">·</span>
-            <span>Handbooks & Syntax</span>
+      {/* ── 1. Page Header (Modern Cockpit Header) ── */}
+      <div className="pt-2 space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-3">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black font-display tracking-tight text-foreground leading-[1.08]">
+              Engineering{' '}
+              <span className="bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-400 dark:from-emerald-400 dark:via-teal-300 dark:to-emerald-200 bg-clip-text text-transparent">
+                Cheat Sheets
+              </span>
+            </h1>
+            <p className="text-sm sm:text-base text-muted-foreground max-w-2xl leading-relaxed font-normal">
+              High-yield syntax reference, operational time complexities, formulas, method signatures, and essential templates for technical interviews.
+            </p>
           </div>
-          <h1 className="font-display text-3xl sm:text-4xl font-black tracking-tight text-foreground">
-            Cheat Sheets
-          </h1>
-          <p className="text-sm text-muted-foreground font-normal max-w-2xl">
-            Quick reference syntax, methods, formulas, complexity tables, and code snippets curated for technical interviews.
-          </p>
-        </div>
 
-        <div className="flex items-center gap-3 shrink-0 self-start sm:self-center">
-          {!isLoading && cheatsheets.length > 0 && (
-            <div className="px-3 py-1.5 rounded-xl bg-card border border-border/40 text-muted-foreground font-mono text-xs font-semibold shadow-2xs">
-              {cheatsheets.length} sheet{cheatsheets.length !== 1 ? 's' : ''} available
-            </div>
-          )}
-          {isAdmin && (
-            <Button
-              onClick={() => setIsOpen(true)}
-              className="bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs gap-1.5 shadow-xs"
-            >
-              <Plus className="size-3.5" />
-              New Sheet
-            </Button>
-          )}
+          <div className="flex items-center gap-3 shrink-0 self-start sm:self-center">
+            {isAdmin && (
+              <Button
+                onClick={() => setIsOpen(true)}
+                className="px-4 py-2 rounded-full text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary-hover active:scale-95 transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+              >
+                <Plus className="size-3.5" />
+                <span>New Sheet</span>
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* 2. Search & Tag Filter Bar */}
+      {/* ── 2. Search & Tag Filter Bar ── */}
       <CheatsheetFilterBar
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         selectedTag={tagFilter}
         onTagChange={setTagFilter}
         allTags={allTags}
+        totalCount={cheatsheets.length}
+        filteredCount={filtered.length}
       />
 
-      {/* 3. Cheatsheet Card Grid */}
+      {/* ── 3. Cheatsheet Card Grid ── */}
       <CheatsheetGrid
         cheatsheets={filtered}
         isLoading={isLoading}
@@ -94,9 +96,10 @@ export default function CheatsheetsPage() {
         selectedTag={tagFilter}
         isAdmin={isAdmin}
         onNewClick={() => setIsOpen(true)}
+        onResetFilters={handleResetFilters}
       />
 
-      {/* 4. Create Sheet Dialog (Admin Only) */}
+      {/* ── 4. Create Sheet Dialog (Admin Only) ── */}
       {isAdmin && (
         <CreateCheatsheetDialog open={isOpen} onOpenChange={setIsOpen} />
       )}
