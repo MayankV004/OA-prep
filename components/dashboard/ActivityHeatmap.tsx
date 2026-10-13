@@ -12,7 +12,7 @@ import {
   min,
   eachMonthOfInterval,
 } from 'date-fns';
-import { ChevronDown, Info } from 'lucide-react';
+import { ChevronDown, Info, Flame } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
@@ -31,11 +31,11 @@ interface HeatmapCell {
 type TimeRange = 'year' | '6months' | '3months';
 
 const EMERALD_CLASSES = [
-  'bg-muted border border-border',
-  'bg-emerald-950/40 border border-emerald-800/50 dark:bg-emerald-950/70 text-emerald-300',
-  'bg-emerald-800/70 border border-emerald-600/60 dark:bg-emerald-800/90 text-emerald-200',
-  'bg-emerald-600 border border-emerald-500 dark:bg-emerald-600 text-white',
-  'bg-emerald-500 border border-emerald-400 dark:bg-emerald-400 text-black font-bold',
+  'bg-muted/60 border border-border/40',
+  'bg-emerald-950/60 border border-emerald-800/60 dark:bg-emerald-950/80 text-emerald-300',
+  'bg-emerald-800/80 border border-emerald-600/70 dark:bg-emerald-800 text-emerald-200',
+  'bg-emerald-600 border border-emerald-500 text-white',
+  'bg-emerald-500 border border-emerald-400 text-black font-bold shadow-[0_0_8px_rgba(16,185,129,0.35)]',
 ];
 
 const MONTH_NAMES = [
@@ -257,10 +257,14 @@ export function ActivityHeatmap({ data = [] }: { data?: HeatmapCell[] }) {
       {/* ── Footer Legend ──────────────────────────────────────────────── */}
       <div className="flex flex-wrap items-center justify-between gap-3 pt-2 text-2xs text-text-muted border-t border-border/30">
         <div className="flex items-center gap-2 font-medium">
-          <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-amber-500/15 text-amber-500 border border-amber-500/25">
-            Streak
+          <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-amber-500/15 text-amber-500 border border-amber-500/25">
+            <Flame className="size-3 text-amber-500 fill-amber-500/30" />
+            <span>Streak: {currentStreak} Days</span>
           </span>
-          <span>Active: <strong className="text-foreground">{currentStreak} days</strong></span>
+          <span className="text-muted-foreground hidden sm:inline">•</span>
+          <span className="text-muted-foreground hidden sm:inline">
+            Longest: <strong className="text-foreground">{maxStreak} Days</strong>
+          </span>
         </div>
 
         <div className="flex items-center gap-1.5 ml-auto">

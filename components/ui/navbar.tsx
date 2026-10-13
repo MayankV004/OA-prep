@@ -6,21 +6,21 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Code2,
   Terminal,
-  ChevronDown,
-  ChevronRight,
   ShieldCheck,
   Layers,
   Cpu,
   Database,
   Network,
   BookOpen,
-  ArrowRight,
   Menu,
   X,
   FileCode,
   BarChart2,
   LayoutDashboard,
 } from 'lucide-react';
+import { ChevronDown } from '@/components/animate-ui/icons/chevron-down';
+import { ChevronRight } from '@/components/animate-ui/icons/chevron-right';
+import { ArrowRight } from '@/components/animate-ui/icons/arrow-right';
 import { authClient } from '@/lib/auth-client';
 import { UserMenu } from '@/components/shell/UserMenu';
 import { AnimatedThemeToggle } from '@/components/ui/animated-theme-toggle';
@@ -190,7 +190,7 @@ export function Navbar() {
       className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-8 py-3.5"
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 py-2 rounded-full bg-card/85 dark:bg-card/70 backdrop-blur-2xl border border-border/60 shadow-[0_8px_32px_rgba(0,0,0,0.06)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)] transition-all duration-300 relative before:pointer-events-none before:absolute before:inset-x-8 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-emerald-500/30 before:to-transparent">
-        
+
         {/* Brand Logo */}
         <Link href="/" className="flex items-center gap-3 group">
           <BigOLogo size="md" showBadge={false} />
@@ -222,8 +222,10 @@ export function Navbar() {
                 >
                   <span>{category.label}</span>
                   <ChevronDown
+                    size={14}
+                    animateOnHover
                     className={cn(
-                      'size-3.5 transition-transform duration-250 ease-out',
+                      'transition-transform duration-250 ease-out',
                       isOpen && 'rotate-180 text-primary'
                     )}
                   />
@@ -300,7 +302,7 @@ export function Navbar() {
                               className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-primary hover:text-primary-hover transition-colors group/link"
                             >
                               <span>Explore Now</span>
-                              <ArrowRight className="size-3 transition-transform group-hover/link:translate-x-1" />
+                              <ArrowRight size={12} animateOnHover className="transition-transform group-hover/link:translate-x-1" />
                             </Link>
                           </div>
                         )}
@@ -339,7 +341,7 @@ export function Navbar() {
 
           {session ? (
             <div className="w-10 h-10 flex items-center justify-center">
-              <UserMenu collapsed={true} isAdmin={(session.user as { role?: string })?.role === 'admin'} />
+              <UserMenu collapsed={true} isAdmin={(session.user as { role?: string })?.role === 'admin'} side="bottom" />
             </div>
           ) : (
             <div className="hidden sm:flex items-center gap-2">
@@ -389,7 +391,7 @@ export function Navbar() {
                   <LayoutDashboard className="size-4 text-primary" />
                   <span>Go to Dashboard</span>
                 </div>
-                <ArrowRight className="size-3.5 text-primary" />
+                <ArrowRight size={14} animateOnHover className="text-primary" />
               </Link>
 
               {NAV_CATEGORIES.map((cat) => {
@@ -403,7 +405,9 @@ export function Navbar() {
                     >
                       <span>{cat.label}</span>
                       <ChevronDown
-                        className={cn('size-3.5 transition-transform duration-200', isExpanded && 'rotate-180 text-primary')}
+                        size={14}
+                        animateOnHover
+                        className={cn('transition-transform duration-200', isExpanded && 'rotate-180 text-primary')}
                       />
                     </button>
 

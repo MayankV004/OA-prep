@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Compass } from 'lucide-react';
+import { ArrowRight } from '@/components/animate-ui/icons/arrow-right';
 
 export function MobileStickyCta() {
   const [show, setShow] = useState(false);
@@ -53,7 +53,7 @@ export function MobileStickyCta() {
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-black shadow-md shadow-emerald-500/25 active:scale-95 transition-all cursor-pointer"
             >
               <span>Start Free</span>
-              <ArrowRight className="size-3.5 stroke-[2.5]" />
+              <ArrowRight size={14} animateOnHover className="stroke-[2.5]" />
             </Link>
           </div>
         </motion.div>

@@ -1,7 +1,10 @@
 'use client';
 
 import React from 'react';
-import { Check, ArrowRight, Loader2, Sparkles } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+import { Check } from '@/components/animate-ui/icons/check';
+import { ArrowRight } from '@/components/animate-ui/icons/arrow-right';
+import { Sparkles } from '@/components/animate-ui/icons/sparkles';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { PlanPricingDetail, CheckoutPlanKey } from '@/lib/payments/types';
@@ -51,7 +54,7 @@ export function PricingCard({
       {promoCodeLabel ? (
         <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-20">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500 px-3.5 py-1 text-2xs font-mono font-black text-black ring-4 ring-background shadow-lg uppercase tracking-wider whitespace-nowrap">
-            <Sparkles className="size-3 fill-black text-black" />
+            <Sparkles size={12} animateOnView className="fill-black text-black" />
             {promoCodeLabel} APPLIED
           </span>
         </div>
@@ -119,7 +122,7 @@ export function PricingCard({
               .map((feature, i) => (
                 <li key={i} className="flex items-start gap-2.5">
                   <div className="size-4.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 grid place-items-center shrink-0 mt-0.5 shadow-2xs">
-                    <Check className="size-2.5 stroke-[3]" />
+                    <Check size={11} animateOnView className="stroke-[3]" />
                   </div>
                   <span className="text-foreground/90 font-normal leading-snug">{feature}</span>
                 </li>
@@ -157,7 +160,7 @@ export function PricingCard({
             ) : (
               <>
                 <span>{isOneTime ? 'Get OA Season Pass' : 'Upgrade to Pro'}</span>
-                <ArrowRight className="size-4" />
+                <ArrowRight size={16} animateOnHover />
               </>
             )}
           </button>

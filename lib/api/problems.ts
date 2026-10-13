@@ -30,8 +30,16 @@ export const problemsApi = {
     }),
 
   /** Get progress breakdown stats for a given kind */
-  getProgressStats: (kind: ProblemKind) =>
-    apiFetch<ProgressGroupStat[]>(`/api/problems/progress?kind=${kind}`),
+  getProgressStats: async (kind: ProblemKind): Promise<ProgressGroupStat[]> => {
+    const data = await apiFetch<ProgressGroupStat[] | { stats: ProgressGroupStat[] }>(
+      `/api/problems/progress?kind=${kind}`
+    );
+    if (Array.isArray(data)) return data;
+    if (data && Array.isArray((data as { stats?: ProgressGroupStat[] }).stats)) {
+      return (data as { stats: ProgressGroupStat[] }).stats;
+    }
+    return [];
+  },
 
   /** Get completed problem IDs for a given kind */
   getCompletedIds: (kind: ProblemKind) =>

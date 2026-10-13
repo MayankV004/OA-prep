@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { HelpCircle } from 'lucide-react';
+import { ChevronDown } from '@/components/animate-ui/icons/chevron-down';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ScrollReveal } from '@/components/ui/scroll-reveal';
 import { cn } from '@/lib/utils';
@@ -9,7 +10,7 @@ import { cn } from '@/lib/utils';
 const FAQS = [
   {
     q: 'Is BigO Prep completely free to use?',
-    a: 'Yes! Core pattern roadmaps, full DSA problem trackers, CS core fundamentals (OS, DBMS, CN), and contest radar are 100% free forever with no credit card required. BigO Pro is an optional upgrade that unlocks timed company OA simulators and AI testcase debugging.',
+    a: 'Yes. Core pattern roadmaps, full DSA problem trackers, CS core fundamentals (OS, DBMS, CN), and contest radar are 100% free forever with no credit card required. BigO Pro is an optional upgrade that unlocks timed company OA simulators and AI testcase debugging.',
   },
   {
     q: 'How are pattern variations different from regular problem lists?',
@@ -37,16 +38,17 @@ export function FaqSection() {
   };
 
   return (
-    <section className="py-24 px-4 md:px-8 max-w-4xl mx-auto relative">
+    <section className="py-24 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto relative">
       <ScrollReveal direction="up" delay={0.1}>
         <div className="text-center mb-14 space-y-3">
-          <span className="text-xs font-bold uppercase tracking-widest text-primary">
-            Got Questions?
-          </span>
+          <div className="inline-flex items-center gap-2 text-2xs font-mono font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+            <HelpCircle className="size-3" />
+            <span>CLARITY // COMMON QUESTIONS</span>
+          </div>
           <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-foreground">
-            Frequently Asked <span className="text-primary">Questions</span>
+            Frequently asked questions.
           </h2>
-          <p className="text-muted-foreground text-base sm:text-lg font-light leading-relaxed">
+          <p className="text-muted-foreground text-base sm:text-lg font-normal leading-relaxed">
             Everything you need to know about preparing for your placement season with BigO.
           </p>
         </div>
@@ -60,8 +62,10 @@ export function FaqSection() {
             <div
               key={idx}
               className={cn(
-                'rounded-2xl border transition-colors duration-200 bg-card overflow-hidden',
-                isOpen ? 'border-primary/40 shadow-xs' : 'border-border/80 hover:border-border'
+                'rounded-2xl border transition-all duration-200 bg-card/85 dark:bg-[#0c1017] overflow-hidden',
+                isOpen
+                  ? 'border-emerald-500/40 shadow-xs'
+                  : 'border-border/80 dark:border-white/10 hover:border-border'
               )}
             >
               <button
@@ -70,13 +74,15 @@ export function FaqSection() {
                 className="w-full flex items-center justify-between p-5 sm:p-6 text-left cursor-pointer outline-none select-none"
                 aria-expanded={isOpen}
               >
-                <span className="text-base sm:text-lg font-bold text-foreground pr-4">
+                <span className="text-sm sm:text-base font-bold text-foreground pr-4">
                   {faq.q}
                 </span>
                 <ChevronDown
+                  size={18}
+                  animateOnHover
                   className={cn(
-                    'size-4 shrink-0 text-muted-foreground transition-transform duration-200',
-                    isOpen && 'rotate-180 text-primary'
+                    'shrink-0 text-muted-foreground transition-transform duration-200',
+                    isOpen && 'rotate-180 text-emerald-500'
                   )}
                 />
               </button>
@@ -90,7 +96,7 @@ export function FaqSection() {
                     transition={{ duration: 0.22, ease: [0.25, 1, 0.5, 1] }}
                     className="overflow-hidden"
                   >
-                    <div className="px-5 sm:px-6 pb-5 sm:pb-6 text-xs sm:text-sm text-muted-foreground leading-relaxed pt-1 border-t border-border/40">
+                    <div className="px-5 sm:px-6 pb-5 sm:pb-6 text-xs sm:text-sm text-muted-foreground leading-relaxed pt-1 border-t border-border/50 dark:border-white/5">
                       {faq.a}
                     </div>
                   </motion.div>

@@ -1,7 +1,8 @@
 'use client';
 
 import * as React from 'react';
-import { AlertCircle, Check, Eye, EyeOff } from 'lucide-react';
+import { AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { Check } from '@/components/animate-ui/icons/check';
 
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
@@ -48,6 +49,8 @@ function AuthField({
           />
         ) : valid ? (
           <Check
+            size={16}
+            animateOnView
             className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-success"
             aria-hidden
           />
@@ -206,7 +209,7 @@ function FormBanner({
       {tone === 'error' ? (
         <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden />
       ) : (
-        <Check className="mt-0.5 size-4 shrink-0" aria-hidden />
+        <Check size={16} animateOnView className="mt-0.5 size-4 shrink-0" aria-hidden />
       )}
       <span className="min-w-0">{children}</span>
     </div>

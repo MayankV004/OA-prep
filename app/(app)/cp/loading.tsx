@@ -1,49 +1,43 @@
 import { Skeleton } from '@/components/ui/skeleton';
 
 /**
- * Mirrors the CP index: page heading, then a 1 → 2 → 4 grid of platform cards
- * with a percentage figure and progress footer. Shapes only — no spinners.
+ * Mirrors the CP index: page heading, 4 metric strips, platform shortcuts,
+ * verified profile card, and chart skeleton. Shapes only — no spinners.
  */
 export default function CPLoading() {
   return (
-    <div className="space-y-8 pb-12" aria-busy role="status" aria-label="Loading contest platforms">
-      <span className="sr-only">Loading contest platforms…</span>
+    <div className="space-y-8 pb-16" aria-busy role="status" aria-label="Loading competitive programming hub">
+      <span className="sr-only">Loading competitive programming hub…</span>
 
-      {/* Page heading */}
-      <div className="space-y-2">
-        <Skeleton className="h-3 w-20" />
-        <Skeleton className="h-8 w-64 sm:h-9" />
-        <Skeleton className="h-4 w-full max-w-md" />
+      {/* Header and Quick Actions */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pt-2">
+        <div className="space-y-2">
+          <Skeleton className="h-5 w-48 rounded-full" />
+          <Skeleton className="h-10 w-80 rounded-xl" />
+          <Skeleton className="h-4 w-full max-w-md rounded-lg" />
+        </div>
+
+        <div className="flex items-center gap-2.5">
+          <Skeleton className="h-9 w-32 rounded-xl" />
+          <Skeleton className="h-9 w-36 rounded-xl" />
+        </div>
       </div>
 
-      {/* Platform cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {/* 4 Executive Metric Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div
-            key={i}
-            className="overflow-hidden rounded-xl bg-card shadow-e2"
-            style={{ animationDelay: `${i * 60}ms` }}
-          >
-            <div className="space-y-3 p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex min-w-0 items-center gap-3">
-                  <Skeleton className="size-10 shrink-0 rounded-xl" />
-                  <div className="min-w-0 space-y-2">
-                    <Skeleton className="h-4 w-24" />
-                    <Skeleton className="h-3 w-16" />
-                  </div>
-                </div>
-                <Skeleton className="size-8 shrink-0 rounded-full" />
-              </div>
-              <Skeleton className="h-7 w-16" />
-            </div>
-
-            <div className="bg-surface-sunken p-4">
-              <Skeleton className="h-1.5 w-full rounded-full" />
-            </div>
-          </div>
+          <Skeleton key={i} className="h-24 w-full rounded-2xl" />
         ))}
       </div>
+
+      {/* Practice shortcuts bar skeleton */}
+      <Skeleton className="h-12 w-full rounded-2xl" />
+
+      {/* CP Profile overview card skeleton */}
+      <Skeleton className="h-52 w-full rounded-2xl" />
+
+      {/* Recharts chart card skeleton */}
+      <Skeleton className="h-[440px] w-full rounded-2xl" />
     </div>
   );
 }

@@ -1,12 +1,18 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
-import { motion, AnimatePresence, type Variants } from 'framer-motion';
-import { Search, X, ArrowRight, CheckCircle2 } from 'lucide-react';
-import { SpotlightCard } from '@/components/ui/spotlight-card';
-import { EmptyState } from '@/components/ui/empty-state';
+import { motion, type Variants } from 'framer-motion';
+import {
+  Search,
+  X,
+  ArrowRight,
+  RotateCcw,
+  Layers,
+  Code2,
+  Check,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface PatternStat {
@@ -40,18 +46,71 @@ const CATEGORY_FILTERS: CategoryFilterItem[] = [
   { id: 'binary-search', label: 'Binary Search', keywords: ['binary search', 'search', 'modified'] },
 ];
 
+function CircularMasteryRing({ pct, isMastered }: { pct: number; isMastered: boolean }) {
+  const radius = 13;
+  const circumference = 2 * Math.PI * radius; // ~81.68
+  const strokeDashoffset = circumference - (pct / 100) * circumference;
+
+  return (
+    <div
+      className={cn(
+        'size-11 sm:size-12 rounded-2xl flex items-center justify-center border shadow-2xs backdrop-blur-md transition-all duration-300 group-hover:scale-105 shrink-0 relative',
+        'bg-foreground/[0.03] dark:bg-white/[0.06] border-border/70 dark:border-white/10',
+        isMastered
+          ? 'group-hover:border-emerald-500/40 group-hover:bg-emerald-500/[0.05]'
+          : 'group-hover:border-primary/40 group-hover:bg-primary/[0.05]'
+      )}
+      title={`${pct}% mastered`}
+    >
+      <svg className="size-8 -rotate-90" viewBox="0 0 36 36" aria-hidden="true">
+        {/* Track */}
+        <circle
+          cx="18"
+          cy="18"
+          r={radius}
+          className="stroke-foreground/10 dark:stroke-white/10 fill-none"
+          strokeWidth="2.75"
+        />
+        {/* Progress fill */}
+        <circle
+          cx="18"
+          cy="18"
+          r={radius}
+          className={cn(
+            'fill-none transition-all duration-500 ease-out',
+            isMastered ? 'stroke-emerald-500' : 'stroke-primary'
+          )}
+          strokeWidth="2.75"
+          strokeDasharray={circumference}
+          strokeDashoffset={strokeDashoffset}
+          strokeLinecap="round"
+        />
+      </svg>
+      {/* Center readout: checkmark if mastered, else percentage number */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        {isMastered ? (
+          <Check className="size-3.5 text-emerald-500 stroke-[3]" />
+        ) : (
+          <span className="text-[10px] font-mono font-bold text-foreground/90">
+            {pct}%
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
-    transition: { staggerChildren: 0.05 },
+    transition: { staggerChildren: 0.04 },
   },
 };
 
 const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 12 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: 'easeOut' } },
+  hidden: { opacity: 0, y: 10 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: 'easeOut' } },
 };
 
 export default function DSAPageClient({ initialPatterns }: { initialPatterns: any[] }) {
@@ -59,6 +118,23 @@ export default function DSAPageClient({ initialPatterns }: { initialPatterns: an
   const [statusFilter, setStatusFilter] = useState<'all' | 'in-progress' | 'mastered' | 'unstarted'>('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [localLastPattern, setLocalLastPattern] = useState<LastPracticedInfo | null>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Keyboard shortcut listener for '/' to focus search
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        e.key === '/' &&
+        document.activeElement?.tagName !== 'INPUT' &&
+        document.activeElement?.tagName !== 'TEXTAREA'
+      ) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Read local fallback last pattern
   useEffect(() => {
@@ -68,7 +144,7 @@ export default function DSAPageClient({ initialPatterns }: { initialPatterns: an
         if (stored) {
           setLocalLastPattern(JSON.parse(stored));
         }
-      } catch {}
+      } catch { }
     }
   }, []);
 
@@ -92,17 +168,6 @@ export default function DSAPageClient({ initialPatterns }: { initialPatterns: an
   const statsMap = useMemo(() => {
     return Object.fromEntries(progressList.map((p) => [p.group, p]));
   }, [progressList]);
-
-  // Aggregate stats
-  const totalCompleted = useMemo(() => {
-    return progressList.reduce((acc, curr) => acc + curr.completed, 0);
-  }, [progressList]);
-
-  const totalProblems = useMemo(() => {
-    return progressList.reduce((acc, curr) => acc + curr.total, 0);
-  }, [progressList]);
-
-  const overallProgress = totalProblems > 0 ? Math.round((totalCompleted / totalProblems) * 100) : 0;
 
   const masteredCount = useMemo(() => {
     return initialPatterns.filter((p) => {
@@ -138,7 +203,7 @@ export default function DSAPageClient({ initialPatterns }: { initialPatterns: an
       const stat = statsMap[pattern.title] ?? { total: 0, completed: 0 };
       const isMastered = stat.total > 0 && stat.completed === stat.total;
       const isInProgress = stat.completed > 0 && stat.completed < stat.total;
-      const isUnstarted = stat.completed === 0;
+      const isUnstarted = !stat.completed || stat.completed === 0;
 
       if (statusFilter === 'mastered' && !isMastered) return false;
       if (statusFilter === 'in-progress' && !isInProgress) return false;
@@ -161,199 +226,211 @@ export default function DSAPageClient({ initialPatterns }: { initialPatterns: an
     });
   }, [initialPatterns, searchQuery, statusFilter, categoryFilter, statsMap]);
 
+  const hasActiveFilters = searchQuery !== '' || statusFilter !== 'all' || categoryFilter !== 'all';
+  const resetFilters = () => {
+    setSearchQuery('');
+    setStatusFilter('all');
+    setCategoryFilter('all');
+  };
+
   return (
     <div className="space-y-8 pb-16">
-      {/* 1. Cockpit Header & Mastery Metrics */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pt-2">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
-              Placement Roadmaps
+      {/* 1. Cockpit Header */}
+      <div className="pt-1">
+        <div className="space-y-2 max-w-3xl">
+          <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-foreground leading-[1.08]">
+            Algorithmic{' '}
+            <span className="bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-400 dark:from-emerald-400 dark:via-teal-300 dark:to-emerald-200 bg-clip-text text-transparent">
+              Patterns
             </span>
-            <span className="text-xs text-muted-foreground font-mono">
-              • 14 Foundational Interview Patterns
-            </span>
-          </div>
-
-          <h1 className="font-display text-3xl sm:text-5xl font-black tracking-tight text-foreground leading-tight">
-            Algorithmic <span className="text-primary">Patterns</span>
           </h1>
 
-          <p className="text-xs sm:text-sm text-muted-foreground max-w-xl font-normal leading-relaxed">
-            Deconstruct complex interview problems into reusable structural templates. Master pattern triggers and write optimal solutions under timed assessment pressure.
+          <p className="text-xs sm:text-sm text-muted-foreground max-w-2xl font-normal leading-relaxed">
+            Deconstruct complex interview problems into reusable structural blueprints. Master pattern recognition triggers, analyze space-time trade-offs, and drill high-yield variations.
           </p>
-        </div>
-
-        {/* Executive Quick Stats Strip */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 shrink-0">
-          <div className="p-3 sm:p-4 rounded-2xl bg-card/60 border border-border/70 backdrop-blur-md text-center">
-            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground block">
-              Syllabus
-            </span>
-            <span className="text-xl sm:text-2xl font-black font-display text-foreground tabular-nums">
-              {overallProgress}%
-            </span>
-            <div className="mt-1.5 h-1 w-12 mx-auto rounded-full bg-muted overflow-hidden">
-              <div
-                style={{ width: `${overallProgress}%` }}
-                className="h-full rounded-full bg-primary transition-all duration-500"
-              />
-            </div>
-          </div>
-
-          <div className="p-3 sm:p-4 rounded-2xl bg-card/60 border border-border/70 backdrop-blur-md text-center">
-            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-500 block">
-              Mastered
-            </span>
-            <span className="text-xl sm:text-2xl font-black font-display text-foreground tabular-nums">
-              {masteredCount}
-            </span>
-            <span className="text-[10px] text-muted-foreground font-mono">patterns</span>
-          </div>
-
-          <div className="p-3 sm:p-4 rounded-2xl bg-card/60 border border-border/70 backdrop-blur-md text-center">
-            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-500 block">
-              In Progress
-            </span>
-            <span className="text-xl sm:text-2xl font-black font-display text-foreground tabular-nums">
-              {inProgressCount}
-            </span>
-            <span className="text-[10px] text-muted-foreground font-mono">active tracks</span>
-          </div>
-
-          <div className="p-3 sm:p-4 rounded-2xl bg-card/60 border border-border/70 backdrop-blur-md text-center">
-            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground block">
-              Solved
-            </span>
-            <span className="text-xl sm:text-2xl font-black font-display text-foreground tabular-nums">
-              {totalCompleted}
-            </span>
-            <span className="text-[10px] text-muted-foreground font-mono">/ {totalProblems}</span>
-          </div>
         </div>
       </div>
 
-      {/* 2. Resume Active Session Banner (If Candidate Has Recent Track) */}
+      {/* 2. Resume Active Track (Separated by top and bottom border, clean frameless design) */}
       {lastPracticed && (
-        <div className="p-5 sm:p-6 rounded-2xl bg-card/70 dark:bg-surface-elevated/40 border border-border/80 backdrop-blur-xl shadow-e2 relative overflow-hidden flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="pointer-events-none absolute -left-12 -top-12 size-36 rounded-full bg-emerald-500/10 blur-2xl" />
-          
-          <div className="space-y-1 relative z-10">
-            <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase tracking-wider bg-emerald-500/15 text-emerald-500 border border-emerald-500/25">
-                Resume Active Track
-              </span>
-              <span className="text-xs font-mono text-muted-foreground">
-                Last Practiced Session
-              </span>
-            </div>
-            <h3 className="text-base sm:text-lg font-bold text-foreground">
+        <div className="py-5 sm:py-6 border-y border-foreground/20 dark:border-white/20 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <span className="text-[11px] font-mono text-muted-foreground uppercase tracking-wider block">
+              Last Practiced Session
+            </span>
+            <h2 className="text-lg sm:text-xl font-bold font-display text-foreground">
               {lastPracticed.title}
-            </h3>
+            </h2>
             <p className="text-xs text-muted-foreground font-mono">
-              Progress: <span className="font-bold text-foreground">{lastPracticed.completed}</span> / {lastPracticed.total} variations completed
+              Progress: <strong className="text-foreground">{lastPracticed.completed}</strong> of {lastPracticed.total} variations completed
             </p>
           </div>
 
-          <Link href={`/dsa/${lastPracticed.slug}`} className="relative z-10 shrink-0 w-full sm:w-auto">
-            <button className="w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary-hover shadow-sm hover:shadow-[0_0_20px_rgba(16,185,129,0.35)] border-t border-white/20 transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2">
-              <span>Continue Studying</span>
-              <ArrowRight className="size-3.5" />
-            </button>
-          </Link>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+            <div className="flex flex-col gap-1 w-full sm:w-36">
+              <div className="flex justify-between text-[11px] font-mono text-muted-foreground">
+                <span>Progress</span>
+                <span>{lastPracticed.total > 0 ? Math.round((lastPracticed.completed / lastPracticed.total) * 100) : 0}%</span>
+              </div>
+              <div className="h-1.5 w-full rounded-full bg-muted/80 overflow-hidden">
+                <div
+                  style={{ width: `${lastPracticed.total > 0 ? (lastPracticed.completed / lastPracticed.total) * 100 : 0}%` }}
+                  className="h-full rounded-full bg-primary"
+                />
+              </div>
+            </div>
+
+            <Link href={`/dsa/${lastPracticed.slug}`} className="w-full sm:w-auto">
+              <button className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary-hover shadow-xs transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2">
+                <span>Continue Studying</span>
+                <ArrowRight className="size-3.5" />
+              </button>
+            </Link>
+          </div>
         </div>
       )}
 
       {/* 3. Search & Dual-Tier Filter Toolbar */}
       <div className="space-y-3">
         {/* Search Bar & Status Tabs */}
-        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 p-2.5 rounded-2xl bg-card/70 border border-border/80 backdrop-blur-md shadow-xs">
+        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 p-2.5 sm:p-3 rounded-2xl bg-card/60 border border-border/70 backdrop-blur-md shadow-xs">
           {/* Search Box */}
           <div className="relative flex-1">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
             <input
+              ref={searchInputRef}
               type="text"
-              placeholder="Search patterns, triggers, or complexities (e.g., sliding window, O(N))..."
+              placeholder="Search patterns by name, triggers, or complexities (e.g. 'two pointers', 'O(N)')..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-10 pl-10 pr-9 text-xs sm:text-sm font-medium bg-background/80 rounded-xl border border-border/80 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+              className="w-full h-10 pl-10 pr-16 text-xs sm:text-sm font-medium bg-background/80 rounded-xl border border-border/70 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-muted-foreground/60"
             />
-            {searchQuery && (
+            {searchQuery ? (
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer p-1"
+                aria-label="Clear search"
               >
                 <X className="size-3.5" />
               </button>
+            ) : (
+              <kbd className="hidden sm:inline-flex items-center absolute right-3 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground bg-muted/60 border border-border/50 rounded pointer-events-none">
+                /
+              </kbd>
             )}
           </div>
 
-          {/* Status Filter Tabs */}
-          <div className="flex items-center gap-1 overflow-x-auto p-1 rounded-xl bg-surface-sunken/80 border border-border/60">
+          {/* Status Filter Tabs with Counts */}
+          <div className="flex items-center gap-1 overflow-x-auto p-1 rounded-xl bg-surface-sunken/80 border border-border/60 shrink-0">
             {(
               [
-                { id: 'all', label: 'All' },
-                { id: 'in-progress', label: 'In Progress' },
-                { id: 'mastered', label: 'Mastered' },
-                { id: 'unstarted', label: 'Unstarted' },
+                { id: 'all', label: 'All', count: initialPatterns.length },
+                { id: 'in-progress', label: 'In Progress', count: inProgressCount },
+                { id: 'mastered', label: 'Mastered', count: masteredCount },
+                { id: 'unstarted', label: 'Unstarted', count: unstartedCount },
               ] as const
-            ).map((tab) => (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setStatusFilter(tab.id)}
-                className={cn(
-                  'px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer',
-                  statusFilter === tab.id
-                    ? 'bg-card text-foreground font-bold shadow-2xs'
-                    : 'text-muted-foreground hover:text-foreground'
-                )}
-              >
-                {tab.label}
-              </button>
-            ))}
+            ).map((tab) => {
+              const isActive = statusFilter === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setStatusFilter(tab.id)}
+                  className={cn(
+                    'px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5',
+                    isActive
+                      ? 'bg-card text-foreground font-bold shadow-2xs border border-border/60'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  <span>{tab.label}</span>
+                  <span
+                    className={cn(
+                      'px-1.5 py-0.2 rounded text-[10px] font-mono tabular-nums',
+                      isActive ? 'bg-muted text-foreground' : 'text-muted-foreground'
+                    )}
+                  >
+                    {tab.count}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* Category Taxonomy Filter Chips */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs">
-          {CATEGORY_FILTERS.map((cat) => (
-            <button
-              key={cat.id}
-              type="button"
-              onClick={() => setCategoryFilter(cat.id)}
-              className={cn(
-                'px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap border transition-all cursor-pointer',
-                categoryFilter === cat.id
-                  ? 'bg-primary/15 text-primary border-primary/30 font-bold'
-                  : 'bg-card/40 text-muted-foreground border-border/50 hover:bg-card hover:text-foreground'
-              )}
-            >
-              {cat.label}
-            </button>
-          ))}
+        {/* Category Taxonomy Filter Chips & Feedback Bar */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-0.5">
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs">
+            {CATEGORY_FILTERS.map((cat) => {
+              const isActive = categoryFilter === cat.id;
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setCategoryFilter(cat.id)}
+                  className={cn(
+                    'px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap border transition-all cursor-pointer',
+                    isActive
+                      ? 'bg-primary/15 text-primary border-primary/30 font-bold shadow-2xs'
+                      : 'bg-card/50 text-muted-foreground border-border/60 hover:bg-card hover:text-foreground'
+                  )}
+                >
+                  {cat.label}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="flex items-center justify-between sm:justify-end gap-2 text-xs text-muted-foreground font-mono shrink-0 pl-1">
+            <span>
+              Showing <strong className="text-foreground">{filteredPatterns.length}</strong> of {initialPatterns.length}
+            </span>
+            {hasActiveFilters && (
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="inline-flex items-center gap-1 text-primary hover:text-primary-hover font-semibold hover:underline cursor-pointer ml-1"
+              >
+                <RotateCcw className="size-3" />
+                <span>Reset</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* 4. Pattern Grid */}
+      {/* 4. Pattern Grid (Modern LMS Course-Cards Aesthetic with Pastel Tones) */}
       {filteredPatterns.length === 0 ? (
-        <div className="p-12 text-center rounded-3xl bg-card/40 border border-dashed border-border/80">
-          <EmptyState
-            title="No patterns found"
-            description={
-              searchQuery
-                ? `No patterns match your search "${searchQuery}". Try clearing filters.`
-                : 'No patterns matching the selected criteria.'
-            }
-          />
+        <div className="p-12 text-center rounded-3xl bg-card/40 border border-dashed border-border/80 space-y-4">
+          <div className="size-12 rounded-2xl bg-muted/60 border border-border/60 flex items-center justify-center text-muted-foreground mx-auto">
+            <Search className="size-5" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-base font-bold text-foreground">No patterns found</h3>
+            <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+              {searchQuery
+                ? `No patterns match "${searchQuery}". Try searching for alternative triggers or clearing filters.`
+                : 'No patterns found under the selected category and status criteria.'}
+            </p>
+          </div>
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={resetFilters}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary-hover transition-all cursor-pointer"
+            >
+              <RotateCcw className="size-3.5" />
+              <span>Clear All Filters</span>
+            </button>
+          )}
         </div>
       ) : (
         <motion.div
           variants={containerVariants}
           initial="hidden"
           animate="show"
-          className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
+          className="grid gap-6 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3"
         >
           {filteredPatterns.map((pattern) => {
             const stat = statsMap[pattern.title] ?? { total: 0, completed: 0 };
@@ -370,97 +447,91 @@ export default function DSAPageClient({ initialPatterns }: { initialPatterns: an
             return (
               <motion.div key={pattern.title} variants={itemVariants} className="h-full">
                 <Link href={`/dsa/${slug}`} className="group block h-full outline-none">
-                  <SpotlightCard
-                    spotlightColor="rgba(16, 185, 129, 0.12)"
-                    className="h-full flex flex-col justify-between p-6 rounded-3xl bg-card/70 border border-border/80 shadow-e2 group-hover:border-primary/50 transition-all duration-300 relative overflow-hidden"
+                  <div
+                    className={cn(
+                      'h-full flex flex-col justify-between p-6 sm:p-7 rounded-[28px] sm:rounded-3xl border transition-all duration-300 relative overflow-hidden',
+                      // Frosted glass styling
+                      'bg-card/70 dark:bg-card/35 backdrop-blur-2xl',
+                      'border-border/80 dark:border-white/10',
+                      'hover:border-foreground/20 dark:hover:border-white/20',
+                      'shadow-xs hover:shadow-xl hover:-translate-y-0.5',
+                      // Top specular sheen
+                      'before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white/70 dark:before:via-white/15 before:to-transparent'
+                    )}
                   >
-                    {/* Top Specular Edge */}
-                    <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/25 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-
-                    <div className="space-y-4">
-                      {/* Top Header Row */}
+                    <div className="space-y-3.5">
+                      {/* Top Header Row: Frosted Badge + Circular Mastery Ring */}
                       <div className="flex items-start justify-between gap-3">
-                        <div className="space-y-1">
-                          <h3 className="font-display text-lg font-bold tracking-tight text-foreground group-hover:text-primary transition-colors">
-                            {pattern.title}
-                          </h3>
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono">
-                            <span>{variationsCount} variations</span>
-                            <span>•</span>
-                            <span>
-                              <strong className="text-foreground">{stat.completed}</strong>/{stat.total} solved
-                            </span>
-                          </div>
-                        </div>
+                        <span
+                          className={cn(
+                            'px-3.5 py-1 rounded-full text-xs font-semibold border shadow-2xs backdrop-blur-md',
+                            isMastered
+                              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25'
+                              : isInProgress
+                              ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25'
+                              : 'bg-foreground/[0.04] dark:bg-white/[0.06] text-muted-foreground border-border/70 dark:border-white/10'
+                          )}
+                        >
+                          {isMastered ? 'Mastered' : isInProgress ? 'In Progress' : 'Roadmap'}
+                        </span>
 
-                        {/* Status Badge */}
-                        {isMastered ? (
-                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 shrink-0">
-                            Mastered
-                          </span>
-                        ) : isInProgress ? (
-                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-amber-500/10 text-amber-500 border border-amber-500/20 shrink-0">
-                            In Progress
-                          </span>
-                        ) : (
-                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-muted text-muted-foreground border border-border/40 shrink-0">
-                            Unstarted
-                          </span>
+                        <CircularMasteryRing pct={pct} isMastered={isMastered} />
+                      </div>
+
+                      {/* Pattern Title & Subtitle */}
+                      <div>
+                        <h3 className="font-display text-xl sm:text-2xl font-bold tracking-tight text-foreground group-hover:text-primary transition-colors">
+                          {pattern.title}
+                        </h3>
+                        {cleanDesc && (
+                          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed line-clamp-2 mt-1.5 font-normal">
+                            {cleanDesc}
+                          </p>
                         )}
                       </div>
 
-                      {/* Description Snippet */}
-                      {cleanDesc && (
-                        <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed font-normal">
-                          {cleanDesc}
-                        </p>
-                      )}
+                      {/* Variations & Tasks Meta Row */}
+                      <div className="flex flex-wrap items-center gap-2.5 text-xs font-medium text-foreground/80 pt-1">
+                        <span className="flex items-center gap-1.5">
+                          <Layers className="size-3.5 text-muted-foreground" />
+                          {variationsCount} variations
+                        </span>
+                        <span className="text-muted-foreground/40">•</span>
+                        <span className="flex items-center gap-1.5">
+                          <Code2 className="size-3.5 text-muted-foreground" />
+                          <strong className="text-foreground">{stat.completed}</strong>/{stat.total} solved
+                        </span>
+                      </div>
 
-                      {/* Complexities & Tags */}
+                      {/* Complexities Badges */}
                       <div className="flex flex-wrap items-center gap-1.5 pt-1">
                         {pattern.timeComplexity && (
-                          <span className="px-2 py-0.5 rounded-md bg-muted/60 text-muted-foreground font-mono text-[10px] font-medium border border-border/40">
+                          <span className="px-2.5 py-0.5 rounded-lg bg-foreground/[0.03] dark:bg-white/[0.04] border border-border/60 dark:border-white/10 font-mono text-[11px] text-muted-foreground backdrop-blur-xs">
                             Time: {pattern.timeComplexity}
                           </span>
                         )}
                         {pattern.spaceComplexity && (
-                          <span className="px-2 py-0.5 rounded-md bg-muted/60 text-muted-foreground font-mono text-[10px] font-medium border border-border/40">
+                          <span className="px-2.5 py-0.5 rounded-lg bg-foreground/[0.03] dark:bg-white/[0.04] border border-border/60 dark:border-white/10 font-mono text-[11px] text-muted-foreground backdrop-blur-xs">
                             Space: {pattern.spaceComplexity}
                           </span>
                         )}
-                        {(pattern.useCases || []).slice(0, 2).map((tag: string) => (
-                          <span
-                            key={tag}
-                            className="px-2 py-0.5 rounded-md bg-primary/[0.06] text-primary text-[10px] font-medium border border-primary/15"
-                          >
-                            {tag}
-                          </span>
-                        ))}
                       </div>
                     </div>
 
-                    {/* Progress Bar & Footer Action */}
-                    <div className="pt-6 mt-4 border-t border-border/40 space-y-3">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-muted-foreground font-medium">Mastery</span>
-                        <span className={cn('font-mono font-bold', isMastered ? 'text-primary' : 'text-foreground')}>
-                          {isMastered ? '100% Solved' : `${pct}%`}
-                        </span>
+                    {/* Footer Action Row */}
+                    <div className="pt-4 mt-4 border-t border-border/50 dark:border-white/10 flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-mono">
+                        <span className="font-bold text-foreground">{stat.completed}</span>
+                        <span>/</span>
+                        <span>{stat.total} solved</span>
                       </div>
 
-                      <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
-                        <div
-                          style={{ width: `${pct}%` }}
-                          className="h-full rounded-full transition-all duration-500 bg-primary"
-                        />
-                      </div>
-
-                      <div className="pt-1 flex items-center justify-between text-xs font-semibold text-primary group-hover:text-primary-hover transition-colors">
-                        <span>Study Blueprint & Practice</span>
-                        <ArrowRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
+                      <div className="px-4 py-2 rounded-full text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary-hover active:scale-95 transition-all shadow-xs flex items-center gap-1.5 cursor-pointer shrink-0">
+                        <span>{isMastered ? 'Review' : isInProgress ? 'Continue' : 'Practice'}</span>
+                        <ArrowRight className="size-3 group-hover:translate-x-0.5 transition-transform" />
                       </div>
                     </div>
-                  </SpotlightCard>
+                  </div>
                 </Link>
               </motion.div>
             );
@@ -470,3 +541,4 @@ export default function DSAPageClient({ initialPatterns }: { initialPatterns: an
     </div>
   );
 }
+

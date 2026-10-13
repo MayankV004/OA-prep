@@ -58,26 +58,25 @@ function LinkedinIcon({ className }: { className?: string }) {
   );
 }
 
-function initialsOf(name?: string | null, email?: string | null) {
-  const source = name?.trim() || email?.split('@')[0] || '?';
-  return source
-    .split(/[\s._-]+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? '')
-    .join('');
+function isGoogleAccountImage(url?: string | null): boolean {
+  if (!url || typeof url !== 'string') return false;
+  const trimmed = url.trim().toLowerCase();
+  return (
+    trimmed.includes('googleusercontent.com') ||
+    trimmed.includes('google.com') ||
+    trimmed.includes('ggpht.com')
+  );
 }
 
-const AVATAR_PRESETS = [
-  'https://api.dicebear.com/7.x/bottts/svg?seed=Felix',
-  'https://api.dicebear.com/7.x/bottts/svg?seed=Aiden',
-  'https://api.dicebear.com/7.x/bottts/svg?seed=Bella',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Alexander',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Jack',
-  'https://api.dicebear.com/7.x/identicon/svg?seed=Cyber',
-  'https://api.dicebear.com/7.x/identicon/svg?seed=Matrix',
-];
+function initialsOf(name?: string | null, email?: string | null): string {
+  const source = name?.trim() || email?.split('@')[0] || '';
+  if (!source) return 'OA';
+  const parts = source.split(/[\s._-]+/).filter(Boolean);
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+  return source.slice(0, 2).toUpperCase();
+}
 
 interface ProfileData {
   user: {
@@ -259,7 +258,7 @@ export default function ProfilePage() {
 
   const { user, stats, heatmap, recentActivity } = data;
   const memberSince = user.createdAt ? format(new Date(user.createdAt), 'MMMM yyyy') : 'Recently';
-  const hasAvatar = Boolean(user.image && !imgError);
+  const hasAvatar = Boolean(user.image && isGoogleAccountImage(user.image) && !imgError);
 
   const easyStats = stats.difficultyMix.Easy || { total: 0, completed: 0 };
   const mediumStats = stats.difficultyMix.Medium || { total: 0, completed: 0 };
@@ -298,11 +297,12 @@ export default function ProfilePage() {
                       <img
                         src={user.image!}
                         alt={user.name}
+                        referrerPolicy="no-referrer"
                         onError={() => setImgError(true)}
                         className="size-full rounded-full object-cover bg-surface"
                       />
                     ) : (
-                      <div className="grid size-full place-items-center rounded-full bg-gradient-to-br from-rose-600 to-rose-800 text-2xl font-extrabold text-white">
+                      <div className="grid size-full place-items-center rounded-full bg-gradient-to-br from-emerald-500 via-teal-600 to-emerald-700 text-2xl font-mono font-bold text-white shadow-inner select-none">
                         {initialsOf(user.name, user.email)}
                       </div>
                     )}
@@ -842,48 +842,71 @@ export default function ProfilePage() {
                   />
                 </div>
 
-                {/* Avatar Presets */}
-                <div className="space-y-2">
+                {/* Avatar Options */}
+                <div className="space-y-2.5">
                   <label className="text-xs font-semibold text-foreground flex items-center justify-between">
-                    <span>Avatar Preset Gallery</span>
-                    <span className="text-[10px] text-text-muted">Click to select</span>
+                    <span>Avatar Option</span>
+                    <span className="text-[10px] text-muted-foreground">Google photo or name initials</span>
                   </label>
 
-                  <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
-                    {AVATAR_PRESETS.map((preset, index) => {
-                      const isSelected = editImage === preset;
-                      return (
-                        <button
-                          key={index}
-                          type="button"
-                          onClick={() => setEditImage(preset)}
-                          className={`relative size-12 rounded-2xl p-1 border transition-all hover:scale-105 ${
-                            isSelected
-                              ? 'border-rose-500 bg-rose-500/15 ring-2 ring-rose-500/40 shadow-sm'
-                              : 'border-border/60 bg-surface-sunken hover:border-border'
-                          }`}
-                        >
-                          <img src={preset} alt={`Preset ${index + 1}`} className="size-full rounded-xl object-contain" />
-                          {isSelected && (
-                            <span className="absolute -top-1 -right-1 size-4 rounded-full bg-rose-600 text-white flex items-center justify-center shadow-xs">
-                              <Check className="size-2.5" />
-                            </span>
-                          )}
-                        </button>
-                      );
-                    })}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setEditImage('')}
+                      className={`flex items-center gap-3 p-3 rounded-2xl border transition-all text-left ${
+                        !editImage
+                          ? 'border-emerald-500 bg-emerald-500/10 ring-2 ring-emerald-500/30'
+                          : 'border-border/60 bg-surface-sunken hover:border-border'
+                      }`}
+                    >
+                      <div className="grid size-10 place-items-center rounded-full bg-gradient-to-br from-emerald-500 via-teal-600 to-emerald-700 text-xs font-mono font-bold text-white shrink-0">
+                        {initialsOf(editName || user.name, user.email)}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-bold text-foreground">Name Initials</p>
+                        <p className="text-[10px] text-muted-foreground">Clean typography badge</p>
+                      </div>
+                      {!editImage && <Check className="size-4 text-emerald-500 shrink-0" />}
+                    </button>
+
+                    {data?.user?.image && isGoogleAccountImage(data.user.image) ? (
+                      <button
+                        type="button"
+                        onClick={() => setEditImage(data.user.image || '')}
+                        className={`flex items-center gap-3 p-3 rounded-2xl border transition-all text-left ${
+                          editImage === data.user.image
+                            ? 'border-emerald-500 bg-emerald-500/10 ring-2 ring-emerald-500/30'
+                            : 'border-border/60 bg-surface-sunken hover:border-border'
+                        }`}
+                      >
+                        <img
+                          src={data.user.image}
+                          alt="Google Account"
+                          referrerPolicy="no-referrer"
+                          className="size-10 rounded-full object-cover shrink-0 ring-1 ring-border"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-bold text-foreground">Google Account</p>
+                          <p className="text-[10px] text-muted-foreground">Synced profile picture</p>
+                        </div>
+                        {editImage === data.user.image && <Check className="size-4 text-emerald-500 shrink-0" />}
+                      </button>
+                    ) : null}
                   </div>
                 </div>
 
-                {/* Custom Avatar URL */}
+                {/* Custom Google Avatar URL */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-foreground">Or Custom Avatar URL</label>
+                  <label className="text-xs font-semibold text-foreground">Google Photo URL (Optional)</label>
                   <Input
                     value={editImage}
                     onChange={(e) => setEditImage(e.target.value)}
-                    placeholder="https://example.com/avatar.png"
+                    placeholder="https://lh3.googleusercontent.com/..."
                     className="bg-surface-sunken border-border/70 text-xs"
                   />
+                  <p className="text-[10px] text-muted-foreground">
+                    Only Google account photos (e.g. googleusercontent.com) are accepted, or leave blank for initials.
+                  </p>
                 </div>
 
                 {/* Social & Professional Links */}

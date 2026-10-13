@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Footer } from '@/components/shell/Footer';
 import { Navbar } from '@/components/ui/navbar';
-import { HeroGeometric } from '@/components/ui/shape-landing-hero';
+import { HeroExecutive } from '@/components/landing/HeroExecutive';
 import { ScrollProgress } from '@/components/ui/scroll-progress';
 import { ScrollReveal } from '@/components/ui/scroll-reveal';
 import { StickyScrollSection } from '@/components/ui/sticky-scroll-section';
@@ -46,38 +46,39 @@ export function LandingPageClient() {
 
   return (
     <SmoothScrollProvider>
-      <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary/20 selection:text-primary overflow-x-clip">
+      <div className="min-h-screen bg-background text-foreground font-sans selection:bg-emerald-500/20 selection:text-emerald-500 overflow-x-clip">
         {/* 1. Viewport Top Scroll Progress Bar */}
         <ScrollProgress />
 
         {/* 2. Floating Navbar */}
         <Navbar />
 
-        {/* 3. Hero Parallax Section */}
-        <HeroGeometric
-          title1="Crack Your OA & Interview."
-          title2="Zero Distractions."
-          description="Structured DSA pattern roadmaps, interactive CS core modules, spaced-repetition flashcards, and real-time coding environments designed to help you land top engineering roles."
-        />
+        {/* 3. Flagship Executive Hero with Interactive OA Console */}
+        <HeroExecutive />
 
         {/* 4. Tier-1 Company OA Target Marquee */}
         <CompanyMarquee />
 
-        {/* 5. Live Stats Strip */}
+        {/* 5. Live Telemetry Stats Strip */}
         <LandingStats liveStats={liveStats} />
 
-        {/* 6. Curated Curriculum Scrollytelling Section */}
-        <section id="features" className="py-16 relative">
+        {/* 6. Curated Curriculum Architecture Scrollytelling */}
+        <section id="features" className="py-20 relative">
           <ScrollReveal direction="up" delay={0.1}>
-            <div className="text-center max-w-3xl mx-auto mb-16 space-y-4 px-4">
-              <h2 className="text-3xl sm:text-5xl font-black tracking-tight">
-                Everything you need to excel in{' '}
-                <span className="text-primary">
-                  Technical Rounds
+            <div className="text-center max-w-3xl mx-auto mb-16 space-y-3 px-4">
+              <div className="inline-flex items-center gap-2 text-2xs font-mono font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                <span>[ CURRICULUM ARCHITECTURE ]</span>
+                <span>/</span>
+                <span>FOUR PILLARS</span>
+              </div>
+              <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-foreground">
+                Four pillars engineered for{' '}
+                <span className="bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-400 dark:from-emerald-400 dark:via-teal-300 dark:to-emerald-200 bg-clip-text text-transparent">
+                  placement rounds.
                 </span>
               </h2>
-              <p className="text-muted-foreground text-base sm:text-lg leading-relaxed font-light">
-                Stop solving random problems. Follow a battle-tested roadmap designed for engineering placements.
+              <p className="text-muted-foreground text-base sm:text-lg leading-relaxed font-normal max-w-2xl mx-auto">
+                A structured, non-redundant system covering algorithmic patterns, CS core fundamentals, company OAs, and active recall.
               </p>
             </div>
           </ScrollReveal>
@@ -88,16 +89,16 @@ export function LandingPageClient() {
         {/* 7. Comparison: Random Grind vs Pattern Intuition */}
         <ComparisonSection />
 
-        {/* 8. The 4-Step Placement Loop Section */}
+        {/* 8. The 4-Step Placement Loop Pipeline */}
         <PlacementLoopSection />
 
-        {/* 9. Multi-Language Interactive Workspace Section */}
+        {/* 9. Multi-Language Interactive Workspace Cockpit */}
         <InteractiveWorkspaceSection />
 
         {/* 10. Interactive Frequently Asked Questions */}
         <FaqSection />
 
-        {/* 11. Call To Action Section */}
+        {/* 11. Closing Call To Action Section */}
         <CtaSection />
 
         {/* 12. Glassmorphic Footer */}

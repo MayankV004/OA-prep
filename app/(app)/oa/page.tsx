@@ -184,131 +184,137 @@ export default function OACatalogPage() {
   }, [completedAttempts, passCount]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-28 relative">
-      {/* ── Ambient Radial Atmosphere (Borderless Background) ── */}
-      <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10">
-        <div className="absolute -top-[15%] left-1/2 -translate-x-1/2 w-[900px] h-[550px] bg-gradient-to-b from-primary/10 via-emerald-500/5 to-transparent blur-3xl opacity-50" />
+    <div className="space-y-8 pb-16">
+      {/* ── 1. Page Header (Modern Cockpit Header) ── */}
+      <div className="pt-2 space-y-3">
+        <div className="flex items-center gap-2.5">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-card/70 dark:bg-card/35 border border-border/80 dark:border-white/10 text-xs font-mono font-bold tracking-wider text-primary shadow-xs backdrop-blur-md">
+            <span className="size-1.5 rounded-full bg-primary animate-pulse" />
+            PLACEMENT READINESS SIMULATOR
+          </span>
+          {isPro && <ProBadge />}
+        </div>
+
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black font-display tracking-tight text-foreground leading-[1.08]">
+          Company OA{' '}
+          <span className="bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-400 dark:from-emerald-400 dark:via-teal-300 dark:to-emerald-200 bg-clip-text text-transparent">
+            Mock Simulator
+          </span>
+        </h1>
+
+        <p className="text-sm sm:text-base text-muted-foreground font-normal leading-relaxed max-w-2xl">
+          Experience authentic Online Assessments under strict countdown timers, proctoring emulation, and real hiring cut-offs for Amazon, Google, Uber, and Microsoft.
+        </p>
+
+        {/* Feature Highlights Ribbon */}
+        <div className="flex flex-wrap items-center gap-2 pt-1">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-card/70 dark:bg-card/35 border border-border/60 dark:border-white/10 text-2xs font-mono text-muted-foreground shadow-2xs backdrop-blur-md">
+            <Clock className="size-3 text-primary" />
+            <span>Strict 90–120m Timers</span>
+          </div>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-card/70 dark:bg-card/35 border border-border/60 dark:border-white/10 text-2xs font-mono text-muted-foreground shadow-2xs backdrop-blur-md">
+            <ShieldAlert className="size-3 text-primary" />
+            <span>Camera & Tab-Switch Emulation</span>
+          </div>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-card/70 dark:bg-card/35 border border-border/60 dark:border-white/10 text-2xs font-mono text-muted-foreground shadow-2xs backdrop-blur-md">
+            <Target className="size-3 text-primary" />
+            <span>Authentic Bar Cutoffs</span>
+          </div>
+        </div>
       </div>
 
-      {/* ── Hero & Readiness Header (Borderless Surface) ── */}
-      <div className="relative pt-2 sm:pt-4 pb-6 w-full">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 lg:gap-12">
-          {/* Headline & Overview */}
-          <div className="space-y-3 flex-1 min-w-0">
-            <div className="flex items-center gap-2.5">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-elevated text-xs font-mono font-bold tracking-wider text-primary shadow-xs">
-                <span className="size-1.5 rounded-full bg-primary animate-pulse" />
-                PLACEMENT READINESS SIMULATOR
+      {/* ── 2. Frameless Candidate Readiness Divider Banner ── */}
+      <div className="w-full py-5 px-1 sm:px-2 border-y border-foreground/20 dark:border-white/20 bg-foreground/[0.02] dark:bg-white/[0.02] transition-colors">
+        {completedAttempts.length > 0 ? (
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6">
+            <div className="space-y-1">
+              <span className="text-2xs font-mono font-semibold tracking-wider text-muted-foreground uppercase flex items-center gap-1.5">
+                <Trophy className="size-3.5 text-primary" />
+                Candidate Performance Ledger
               </span>
-              {isPro && <ProBadge />}
+              <h2 className="text-xl sm:text-2xl font-bold font-display tracking-tight text-foreground">
+                Live Assessment Readiness Benchmark
+              </h2>
             </div>
 
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight font-heading text-foreground">
-              Company OA Mock Simulator
-            </h1>
-
-            <p className="text-sm sm:text-base text-text-muted font-normal leading-relaxed max-w-3xl">
-              Experience authentic Online Assessments under strict countdown timers, proctoring emulation, and real hiring cut-offs for Amazon, Google, Uber, and Microsoft.
-            </p>
-
-            {/* Feature Highlights Ribbon (Borderless Floating Pills) */}
-            <div className="flex flex-wrap items-center gap-2 pt-1">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-surface-elevated/70 text-2xs font-mono text-text-secondary shadow-xs backdrop-blur-xs">
-                <Clock className="size-3 text-primary" />
-                <span>Strict 90–120m Timers</span>
+            <div className="grid grid-cols-3 gap-6 sm:gap-10 shrink-0">
+              <div>
+                <div className="text-2xs font-mono text-muted-foreground uppercase">Tests Taken</div>
+                <div className="text-2xl sm:text-3xl font-bold font-mono text-foreground mt-0.5 tabular-nums">
+                  {completedAttempts.length}
+                </div>
               </div>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-surface-elevated/70 text-2xs font-mono text-text-secondary shadow-xs backdrop-blur-xs">
-                <ShieldAlert className="size-3 text-primary" />
-                <span>Camera & Tab-Switch Emulation</span>
+              <div>
+                <div className="text-2xs font-mono text-muted-foreground uppercase">Avg Score</div>
+                <div className="text-2xl sm:text-3xl font-bold font-mono text-primary mt-0.5 tabular-nums">
+                  {avgScore}%
+                </div>
               </div>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-surface-elevated/70 text-2xs font-mono text-text-secondary shadow-xs backdrop-blur-xs">
-                <Target className="size-3 text-primary" />
-                <span>Authentic Bar Cutoffs</span>
+              <div>
+                <div className="text-2xs font-mono text-muted-foreground uppercase">Pass Rate</div>
+                <div className="text-2xl sm:text-3xl font-bold font-mono text-emerald-400 mt-0.5 tabular-nums">
+                  {passRate}%
+                </div>
               </div>
             </div>
           </div>
-
-          {/* Candidate Readiness Scorecard (Borderless Glass Panel) */}
-          {completedAttempts.length > 0 ? (
-            <div className="relative group self-start lg:self-center shrink-0 w-full lg:w-auto">
-              <div className="rounded-3xl bg-surface-elevated/90 backdrop-blur-md p-5 sm:p-6 shadow-e2 relative overflow-hidden before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white/15 before:to-transparent">
-                <div className="text-2xs font-mono font-bold uppercase tracking-wider text-text-muted mb-3 flex items-center gap-1.5">
-                  <Trophy className="size-3.5 text-primary" />
-                  <span>Candidate Performance Ledger</span>
-                </div>
-                <div className="grid grid-cols-3 gap-5 sm:gap-8">
-                  <div>
-                    <div className="text-2xs font-mono text-text-muted uppercase">Tests Taken</div>
-                    <div className="text-2xl font-bold font-mono text-foreground mt-0.5">
-                      {completedAttempts.length}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-2xs font-mono text-text-muted uppercase">Avg Score</div>
-                    <div className="text-2xl font-bold font-mono text-primary mt-0.5">
-                      {avgScore}%
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-2xs font-mono text-text-muted uppercase">Pass Rate</div>
-                    <div className="text-2xl font-bold font-mono text-emerald-400 mt-0.5">
-                      {passRate}%
-                    </div>
-                  </div>
-                </div>
+        ) : (
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="size-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <Flame className="size-5" />
+              </div>
+              <div className="space-y-0.5">
+                <span className="text-2xs font-mono font-semibold uppercase tracking-wider text-muted-foreground">
+                  Candidate Readiness
+                </span>
+                <h2 className="text-lg sm:text-xl font-bold font-display text-foreground">
+                  Zero Mock Assessments Attempted Yet
+                </h2>
               </div>
             </div>
-          ) : (
-            <div className="rounded-3xl bg-surface-elevated/60 backdrop-blur-md p-5 sm:p-6 shadow-xs max-w-sm self-start lg:self-center shrink-0">
-              <div className="flex items-start gap-3">
-                <div className="size-9 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                  <Flame className="size-4" />
-                </div>
-                <div className="space-y-1">
-                  <div className="text-xs font-bold text-foreground">Zero Attempts Logged</div>
-                  <p className="text-2xs text-text-muted leading-relaxed">
-                    Pick a mock assessment below to test your speed under real-world company pressure.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+            <p className="text-xs sm:text-sm text-muted-foreground font-normal max-w-md">
+              Simulate a timed assessment below under full anti-cheat monitoring to benchmark your speed and problem-solving readiness before real company tests.
+            </p>
+          </div>
+        )}
+      </div>
 
-        {/* ── Search & Filter Controls (Borderless Surfaces) ── */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 pt-7">
-          {/* Borderless Search Input */}
-          <div className="relative w-full sm:w-88 shrink-0">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-text-muted pointer-events-none" />
+      {/* ── 3. Search & Filter Controls ── */}
+      <div className="space-y-3.5">
+        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 p-2.5 sm:p-3 rounded-2xl bg-card/70 dark:bg-card/35 border border-border/80 dark:border-white/10 backdrop-blur-2xl shadow-xs">
+          {/* Search input */}
+          <div className="relative flex-1">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
             <input
               type="text"
               placeholder="Search company, pattern, role..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-11 pl-10 pr-4 rounded-2xl bg-surface-elevated/70 backdrop-blur-md text-xs sm:text-sm text-foreground placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/40 focus:bg-surface-elevated shadow-xs border-0 transition-all"
+              className="w-full h-10 pl-10 pr-4 rounded-xl bg-background/50 border border-border/60 dark:border-white/10 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all font-sans"
             />
           </div>
 
-          {/* Borderless Horizontal Company Chips */}
-          <div className="flex items-center gap-2 overflow-x-auto flex-1 min-w-0 pb-1 sm:pb-0 scrollbar-none">
+          {/* Horizontal Company Filter Pills */}
+          <div className="flex items-center gap-1.5 overflow-x-auto max-w-full pb-1 md:pb-0 scrollbar-none">
             {companiesWithCounts.map(({ name, count }) => (
               <button
                 key={name}
                 onClick={() => setSelectedCompany(name)}
                 className={cn(
-                  'px-3.5 py-2 rounded-2xl text-xs font-medium cursor-pointer transition-all shrink-0 capitalize border-0 flex items-center gap-2',
+                  'px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border cursor-pointer capitalize flex items-center gap-1.5',
                   selectedCompany === name
-                    ? 'bg-primary text-primary-foreground font-bold shadow-glow scale-[1.02]'
-                    : 'bg-surface-elevated/50 hover:bg-surface-elevated text-text-secondary hover:text-foreground backdrop-blur-xs'
+                    ? 'bg-primary text-primary-foreground border-primary font-bold shadow-xs'
+                    : 'bg-card/70 dark:bg-card/35 border-border/60 dark:border-white/10 text-muted-foreground hover:text-foreground hover:border-border hover:bg-muted/30 backdrop-blur-md'
                 )}
               >
                 <span>{name === 'all' ? 'All Companies' : name}</span>
                 <span
                   className={cn(
-                    'text-[10px] px-1.5 py-0.2 rounded-full font-mono',
+                    'text-[10px] font-mono px-1.5 py-0.2 rounded-full',
                     selectedCompany === name
                       ? 'bg-black/20 text-white font-bold'
-                      : 'bg-surface-sunken/80 text-text-muted'
+                      : 'bg-muted text-muted-foreground'
                   )}
                 >
                   {count}
@@ -319,27 +325,27 @@ export default function OACatalogPage() {
         </div>
       </div>
 
-      {/* ── Main Catalog Grid (Borderless Cards - Full Width Responsive) ── */}
-      <div className="w-full pt-4">
+      {/* ── 4. Main Catalog Grid ── */}
+      <div className="w-full">
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-5 sm:gap-6 w-full">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6 w-full">
             {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
               <div
                 key={i}
-                className="h-72 rounded-3xl bg-surface-elevated/40 shadow-e1 animate-pulse border-0"
+                className="h-80 rounded-[28px] sm:rounded-3xl bg-card/70 dark:bg-card/35 border border-border/80 dark:border-white/10 shadow-xs animate-pulse"
               />
             ))}
           </div>
         ) : filteredAssessments.length === 0 ? (
-          <div className="text-center py-20 bg-surface-elevated/40 backdrop-blur-md rounded-3xl p-8 shadow-e1 w-full">
-            <Search className="size-8 mx-auto text-text-muted/40 mb-3" />
-            <h3 className="text-base font-bold text-foreground">No assessments found</h3>
-            <p className="text-xs text-text-muted mt-1 max-w-sm mx-auto">
+          <div className="text-center py-16 bg-card/70 dark:bg-card/35 backdrop-blur-2xl border border-dashed border-border/80 dark:border-white/10 rounded-[28px] sm:rounded-3xl p-8 shadow-xs w-full">
+            <Search className="size-8 mx-auto text-muted-foreground/40 mb-3" />
+            <h3 className="text-base font-bold text-foreground font-display">No assessments found</h3>
+            <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
               We couldn’t find any assessments matching your query. Try searching for a different keyword or company filter.
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-5 sm:gap-6 w-full">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6 w-full">
             {filteredAssessments.map((assessment, index) => {
               const hasPassed = assessment.pastSubmission?.passed;
               const hasAttempted = Boolean(assessment.pastSubmission);
@@ -355,10 +361,12 @@ export default function OACatalogPage() {
                 >
                   <div
                     className={cn(
-                      'h-full relative group rounded-3xl p-6 sm:p-7 flex flex-col justify-between transition-all duration-300',
-                      'bg-surface-elevated/85 dark:bg-[#111622]/90 backdrop-blur-md',
-                      'shadow-e1 hover:shadow-e4 hover:-translate-y-1.5',
-                      'before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent',
+                      'h-full relative group rounded-[28px] sm:rounded-3xl p-6 sm:p-7 flex flex-col justify-between transition-all duration-300',
+                      'bg-card/70 dark:bg-card/35 backdrop-blur-2xl',
+                      'border border-border/80 dark:border-white/10 hover:border-foreground/20 dark:hover:border-white/20',
+                      'shadow-xs hover:shadow-xl hover:-translate-y-1',
+                      'before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white/70 dark:before:via-white/15 before:to-transparent',
+                      'overflow-hidden',
                       assessment.isLocked && 'opacity-95'
                     )}
                   >
@@ -372,72 +380,73 @@ export default function OACatalogPage() {
                     <div className="space-y-4 relative z-10">
                       {/* Top Bar: Company Pill, Role & Pro/Free Pill */}
                       <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
                           <span
                             className={cn(
-                              'px-2.5 py-1 rounded-xl text-xs font-mono font-bold uppercase tracking-wider',
+                              'px-2.5 py-1 rounded-xl text-xs font-mono font-bold uppercase tracking-wider border shrink-0',
                               tone.bg,
-                              tone.accent
+                              tone.accent,
+                              'border-foreground/10 dark:border-white/10'
                             )}
                           >
                             {assessment.company}
                           </span>
-                          <span className="text-2xs text-text-muted font-mono truncate max-w-[120px]">
+                          <span className="text-2xs text-muted-foreground font-mono truncate">
                             • {assessment.role}
                           </span>
                         </div>
 
-                        {/* Status Badge (Borderless Pill) */}
+                        {/* Status Badge */}
                         {assessment.isLocked ? (
-                          <div className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-2xs font-bold uppercase tracking-wider bg-amber-500/15 text-amber-400">
+                          <div className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-2xs font-bold uppercase tracking-wider bg-amber-500/15 text-amber-500 border border-amber-500/25 shrink-0">
                             <Lock className="size-3" />
                             <span>PRO</span>
                           </div>
                         ) : !assessment.isProOnly ? (
-                          <span className="px-2.5 py-0.5 rounded-full text-2xs font-bold uppercase tracking-wider bg-emerald-500/15 text-emerald-400">
+                          <span className="px-2.5 py-0.5 rounded-full text-2xs font-bold uppercase tracking-wider bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25 shrink-0">
                             Free Demo
                           </span>
                         ) : (
-                          <span className="px-2.5 py-0.5 rounded-full text-2xs font-bold uppercase tracking-wider bg-primary/15 text-primary font-mono">
+                          <span className="px-2.5 py-0.5 rounded-full text-2xs font-bold uppercase tracking-wider bg-primary/15 text-primary border border-primary/25 font-mono shrink-0">
                             Pro Pack
                           </span>
                         )}
                       </div>
 
                       {/* Assessment Title */}
-                      <h2 className="text-lg sm:text-xl font-bold font-heading text-foreground leading-snug group-hover:text-primary transition-colors">
+                      <h2 className="font-display text-xl sm:text-2xl font-bold tracking-tight text-foreground leading-snug group-hover:text-primary transition-colors">
                         {assessment.title}
                       </h2>
 
                       {/* Description */}
-                      <p className="text-xs text-text-muted line-clamp-2 leading-relaxed">
+                      <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 leading-relaxed font-normal">
                         {assessment.description}
                       </p>
 
-                      {/* Sunken Integrated Metrics Pod (Borderless) */}
-                      <div className="flex items-center justify-between gap-2 py-2.5 px-3.5 rounded-2xl bg-surface-sunken/60 text-xs font-mono text-text-secondary">
+                      {/* Metrics Pod */}
+                      <div className="flex items-center justify-between gap-2 py-2.5 px-3.5 rounded-2xl bg-muted/30 dark:bg-card/40 border border-border/50 dark:border-white/5 text-xs font-mono text-muted-foreground">
                         <div className="flex items-center gap-1.5">
-                          <Clock className="size-3.5 text-text-muted" />
+                          <Clock className="size-3.5 text-muted-foreground/70" />
                           <span>{assessment.durationMinutes}m</span>
                         </div>
-                        <span className="text-text-muted/30">•</span>
+                        <span className="text-muted-foreground/30">•</span>
                         <div className="flex items-center gap-1.5">
-                          <Code2 className="size-3.5 text-text-muted" />
+                          <Code2 className="size-3.5 text-muted-foreground/70" />
                           <span>{assessment.problemCount} Problems</span>
                         </div>
-                        <span className="text-text-muted/30">•</span>
+                        <span className="text-muted-foreground/30">•</span>
                         <div className="flex items-center gap-1.5">
-                          <Target className="size-3.5 text-text-muted" />
+                          <Target className="size-3.5 text-muted-foreground/70" />
                           <span>Cutoff {assessment.passingScore}%</span>
                         </div>
                       </div>
 
-                      {/* Patterns Tested Chips (Borderless) */}
+                      {/* Patterns Tested */}
                       <div className="flex flex-wrap gap-1.5 pt-1">
                         {assessment.problemSummaries.map((prob) => (
                           <span
                             key={prob.id}
-                            className="px-2.5 py-1 rounded-lg text-[10px] font-mono font-medium bg-surface-sunken/80 text-text-secondary group-hover:text-foreground transition-colors"
+                            className="px-2.5 py-1 rounded-lg text-[10px] font-mono font-medium bg-muted/40 dark:bg-card/60 border border-border/40 dark:border-white/5 text-muted-foreground group-hover:text-foreground transition-colors"
                           >
                             {prob.patternTag}
                           </span>
@@ -446,36 +455,36 @@ export default function OACatalogPage() {
                     </div>
 
                     {/* Bottom Action Footer */}
-                    <div className="pt-6 mt-5 flex items-center justify-between relative z-10">
+                    <div className="pt-6 mt-5 flex items-center justify-between border-t border-border/60 dark:border-white/10 relative z-10">
                       {hasAttempted ? (
                         <div className="flex items-center gap-1.5 text-xs font-mono">
                           {hasPassed ? (
-                            <span className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-emerald-500/10 text-emerald-400 font-bold">
+                            <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25 font-bold">
                               <CheckCircle2 className="size-3.5" />
                               Passed ({assessment.pastSubmission?.totalScore}%)
                             </span>
                           ) : (
-                            <span className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-amber-500/10 text-amber-400 font-medium">
+                            <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25 font-medium">
                               <AlertCircle className="size-3.5" />
                               Score: {assessment.pastSubmission?.totalScore}%
                             </span>
                           )}
                         </div>
                       ) : (
-                        <span className="text-xs text-text-muted font-mono">Not attempted</span>
+                        <span className="text-xs text-muted-foreground font-mono">Not attempted</span>
                       )}
 
                       {assessment.isLocked ? (
                         <button
                           onClick={() => setPaywallOpen(true)}
-                          className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl text-xs font-bold bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 transition-all cursor-pointer active:scale-95 shadow-xs border-0"
+                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-500 hover:bg-amber-500/30 transition-all cursor-pointer active:scale-95 shadow-xs border border-amber-500/30"
                         >
                           <Lock className="size-3.5" />
                           <span>Unlock Pro</span>
                         </button>
                       ) : (
                         <Link href={`/oa/${assessment.slug}`}>
-                          <button className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary-hover transition-all cursor-pointer shadow-glow hover:shadow-glow-lg active:scale-95 border-0">
+                          <button className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full text-xs font-semibold bg-primary hover:bg-primary-hover text-primary-foreground transition-all cursor-pointer shadow-xs active:scale-95">
                             <span>{hasAttempted ? 'Retake / Review' : 'Start Assessment'}</span>
                             <ArrowRight className="size-3.5" />
                           </button>

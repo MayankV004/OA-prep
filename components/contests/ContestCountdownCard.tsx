@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Heading } from '@/components/ui/typography';
-import { Calendar, ExternalLink, Timer, Clock, ArrowUpRight, Sparkles } from 'lucide-react';
+import { Calendar, ExternalLink, Clock, ArrowUpRight, Sparkles } from 'lucide-react';
+import { Timer } from '@/components/animate-ui/icons/timer';
 import { generateGoogleCalendarUrl } from '@/lib/contests/calendar';
 import { cn } from '@/lib/utils';
 
@@ -140,7 +141,7 @@ export function ContestCountdownCard({ contest }: { contest: ContestItemProps })
   const isLive = time.status === 'RUNNING';
 
   return (
-    <Card className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-border/70 bg-card/70 backdrop-blur-xs hover:border-emerald-500/40 hover:shadow-e2 transition-all duration-300">
+    <Card className="group relative flex flex-col justify-between overflow-hidden rounded-[28px] sm:rounded-3xl border border-border/80 dark:border-white/10 bg-card/70 dark:bg-card/35 backdrop-blur-2xl hover:border-foreground/20 dark:hover:border-white/20 shadow-xs hover:shadow-xl transition-all duration-300 before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white/70 dark:before:via-white/15 before:to-transparent">
       {/* Specular Ambient Glow Top Beam */}
       <div
         className={cn(
@@ -149,12 +150,12 @@ export function ContestCountdownCard({ contest }: { contest: ContestItemProps })
         )}
       />
 
-      <CardContent className="space-y-4 p-5">
+      <CardContent className="space-y-4 p-5 sm:p-6">
         {/* Header: Platform Badge & Duration / Live Chip */}
         <div className="flex items-center justify-between gap-2">
           <span
             className={cn(
-              'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-2xs font-mono font-bold tracking-wider uppercase border',
+              'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-xl text-2xs font-mono font-bold tracking-wider uppercase border',
               meta.bg,
               meta.text,
               meta.border
@@ -178,26 +179,23 @@ export function ContestCountdownCard({ contest }: { contest: ContestItemProps })
 
         {/* Title */}
         <div>
-          <Heading
-            level="card"
-            className="line-clamp-2 leading-snug font-display font-bold text-foreground group-hover:text-emerald-400 transition-colors"
-          >
+          <h3 className="line-clamp-2 leading-snug font-display text-lg sm:text-xl font-bold tracking-tight text-foreground group-hover:text-primary transition-colors">
             {contest.name}
-          </Heading>
+          </h3>
         </div>
 
         {/* Digital Countdown Container */}
         <div
           className={cn(
-            'rounded-xl border p-3.5 shadow-inner transition-all',
+            'rounded-2xl border p-3.5 transition-all',
             isLive
-              ? 'bg-emerald-500/[0.04] border-emerald-500/30'
-              : 'bg-muted/40 border-border/50'
+              ? 'bg-emerald-500/[0.06] border-emerald-500/30'
+              : 'bg-muted/30 dark:bg-card/40 border-border/50 dark:border-white/5'
           )}
         >
           <div className="flex items-center justify-between text-2xs text-muted-foreground mb-2 font-mono font-semibold">
             <span className="flex items-center gap-1.5">
-              <Timer className={cn('size-3.5', isLive ? 'text-emerald-500' : 'text-emerald-500/80')} />
+              <Timer size={14} animateOnHover className={cn('size-3.5', isLive ? 'text-emerald-500' : 'text-emerald-500/80')} />
               <span>{time.label}</span>
             </span>
             {isLive ? (
@@ -249,12 +247,12 @@ export function ContestCountdownCard({ contest }: { contest: ContestItemProps })
         </div>
       </CardContent>
 
-      <CardFooter className="flex items-center gap-2 border-t border-border/50 bg-muted/20 p-3">
+      <CardFooter className="flex items-center gap-2.5 border-t border-border/60 dark:border-white/10 p-3.5 sm:px-5 bg-transparent">
         <a
           href={googleCalUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-border/70 bg-card hover:bg-muted px-3 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-all flex-1 text-center shadow-2xs cursor-pointer"
+          className="inline-flex items-center justify-center gap-1.5 rounded-full border border-border/80 dark:border-white/10 bg-card/70 dark:bg-card/40 hover:bg-muted/50 px-3.5 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-all flex-1 text-center shadow-2xs cursor-pointer"
           title="Add to Google Calendar"
         >
           <Calendar className="size-3.5 text-emerald-500" />
@@ -266,10 +264,10 @@ export function ContestCountdownCard({ contest }: { contest: ContestItemProps })
           target="_blank"
           rel="noopener noreferrer"
           className={cn(
-            'inline-flex items-center justify-center gap-1.5 rounded-xl font-bold px-3.5 py-2 text-xs transition-all flex-1 text-center cursor-pointer shadow-xs',
+            'inline-flex items-center justify-center gap-1.5 rounded-full font-semibold px-4 py-2 text-xs transition-all flex-1 text-center cursor-pointer shadow-xs',
             isLive
-              ? 'bg-emerald-500 hover:bg-emerald-400 text-black shadow-emerald-500/20'
-              : 'bg-primary hover:bg-primary/90 text-primary-foreground'
+              ? 'bg-emerald-500 hover:bg-emerald-400 text-black font-bold shadow-emerald-500/20'
+              : 'bg-primary hover:bg-primary-hover text-primary-foreground'
           )}
         >
           <span>{isLive ? 'Join Live' : 'Register'}</span>

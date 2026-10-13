@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -14,9 +14,16 @@ import {
   Network,
   Binary,
   Sigma,
+  Search,
+  X,
+  ArrowRight,
+  CheckCircle2,
+  Sparkles,
+  Check,
+  Code2,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { cn } from '@/lib/utils';
 import { getNonStandardCategories } from '@/lib/non-standard-dsa';
@@ -26,6 +33,57 @@ interface Stat {
   slug?: string;
   total: number;
   completed: number;
+}
+
+function CircularMasteryRing({ pct, isMastered }: { pct: number; isMastered: boolean }) {
+  const radius = 13;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference - (pct / 100) * circumference;
+
+  return (
+    <div
+      className={cn(
+        'size-11 sm:size-12 rounded-2xl flex items-center justify-center border shadow-2xs backdrop-blur-md transition-all duration-300 group-hover:scale-105 shrink-0 relative',
+        'bg-foreground/[0.03] dark:bg-white/[0.06] border-border/70 dark:border-white/10',
+        isMastered
+          ? 'group-hover:border-emerald-500/40 group-hover:bg-emerald-500/[0.05]'
+          : 'group-hover:border-primary/40 group-hover:bg-primary/[0.05]'
+      )}
+      title={`${pct}% mastered`}
+    >
+      <svg className="size-8 -rotate-90" viewBox="0 0 36 36" aria-hidden="true">
+        <circle
+          cx="18"
+          cy="18"
+          r={radius}
+          className="stroke-foreground/10 dark:stroke-white/10 fill-none"
+          strokeWidth="2.75"
+        />
+        <circle
+          cx="18"
+          cy="18"
+          r={radius}
+          className={cn(
+            'fill-none transition-all duration-500 ease-out',
+            isMastered ? 'stroke-emerald-500' : 'stroke-primary'
+          )}
+          strokeWidth="2.75"
+          strokeDasharray={circumference}
+          strokeDashoffset={strokeDashoffset}
+          strokeLinecap="round"
+        />
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center">
+        {isMastered ? (
+          <Check className="size-3.5 text-emerald-500 stroke-[3]" />
+        ) : (
+          <span className="text-[10px] font-mono font-bold text-foreground/90">
+            {pct}%
+          </span>
+        )}
+      </div>
+    </div>
+  );
 }
 
 const ICON_MAP: Record<string, LucideIcon> = {
@@ -44,20 +102,20 @@ const containerVariants: any = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
-    transition: { staggerChildren: 0.06 },
+    transition: { staggerChildren: 0.05 },
   },
 };
 
 const itemVariants: any = {
-  hidden: { opacity: 0, y: 16 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
+  hidden: { opacity: 0, y: 14 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: 'easeOut' } },
 };
 
 export default function NonStandardPage() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedTag, setSelectedTag] = useState<string>('all');
+  const [selectedTag, setSelectedTag] = useState<'all' | 'in-progress' | 'mastered' | 'unstarted'>('all');
 
-  const categories = getNonStandardCategories();
+  const categories = useMemo(() => getNonStandardCategories(), []);
 
   const { data: progress = [] } = useQuery<Stat[]>({
     queryKey: ['problems', 'progress', 'nonstandard'],
@@ -69,189 +127,279 @@ export default function NonStandardPage() {
     staleTime: 15_000,
   });
 
-  const statsMap = Object.fromEntries(progress.map((p) => [p.group, p]));
-  const totalCompleted = progress.reduce((acc, curr) => acc + curr.completed, 0);
-  const totalProblems = progress.reduce((acc, curr) => acc + curr.total, 0) || 100;
-  const overallProgress = Math.round((totalCompleted / totalProblems) * 100);
+  const statsMap = useMemo(() => {
+    return Object.fromEntries(progress.map((p) => [p.group, p]));
+  }, [progress]);
+
+  const totalCompleted = useMemo(() => {
+    return progress.reduce((acc, curr) => acc + curr.completed, 0);
+  }, [progress]);
+
+  const totalProblems = useMemo(() => {
+    return progress.reduce((acc, curr) => acc + curr.total, 0) || 100;
+  }, [progress]);
+
+  const overallProgress = totalProblems > 0 ? Math.round((totalCompleted / totalProblems) * 100) : 0;
+
+  const masteredCount = useMemo(() => {
+    return categories.filter((cat) => {
+      const stat = statsMap[cat.category];
+      return stat && stat.total > 0 && stat.completed >= stat.total;
+    }).length;
+  }, [categories, statsMap]);
+
+  const inProgressCount = useMemo(() => {
+    return categories.filter((cat) => {
+      const stat = statsMap[cat.category];
+      return stat && stat.completed > 0 && stat.completed < stat.total;
+    }).length;
+  }, [categories, statsMap]);
+
+  const unstartedCount = Math.max(0, categories.length - masteredCount - inProgressCount);
 
   // Filter categories by search query and tag filter
-  const filteredCategories = categories.filter((cat) => {
-    const matchesSearch =
-      cat.shortName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      cat.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      cat.note.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredCategories = useMemo(() => {
+    return categories.filter((cat) => {
+      const q = searchQuery.toLowerCase().trim();
+      const matchesSearch =
+        !q ||
+        cat.shortName.toLowerCase().includes(q) ||
+        cat.category.toLowerCase().includes(q) ||
+        cat.note.toLowerCase().includes(q);
 
-    if (selectedTag === 'all') return matchesSearch;
+      if (!matchesSearch) return false;
 
-    const stat = statsMap[cat.category];
-    if (selectedTag === 'completed') {
-      return matchesSearch && stat && stat.completed > 0 && stat.completed === stat.total;
-    }
-    if (selectedTag === 'in-progress') {
-      return matchesSearch && stat && stat.completed > 0 && stat.completed < stat.total;
-    }
-    return matchesSearch;
-  });
+      const stat = statsMap[cat.category] ?? { total: cat.problemCount, completed: 0 };
+      const isMastered = stat.total > 0 && stat.completed >= stat.total;
+      const isInProgress = stat.completed > 0 && stat.completed < stat.total;
+      const isUnstarted = stat.completed === 0;
+
+      if (selectedTag === 'mastered') return isMastered;
+      if (selectedTag === 'in-progress') return isInProgress;
+      if (selectedTag === 'unstarted') return isUnstarted;
+      return true;
+    });
+  }, [categories, searchQuery, selectedTag, statsMap]);
 
   return (
-    <div className="space-y-8 pb-12">
-      {/* 1. Header Section */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pt-2">
-        <div className="space-y-1.5">
-          <h1 className="font-display text-3xl sm:text-5xl font-black tracking-tight text-foreground leading-tight">
-            Master <span className="text-rose-500">Non-Standard DSA</span>
-          </h1>
-          <p className="text-sm sm:text-base text-muted-foreground max-w-xl font-light">
-            Ad-hoc, constructive, geometric, and math problems — 100 curated questions that test first-principles reasoning without fixed pattern templates.
-          </p>
-        </div>
+    <div className="space-y-8 pb-16">
+      {/* ── 1. Page Header (Modern Cockpit Header) ── */}
+      <div className="pt-2 space-y-3">
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black font-display tracking-tight text-foreground leading-[1.08]">
+          Non-Standard{' '}
+          <span className="bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-400 dark:from-emerald-400 dark:via-teal-300 dark:to-emerald-200 bg-clip-text text-transparent">
+            DSA
+          </span>
+        </h1>
+        <p className="text-sm sm:text-base text-muted-foreground max-w-2xl leading-relaxed font-normal">
+          Ad-hoc, constructive, geometric, and mathematical insight problems that test first-principles reasoning without fixed pattern templates.
+        </p>
+      </div>
 
-        {/* Overall Mastery Meter Card */}
-        <div className="w-full sm:w-64 p-4 rounded-2xl bg-background/60 dark:bg-background/30 backdrop-blur-xl border border-border/30 shadow-sm space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-sans">
-              Overall Mastery
+      {/* ── 2. Frameless Assessment Divider Banner ── */}
+      <div className="w-full py-5 px-1 sm:px-2 border-y border-foreground/20 dark:border-white/20 bg-foreground/[0.02] dark:bg-white/[0.02] transition-colors">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-6">
+          <div className="space-y-1">
+            <span className="text-2xs font-mono font-semibold tracking-wider text-muted-foreground uppercase">
+              Assessment Specialization
             </span>
-            <span className="text-xs font-semibold text-rose-500 font-mono">
-              {totalCompleted}/{totalProblems}
-            </span>
+            <h2 className="text-xl sm:text-2xl font-bold font-display tracking-tight text-foreground">
+              100 First-Principles OA Challenges
+            </h2>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="font-display text-3xl font-black tracking-tight text-foreground">
-              {overallProgress}%
-            </span>
-            <span className="text-xs text-muted-foreground font-medium">completed</span>
-          </div>
-          <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
-            <div
-              style={{ width: `${overallProgress}%` }}
-              className="h-full rounded-full bg-primary transition-all duration-500"
-            />
+
+          <div className="flex flex-wrap items-center gap-4 sm:gap-6 shrink-0">
+            <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground">
+              <span className="inline-block size-2 rounded-full bg-primary" />
+              <span>
+                <strong className="text-foreground">{totalCompleted}</strong> of {totalProblems} solved ({overallProgress}%)
+              </span>
+            </div>
+            <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground">
+              <span className="text-emerald-500 font-semibold">{masteredCount} mastered</span>
+              <span>•</span>
+              <span className="text-amber-500 font-semibold">{inProgressCount} active</span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* 2. Search & Filter Controls */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-2 rounded-2xl bg-background/50 backdrop-blur-md border border-border/30">
+      {/* ── 3. Search & Filter Controls Bar ── */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-2.5 rounded-2xl bg-card/70 border border-border/80 backdrop-blur-md shadow-xs">
         {/* Search Bar */}
-        <div className="relative w-full sm:w-80">
+        <div className="relative flex-1 sm:max-w-md">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
           <input
             type="text"
-            placeholder="Search categories or concepts..."
+            placeholder="Search categories, invariant tricks, or concepts..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-10 px-4 text-sm font-medium bg-background/80 rounded-xl border border-border/40 focus:border-rose-500/50 focus:outline-none focus:ring-2 focus:ring-rose-500/20 transition-all"
+            className="w-full h-10 pl-10 pr-9 text-xs sm:text-sm font-medium bg-background/80 rounded-xl border border-border/80 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-sans"
           />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
+            >
+              <X className="size-3.5" />
+            </button>
+          )}
         </div>
 
         {/* Filter Pills */}
-        <div className="flex items-center gap-1.5 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
+        <div className="flex items-center gap-1 overflow-x-auto p-1 rounded-xl bg-surface-sunken/80 border border-border/60">
           {[
-            { id: 'all', label: 'All Categories' },
-            { id: 'in-progress', label: 'In Progress' },
-            { id: 'completed', label: 'Completed' },
+            { id: 'all' as const, label: 'All Categories', count: categories.length },
+            { id: 'in-progress' as const, label: 'In Progress', count: inProgressCount },
+            { id: 'mastered' as const, label: 'Mastered', count: masteredCount },
+            { id: 'unstarted' as const, label: 'Unstarted', count: unstartedCount },
           ].map((tab) => (
             <button
               key={tab.id}
+              type="button"
               onClick={() => setSelectedTag(tab.id)}
               className={cn(
-                'px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all whitespace-nowrap',
+                'px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5',
                 selectedTag === tab.id
-                  ? 'bg-rose-500/10 text-rose-500 border border-rose-500/30'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-accent/40'
+                  ? 'bg-card text-foreground font-bold shadow-2xs border border-border/50'
+                  : 'text-muted-foreground hover:text-foreground'
               )}
             >
-              {tab.label}
+              <span>{tab.label}</span>
+              <span
+                className={cn(
+                  'font-mono text-[10px] px-1.5 py-0.2 rounded-full',
+                  selectedTag === tab.id ? 'bg-primary/10 text-primary font-bold' : 'bg-muted text-muted-foreground'
+                )}
+              >
+                {tab.count}
+              </span>
             </button>
           ))}
         </div>
       </div>
 
-      {/* 3. Category Grid */}
+      {/* ── 4. Category Grid ── */}
       {filteredCategories.length === 0 ? (
-        <Card className="rounded-3xl border-none bg-background/50 p-8 text-center">
-          <CardContent>
-            <EmptyState
-              title="No categories found"
-              description={
-                searchQuery
-                  ? `No categories match "${searchQuery}". Try a different keyword.`
-                  : 'Categories will show up here as soon as problems are available.'
-              }
-            />
-          </CardContent>
+        <Card className="rounded-3xl border border-dashed border-border/80 bg-card/50 p-12 text-center shadow-xs">
+          <EmptyState
+            title="No categories found"
+            description={
+              searchQuery
+                ? `No categories match "${searchQuery}". Try a different keyword.`
+                : 'Categories will show up here as soon as problems are available.'
+            }
+            action={
+              searchQuery || selectedTag !== 'all' ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery('');
+                    setSelectedTag('all');
+                  }}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary-hover transition-all cursor-pointer shadow-xs"
+                >
+                  Clear Filters
+                </button>
+              ) : undefined
+            }
+          />
         </Card>
       ) : (
         <motion.div
           variants={containerVariants}
           initial="hidden"
           animate="show"
-          className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
+          className="grid gap-6 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3"
         >
           {filteredCategories.map((cat) => {
             const stat = statsMap[cat.category] ?? { total: cat.problemCount, completed: 0 };
             const pct = stat.total > 0 ? Math.round((stat.completed / stat.total) * 100) : 0;
             const complete = pct === 100 && stat.total > 0;
-            const Icon = ICON_MAP[cat.iconName] || Layers;
+            const inProgress = stat.completed > 0 && !complete;
 
             return (
               <motion.div key={cat.slug} variants={itemVariants} className="h-full">
                 <Link href={`/non-standard/${cat.slug}`} className="group block h-full outline-none">
-                  <Card
+                  <div
                     className={cn(
-                      'h-full flex flex-col justify-between p-6 rounded-3xl bg-background/60 dark:bg-background/30 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1.5 shadow-sm hover:shadow-xl border border-border/30 hover:border-border/60'
+                      'h-full flex flex-col justify-between p-6 sm:p-7 rounded-[28px] sm:rounded-3xl border transition-all duration-300 relative overflow-hidden',
+                      // Frosted glass styling
+                      'bg-card/70 dark:bg-card/35 backdrop-blur-2xl',
+                      'border-border/80 dark:border-white/10',
+                      'hover:border-foreground/20 dark:hover:border-white/20',
+                      'shadow-xs hover:shadow-xl hover:-translate-y-0.5',
+                      // Top specular sheen line
+                      'before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white/70 dark:before:via-white/15 before:to-transparent'
                     )}
                   >
-                    <div className="space-y-4">
-                      {/* Top Header Row */}
-                      <div className="space-y-2">
-                        <div className="flex items-start justify-between gap-3">
-                          <h3 className="font-display text-lg font-bold tracking-tight text-foreground group-hover:text-rose-500 transition-colors truncate">
-                            {cat.shortName}
-                          </h3>
-                        </div>
-
-                        {/* Subheader info: Problem count & Solved counter */}
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium flex-wrap">
-                          <span className="px-2 py-0.5 rounded-md bg-muted/60 text-muted-foreground text-[11px] font-semibold">
-                            {cat.problemCount} problem{cat.problemCount !== 1 ? 's' : ''}
-                          </span>
-                          <span className="text-border">•</span>
-                          <span className="font-mono text-xs">
-                            <span className="font-semibold text-foreground">{stat.completed}</span> / {stat.total} solved
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Description Snippet */}
-                      {cat.note && (
-                        <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed font-light">
-                          {cat.note}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Progress Bar Footer */}
-                    <div className="pt-6 space-y-2 mt-auto">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-muted-foreground font-medium">Progress</span>
+                    <div className="space-y-3.5">
+                      {/* Top Header Row: Status Badge + Circular Mastery Ring */}
+                      <div className="flex items-start justify-between gap-3">
                         <span
                           className={cn(
-                            'font-semibold font-mono',
-                            complete ? 'text-primary font-bold' : 'text-foreground'
+                            'px-3.5 py-1 rounded-full text-xs font-semibold border shadow-2xs backdrop-blur-md',
+                            complete
+                              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25'
+                              : inProgress
+                              ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25'
+                              : 'bg-foreground/[0.04] dark:bg-white/[0.06] text-muted-foreground border-border/70 dark:border-white/10'
                           )}
                         >
-                          {complete ? 'Complete' : `${pct}%`}
+                          {complete ? 'Mastered' : inProgress ? 'In Progress' : 'Roadmap'}
+                        </span>
+
+                        <CircularMasteryRing pct={pct} isMastered={complete} />
+                      </div>
+
+                      {/* Title & Description */}
+                      <div>
+                        <h3 className="font-display text-xl sm:text-2xl font-bold tracking-tight text-foreground group-hover:text-primary transition-colors">
+                          {cat.shortName}
+                        </h3>
+                        {cat.note && (
+                          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed line-clamp-2 mt-1.5 font-normal">
+                            {cat.note}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Problems & Solved Meta Row */}
+                      <div className="flex flex-wrap items-center gap-2.5 text-xs font-medium text-foreground/80 pt-1">
+                        <span className="flex items-center gap-1.5">
+                          <Layers className="size-3.5 text-muted-foreground" />
+                          {cat.problemCount} problems
+                        </span>
+                        <span className="text-muted-foreground/40">•</span>
+                        <span className="flex items-center gap-1.5">
+                          <Code2 className="size-3.5 text-muted-foreground" />
+                          <strong className="text-foreground">{stat.completed}</strong>/{stat.total} solved
                         </span>
                       </div>
-                      <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
-                        <div
-                          style={{ width: `${pct}%` }}
-                          className="h-full rounded-full transition-all duration-500 bg-primary"
-                        />
+
+                      {/* Category Badge */}
+                      <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                        <span className="px-2.5 py-0.5 rounded-lg bg-foreground/[0.03] dark:bg-white/[0.04] border border-border/60 dark:border-white/10 font-mono text-[11px] text-muted-foreground backdrop-blur-xs">
+                          {cat.category}
+                        </span>
                       </div>
                     </div>
-                  </Card>
+
+                    {/* Single-Line Footer Action Row */}
+                    <div className="pt-4 mt-4 border-t border-border/50 dark:border-white/10 flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-mono">
+                        <span className="font-bold text-foreground">{stat.completed}</span>
+                        <span>/</span>
+                        <span>{stat.total} solved</span>
+                      </div>
+
+                      <div className="px-4 py-2 rounded-full text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary-hover active:scale-95 transition-all shadow-xs flex items-center gap-1.5 cursor-pointer shrink-0">
+                        <span>{complete ? 'Review' : inProgress ? 'Continue' : 'Practice'}</span>
+                        <ArrowRight className="size-3 group-hover:translate-x-0.5 transition-transform" />
+                      </div>
+                    </div>
+                  </div>
                 </Link>
               </motion.div>
             );

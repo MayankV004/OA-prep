@@ -4,7 +4,9 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { User, Mail, Lock, Eye, EyeOff, ChevronRight, Loader2 } from 'lucide-react';
+import { User, Mail, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Lock } from '@/components/animate-ui/icons/lock';
+import { ChevronRight } from '@/components/animate-ui/icons/chevron-right';
 
 import { authClient } from '@/lib/auth-client';
 import { FormBanner, PasswordStrength } from '@/components/auth/AuthField';
@@ -94,13 +96,13 @@ export default function SignUpPage() {
 
       {/* ── Header Eyebrow, Title, and Subtitle ── */}
       <motion.div variants={authItemVariants} className="space-y-1.5 text-left">
-        <span className="text-xs sm:text-sm font-semibold text-emerald-400 tracking-wide uppercase">
+        <span className="text-xs sm:text-sm font-semibold text-emerald-600 dark:text-emerald-400 tracking-wide uppercase">
           Get started
         </span>
-        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
+        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-zinc-900 dark:text-white">
           Create account
         </h1>
-        <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed pt-1">
+        <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed pt-1">
           Join engineers mastering technical assessments and landing dream offers.
         </p>
       </motion.div>
@@ -115,7 +117,7 @@ export default function SignUpPage() {
               errorCallbackURL: '/sign-up',
             });
           }}
-          className="w-full flex items-center justify-center gap-3 py-3.5 px-5 rounded-full border border-white/10 bg-[#141414] hover:bg-[#1f1f1f] text-white text-sm font-medium transition-all cursor-pointer shadow-sm hover:border-white/20 active:scale-[0.99]"
+          className="w-full flex items-center justify-center gap-3 py-3.5 px-5 rounded-full border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-800 font-medium shadow-xs hover:border-zinc-300 dark:border-white/10 dark:bg-[#141414] dark:hover:bg-[#1f1f1f] dark:text-white dark:hover:border-white/20 text-sm transition-all cursor-pointer active:scale-[0.99]"
         >
           {/* Multi-Color Google G Logo */}
           <svg className="size-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
@@ -143,9 +145,9 @@ export default function SignUpPage() {
       {/* ── Divider ── */}
       <motion.div variants={authItemVariants} className="relative my-6 text-center">
         <div className="absolute inset-0 flex items-center" aria-hidden="true">
-          <div className="w-full border-t border-white/10" />
+          <div className="w-full border-t border-zinc-200 dark:border-white/10" />
         </div>
-        <span className="relative bg-[#0B0C0E] px-4 text-xs text-zinc-500">
+        <span className="relative bg-white dark:bg-[#0B0C0E] px-4 text-xs text-zinc-500 dark:text-zinc-400">
           or continue with email
         </span>
       </motion.div>
@@ -160,8 +162,8 @@ export default function SignUpPage() {
 
         {/* Borderless Full Name Input */}
         <motion.div variants={authItemVariants} className="space-y-1">
-          <div className="group relative flex items-center border-b border-white/15 focus-within:border-emerald-500 transition-colors py-2">
-            <User className="size-4 text-zinc-400 group-focus-within:text-emerald-400 transition-colors shrink-0 mr-3.5" />
+          <div className="group relative flex items-center border-b border-zinc-200 dark:border-white/15 focus-within:border-emerald-500 dark:focus-within:border-emerald-500 transition-colors py-2">
+            <User className="size-4 text-zinc-400 group-focus-within:text-emerald-500 transition-colors shrink-0 mr-3.5" />
             <input
               type="text"
               id="name"
@@ -172,15 +174,15 @@ export default function SignUpPage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               disabled={loading}
-              className="w-full bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-white placeholder:text-zinc-500 text-base md:text-sm py-1"
+              className="w-full bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 text-base md:text-sm py-1"
             />
           </div>
         </motion.div>
 
         {/* Borderless Email Input */}
         <motion.div variants={authItemVariants} className="space-y-1">
-          <div className="group relative flex items-center border-b border-white/15 focus-within:border-emerald-500 transition-colors py-2">
-            <Mail className="size-4 text-zinc-400 group-focus-within:text-emerald-400 transition-colors shrink-0 mr-3.5" />
+          <div className="group relative flex items-center border-b border-zinc-200 dark:border-white/15 focus-within:border-emerald-500 dark:focus-within:border-emerald-500 transition-colors py-2">
+            <Mail className="size-4 text-zinc-400 group-focus-within:text-emerald-500 transition-colors shrink-0 mr-3.5" />
             <input
               type="email"
               id="email"
@@ -192,7 +194,7 @@ export default function SignUpPage() {
               onChange={(e) => setEmail(e.target.value)}
               onBlur={() => setTouched((t) => ({ ...t, email: true }))}
               disabled={loading}
-              className="w-full bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-white placeholder:text-zinc-500 text-base md:text-sm py-1"
+              className="w-full bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 text-base md:text-sm py-1"
             />
           </div>
           {emailError && (
@@ -202,8 +204,8 @@ export default function SignUpPage() {
 
         {/* Borderless Password Input */}
         <motion.div variants={authItemVariants} className="space-y-2">
-          <div className="group relative flex items-center border-b border-white/15 focus-within:border-emerald-500 transition-colors py-2">
-            <Lock className="size-4 text-zinc-400 group-focus-within:text-emerald-400 transition-colors shrink-0 mr-3.5" />
+          <div className="group relative flex items-center border-b border-zinc-200 dark:border-white/15 focus-within:border-emerald-500 dark:focus-within:border-emerald-500 transition-colors py-2">
+            <Lock size={16} animateOnHover className="text-zinc-400 group-focus-within:text-emerald-500 transition-colors shrink-0 mr-3.5" />
             <input
               type={showPassword ? 'text' : 'password'}
               id="password"
@@ -215,12 +217,12 @@ export default function SignUpPage() {
               onChange={(e) => setPassword(e.target.value)}
               onBlur={() => setTouched((t) => ({ ...t, password: true }))}
               disabled={loading}
-              className="w-full bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-white placeholder:text-zinc-500 text-base md:text-sm py-1 pr-9"
+              className="w-full bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 text-base md:text-sm py-1 pr-9"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-0 text-zinc-400 hover:text-white transition-colors cursor-pointer"
+              className="absolute right-0 text-zinc-400 hover:text-zinc-700 dark:hover:text-white transition-colors cursor-pointer"
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
@@ -243,14 +245,14 @@ export default function SignUpPage() {
           <button
             type="submit"
             disabled={loading || !canSubmit}
-            className="w-full rounded-full bg-emerald-400 hover:bg-emerald-300 active:bg-emerald-500 text-black font-bold py-3.5 px-6 h-12 flex items-center justify-center gap-1.5 text-sm sm:text-base shadow-lg shadow-emerald-500/20 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.99]"
+            className="w-full rounded-full bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-white dark:bg-emerald-400 dark:hover:bg-emerald-300 dark:active:bg-emerald-500 dark:text-black font-bold py-3.5 px-6 h-12 flex items-center justify-center gap-1.5 text-sm sm:text-base shadow-lg shadow-emerald-500/20 transition-all cursor-pointer disabled:bg-zinc-100 disabled:text-zinc-400 disabled:border disabled:border-zinc-200 disabled:shadow-none disabled:cursor-not-allowed dark:disabled:bg-zinc-800/80 dark:disabled:text-zinc-500 dark:disabled:border-white/5 active:scale-[0.99]"
           >
             {loading ? (
               <Loader2 className="size-5 animate-spin" />
             ) : (
               <>
                 <span>Create Account</span>
-                <ChevronRight className="size-4 stroke-[2.5]" />
+                <ChevronRight size={16} animateOnHover className="stroke-[2.5]" />
               </>
             )}
           </button>
@@ -260,14 +262,14 @@ export default function SignUpPage() {
       {/* ── Footer Disclaimer ── */}
       <motion.p
         variants={authItemVariants}
-        className="text-center text-xs text-zinc-400/80 pt-4 leading-relaxed"
+        className="text-center text-xs text-zinc-500 dark:text-zinc-400/80 pt-4 leading-relaxed"
       >
         By continuing, you agree to our{' '}
-        <Link href="/terms" className="text-emerald-400 hover:underline underline-offset-2">
+        <Link href="/terms" className="text-emerald-600 dark:text-emerald-400 hover:underline underline-offset-2">
           Terms of Service
         </Link>{' '}
         and{' '}
-        <Link href="/privacy" className="text-emerald-400 hover:underline underline-offset-2">
+        <Link href="/privacy" className="text-emerald-600 dark:text-emerald-400 hover:underline underline-offset-2">
           Privacy Policy
         </Link>
       </motion.p>

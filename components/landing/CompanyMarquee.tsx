@@ -57,14 +57,6 @@ function UberIcon({ className }: { className?: string }) {
   );
 }
 
-function NetflixIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M5.398 0v24c1.848-.307 3.73-.615 5.578-.883V13.88l3.65 10.12h4.976V0h-5.26v10.12L10.658 0H5.398z"/>
-    </svg>
-  );
-}
-
 function StripeIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor">
@@ -81,44 +73,38 @@ function AtlassianIcon({ className }: { className?: string }) {
   );
 }
 
-function BloombergIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h8.5a5.5 5.5 0 0 0 3.2-10 5 5 0 0 0-3.2-10zM8 6h6a2 2 0 1 1 0 4H8zm6.5 12H8v-4h6.5a2 2 0 1 1 0 4z"/>
-    </svg>
-  );
-}
-
 const COMPANIES = [
-  { name: 'Google', icon: GoogleIcon, focus: 'Graphs & DP' },
-  { name: 'Amazon', icon: AmazonIcon, focus: 'OA High Frequency' },
-  { name: 'Microsoft', icon: MicrosoftIcon, focus: 'Arrays & Trees' },
-  { name: 'Uber', icon: UberIcon, focus: 'Hard Intervals' },
-  { name: 'Meta', icon: MetaIcon, focus: 'Speed & Edge Cases' },
-  { name: 'Apple', icon: AppleIcon, focus: 'Core Architecture' },
-  { name: 'Netflix', icon: NetflixIcon, focus: 'Concurrency & Design' },
-  { name: 'Stripe', icon: StripeIcon, focus: 'Parsing & Precision' },
-  { name: 'Atlassian', icon: AtlassianIcon, focus: 'Intervals & State' },
-  { name: 'Bloomberg', icon: BloombergIcon, focus: 'Stacks & Heaps' },
+  { name: 'Amazon', icon: AmazonIcon, focus: 'Sliding Window & Monotonic Stack' },
+  { name: 'Google', icon: GoogleIcon, focus: 'Graph Dijkstra & Grid DP' },
+  { name: 'Uber', icon: UberIcon, focus: 'Interval Clustering & Heaps' },
+  { name: 'Microsoft', icon: MicrosoftIcon, focus: 'Two Pointers & Tree Traversal' },
+  { name: 'Atlassian', icon: AtlassianIcon, focus: 'Topological Sort & Queues' },
+  { name: 'Meta', icon: MetaIcon, focus: 'Two Pointers & Backtracking' },
+  { name: 'Stripe', icon: StripeIcon, focus: 'Sliding Window & Parsing' },
+  { name: 'Apple', icon: AppleIcon, focus: 'Tree BFS & Concurrency' },
 ];
 
 function MarqueeTrack() {
   return (
-    <div className="flex shrink-0 items-center gap-4 pr-4 animate-marquee">
+    <div className="flex shrink-0 items-center gap-3.5 pr-3.5 animate-marquee">
       {COMPANIES.map((company) => {
         const Icon = company.icon;
         return (
           <div
             key={company.name}
-            className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-card border border-border/80 shadow-2xs hover:border-primary/50 transition-colors shrink-0 group select-none cursor-default"
+            className="flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-card/80 dark:bg-white/[0.03] border border-border/80 dark:border-white/10 shadow-2xs hover:border-emerald-500/40 hover:bg-card transition-all duration-200 shrink-0 group select-none cursor-default"
           >
-            <Icon className="size-4 shrink-0 text-muted-foreground group-hover:text-primary transition-colors" />
-            <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">
-              {company.name}
-            </span>
-            <span className="text-[10px] text-muted-foreground font-mono">
-              • {company.focus}
-            </span>
+            <div className="size-6 rounded-lg bg-foreground/[0.04] dark:bg-white/[0.06] flex items-center justify-center shrink-0 text-muted-foreground group-hover:text-emerald-500 transition-colors">
+              <Icon className="size-3.5" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-xs font-bold text-foreground group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                {company.name}
+              </span>
+              <span className="text-[10px] text-muted-foreground font-mono">
+                {company.focus}
+              </span>
+            </div>
           </div>
         );
       })}
@@ -128,25 +114,25 @@ function MarqueeTrack() {
 
 export function CompanyMarquee() {
   return (
-    <section className="py-12 relative overflow-hidden border-y border-border/40 bg-card/20">
-      <div className="max-w-7xl mx-auto px-4 mb-6 text-center">
-        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-          Curated OA Question Sets & Mock Tests for Top Engineering Rounds
-        </p>
+    <section className="py-10 relative overflow-hidden border-y border-border/60 dark:border-white/5 bg-surface-sunken/40 dark:bg-white/[0.01]">
+      <div className="max-w-7xl mx-auto px-4 mb-5 text-center">
+        <div className="inline-flex items-center gap-2 text-2xs font-mono font-semibold uppercase tracking-wider text-muted-foreground">
+          <span className="size-1.5 rounded-full bg-emerald-500" />
+          <span>Curated for Tier-1 Online Assessments & Placement Rounds</span>
+        </div>
       </div>
 
-      {/* Infinite Seamless Scrolling Track (Two Sibling Tracks) */}
+      {/* Infinite Scrolling Track */}
       <div className="relative w-full overflow-hidden flex items-center">
-        {/* Left Edge Mask */}
-        <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-20 sm:w-36 z-10 bg-gradient-to-r from-background to-transparent" />
+        {/* Left Gradient Fade */}
+        <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-24 sm:w-44 z-10 bg-gradient-to-r from-background to-transparent" />
 
-        {/* Primary Track */}
+        {/* Primary and Duplicate Tracks for seamless loop */}
         <MarqueeTrack />
-        {/* Duplicate Track (for 100% Seamless Looping) */}
         <MarqueeTrack />
 
-        {/* Right Edge Mask */}
-        <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-20 sm:w-36 z-10 bg-gradient-to-l from-background to-transparent" />
+        {/* Right Gradient Fade */}
+        <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-24 sm:w-44 z-10 bg-gradient-to-l from-background to-transparent" />
       </div>
     </section>
   );

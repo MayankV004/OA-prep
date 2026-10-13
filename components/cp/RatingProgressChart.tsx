@@ -36,15 +36,15 @@ const TOOLTIP_STYLE = {
 export function RatingProgressChart({ data }: { data: ChartPoint[] }) {
   if (!data || data.length === 0) {
     return (
-      <Card className="border border-border/60 bg-surface shadow-e1">
-        <CardHeader className="pb-2 border-b border-border/40 bg-surface-sunken/30 px-6 py-4">
+      <Card className="border border-border/70 bg-card/70 backdrop-blur-md shadow-xs rounded-2xl overflow-hidden">
+        <CardHeader className="border-b border-border/50 bg-muted/20 px-6 py-4">
           <div className="flex items-center gap-2.5">
             <span className="grid size-8 place-items-center rounded-lg bg-primary/10 text-primary border border-primary/20">
               <TrendingUp className="size-4" />
             </span>
             <div>
               <CardTitle className="text-base font-bold text-foreground">Contest Rating Progression</CardTitle>
-              <CardDescription className="text-xs text-text-muted">
+              <CardDescription className="text-xs text-muted-foreground">
                 Connect your CP profiles in your Profile settings to visualize your rating trajectory across platforms.
               </CardDescription>
             </div>
@@ -84,28 +84,28 @@ export function RatingProgressChart({ data }: { data: ChartPoint[] }) {
   }
 
   return (
-    <Card className="border border-border/60 bg-surface shadow-e2 overflow-hidden">
-      <CardHeader className="border-b border-border/40 bg-surface-sunken/30 px-6 py-4">
-        <div className="flex items-center justify-between">
+    <Card className="border border-border/70 bg-card/70 backdrop-blur-md shadow-xs rounded-2xl overflow-hidden">
+      <CardHeader className="border-b border-border/50 bg-muted/20 px-6 py-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
             <span className="grid size-8 place-items-center rounded-lg bg-primary/10 text-primary border border-primary/20">
               <TrendingUp className="size-4" />
             </span>
             <div>
               <CardTitle className="text-base font-bold text-foreground">Contest Rating Trajectory</CardTitle>
-              <CardDescription className="text-xs text-text-muted">
+              <CardDescription className="text-xs text-muted-foreground">
                 Chronological rating progression over time across Codeforces, LeetCode, CodeChef, and AtCoder.
               </CardDescription>
             </div>
           </div>
-          <span className="text-2xs font-mono text-text-muted px-2.5 py-1 rounded-md bg-surface-sunken border border-border/50">
+          <span className="text-[11px] font-mono text-muted-foreground px-2.5 py-1 rounded-lg bg-muted/60 border border-border/50 self-start sm:self-center">
             {data.length} rated events
           </span>
         </div>
       </CardHeader>
 
       <CardContent className="p-6">
-        <div className="h-[400px] sm:h-[440px] w-full min-w-0">
+        <div className="h-[380px] sm:h-[420px] w-full min-w-0">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data} margin={{ top: 12, right: 12, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" strokeOpacity={0.4} vertical={false} />

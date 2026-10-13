@@ -158,53 +158,53 @@ function StickyItemCard({
         whileInView={{ opacity: 1, y: 0, scale: 1 }}
         viewport={{ once: false, margin: '-60px' }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        className="group relative p-8 md:p-10 rounded-3xl bg-foreground/[0.015] dark:bg-white/[0.015] backdrop-blur-3xl border-0 shadow-none hover:bg-foreground/[0.03] dark:hover:bg-white/[0.03] transition-all duration-500"
+        className="group relative p-7 sm:p-9 md:p-10 rounded-3xl bg-card/85 dark:bg-[#0c1017] border border-border/80 dark:border-white/10 shadow-sm hover:border-emerald-500/40 hover:shadow-md dark:hover:shadow-[0_10px_30px_rgba(16,185,129,0.08)] transition-all duration-300"
       >
         <div className="space-y-6 relative z-10">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="h-14 w-14 rounded-2xl bg-primary flex items-center justify-center text-primary-foreground shadow-xs">
-                <Icon className="h-7 w-7" />
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3.5 sm:gap-4">
+              <div className="size-12 sm:size-14 rounded-2xl bg-emerald-500 flex items-center justify-center text-black font-bold shadow-xs">
+                <Icon className="size-6 sm:size-7" />
               </div>
               <div>
-                <span className="text-xs font-mono font-bold text-primary tracking-wider uppercase">
+                <span className="text-2xs font-mono font-bold text-emerald-600 dark:text-emerald-400 tracking-wider uppercase">
                   Module {item.number}
                 </span>
-                <h3 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">
+                <h3 className="text-xl sm:text-2xl md:text-3xl font-black text-foreground tracking-tight">
                   {item.title}
                 </h3>
               </div>
             </div>
 
             {item.metric && (
-              <span className="px-3 py-1 rounded-full text-xs font-mono font-bold text-primary bg-primary/10">
+              <span className="px-3 py-1 rounded-full text-2xs sm:text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20">
                 {item.metric}
               </span>
             )}
           </div>
 
-          <p className="text-base sm:text-lg text-muted-foreground leading-relaxed font-normal">
+          <p className="text-sm sm:text-base text-muted-foreground leading-relaxed font-normal">
             {item.description}
           </p>
 
-          {/* Highlights Grid - Borderless */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+          {/* Highlights Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
             {item.highlights.map((highlight) => (
               <div
                 key={highlight}
-                className="flex items-center gap-3 p-3.5 rounded-2xl bg-card border border-border text-xs sm:text-sm font-medium text-foreground"
+                className="flex items-center gap-2.5 p-3 rounded-xl bg-surface-sunken/60 dark:bg-white/[0.02] border border-border/60 text-xs sm:text-sm font-medium text-foreground"
               >
-                <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+                <CheckCircle2 className="size-4 text-emerald-500 shrink-0" />
                 <span>{highlight}</span>
               </div>
             ))}
           </div>
 
-          <div className="pt-4 flex items-center justify-between">
+          <div className="pt-3 flex items-center justify-between">
             <Link href={item.linkUrl}>
-              <button className="group/btn inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl font-bold text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-xs active:scale-95 cursor-pointer border-0">
+              <button className="group/btn inline-flex items-center gap-2 px-6 py-3 rounded-full font-bold text-xs sm:text-sm bg-emerald-500 hover:bg-emerald-400 text-black transition-all shadow-xs active:scale-95 cursor-pointer border-0">
                 <span>{item.linkText}</span>
-                <ArrowRight className="h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
+                <ArrowRight className="size-4 transition-transform group-hover/btn:translate-x-1" />
               </button>
             </Link>
           </div>

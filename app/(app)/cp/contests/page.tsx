@@ -149,34 +149,42 @@ export default function ContestsPage() {
 
   return (
     <div className="space-y-8 pb-16">
-      {/* ── Top Navigation & Header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-start gap-3">
-          <Button
-            render={<Link href="/cp" />}
-            variant="ghost"
-            size="icon-xl"
-            aria-label="Back to CP Hub"
-            className="mt-0.5 shrink-0 sm:size-9 hover:bg-emerald-500/10 hover:text-emerald-500"
-          >
-            <ArrowLeft aria-hidden />
-          </Button>
-          <PageHeading
-            className="min-w-0 flex-1"
-            overline="Global CP Tracker"
-            title="Contest Radar & Schedule"
-            description="Real-time multi-platform radar tracking upcoming and live competitions with automated email reminders."
-          />
+      {/* ── 1. Page Header (Modern Cockpit Header) ── */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pt-2">
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <Link
+              href="/cp"
+              className="inline-flex items-center justify-center size-9 rounded-full bg-card/70 dark:bg-card/35 border border-border/80 dark:border-white/10 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors shadow-2xs cursor-pointer"
+              aria-label="Back to CP Hub"
+            >
+              <ArrowLeft className="size-4" />
+            </Link>
+            <span className="text-2xs font-mono font-bold tracking-wider text-primary uppercase">
+              Global CP Tracker
+            </span>
+          </div>
+
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black font-display tracking-tight text-foreground leading-[1.08]">
+            Contest Radar &{' '}
+            <span className="bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-400 dark:from-emerald-400 dark:via-teal-300 dark:to-emerald-200 bg-clip-text text-transparent">
+              Schedule
+            </span>
+          </h1>
+
+          <p className="text-sm sm:text-base text-muted-foreground max-w-2xl leading-relaxed font-normal">
+            Real-time multi-platform radar tracking upcoming and live competitions with automated email reminders.
+          </p>
         </div>
 
-        {/* Header Actions */}
-        <div className="flex items-center gap-2.5 self-start sm:self-center shrink-0">
+        {/* Header Action Buttons */}
+        <div className="flex flex-wrap items-center gap-2.5 self-start lg:self-center shrink-0">
           <Button
             variant="outline"
             size="sm"
             onClick={() => syncMutation.mutate()}
             disabled={syncMutation.isPending || isRefetching}
-            className="gap-1.5 text-xs border-border/70 hover:border-emerald-500/40 hover:bg-emerald-500/5 shadow-2xs rounded-xl cursor-pointer"
+            className="gap-1.5 text-xs rounded-full border-border/80 dark:border-white/10 bg-card/70 dark:bg-card/35 backdrop-blur-md hover:border-emerald-500/40 hover:bg-emerald-500/5 shadow-2xs cursor-pointer px-3.5 py-2"
           >
             <RefreshCw
               className={cn(
@@ -192,7 +200,7 @@ export default function ContestsPage() {
             size="sm"
             onClick={() => scanMutation.mutate()}
             disabled={scanMutation.isPending}
-            className="gap-1.5 text-xs border-border/70 hover:border-emerald-500/40 hover:bg-emerald-500/5 shadow-2xs rounded-xl cursor-pointer"
+            className="gap-1.5 text-xs rounded-full border-border/80 dark:border-white/10 bg-card/70 dark:bg-card/35 backdrop-blur-md hover:border-emerald-500/40 hover:bg-emerald-500/5 shadow-2xs cursor-pointer px-3.5 py-2"
             title="Scan upcoming contests and dispatch due email alerts"
           >
             <MailCheck
@@ -206,7 +214,7 @@ export default function ContestsPage() {
 
           <Button
             onClick={() => setModalOpen(true)}
-            className="gap-2 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs shadow-xs hover:shadow-emerald-500/20 rounded-xl cursor-pointer"
+            className="gap-2 bg-primary hover:bg-primary-hover text-primary-foreground font-semibold text-xs rounded-full shadow-xs cursor-pointer px-4 py-2"
           >
             <BellRing className="size-3.5" />
             <span>Alert Preferences</span>
@@ -214,72 +222,74 @@ export default function ContestsPage() {
         </div>
       </div>
 
-      {/* ── Cockpit Status Summary Strip ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 p-4 rounded-2xl bg-card/60 border border-border/70 shadow-xs backdrop-blur-xs">
-        <div className="space-y-0.5">
-          <span className="text-2xs font-mono uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-            <Radio className="size-3 text-emerald-500" /> Live Contests
-          </span>
-          <div className="flex items-baseline gap-2">
-            <span className="font-display text-2xl font-black text-foreground tabular-nums">
-              {liveCount}
+      {/* ── 2. Cockpit Status Summary Strip (Frameless Divider Architecture) ── */}
+      <div className="w-full py-5 px-1 sm:px-2 border-y border-foreground/20 dark:border-white/20 bg-foreground/[0.02] dark:bg-white/[0.02] transition-colors">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          <div className="space-y-1">
+            <span className="text-2xs font-mono uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+              <Radio className="size-3 text-emerald-500" /> Live Contests
             </span>
-            {liveCount > 0 && (
-              <span className="text-2xs font-mono font-bold text-emerald-500 animate-pulse">
-                Active Now
+            <div className="flex items-baseline gap-2">
+              <span className="font-display text-2xl sm:text-3xl font-black text-foreground tabular-nums">
+                {liveCount}
               </span>
-            )}
+              {liveCount > 0 && (
+                <span className="text-2xs font-mono font-bold text-emerald-500 animate-pulse">
+                  Active Now
+                </span>
+              )}
+            </div>
           </div>
-        </div>
 
-        <div className="space-y-0.5">
-          <span className="text-2xs font-mono uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-            <Clock className="size-3 text-amber-500" /> Next 24 Hours
-          </span>
-          <div className="flex items-baseline gap-2">
-            <span className="font-display text-2xl font-black text-foreground tabular-nums">
-              {next24hCount}
+          <div className="space-y-1">
+            <span className="text-2xs font-mono uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+              <Clock className="size-3 text-amber-500" /> Next 24 Hours
             </span>
-            <span className="text-2xs font-mono text-muted-foreground">Starting soon</span>
+            <div className="flex items-baseline gap-2">
+              <span className="font-display text-2xl sm:text-3xl font-black text-foreground tabular-nums">
+                {next24hCount}
+              </span>
+              <span className="text-2xs font-mono text-muted-foreground">Starting soon</span>
+            </div>
           </div>
-        </div>
 
-        <div className="space-y-0.5">
-          <span className="text-2xs font-mono uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-            <Trophy className="size-3 text-blue-500" /> Total Radar
-          </span>
-          <div className="flex items-baseline gap-2">
-            <span className="font-display text-2xl font-black text-foreground tabular-nums">
-              {contests.length}
+          <div className="space-y-1">
+            <span className="text-2xs font-mono uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+              <Trophy className="size-3 text-blue-500" /> Total Radar
             </span>
-            <span className="text-2xs font-mono text-muted-foreground">Tracked contests</span>
+            <div className="flex items-baseline gap-2">
+              <span className="font-display text-2xl sm:text-3xl font-black text-foreground tabular-nums">
+                {contests.length}
+              </span>
+              <span className="text-2xs font-mono text-muted-foreground">Tracked contests</span>
+            </div>
           </div>
-        </div>
 
-        <div className="space-y-0.5">
-          <span className="text-2xs font-mono uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-            <Globe className="size-3 text-emerald-500" /> Timezone
-          </span>
-          <div className="flex items-baseline gap-2">
-            <span className="font-mono text-xs font-bold text-foreground truncate max-w-[170px]" title={userTimezone}>
-              {userTimezone}
+          <div className="space-y-1">
+            <span className="text-2xs font-mono uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+              <Globe className="size-3 text-emerald-500" /> Timezone
             </span>
+            <div className="flex items-baseline gap-2">
+              <span className="font-mono text-xs sm:text-sm font-bold text-foreground truncate max-w-[200px]" title={userTimezone}>
+                {userTimezone}
+              </span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* ── Filter Controls Bar ── */}
+      {/* ── 3. Filter Controls Bar ── */}
       <div className="space-y-3.5">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-2.5 sm:p-3 rounded-2xl bg-card/70 dark:bg-card/35 border border-border/80 dark:border-white/10 backdrop-blur-2xl shadow-xs">
           {/* Status Tabs */}
-          <div className="flex items-center rounded-xl bg-muted/50 p-1 border border-border/60 self-start">
+          <div className="flex items-center rounded-xl bg-muted/60 dark:bg-card/40 p-1 border border-border/40 dark:border-white/5 self-start">
             <button
               type="button"
               onClick={() => setActiveTab('all')}
               className={cn(
                 'px-3.5 py-1.5 rounded-lg text-xs font-semibold font-mono transition-all cursor-pointer',
                 activeTab === 'all'
-                  ? 'bg-background text-foreground shadow-2xs font-bold'
+                  ? 'bg-card text-foreground shadow-2xs font-bold'
                   : 'text-muted-foreground hover:text-foreground'
               )}
             >
@@ -291,11 +301,11 @@ export default function ContestsPage() {
               className={cn(
                 'px-3.5 py-1.5 rounded-lg text-xs font-semibold font-mono transition-all flex items-center gap-1.5 cursor-pointer',
                 activeTab === 'live'
-                  ? 'bg-background text-emerald-500 shadow-2xs font-bold'
+                  ? 'bg-card text-emerald-500 shadow-2xs font-bold'
                   : 'text-muted-foreground hover:text-foreground'
               )}
             >
-              <span className="size-1.5 rounded-full bg-emerald-500" />
+              <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
               Live Now ({liveCount})
             </button>
             <button
@@ -304,7 +314,7 @@ export default function ContestsPage() {
               className={cn(
                 'px-3.5 py-1.5 rounded-lg text-xs font-semibold font-mono transition-all cursor-pointer',
                 activeTab === 'upcoming'
-                  ? 'bg-background text-foreground shadow-2xs font-bold'
+                  ? 'bg-card text-foreground shadow-2xs font-bold'
                   : 'text-muted-foreground hover:text-foreground'
               )}
             >
@@ -314,13 +324,13 @@ export default function ContestsPage() {
 
           {/* Search Input */}
           <div className="relative w-full sm:w-72">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
             <Input
               type="text"
               placeholder="Search contest name..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 h-9 text-xs bg-card border-border/70 rounded-xl"
+              className="pl-9 h-9 text-xs bg-background/50 border-border/60 dark:border-white/10 rounded-xl font-sans"
             />
           </div>
         </div>
@@ -338,15 +348,15 @@ export default function ContestsPage() {
                 className={cn(
                   'inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border cursor-pointer',
                   isSelected
-                    ? 'bg-emerald-500 text-black border-emerald-500 font-bold shadow-xs'
-                    : 'bg-card border-border/60 text-muted-foreground hover:text-foreground hover:border-border hover:bg-muted/30'
+                    ? 'bg-primary text-primary-foreground border-primary font-bold shadow-xs'
+                    : 'bg-card/70 dark:bg-card/35 border-border/60 dark:border-white/10 text-muted-foreground hover:text-foreground hover:border-border hover:bg-muted/30 backdrop-blur-md'
                 )}
               >
                 <span>{plat.label}</span>
                 <span
                   className={cn(
                     'font-mono text-2xs px-1.5 py-0.2 rounded-full',
-                    isSelected ? 'bg-black/20 text-black font-bold' : 'bg-muted text-muted-foreground'
+                    isSelected ? 'bg-black/20 text-white font-bold' : 'bg-muted text-muted-foreground'
                   )}
                 >
                   {count}
@@ -359,13 +369,13 @@ export default function ContestsPage() {
 
       {/* ── Contests Grid ── */}
       {isLoading ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-64 rounded-2xl w-full" />
+            <Skeleton key={i} className="h-72 rounded-[28px] sm:rounded-3xl w-full" />
           ))}
         </div>
       ) : filteredContests.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-border/80 bg-card/50 p-12 text-center shadow-xs">
+        <div className="flex flex-col items-center justify-center rounded-[28px] sm:rounded-3xl border border-dashed border-border/80 dark:border-white/10 bg-card/70 dark:bg-card/35 backdrop-blur-2xl p-12 text-center shadow-xs">
           <div className="grid size-12 place-items-center rounded-full bg-emerald-500/10 text-emerald-500 mb-3">
             <SlidersHorizontal className="size-5" />
           </div>
@@ -383,7 +393,7 @@ export default function ContestsPage() {
               setSearchQuery('');
               setActiveTab('all');
             }}
-            className="mt-4 text-xs font-semibold rounded-xl cursor-pointer"
+            className="mt-4 text-xs font-semibold rounded-full border-border/80 dark:border-white/10 bg-card/70 dark:bg-card/40 cursor-pointer px-4"
           >
             Clear Filters
           </Button>

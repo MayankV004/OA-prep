@@ -23,9 +23,9 @@ export function VariationAccordionItem({ variation, patternSlug, html, completed
   // Calculate solved problems count for this variation
   const solvedCount = completedIds
     ? problems.filter((p: any) => {
-        const idStr = p._id ? p._id.toString() : p.id;
-        return completedIds.has(idStr);
-      }).length
+      const idStr = p._id ? p._id.toString() : p.id;
+      return completedIds.has(idStr);
+    }).length
     : 0;
 
   const pct = problemCount > 0 ? Math.round((solvedCount / problemCount) * 100) : 0;

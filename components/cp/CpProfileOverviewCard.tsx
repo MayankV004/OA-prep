@@ -70,9 +70,9 @@ const PLATFORMS = [
   {
     id: 'codechef' as const,
     name: 'CodeChef',
-    color: 'text-rose-500',
-    border: 'border-rose-500/25',
-    bg: 'bg-rose-500/10',
+    color: 'text-orange-500',
+    border: 'border-orange-500/25',
+    bg: 'bg-orange-500/10',
     url: (h: string) => `https://www.codechef.com/users/${h}`,
   },
   {
@@ -104,18 +104,18 @@ export function CpProfileOverviewCard({
   );
 
   return (
-    <Card className="overflow-hidden border border-border/60 bg-gradient-to-b from-surface to-surface-sunken/40 shadow-e2">
-      <CardHeader className="border-b border-border/40 bg-surface-sunken/30 px-6 py-4">
+    <Card className="overflow-hidden border border-border/70 bg-card/70 backdrop-blur-md shadow-xs rounded-2xl">
+      <CardHeader className="border-b border-border/50 bg-muted/20 px-6 py-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-rose-500/10 text-rose-500 border border-rose-500/20">
+            <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary border border-primary/20">
               <Trophy className="size-4.5" />
             </span>
             <div>
               <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
                 <span>Verified Coding Profiles & Ratings</span>
               </CardTitle>
-              <CardDescription className="text-xs text-text-muted">
+              <CardDescription className="text-xs text-muted-foreground">
                 Aggregated ratings and contest standings across active competitive programming handles.
               </CardDescription>
             </div>
@@ -123,9 +123,9 @@ export function CpProfileOverviewCard({
 
           <div className="flex items-center gap-2.5">
             {profile?.compositeScore !== undefined && profile.compositeScore > 0 && (
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-muted border border-border/70 text-xs font-mono">
-                <span className="text-muted-foreground uppercase text-[10px] font-bold">Score:</span>
-                <strong className="text-foreground font-mono">{profile.compositeScore}/100</strong>
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/10 border border-primary/20 text-xs font-mono">
+                <span className="text-primary/80 uppercase text-[10px] font-bold">Score:</span>
+                <strong className="text-primary font-mono">{profile.compositeScore}/100</strong>
               </div>
             )}
 
@@ -133,9 +133,9 @@ export function CpProfileOverviewCard({
               variant="outline"
               size="sm"
               render={<Link href="/profile" />}
-              className="text-xs gap-1.5 h-8 font-medium border-border/70 hover:border-rose-500/40 hover:bg-rose-500/5"
+              className="text-xs gap-1.5 h-8 font-medium border-border/70 hover:border-primary/40 hover:bg-primary/5 rounded-xl cursor-pointer"
             >
-              <Settings className="size-3.5 text-rose-500" />
+              <Settings className="size-3.5 text-primary" />
               <span>Manage in Profile</span>
             </Button>
           </div>
@@ -144,10 +144,10 @@ export function CpProfileOverviewCard({
 
       <CardContent className="p-6">
         {!hasAnyConnected ? (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-5 rounded-xl border border-dashed border-rose-500/30 bg-rose-500/5">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-5 rounded-xl border border-dashed border-primary/30 bg-primary/5">
             <div className="space-y-1 text-center sm:text-left">
               <span className="font-semibold text-sm text-foreground flex items-center justify-center sm:justify-start gap-2">
-                <Award className="size-4 text-rose-500" />
+                <Award className="size-4 text-primary" />
                 <span>No coding handles connected yet</span>
               </span>
               <Text size="caption" tone="muted" className="text-xs max-w-md">
@@ -158,7 +158,7 @@ export function CpProfileOverviewCard({
             <Button
               size="sm"
               render={<Link href="/profile" />}
-              className="bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs gap-1.5 shrink-0 shadow-sm"
+              className="bg-primary hover:bg-primary-hover text-primary-foreground font-bold text-xs gap-1.5 shrink-0 shadow-sm hover:shadow-[0_0_20px_rgba(16,185,129,0.35)] rounded-xl cursor-pointer"
             >
               <span>Connect Handles</span>
               <ArrowRight className="size-3.5" />
@@ -177,25 +177,28 @@ export function CpProfileOverviewCard({
                   key={plat.id}
                   className={`flex flex-col justify-between p-4 rounded-xl border transition-all ${
                     isConnected
-                      ? 'bg-surface border-border/70 hover:border-border hover:shadow-e1'
-                      : 'bg-surface-sunken/40 border-border/40 opacity-70'
+                      ? 'bg-card border-border/70 hover:border-border hover:shadow-xs'
+                      : 'bg-muted/30 border-border/40 opacity-75'
                   }`}
                 >
                   <div className="space-y-2">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-semibold text-xs text-foreground">{plat.name}</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className={`inline-block size-2 rounded-full ${isConnected ? 'bg-primary' : 'bg-muted-foreground/40'}`} />
+                        <span className="font-semibold text-xs text-foreground">{plat.name}</span>
+                      </div>
                       {isConnected ? (
                         <a
                           href={plat.url(handle)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-text-muted hover:text-rose-500 transition-colors"
+                          className="text-muted-foreground hover:text-primary transition-colors"
                           title="View Public Profile"
                         >
                           <ExternalLink className="size-3" />
                         </a>
                       ) : (
-                        <span className="text-[10px] text-text-subtle font-mono">Not linked</span>
+                        <span className="text-[10px] text-muted-foreground font-mono">Not linked</span>
                       )}
                     </div>
 
@@ -205,17 +208,17 @@ export function CpProfileOverviewCard({
                           <span className="font-mono text-xs font-bold text-foreground truncate max-w-[120px]">
                             {handle}
                           </span>
-                          <span className="font-mono text-sm font-extrabold text-rose-500">
+                          <span className="font-mono text-sm font-black text-primary">
                             {data.rating > 0 ? data.rating : 'Unrated'}
                           </span>
                         </div>
 
-                        <div className="flex items-center gap-1.5 text-[11px] text-text-muted mt-1 flex-wrap">
+                        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mt-1 flex-wrap font-mono">
                           {data.rank && <span className="capitalize">{data.rank}</span>}
-                          {data.stars && <span>{data.stars}</span>}
-                          {data.topPercentage > 0 && <span>Top {data.topPercentage}%</span>}
+                          {data.stars && <span>• {data.stars}</span>}
+                          {data.topPercentage > 0 && <span>• Top {data.topPercentage}%</span>}
                           {data.maxRating > 0 && (
-                            <span className="text-text-subtle font-mono">(Peak {data.maxRating})</span>
+                            <span className="text-muted-foreground">(Peak {data.maxRating})</span>
                           )}
                         </div>
                       </div>
@@ -223,7 +226,7 @@ export function CpProfileOverviewCard({
                       <div className="py-2">
                         <Link
                           href="/profile"
-                          className="inline-flex items-center gap-1 text-[11px] font-medium text-rose-500 hover:underline"
+                          className="inline-flex items-center gap-1 text-[11px] font-medium text-primary hover:underline cursor-pointer"
                         >
                           <span>Connect in Profile</span>
                           <ArrowRight className="size-3" />

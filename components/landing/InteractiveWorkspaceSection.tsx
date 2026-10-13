@@ -4,15 +4,16 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
-  Play,
-  CheckCircle2,
   Code2,
-  ArrowRight,
   Layers,
   Zap,
   Terminal,
   Activity,
+  Copy,
 } from 'lucide-react';
+import { ArrowRight } from '@/components/animate-ui/icons/arrow-right';
+import { BadgeCheck } from '@/components/animate-ui/icons/badge-check';
+import { Check } from '@/components/animate-ui/icons/check';
 import { ScrollReveal, Scroll3DCard } from '@/components/ui/scroll-reveal';
 import { CODE_SNIPPETS } from './landing-data';
 
@@ -89,37 +90,34 @@ const FEATURE_PILLS = [
 
 export function InteractiveWorkspaceSection() {
   const [activeTab, setActiveTab] = useState<'cpp' | 'python' | 'java'>('cpp');
-  const [isRunning, setIsRunning] = useState(false);
-  const [showPassMessage, setShowPassMessage] = useState(true);
+  const [copied, setCopied] = useState(false);
 
-  const handleRunCode = () => {
-    setIsRunning(true);
-    setShowPassMessage(false);
-    setTimeout(() => {
-      setIsRunning(false);
-      setShowPassMessage(true);
-    }, 600);
+  const handleCopyCode = () => {
+    navigator.clipboard.writeText(CODE_SNIPPETS[activeTab].code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
-    <section className="py-24 sm:py-32 px-4 md:px-8 relative overflow-hidden bg-gradient-to-b from-muted/20 via-emerald-500/[0.03] to-background border-y border-border/70 dark:border-white/10 transition-colors">
-      
-      {/* ── Background Depth Grid & Ambient Emerald Aura ── */}
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#00000008_1px,transparent_1px),linear-gradient(to_bottom,#00000008_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:40px_40px]" />
-      <div className="pointer-events-none absolute top-1/2 left-1/4 -translate-y-1/2 size-[650px] rounded-full bg-emerald-500/[0.06] dark:bg-emerald-500/[0.08] blur-3xl" />
-      <div className="pointer-events-none absolute bottom-0 right-1/4 size-[400px] rounded-full bg-teal-500/[0.04] dark:bg-teal-500/[0.06] blur-3xl" />
+    <section className="py-24 sm:py-32 px-4 sm:px-6 lg:px-8 relative overflow-hidden bg-surface-sunken/40 dark:bg-white/[0.01] border-y border-border/80 dark:border-white/10 transition-colors">
+      {/* Background Depth Grid */}
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#00000006_1px,transparent_1px),linear-gradient(to_bottom,#00000006_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:40px_40px]" />
+      <div className="pointer-events-none absolute top-1/2 left-1/4 -translate-y-1/2 size-[650px] rounded-full bg-emerald-500/[0.05] dark:bg-emerald-500/[0.08] blur-[120px]" />
 
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-[1.1fr_1.15fr] gap-12 lg:gap-16 items-center relative z-10">
-        
-        {/* ── Left Column: Pattern Philosophy & Highlights ── */}
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-[1.05fr_1.15fr] gap-12 lg:gap-16 items-center relative z-10">
+        {/* Left Column: Pattern Philosophy & Highlights */}
         <ScrollReveal direction="right" delay={0.2}>
           <div className="space-y-6 sm:space-y-8">
-            {/* Headline */}
             <div className="space-y-3">
+              <div className="inline-flex items-center gap-2 text-2xs font-mono font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                <span>[ IN-BROWSER EXECUTION ]</span>
+                <span>/</span>
+                <span>SUB-MS JUDGE</span>
+              </div>
               <h2 className="text-3xl sm:text-5xl font-display font-black tracking-tight leading-[1.12] text-foreground">
-                Master Variations, <br />
-                <span className="bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-500 dark:from-emerald-400 dark:via-teal-300 dark:to-emerald-200 bg-clip-text text-transparent">
-                  Not Single Problems
+                Master variations, <br />
+                <span className="bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-400 dark:from-emerald-400 dark:via-teal-300 dark:to-emerald-200 bg-clip-text text-transparent">
+                  not single problems.
                 </span>
               </h2>
               <p className="text-muted-foreground text-base sm:text-lg leading-relaxed font-normal">
@@ -127,20 +125,20 @@ export function InteractiveWorkspaceSection() {
               </p>
             </div>
 
-            {/* 4 Rich Feature Cards */}
+            {/* 4 Feature Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
               {FEATURE_PILLS.map((pill) => {
                 const Icon = pill.icon;
                 return (
                   <div
                     key={pill.title}
-                    className="p-4 rounded-2xl bg-card/80 dark:bg-surface-elevated/40 border border-border/70 dark:border-white/10 hover:border-emerald-500/40 backdrop-blur-md shadow-xs transition-all duration-200 space-y-1.5 group"
+                    className="p-4 rounded-2xl bg-card/80 dark:bg-[#0c1017] border border-border/80 dark:border-white/10 hover:border-emerald-500/40 shadow-xs transition-all duration-200 space-y-1.5 group"
                   >
                     <div className="flex items-center gap-2.5">
-                      <div className="size-7 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                      <div className="size-7 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                         <Icon className="size-3.5" />
                       </div>
-                      <h3 className="font-semibold text-xs sm:text-sm text-foreground">
+                      <h3 className="font-bold text-xs sm:text-sm text-foreground">
                         {pill.title}
                       </h3>
                     </div>
@@ -155,26 +153,24 @@ export function InteractiveWorkspaceSection() {
             {/* Action Buttons & Live Stats */}
             <div className="flex flex-wrap items-center gap-4 pt-2">
               <Link href="/dsa">
-                <button className="group inline-flex items-center gap-2 px-8 py-3.5 rounded-full font-bold bg-emerald-500 hover:bg-emerald-400 text-black shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/35 transition-all duration-200 cursor-pointer border-0 active:scale-[0.98] text-sm">
+                <button className="group inline-flex items-center gap-2 px-8 py-3.5 rounded-full font-bold bg-emerald-500 hover:bg-emerald-400 text-black shadow-md shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all duration-200 cursor-pointer border-0 active:scale-[0.98] text-sm">
                   <span>Explore DSA Roadmap</span>
                   <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
                 </button>
               </Link>
 
-              <div className="inline-flex items-center gap-2 text-xs text-muted-foreground font-mono bg-muted/50 dark:bg-white/[0.04] px-3.5 py-2 rounded-full border border-border/60 dark:border-white/10">
-                <span className="size-2 rounded-full bg-emerald-500" />
+              <div className="inline-flex items-center gap-2 text-xs text-muted-foreground font-mono bg-card dark:bg-white/[0.04] px-3.5 py-2 rounded-full border border-border/60">
+                <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
                 <span>90+ Variations Ready</span>
               </div>
             </div>
-
           </div>
         </ScrollReveal>
 
-        {/* ── Right Column: High-Contrast macOS Developer Cockpit ── */}
+        {/* Right Column: High-Contrast Developer Cockpit */}
         <ScrollReveal direction="left" delay={0.3}>
           <Scroll3DCard>
-            <div className="relative rounded-3xl bg-[#090D16] p-5 sm:p-7 shadow-2xl border border-border/80 dark:border-white/10 text-white font-mono text-xs sm:text-sm overflow-hidden ring-1 ring-black/10 dark:ring-white/5">
-              
+            <div className="relative rounded-3xl bg-[#090D14] p-5 sm:p-7 shadow-2xl border border-white/10 text-white font-mono text-xs sm:text-sm overflow-hidden ring-1 ring-white/5">
               {/* Top Specular Emerald Beam */}
               <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-400/50 to-transparent" />
 
@@ -194,33 +190,44 @@ export function InteractiveWorkspaceSection() {
                   </div>
                 </div>
 
-                {/* Language Switcher Pill Toggle with Framer Motion */}
-                <div className="flex items-center p-1 rounded-full bg-black/60 border border-white/10 shadow-inner">
-                  {(['cpp', 'python', 'java'] as const).map((langKey) => (
-                    <button
-                      key={langKey}
-                      type="button"
-                      onClick={() => setActiveTab(langKey)}
-                      className={`relative z-10 px-3 py-1 rounded-full text-xs font-semibold font-sans transition-colors cursor-pointer outline-none select-none ${
-                        activeTab === langKey
-                          ? 'text-black'
-                          : 'text-zinc-400 hover:text-white'
-                      }`}
-                    >
-                      {activeTab === langKey && (
-                        <motion.div
-                          layoutId="workspace-lang-pill"
-                          transition={{ type: 'spring', stiffness: 450, damping: 32 }}
-                          className="absolute inset-0 rounded-full bg-emerald-400 shadow-xs -z-10"
-                        />
-                      )}
-                      <span>{CODE_SNIPPETS[langKey].lang}</span>
-                    </button>
-                  ))}
+                {/* Right controls: Copy + Lang Tabs */}
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleCopyCode}
+                    className="p-1.5 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                    title="Copy code"
+                  >
+                    {copied ? <Check size={14} animate="default" className="text-emerald-400" /> : <Copy className="size-3.5" />}
+                  </button>
+
+                  <div className="flex items-center p-1 rounded-full bg-black/60 border border-white/10 shadow-inner">
+                    {(['cpp', 'python', 'java'] as const).map((langKey) => (
+                      <button
+                        key={langKey}
+                        type="button"
+                        onClick={() => setActiveTab(langKey)}
+                        className={`relative z-10 px-3 py-1 rounded-full text-xs font-semibold font-sans transition-colors cursor-pointer outline-none select-none ${
+                          activeTab === langKey
+                            ? 'text-black'
+                            : 'text-zinc-400 hover:text-white'
+                        }`}
+                      >
+                        {activeTab === langKey && (
+                          <motion.div
+                            layoutId="workspace-lang-pill"
+                            transition={{ type: 'spring', stiffness: 450, damping: 32 }}
+                            className="absolute inset-0 rounded-full bg-emerald-400 shadow-xs -z-10"
+                          />
+                        )}
+                        <span>{CODE_SNIPPETS[langKey].lang}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
-              {/* Code Body with Line Numbers & Vibrant Syntax Colors */}
+              {/* Code Body with Line Numbers */}
               <div className="relative min-h-[250px] max-h-[360px] overflow-y-auto overflow-x-auto py-1 scrollbar-thin scrollbar-thumb-white/10">
                 <div className="font-mono text-xs sm:text-[13px] leading-relaxed select-text">
                   {CODE_SNIPPETS[activeTab].code.split('\n').map((line, lineIndex) => (
@@ -239,33 +246,23 @@ export function InteractiveWorkspaceSection() {
               {/* Code Action Footer */}
               <div className="mt-4 pt-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-3 text-xs font-sans">
                 <div className="flex items-center gap-2.5">
-                  <button
-                    onClick={handleRunCode}
-                    disabled={isRunning}
-                    className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/25 active:scale-95 transition-all font-semibold cursor-pointer shadow-xs disabled:opacity-50"
-                  >
-                    <Play className={`size-3.5 fill-current ${isRunning ? 'animate-spin' : ''}`} />
-                    <span>{isRunning ? 'Compiling in Sandbox...' : 'Run Code'}</span>
-                  </button>
-
-                  <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-[11px] font-mono text-zinc-400">
-                    <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    <span>Docker Piston</span>
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 font-mono text-[11px] font-semibold">
+                    <BadgeCheck size={16} animateOnHover className="text-emerald-400 shrink-0" />
+                    <span>{CODE_SNIPPETS[activeTab].stats}</span>
                   </span>
                 </div>
 
-                {showPassMessage && (
-                  <div className="flex items-center gap-1.5 text-emerald-400 font-mono text-[11px] bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
-                    <CheckCircle2 className="size-3.5 text-emerald-400 shrink-0" />
-                    <span>{CODE_SNIPPETS[activeTab].stats}</span>
-                  </div>
-                )}
+                <Link
+                  href="/dsa"
+                  className="inline-flex items-center gap-1.5 text-xs font-mono font-semibold text-zinc-400 hover:text-emerald-400 transition-colors group"
+                >
+                  <span>Open Full Sandbox in /dsa</span>
+                  <ArrowRight size={14} animateOnHover className="size-3.5" />
+                </Link>
               </div>
-
             </div>
           </Scroll3DCard>
         </ScrollReveal>
-
       </div>
     </section>
   );

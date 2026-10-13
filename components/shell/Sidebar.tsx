@@ -141,7 +141,7 @@ function SidebarBody({
 
       <div className="flex flex-col gap-2">
         <UpgradeBanner collapsed={collapsed} />
-        <UserMenu collapsed={collapsed} isAdmin={isAdmin} />
+        <UserMenu collapsed={collapsed} isAdmin={isAdmin} side="top" />
       </div>
     </div>
   );

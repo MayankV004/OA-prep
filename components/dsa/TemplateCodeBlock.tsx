@@ -1,6 +1,7 @@
 'use client';
 
-import { Check, Copy } from "lucide-react";
+import { Copy } from "lucide-react";
+import { Check } from "@/components/animate-ui/icons/check";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -57,7 +58,7 @@ export function TemplateCodeBlock({ code, html, language = "java", className }: 
         >
           {copied ? (
             <>
-              <Check className="size-3.5 text-emerald-400" strokeWidth={2.5} />
+              <Check size={14} animateOnView className="size-3.5 text-emerald-400" strokeWidth={2.5} />
               <span className="text-[11px] text-emerald-400 font-semibold">Copied!</span>
             </>
           ) : (

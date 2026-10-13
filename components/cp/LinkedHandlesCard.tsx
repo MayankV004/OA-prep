@@ -84,9 +84,9 @@ const PLATFORM_CONFIGS = [
     name: 'CodeChef',
     placeholder: 'e.g. chef_coder or codechef.com/users/chef_coder',
     exampleUrl: 'codechef.com/users/handle',
-    color: 'text-rose-500',
-    border: 'border-rose-500/20',
-    bg: 'bg-rose-500/10',
+    color: 'text-orange-500',
+    border: 'border-orange-500/20',
+    bg: 'bg-orange-500/10',
     url: (h: string) => `https://www.codechef.com/users/${h}`,
   },
   {

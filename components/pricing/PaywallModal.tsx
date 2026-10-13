@@ -3,7 +3,9 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Lock, Check, ArrowRight } from 'lucide-react';
+import { Lock } from '@/components/animate-ui/icons/lock';
+import { Check } from '@/components/animate-ui/icons/check';
+import { ArrowRight } from '@/components/animate-ui/icons/arrow-right';
 import Link from 'next/link';
 
 interface PaywallModalProps {
@@ -31,7 +33,7 @@ export function PaywallModal({
       <DialogContent className="sm:max-w-[480px] p-6 border-border bg-card shadow-lg">
         <DialogHeader className="text-center sm:text-left">
           <div className="mx-auto sm:mx-0 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/20 shadow-xs">
-            <Lock className="h-5 w-5" />
+            <Lock size={20} animateOnView className="h-5 w-5" />
           </div>
           <DialogTitle className="mt-4 text-xl font-bold tracking-tight">
             {featureTitle}
@@ -49,7 +51,7 @@ export function PaywallModal({
             {perks.map((perk, i) => (
               <li key={i} className="flex items-start gap-2 text-xs text-foreground/90">
                 <div className="mt-0.5 flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-                  <Check className="h-2.5 w-2.5 stroke-[3]" />
+                  <Check size={10} animateOnView className="stroke-[3]" />
                 </div>
                 <span>{perk}</span>
               </li>
@@ -70,7 +72,7 @@ export function PaywallModal({
             className="sm:w-2/3 bg-primary text-primary-foreground hover:bg-primary/90 font-bold shadow-xs transition-all cursor-pointer"
           >
             <span>View Plans</span>
-            <ArrowRight className="ml-2 h-4 w-4" />
+            <ArrowRight size={16} animateOnHover className="ml-2" />
           </Button>
         </div>
 

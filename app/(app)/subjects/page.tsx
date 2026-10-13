@@ -129,42 +129,61 @@ export default function SubjectsPage() {
 
   return (
     <div className="space-y-8 pb-16">
-      {/* ── Header Section ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <PageHeading
-          overline="Academic & Technical Foundations"
-          title="Core Computer Science Subjects"
-          description="High-yield engineering notes covering Operating Systems, DBMS, Computer Networks, OOPs, and System Design for technical interviews."
-        />
+      {/* ── 1. Page Header (Modern Cockpit Header) ── */}
+      <div className="pt-2 space-y-3">
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black font-display tracking-tight text-foreground leading-[1.08]">
+          Core CS{' '}
+          <span className="bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-400 dark:from-emerald-400 dark:via-teal-300 dark:to-emerald-200 bg-clip-text text-transparent">
+            Subjects
+          </span>
+        </h1>
+        <p className="text-sm sm:text-base text-muted-foreground max-w-2xl leading-relaxed font-normal">
+          High-yield engineering notes and interview preparation guides covering Operating Systems, DBMS, Computer Networks, OOPs, and System Design.
+        </p>
+      </div>
 
+      {/* ── 2. Search & Toolbar ── */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-2.5 rounded-2xl bg-card/70 border border-border/80 backdrop-blur-md shadow-xs">
+        <div className="relative flex-1 sm:max-w-md">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Search subjects by name, topic, or concept..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full h-10 pl-10 pr-4 text-xs sm:text-sm font-medium bg-background/80 rounded-xl border border-border/80 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-sans"
+          />
+        </div>
         {!isLoading && groups.length > 0 && (
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-xs font-mono font-bold shrink-0 self-start sm:self-center">
-            <Sparkles className="size-3.5" />
-            <span>{groups.length} subjects curriculum</span>
+          <div className="text-xs font-mono text-muted-foreground px-2">
+            <span>Showing <strong className="text-foreground">{filteredGroups.length}</strong> of {groups.length} subjects</span>
           </div>
         )}
       </div>
 
-      {/* ── Search Bar ── */}
-      <div className="relative max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
-        <input
-          type="text"
-          placeholder="Search subjects (e.g. Operating Systems, DBMS, Networks)..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full h-10 pl-9 pr-4 text-xs bg-card border border-border/70 rounded-xl focus:outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 text-foreground transition-all"
-        />
-      </div>
-
-      {/* ── Subjects Grid ── */}
+      {/* ── 3. Subjects Grid ── */}
       {isLoading ? (
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="p-6 rounded-3xl bg-card/60 border border-border/40 space-y-3">
-              <Skeleton className="h-6 w-3/4 rounded-lg" />
-              <Skeleton className="h-4 w-full rounded-lg" />
-              <Skeleton className="h-4 w-1/2 rounded-lg" />
+            <div
+              key={i}
+              className="flex flex-col justify-between p-6 sm:p-7 rounded-[28px] sm:rounded-3xl bg-card/60 dark:bg-card/30 border border-border/70 dark:border-white/10 backdrop-blur-xl space-y-4"
+            >
+              <div className="space-y-3.5">
+                <div className="flex items-start justify-between gap-3">
+                  <Skeleton className="h-6 w-24 rounded-full" />
+                  <Skeleton className="size-11 sm:size-12 rounded-2xl shrink-0" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-6 w-3/4 rounded-lg" />
+                  <Skeleton className="h-3.5 w-full rounded" />
+                  <Skeleton className="h-3.5 w-4/5 rounded" />
+                </div>
+              </div>
+              <div className="pt-4 mt-4 border-t border-border/50 dark:border-white/10 flex items-center justify-between gap-3">
+                <Skeleton className="h-4 w-20 rounded" />
+                <Skeleton className="h-8 w-28 rounded-full" />
+              </div>
             </div>
           ))}
         </div>
@@ -191,59 +210,69 @@ export default function SubjectsPage() {
               <Link
                 key={group._id}
                 href={`/subjects/${group.slug}`}
-                className="group block outline-none"
+                className="group block h-full outline-none"
               >
-                <Card className="relative h-full flex flex-col justify-between overflow-hidden rounded-2xl border border-border/70 bg-card/70 backdrop-blur-xs p-6 shadow-xs hover:shadow-e2 hover:border-emerald-500/40 transition-all duration-300 hover:-translate-y-1">
-                  {/* Top Specular Ambient Wash */}
-                  <div
-                    className={cn(
-                      'pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b opacity-60 transition-opacity group-hover:opacity-100',
-                      meta.gradient
-                    )}
-                  />
+                <div
+                  className={cn(
+                    'h-full flex flex-col justify-between p-6 sm:p-7 rounded-[28px] sm:rounded-3xl border transition-all duration-300 relative overflow-hidden',
+                    // Frosted glass styling
+                    'bg-card/70 dark:bg-card/35 backdrop-blur-2xl',
+                    'border-border/80 dark:border-white/10',
+                    'hover:border-foreground/20 dark:hover:border-white/20',
+                    'shadow-xs hover:shadow-xl hover:-translate-y-0.5',
+                    // Top specular sheen
+                    'before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white/70 dark:before:via-white/15 before:to-transparent'
+                  )}
+                >
+                  <div className="space-y-3.5">
+                    {/* Header Row: Subject Pill + Icon Container */}
+                    <div className="flex items-start justify-between gap-3">
+                      <span className="px-3.5 py-1 rounded-full text-xs font-semibold border shadow-2xs backdrop-blur-md bg-foreground/[0.04] dark:bg-white/[0.06] text-muted-foreground border-border/70 dark:border-white/10">
+                        Technical Subject
+                      </span>
 
-                  <div className="relative space-y-4">
-                    {/* Icon & Category Pill */}
-                    <div className="flex items-center justify-between gap-3">
                       <div
                         className={cn(
-                          'grid size-11 place-items-center rounded-xl border shadow-2xs transition-transform group-hover:scale-105',
-                          meta.bg,
-                          meta.text,
-                          meta.border
+                          'size-11 sm:size-12 rounded-2xl flex items-center justify-center border shadow-2xs backdrop-blur-md transition-all duration-300 group-hover:scale-105 shrink-0',
+                          'bg-foreground/[0.03] dark:bg-white/[0.06] border-border/70 dark:border-white/10',
+                          'group-hover:border-primary/40 group-hover:bg-primary/[0.05]'
                         )}
                       >
-                        <Icon className="size-5.5" />
+                        <Icon className="size-5 text-foreground/80 group-hover:text-primary transition-colors" />
                       </div>
-
-                      <span className="px-2.5 py-0.5 rounded-full bg-muted/60 text-muted-foreground font-mono text-2xs font-semibold border border-border/60 uppercase tracking-wider">
-                        Core Subject
-                      </span>
                     </div>
 
                     {/* Title & Description */}
-                    <div className="space-y-1.5">
-                      <h2 className="font-display text-xl font-bold tracking-tight text-foreground group-hover:text-emerald-400 transition-colors">
+                    <div>
+                      <h2 className="font-display text-xl sm:text-2xl font-bold tracking-tight text-foreground group-hover:text-primary transition-colors">
                         {group.name}
                       </h2>
-                      <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed line-clamp-2 font-normal">
+                      <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed line-clamp-2 mt-1.5 font-normal">
                         {group.description ||
                           `Comprehensive interactive concept notes and interview preparation guide for ${group.name}.`}
                       </p>
                     </div>
+
+                    {/* Meta tag */}
+                    <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                      <span className="px-2.5 py-0.5 rounded-lg bg-foreground/[0.03] dark:bg-white/[0.04] border border-border/60 dark:border-white/10 font-mono text-[11px] text-muted-foreground backdrop-blur-xs">
+                        Curriculum Track
+                      </span>
+                    </div>
                   </div>
 
-                  {/* Footer Action Strip */}
-                  <div className="relative pt-6 flex items-center justify-between text-xs border-t border-border/50 mt-6">
-                    <span className="font-mono text-2xs text-muted-foreground uppercase tracking-wider">
+                  {/* Single-Line Footer Action Row */}
+                  <div className="pt-4 mt-4 border-t border-border/50 dark:border-white/10 flex items-center justify-between gap-3">
+                    <span className="font-mono text-xs text-muted-foreground">
                       /{group.slug}
                     </span>
-                    <span className="inline-flex items-center gap-1 font-bold text-emerald-500 group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all text-xs">
-                      Explore Topics
-                      <ArrowRight className="size-3.5" />
-                    </span>
+
+                    <div className="px-4 py-2 rounded-full text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary-hover active:scale-95 transition-all shadow-xs flex items-center gap-1.5 cursor-pointer shrink-0">
+                      <span>Explore Topics</span>
+                      <ArrowRight className="size-3 group-hover:translate-x-0.5 transition-transform" />
+                    </div>
                   </div>
-                </Card>
+                </div>
               </Link>
             );
           })}

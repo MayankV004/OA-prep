@@ -28,7 +28,7 @@ int maxSumSubarray(const std::vector<int>& nums, int k) {
     }
     return maxSum;
 }`,
-    stats: 'Runtime: 2ms · O(N) Time · O(1) Space',
+    stats: 'O(N) Time · O(1) Space · C++20 Standard',
   },
   python: {
     lang: 'Python',
@@ -49,7 +49,7 @@ def maxArea(height: list[int]) -> int:
             right -= 1
             
     return max_water`,
-    stats: 'Runtime: 45ms · O(N) Time · O(1) Space',
+    stats: 'O(N) Time · O(1) Space · Python 3.12',
   },
   java: {
     lang: 'Java',
@@ -83,7 +83,7 @@ public class Solution {
         return true;
     }
 }`,
-    stats: 'Runtime: 1ms · O(V+E) Time · O(V) Space',
+    stats: 'O(V+E) Time · O(V) Space · Java 21',
   },
 };
 
@@ -96,11 +96,11 @@ export const getPlatformModules = (liveStats: {
     id: 'dsa-patterns',
     number: '01',
     title: 'Pattern-Based DSA Roadmap',
-    subtitle: 'Master reusable algorithmic patterns instead of memorizing 1000s of problems.',
+    subtitle: 'Master reusable algorithmic patterns instead of memorizing hundreds of problems.',
     description:
-      'Deconstruct complex LeetCode and OA questions into 20+ foundational pattern categories. Learn to spot pattern triggers like Sliding Window, Two Pointers, Monotonic Stack, Graph BFS/DFS, and Dynamic Programming.',
+      'Deconstruct complex LeetCode and OA questions into 19 foundational pattern categories. Learn to spot pattern triggers like Sliding Window, Two Pointers, Monotonic Stack, Graph BFS/DFS, and Dynamic Programming.',
     highlights: [
-      '20+ Core DSA Pattern Categories',
+      '19 Core DSA Pattern Categories',
       'Problem Variations Grouped by Type',
       'Visual Intuition & Code Templates',
       'Pattern Mastery Tracker',
@@ -114,49 +114,49 @@ export const getPlatformModules = (liveStats: {
     id: 'cs-subjects',
     number: '02',
     title: 'CS Core Fundamentals',
-    subtitle: 'Crack core technical rounds in OS, DBMS, Networks, and System Design.',
+    subtitle: 'Prepare for technical interview rounds in OS, DBMS, Networks, and System Design.',
     description:
-      'Comprehensive, high-yield preparation for computer science fundamentals. Master Operating Systems concurrency, SQL query optimization, TCP/IP networking protocols, and System Design principles.',
+      'High-yield preparation for computer science fundamentals. Master Operating Systems concurrency, SQL query indexing, TCP/IP networking protocols, and System Design principles.',
     highlights: [
-      'Operating Systems & Process Synchronization',
-      'DBMS, Indexing & SQL Query Sets',
-      'Computer Networks & HTTP/TCP Protocols',
-      'System Design & Architecture Basics',
+      'Operating Systems & Concurrency',
+      'DBMS, B-Trees & SQL Indexing',
+      'Computer Networks & Protocols',
+      'Object-Oriented Design Principles',
     ],
     linkText: 'Study CS Subjects',
     linkUrl: '/subjects',
     icon: Terminal,
-    metric: '5 Core CS Subjects',
+    metric: '4 Core CS Subjects',
   },
   {
     id: 'company-oa',
     number: '03',
     title: 'Company OA & Non-Standard Problems',
-    subtitle: 'Prepare for real Online Assessments from top product companies.',
+    subtitle: 'Practice authentic assessments from top engineering employers.',
     description:
-      'Tackle authentic Online Assessment questions and non-standard problem buckets asked by Amazon, Google, Microsoft, Meta, Uber, and Goldman Sachs. Practice under real exam constraints.',
+      'Tackle authentic Online Assessment questions and non-standard problem sets asked by Amazon, Google, Microsoft, Uber, and Atlassian under timed conditions.',
     highlights: [
-      'Amazon, Google & Microsoft OA Sets',
+      'Amazon, Google & Uber OA Sets',
       'Non-Standard Problem Buckets',
       'Timed Exam Simulation Mode',
-      'Hidden Edge Cases & Time Limits',
+      'Hidden Edge Cases & Time Constraints',
     ],
     linkText: 'View OA Question Sets',
-    linkUrl: '/non-standard',
+    linkUrl: '/oa',
     icon: Building2,
-    metric: '100+ OA Questions',
+    metric: '6 Company OA Simulators',
   },
   {
     id: 'active-recall',
     number: '04',
     title: 'Active Recall & Cheatsheets',
-    subtitle: 'Retain crucial algorithms and complexity proofs effortlessly.',
+    subtitle: 'Retain crucial algorithms and complexity proofs before interviews.',
     description:
       'Built-in spaced repetition engine and quick-reference cheatsheets. Retain time & space complexity proofs, OS mutex vs semaphore nuances, and SQL indexing rules right before your interview.',
     highlights: [
-      'Algorithm Time & Space Proofs',
+      'Algorithm Complexity Proofs',
       'OS & Networking Flashcards',
-      'System Design CAP & ACID Notes',
+      'System Design Architecture Notes',
       'Spaced Repetition Review Engine',
     ],
     linkText: 'Open Cheatsheets',
@@ -170,7 +170,7 @@ export const PLACEMENT_STEPS = [
   {
     num: '01',
     title: 'Identify Patterns',
-    desc: 'Understand fundamental triggers across 20+ algorithmic patterns rather than memorizing isolated solutions.',
+    desc: 'Understand fundamental triggers across 19 algorithmic patterns rather than memorizing isolated solutions.',
   },
   {
     num: '02',
