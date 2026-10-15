@@ -2,8 +2,6 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Text } from '@/components/ui/typography';
@@ -64,9 +62,6 @@ const PLATFORM_CONFIGS = [
     name: 'Codeforces',
     placeholder: 'e.g. tourist or codeforces.com/profile/tourist',
     exampleUrl: 'codeforces.com/profile/handle',
-    color: 'text-blue-500',
-    border: 'border-blue-500/20',
-    bg: 'bg-blue-500/10',
     url: (h: string) => `https://codeforces.com/profile/${h}`,
   },
   {
@@ -74,9 +69,6 @@ const PLATFORM_CONFIGS = [
     name: 'LeetCode',
     placeholder: 'e.g. neal_wu or leetcode.com/u/neal_wu',
     exampleUrl: 'leetcode.com/u/username',
-    color: 'text-amber-500',
-    border: 'border-amber-500/20',
-    bg: 'bg-amber-500/10',
     url: (h: string) => `https://leetcode.com/${h}`,
   },
   {
@@ -84,9 +76,6 @@ const PLATFORM_CONFIGS = [
     name: 'CodeChef',
     placeholder: 'e.g. chef_coder or codechef.com/users/chef_coder',
     exampleUrl: 'codechef.com/users/handle',
-    color: 'text-orange-500',
-    border: 'border-orange-500/20',
-    bg: 'bg-orange-500/10',
     url: (h: string) => `https://www.codechef.com/users/${h}`,
   },
   {
@@ -94,9 +83,6 @@ const PLATFORM_CONFIGS = [
     name: 'AtCoder',
     placeholder: 'e.g. chokudai or atcoder.jp/users/chokudai',
     exampleUrl: 'atcoder.jp/users/handle',
-    color: 'text-zinc-400',
-    border: 'border-zinc-500/20',
-    bg: 'bg-zinc-500/10',
     url: (h: string) => `https://atcoder.jp/users/${h}`,
   },
 ];
@@ -180,201 +166,200 @@ export function LinkedHandlesCard() {
   }
 
   return (
-    <Card className="border border-border/60 shadow-e1">
-      <CardHeader className="pb-3 border-b border-border/40 bg-surface-sunken/30">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <UserCheck className="size-4 text-primary shrink-0" />
-            <div>
-              <CardTitle className="text-base font-bold">Connected Competitive Coding Profiles</CardTitle>
-              <CardDescription className="text-xs">
-                Link your public handles to auto-track ratings, past contest performance, and upsolving queues.
-              </CardDescription>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowGuide((prev) => !prev)}
-              className="text-xs gap-1.5 h-8 font-medium border-border/70"
-            >
-              <HelpCircle className="size-3.5 text-primary" />
-              <span>How to Connect?</span>
-              {showGuide ? <ChevronUp className="size-3 text-text-muted" /> : <ChevronDown className="size-3 text-text-muted" />}
-            </Button>
-
-            {profile?.compositeScore !== undefined && profile.compositeScore > 0 && (
-              <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-xl bg-primary/10 border border-primary/20">
-                <Trophy className="size-3.5 text-primary" />
-                <span className="text-xs font-semibold text-text">
-                  CP Score: <strong className="text-primary font-mono">{profile.compositeScore}/100</strong>
-                </span>
-              </div>
-            )}
+    <div className="space-y-5">
+      {/* ── Header ───────────────────────────────────────────────────────── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <span className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+            <UserCheck className="size-4.5" />
+          </span>
+          <div>
+            <h3 className="font-display text-base font-bold text-foreground">
+              Connected Competitive Coding Profiles
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              Link your public handles to auto-track ratings, past contest performance, and upsolving queues.
+            </p>
           </div>
         </div>
-      </CardHeader>
 
-      <CardContent className="p-5 space-y-4">
-        {/* ── How to Connect Quick Guide (Collapsible / Expandable) ──────────── */}
-        {showGuide && (
-          <div className="p-4 rounded-xl border border-primary/25 bg-primary/5 space-y-2.5 text-xs animate-in fade-in duration-200">
-            <div className="flex items-center gap-2 font-semibold text-text">
-              <Info className="size-4 text-primary shrink-0" />
-              <span>How to Connect & Find Your Username:</span>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setShowGuide((prev) => !prev)}
+            className="text-xs gap-1.5 h-8 px-3 font-medium rounded-full bg-surface-sunken dark:bg-white/[0.04] hover:bg-surface-sunken/80 text-foreground flex items-center transition-colors cursor-pointer"
+          >
+            <HelpCircle className="size-3.5 text-primary" />
+            <span>How to Connect?</span>
+            {showGuide ? <ChevronUp className="size-3 text-muted-foreground" /> : <ChevronDown className="size-3 text-muted-foreground" />}
+          </button>
+
+          {profile?.compositeScore !== undefined && profile.compositeScore > 0 && (
+            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10">
+              <Trophy className="size-3.5 text-primary" />
+              <span className="text-xs font-semibold text-foreground">
+                CP Score: <strong className="text-primary font-mono">{profile.compositeScore}/100</strong>
+              </span>
             </div>
+          )}
+        </div>
+      </div>
 
-            <ol className="space-y-1.5 list-decimal list-inside text-text-muted pl-1">
-              <li>
-                <strong>No passwords or login required</strong> — All contest rankings and ratings are 100% public.
-              </li>
-              <li>
-                <strong>Find your handle</strong>: Open your profile page on LeetCode, Codeforces, CodeChef, or AtCoder and copy your username (or paste the entire profile URL into the box).
-              </li>
-              <li>
-                Click <strong>&quot;Connect&quot;</strong> — Our system instantly validates the handle with the platform and imports your past contest ratings and history.
-              </li>
-            </ol>
+      {/* ── How to Connect Quick Guide (Collapsible / Expandable) ──────────── */}
+      {showGuide && (
+        <div className="p-4 rounded-2xl bg-surface-sunken dark:bg-white/[0.03] space-y-2.5 text-xs animate-in fade-in duration-200">
+          <div className="flex items-center gap-2 font-semibold text-foreground">
+            <Info className="size-4 text-primary shrink-0" />
+            <span>How to Connect & Find Your Username:</span>
           </div>
-        )}
 
-        {/* ── Platform Grid ─────────────────────────────────────────────────── */}
-        <div className="grid gap-3 sm:grid-cols-2">
-          {PLATFORM_CONFIGS.map((cfg) => {
-            const dataKey = cfg.id as keyof UserCpProfileData;
-            const connectedData = profile?.[dataKey] as any;
-            const isConnected = Boolean(connectedData?.handle || connectedData?.username);
-            const handleValue = connectedData?.handle || connectedData?.username;
-            const isPending =
-              linkMutation.isPending && linkMutation.variables?.platform === cfg.id;
-            const isUnlinkPending =
-              unlinkMutation.isPending && unlinkMutation.variables?.platform === cfg.id;
+          <ol className="space-y-1.5 list-decimal list-inside text-muted-foreground pl-1">
+            <li>
+              <strong className="text-foreground">No passwords or login required</strong> — All contest rankings and ratings are 100% public.
+            </li>
+            <li>
+              <strong className="text-foreground">Find your handle</strong>: Open your profile page on LeetCode, Codeforces, CodeChef, or AtCoder and copy your username (or paste the entire profile URL into the box).
+            </li>
+            <li>
+              Click <strong className="text-foreground">&quot;Connect&quot;</strong> — Our system instantly validates the handle with the platform and imports your past contest ratings and history.
+            </li>
+          </ol>
+        </div>
+      )}
 
-            return (
-              <div
-                key={cfg.id}
-                className="flex flex-col justify-between p-4 rounded-xl border border-border/60 bg-surface transition-all hover:border-border"
-              >
-                <div>
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-sm text-text">{cfg.name}</span>
-                      {isConnected ? (
-                        <Badge className="bg-emerald-500/15 text-emerald-500 border-emerald-500/30 text-[10px] py-0 px-1.5 font-mono">
-                          <Check className="size-2.5 mr-0.5" /> VERIFIED
-                        </Badge>
-                      ) : (
-                        <Badge className="bg-surface-sunken text-text-subtle border-border/50 text-[10px] py-0 px-1.5">
-                          NOT CONNECTED
-                        </Badge>
-                      )}
-                    </div>
+      {/* ── Platform Grid (Borderless Clean Surfaces) ────────────────────── */}
+      <div className="grid gap-3 sm:grid-cols-2">
+        {PLATFORM_CONFIGS.map((cfg) => {
+          const dataKey = cfg.id as keyof UserCpProfileData;
+          const connectedData = profile?.[dataKey] as any;
+          const isConnected = Boolean(connectedData?.handle || connectedData?.username);
+          const handleValue = connectedData?.handle || connectedData?.username;
+          const isPending =
+            linkMutation.isPending && linkMutation.variables?.platform === cfg.id;
+          const isUnlinkPending =
+            unlinkMutation.isPending && unlinkMutation.variables?.platform === cfg.id;
 
-                    {isConnected && (
-                      <a
-                        href={cfg.url(handleValue)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-text-muted hover:text-text"
-                        title="View Public Profile"
-                      >
-                        <ExternalLink className="size-3.5" />
-                      </a>
+          return (
+            <div
+              key={cfg.id}
+              className="flex flex-col justify-between p-4 sm:p-5 rounded-2xl bg-surface-sunken/70 dark:bg-white/[0.03] hover:bg-surface-sunken transition-all shadow-xs"
+            >
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-sm text-foreground">{cfg.name}</span>
+                    {isConnected ? (
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-mono font-bold inline-flex items-center gap-1">
+                        <Check className="size-2.5 stroke-[3]" /> VERIFIED
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded-full bg-surface-sunken dark:bg-white/[0.06] text-muted-foreground text-[10px] font-mono inline-flex items-center">
+                        NOT CONNECTED
+                      </span>
                     )}
                   </div>
 
-                  {isConnected ? (
-                    <div className="space-y-1.5 py-1">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-mono font-medium text-text">{handleValue}</span>
-                        <span className="text-xs font-bold font-mono text-primary">
-                          {connectedData.rating > 0 ? `${connectedData.rating} rating` : 'Unrated'}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-2 text-[11px] text-text-muted">
-                        {connectedData.rank && (
-                          <span className="capitalize">{connectedData.rank}</span>
-                        )}
-                        {connectedData.stars && <span>{connectedData.stars}</span>}
-                        {connectedData.topPercentage > 0 && (
-                          <span>Top {connectedData.topPercentage}%</span>
-                        )}
-                        {connectedData.maxRating > 0 && (
-                          <span className="text-text-subtle font-mono">(Peak: {connectedData.maxRating})</span>
-                        )}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="space-y-2 py-1">
-                      <div className="flex items-center gap-2">
-                        <Input
-                          type="text"
-                          placeholder={cfg.placeholder}
-                          value={inputHandles[cfg.id] || ''}
-                          onChange={(e) =>
-                            setInputHandles((prev) => ({ ...prev, [cfg.id]: e.target.value }))
-                          }
-                          className="h-8 text-xs bg-surface-sunken"
-                        />
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          disabled={!inputHandles[cfg.id] || isPending}
-                          onClick={() =>
-                            linkMutation.mutate({
-                              platform: cfg.id,
-                              handle: inputHandles[cfg.id] || '',
-                            })
-                          }
-                          className="h-8 text-xs shrink-0 font-medium gap-1"
-                        >
-                          {isPending ? (
-                            <Loader2 className="size-3 animate-spin" />
-                          ) : (
-                            <>
-                              <Plus className="size-3" /> Connect
-                            </>
-                          )}
-                        </Button>
-                      </div>
-
-                      <span className="text-[10px] text-text-subtle block font-mono">
-                        Format: {cfg.exampleUrl}
-                      </span>
-
-                      {activeError[cfg.id] && (
-                        <Text size="caption" className="text-rose-500 text-[11px]">
-                          {activeError[cfg.id]}
-                        </Text>
-                      )}
-                    </div>
+                  {isConnected && (
+                    <a
+                      href={cfg.url(handleValue)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-muted-foreground hover:text-foreground"
+                      title="View Public Profile"
+                    >
+                      <ExternalLink className="size-3.5" />
+                    </a>
                   )}
                 </div>
 
-                {isConnected && (
-                  <div className="flex items-center justify-between pt-2 border-t border-border/40 mt-2">
-                    <span className="text-[10px] text-text-subtle font-mono">
-                      Synced {connectedData.lastSyncedAt ? new Date(connectedData.lastSyncedAt).toLocaleDateString() : 'recently'}
+                {isConnected ? (
+                  <div className="space-y-1.5 py-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-mono font-medium text-foreground">{handleValue}</span>
+                      <span className="text-xs font-bold font-mono text-primary">
+                        {connectedData.rating > 0 ? `${connectedData.rating} rating` : 'Unrated'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                      {connectedData.rank && (
+                        <span className="capitalize">{connectedData.rank}</span>
+                      )}
+                      {connectedData.stars && <span>{connectedData.stars}</span>}
+                      {connectedData.topPercentage > 0 && (
+                        <span>Top {connectedData.topPercentage}%</span>
+                      )}
+                      {connectedData.maxRating > 0 && (
+                        <span className="text-muted-foreground font-mono">(Peak: {connectedData.maxRating})</span>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-2 py-1">
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="text"
+                        placeholder={cfg.placeholder}
+                        value={inputHandles[cfg.id] || ''}
+                        onChange={(e) =>
+                          setInputHandles((prev) => ({ ...prev, [cfg.id]: e.target.value }))
+                        }
+                        className="h-8 text-xs bg-card dark:bg-white/[0.05] border-0 rounded-xl focus:ring-2 focus:ring-primary/20"
+                      />
+                      <Button
+                        size="sm"
+                        disabled={!inputHandles[cfg.id] || isPending}
+                        onClick={() =>
+                          linkMutation.mutate({
+                            platform: cfg.id,
+                            handle: inputHandles[cfg.id] || '',
+                          })
+                        }
+                        className="h-8 text-xs shrink-0 font-medium gap-1 rounded-xl bg-primary text-primary-foreground hover:bg-primary-hover shadow-xs border-0 cursor-pointer"
+                      >
+                        {isPending ? (
+                          <Loader2 className="size-3 animate-spin" />
+                        ) : (
+                          <>
+                            <Plus className="size-3" /> Connect
+                          </>
+                        )}
+                      </Button>
+                    </div>
+
+                    <span className="text-[10px] text-muted-foreground block font-mono">
+                      Format: {cfg.exampleUrl}
                     </span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      disabled={isUnlinkPending}
-                      onClick={() => unlinkMutation.mutate({ platform: cfg.id })}
-                      className="h-6 px-2 text-[11px] text-destructive hover:bg-destructive/10"
-                    >
-                      {isUnlinkPending ? <Loader2 className="size-3 animate-spin" /> : 'Unlink'}
-                    </Button>
+
+                    {activeError[cfg.id] && (
+                      <Text size="caption" className="text-destructive text-[11px]">
+                        {activeError[cfg.id]}
+                      </Text>
+                    )}
                   </div>
                 )}
               </div>
-            );
-          })}
-        </div>
-      </CardContent>
-    </Card>
+
+              {isConnected && (
+                <div className="flex items-center justify-between pt-3 mt-2">
+                  <span className="text-[10px] text-muted-foreground font-mono">
+                    Synced {connectedData.lastSyncedAt ? new Date(connectedData.lastSyncedAt).toLocaleDateString() : 'recently'}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled={isUnlinkPending}
+                    onClick={() => unlinkMutation.mutate({ platform: cfg.id })}
+                    className="h-6 px-2 text-[11px] text-destructive hover:bg-destructive/10 rounded-lg cursor-pointer"
+                  >
+                    {isUnlinkPending ? <Loader2 className="size-3 animate-spin" /> : 'Unlink'}
+                  </Button>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }

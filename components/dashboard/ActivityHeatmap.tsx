@@ -38,12 +38,26 @@ const EMERALD_CLASSES = [
   'bg-emerald-500 border border-emerald-400 text-black font-bold shadow-[0_0_8px_rgba(16,185,129,0.35)]',
 ];
 
+const BORDERLESS_EMERALD_CLASSES = [
+  'bg-surface-sunken dark:bg-white/[0.06]',
+  'bg-emerald-500/25 dark:bg-emerald-950/90 text-emerald-300',
+  'bg-emerald-500/55 dark:bg-emerald-800 text-emerald-200',
+  'bg-emerald-600 text-white',
+  'bg-emerald-500 text-black font-bold shadow-[0_0_8px_rgba(16,185,129,0.35)]',
+];
+
 const MONTH_NAMES = [
   'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
 ];
 
-export function ActivityHeatmap({ data = [] }: { data?: HeatmapCell[] }) {
+export function ActivityHeatmap({
+  data = [],
+  borderless = false,
+}: {
+  data?: HeatmapCell[];
+  borderless?: boolean;
+}) {
   const [timeRange, setTimeRange] = useState<TimeRange>('year');
 
   const countByDate = useMemo(() => {
@@ -147,12 +161,17 @@ export function ActivityHeatmap({ data = [] }: { data?: HeatmapCell[] }) {
     };
   }, [countByDate, today]);
 
-  const intensityClasses = EMERALD_CLASSES;
+  const intensityClasses = borderless ? BORDERLESS_EMERALD_CLASSES : EMERALD_CLASSES;
 
   return (
     <div className="space-y-4">
       {/* ── LeetCode Style Header Stats Bar ────────────────────────── */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-border/40">
+      <div
+        className={cn(
+          'flex flex-wrap items-center justify-between gap-3 pb-3',
+          !borderless && 'border-b border-border/40'
+        )}
+      >
         {/* Left: Total Submissions */}
         <div className="flex items-center gap-2">
           <span className="font-display text-base font-bold text-foreground">
@@ -185,7 +204,16 @@ export function ActivityHeatmap({ data = [] }: { data?: HeatmapCell[] }) {
           {/* Time range dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger render={
-              <Button variant="outline" size="xs" className="gap-1 text-2xs font-semibold bg-card border-border">
+              <Button
+                variant={borderless ? 'ghost' : 'outline'}
+                size="xs"
+                className={cn(
+                  'gap-1 text-2xs font-semibold',
+                  borderless
+                    ? 'bg-surface-sunken/80 dark:bg-white/[0.04] text-foreground hover:bg-surface-sunken border-0 rounded-lg shadow-2xs'
+                    : 'bg-card border-border'
+                )}
+              >
                 {timeRange === 'year' ? '1 Year' : timeRange === '6months' ? '6 Months' : '90 Days'}
                 <ChevronDown className="size-3 text-text-muted" />
               </Button>
@@ -255,9 +283,21 @@ export function ActivityHeatmap({ data = [] }: { data?: HeatmapCell[] }) {
       </div>
 
       {/* ── Footer Legend ──────────────────────────────────────────────── */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pt-2 text-2xs text-text-muted border-t border-border/30">
+      <div
+        className={cn(
+          'flex flex-wrap items-center justify-between gap-3 pt-2 text-2xs text-text-muted',
+          !borderless && 'border-t border-border/30'
+        )}
+      >
         <div className="flex items-center gap-2 font-medium">
-          <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-amber-500/15 text-amber-500 border border-amber-500/25">
+          <span
+            className={cn(
+              'flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider',
+              borderless
+                ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                : 'bg-amber-500/15 text-amber-500 border border-amber-500/25'
+            )}
+          >
             <Flame className="size-3 text-amber-500 fill-amber-500/30" />
             <span>Streak: {currentStreak} Days</span>
           </span>

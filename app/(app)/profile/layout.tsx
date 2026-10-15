@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Profile & Settings',
-  description: 'Manage your BigO candidate account, handle linkages, preferences, and subscriptions.',
+  title: 'Profile & Progress',
+  description: 'Manage your BigO candidate account, track algorithmic pattern mastery, activity telemetry, and connected CP profiles.',
   robots: {
     index: false,
     follow: false,

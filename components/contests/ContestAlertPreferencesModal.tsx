@@ -12,7 +12,6 @@ import {
 } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Text } from '@/components/ui/typography';
 import {
   Bell,
@@ -23,8 +22,6 @@ import {
   Loader2,
   Mail,
   Send,
-  Shield,
-  Sparkles,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -146,22 +143,22 @@ function PreferencesForm({
         {/* Left Column (7 cols): Master switch, Platforms, and Sample Alert */}
         <div className="md:col-span-7 space-y-3.5 flex flex-col justify-between">
           {/* Master Switch */}
-          <div className="flex items-center justify-between p-3.5 rounded-xl bg-surface-sunken border border-border/70">
+          <div className="flex items-center justify-between p-3.5 rounded-2xl bg-surface-sunken dark:bg-white/[0.04]">
             <div className="space-y-0.5 min-w-0 pr-2">
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-xs sm:text-sm text-text">Contest Email Alerts</span>
+                <span className="font-semibold text-xs sm:text-sm text-foreground">Contest Email Alerts</span>
                 {enabled ? (
-                  <Badge className="bg-emerald-500/15 text-emerald-500 border-emerald-500/30 text-[10px] py-0 px-1.5 font-mono font-semibold">
+                  <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] py-0.5 px-2 rounded-full font-mono font-bold inline-flex items-center">
                     ACTIVE
-                  </Badge>
+                  </span>
                 ) : (
-                  <Badge className="bg-zinc-500/15 text-zinc-400 border-zinc-500/30 text-[10px] py-0 px-1.5 font-mono">
+                  <span className="bg-surface-sunken dark:bg-white/[0.06] text-muted-foreground text-[10px] py-0.5 px-2 rounded-full font-mono inline-flex items-center">
                     PAUSED
-                  </Badge>
+                  </span>
                 )}
               </div>
               <Text size="caption" tone="muted" className="text-[11px] truncate block">
-                Destination: <strong>{initialData.email}</strong>
+                Destination: <strong className="text-foreground">{initialData.email}</strong>
               </Text>
             </div>
             <Switch checked={enabled} onCheckedChange={setEnabled} />
@@ -170,7 +167,7 @@ function PreferencesForm({
           {/* Platforms Grid */}
           <div className={enabled ? 'space-y-2' : 'opacity-40 pointer-events-none space-y-2'}>
             <div className="flex items-center justify-between">
-              <span className="text-2xs font-bold uppercase tracking-wider text-text-subtle">
+              <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
                 1. Select Platforms ({platforms.length} Active)
               </span>
               <button
@@ -182,7 +179,7 @@ function PreferencesForm({
                       : ALL_PLATFORMS.map((p) => p.id)
                   )
                 }
-                className="text-[11px] text-primary hover:underline font-medium"
+                className="text-[11px] text-primary hover:underline font-medium cursor-pointer"
               >
                 {platforms.length === ALL_PLATFORMS.length ? 'Deselect All' : 'Select All'}
               </button>
@@ -196,17 +193,17 @@ function PreferencesForm({
                     key={plat.id}
                     type="button"
                     onClick={() => togglePlatform(plat.id)}
-                    className={`flex flex-col justify-between p-2.5 rounded-xl border text-left transition-all relative ${
+                    className={`flex flex-col justify-between p-2.5 rounded-xl text-left transition-all relative cursor-pointer ${
                       isSelected
-                        ? 'bg-primary/10 border-primary/50 text-text ring-1 ring-primary/25 shadow-xs'
-                        : 'bg-surface border-border/60 text-text-muted hover:border-border hover:bg-surface-sunken/40'
+                        ? 'bg-primary/10 text-foreground ring-1 ring-primary/30 shadow-xs'
+                        : 'bg-surface-sunken/60 dark:bg-white/[0.03] text-muted-foreground hover:bg-surface-sunken/90 hover:text-foreground'
                     }`}
                   >
                     <div className="flex items-center justify-between w-full mb-1">
-                      <span className="text-xs font-semibold text-text truncate">{plat.label}</span>
+                      <span className="text-xs font-semibold text-foreground truncate">{plat.label}</span>
                       {isSelected && <Check className="size-3 text-primary shrink-0" />}
                     </div>
-                    <span className="text-[10px] text-text-muted line-clamp-1">{plat.desc}</span>
+                    <span className="text-[10px] text-muted-foreground line-clamp-1">{plat.desc}</span>
                   </button>
                 );
               })}
@@ -215,19 +212,19 @@ function PreferencesForm({
 
           {/* Live Test Alert Email Verification */}
           <div
-            className={`rounded-xl border border-dashed border-primary/40 p-3 bg-primary/5 flex items-center justify-between gap-3 ${
+            className={`rounded-2xl p-3.5 bg-primary/10 flex items-center justify-between gap-3 ${
               !enabled ? 'opacity-40 pointer-events-none' : ''
             }`}
           >
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
                 <Mail className="size-3.5 text-primary shrink-0" />
-                <span className="text-xs font-semibold text-text">Verify Email Delivery</span>
-                <Badge className="bg-emerald-500/15 text-emerald-500 border-emerald-500/30 text-[9px] py-0 px-1 font-mono font-semibold">
+                <span className="text-xs font-semibold text-foreground">Verify Email Delivery</span>
+                <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[9px] py-0.5 px-1.5 rounded-full font-mono font-bold">
                   LIVE TEST
-                </Badge>
+                </span>
               </div>
-              <span className="text-[10px] text-text-muted block truncate mt-0.5">
+              <span className="text-[10px] text-muted-foreground block truncate mt-0.5">
                 Send a sample contest alert to <strong>{initialData.email}</strong> right now.
               </span>
             </div>
@@ -238,7 +235,7 @@ function PreferencesForm({
               size="sm"
               onClick={() => testMutation.mutate()}
               disabled={testMutation.isPending || !enabled}
-              className="shrink-0 text-xs gap-1.5 h-8 px-3 font-semibold border-primary/30 hover:bg-primary/15 transition-all cursor-pointer"
+              className="shrink-0 text-xs gap-1.5 h-8 px-3 font-semibold rounded-full bg-primary text-primary-foreground hover:bg-primary-hover shadow-xs border-0 transition-all cursor-pointer"
             >
               {testMutation.isPending ? (
                 <>
@@ -260,7 +257,7 @@ function PreferencesForm({
           </div>
 
           {testError && (
-            <div className="p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs font-medium">
+            <div className="p-2.5 rounded-xl bg-destructive/10 text-destructive text-xs font-medium">
               ⚠️ {testError}
             </div>
           )}
@@ -268,13 +265,13 @@ function PreferencesForm({
 
         {/* Right Column (5 cols): Lead Times, Digest, Timezone, and Actions */}
         <div
-          className={`md:col-span-5 space-y-3 flex flex-col justify-between md:border-l md:border-border/60 md:pl-4 ${
+          className={`md:col-span-5 space-y-3 flex flex-col justify-between md:pl-4 ${
             !enabled ? 'opacity-40 pointer-events-none' : ''
           }`}
         >
           {/* Lead Times */}
           <div className="space-y-2">
-            <span className="text-2xs font-bold uppercase tracking-wider text-text-subtle block">
+            <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground block">
               2. Reminder Lead Times
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-1 gap-1.5">
@@ -285,15 +282,15 @@ function PreferencesForm({
                     key={lt.id}
                     type="button"
                     onClick={() => toggleLeadTime(lt.id)}
-                    className={`flex items-center justify-between px-3 py-2 rounded-xl border text-left transition-all ${
+                    className={`flex items-center justify-between px-3 py-2 rounded-xl text-left transition-all cursor-pointer ${
                       isSelected
-                        ? 'bg-primary/10 border-primary/50 text-text ring-1 ring-primary/25 shadow-xs'
-                        : 'bg-surface border-border/60 text-text-muted hover:border-border hover:bg-surface-sunken/40'
+                        ? 'bg-primary/10 text-foreground ring-1 ring-primary/30 shadow-xs'
+                        : 'bg-surface-sunken/60 dark:bg-white/[0.03] text-muted-foreground hover:bg-surface-sunken/90 hover:text-foreground'
                     }`}
                   >
                     <div>
-                      <span className="text-xs font-semibold text-text block">{lt.label}</span>
-                      <span className="text-[10px] text-text-muted block">{lt.desc}</span>
+                      <span className="text-xs font-semibold text-foreground block">{lt.label}</span>
+                      <span className="text-[10px] text-muted-foreground block">{lt.desc}</span>
                     </div>
                     {isSelected && <Check className="size-3.5 text-primary shrink-0 ml-2" />}
                   </button>
@@ -303,10 +300,10 @@ function PreferencesForm({
           </div>
 
           {/* Weekly Digest Toggle */}
-          <div className="flex items-center justify-between p-2.5 rounded-xl border border-border/60 bg-surface">
+          <div className="flex items-center justify-between p-2.5 rounded-xl bg-surface-sunken/60 dark:bg-white/[0.03]">
             <div className="space-y-0.5 pr-2">
-              <span className="text-xs font-semibold text-text block">Weekly Monday Digest</span>
-              <span className="text-[10px] text-text-muted block leading-tight">
+              <span className="text-xs font-semibold text-foreground block">Weekly Monday Digest</span>
+              <span className="text-[10px] text-muted-foreground block leading-tight">
                 Full week&apos;s schedule in one email
               </span>
             </div>
@@ -314,12 +311,12 @@ function PreferencesForm({
           </div>
 
           {/* Timezone Selector */}
-          <div className="p-2.5 rounded-xl border border-border/60 bg-surface flex items-center justify-between gap-2">
+          <div className="p-2.5 rounded-xl bg-surface-sunken/60 dark:bg-white/[0.03] flex items-center justify-between gap-2">
             <div className="flex items-center gap-1.5 min-w-0">
-              <Globe className="size-3.5 text-text-muted shrink-0" />
+              <Globe className="size-3.5 text-muted-foreground shrink-0" />
               <div className="min-w-0">
-                <span className="text-xs font-semibold text-text block leading-none">Timezone</span>
-                <span className="text-[10px] text-text-muted block truncate mt-0.5">
+                <span className="text-xs font-semibold text-foreground block leading-none">Timezone</span>
+                <span className="text-[10px] text-muted-foreground block truncate mt-0.5">
                   {timezone}
                 </span>
               </div>
@@ -329,13 +326,13 @@ function PreferencesForm({
               value={timezone}
               onChange={(e) => setTimezone(e.target.value)}
               placeholder="e.g. Asia/Kolkata"
-              className="text-xs px-2 py-1 rounded-md border border-border/60 bg-surface-sunken font-mono text-text w-[120px] text-right"
+              className="text-xs px-2.5 py-1 rounded-lg bg-card dark:bg-white/[0.05] font-mono text-foreground w-[130px] text-right focus:outline-none focus:ring-2 focus:ring-primary/20 border-0"
             />
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/60 mt-auto">
-            <Button type="button" variant="ghost" size="sm" onClick={onClose} className="text-xs h-8">
+          <div className="flex items-center justify-end gap-2 pt-3 mt-auto">
+            <Button type="button" variant="ghost" size="sm" onClick={onClose} className="text-xs h-8 rounded-full cursor-pointer">
               Cancel
             </Button>
             <Button
@@ -343,7 +340,7 @@ function PreferencesForm({
               size="sm"
               onClick={handleSave}
               disabled={saveMutation.isPending}
-              className="gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs h-8 px-3"
+              className="gap-1.5 bg-primary hover:bg-primary-hover text-primary-foreground font-semibold text-xs h-8 px-4 rounded-full shadow-xs cursor-pointer"
             >
               {saveMutation.isPending ? (
                 <>
@@ -404,7 +401,7 @@ export function ContestAlertPreferencesModal({
       )}
 
       <DialogContent className="w-full max-w-full sm:max-w-xl md:max-w-4xl max-h-[90vh] md:max-h-none overflow-y-auto md:overflow-visible p-5 sm:p-6">
-        <DialogHeader className="pb-1 border-b border-border/40">
+        <DialogHeader className="pb-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-primary font-semibold text-xs tracking-wider uppercase">
               <BellRing className="size-3.5" />
@@ -412,7 +409,7 @@ export function ContestAlertPreferencesModal({
             </div>
           </div>
           <DialogTitle className="text-lg sm:text-xl font-bold">Email Alert Preferences</DialogTitle>
-          <DialogDescription className="text-xs text-text-muted">
+          <DialogDescription className="text-xs text-muted-foreground">
             Configure platforms, reminder lead times, and weekly digest for your contest alerts.
           </DialogDescription>
         </DialogHeader>
