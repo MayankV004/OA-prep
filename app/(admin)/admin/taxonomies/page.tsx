@@ -26,12 +26,12 @@ interface Taxonomy {
   createdAt: string;
 }
 
-const KIND_TABS = ['all', 'pattern', 'subject', 'group', 'platform', 'bucket'] as const;
+const KIND_TABS = ['all', 'pattern', 'subject', 'advanced', 'platform', 'bucket'] as const;
 
 const KIND_LABEL: Record<string, string> = {
   pattern: 'Pattern (DSA)',
   subject: 'Subject',
-  group: 'Group',
+  advanced: 'Advanced Track',
   platform: 'Platform (CP)',
   bucket: 'Bucket (Non-std)',
 };

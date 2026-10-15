@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withAuth, withRole } from '@/lib/auth';
-import { Group } from '@/models';
+import { Group, Taxonomy } from '@/models';
 import { groupUpdateSchema } from '@/lib/zod';
 import { recordActivity } from '@/lib/activity';
 import dbConnect from '@/lib/db';
@@ -23,9 +23,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     }
     return NextResponse.json(group, {
       headers: {
-        'Cache-Control': 'public, max-age=60, stale-while-revalidate=600',
-        'CDN-Cache-Control': 'max-age=300',
-        'Vercel-CDN-Cache-Control': 'max-age=300',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
       },
     });
   });
@@ -37,8 +35,45 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const { id } = await params;
     const body = await req.json();
     const parsed = groupUpdateSchema.parse(body);
+
+    if (parsed.name) parsed.name = parsed.name.trim();
+    if (parsed.slug) {
+      parsed.slug = parsed.slug.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    }
+    if (parsed.description) parsed.description = parsed.description.trim();
+
+    // Check duplicate slug if slug or kind is changing
+    if (parsed.slug) {
+      const existing = await Group.findOne({
+        _id: { $ne: id },
+        slug: parsed.slug,
+        kind: parsed.kind || (await Group.findById(id).select('kind').lean())?.kind,
+      });
+      if (existing) {
+        throw { status: 400, message: 'A subject or track with this slug already exists.' };
+      }
+    }
+
     const updated = await Group.findByIdAndUpdate(id, parsed, { new: true });
     if (!updated) throw { status: 404, message: 'Subject not found' };
+
+    // Sync to Taxonomy model if subject
+    if (updated.kind === 'subject') {
+      await Taxonomy.updateOne(
+        { kind: 'subject', slug: updated.slug },
+        { $set: { name: updated.name }, $setOnInsert: { kind: 'subject', slug: updated.slug } },
+        { upsert: true }
+      );
+    }
+
+    recordActivity({
+      actorId: userId,
+      targetUserId: userId,
+      kind: 'admin.taxonomy.updated',
+      entity: { type: 'group', id: updated._id.toString(), title: updated.name },
+      metadata: { changedFields: Object.keys(parsed) },
+    });
+
     return NextResponse.json(updated);
   });
 }
@@ -53,7 +88,22 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     const { id } = await params;
     const group = await Group.findById(id);
     if (!group) throw { status: 404, message: 'Subject not found' };
+
     await Group.findByIdAndDelete(id);
+
+    // Sync delete to Taxonomy model if subject
+    if (group.kind === 'subject') {
+      await Taxonomy.deleteOne({ kind: 'subject', slug: group.slug });
+    }
+
+    recordActivity({
+      actorId: userId,
+      targetUserId: userId,
+      kind: 'admin.taxonomy.deleted',
+      entity: { type: 'group', id: group._id.toString(), title: group.name },
+      metadata: { kind: group.kind, slug: group.slug },
+    });
+
     return new Response(null, { status: 204 });
   });
 }

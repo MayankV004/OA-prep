@@ -12,12 +12,10 @@ export async function GET(req: NextRequest) {
     const kind = searchParams.get('kind');
     const query: any = {};
     if (kind) query.kind = kind;
-    const groups = await Group.find(query).sort({ order: 1 });
+    const groups = await Group.find(query).sort({ order: 1 }).lean();
     return Response.json(groups, {
       headers: {
-        'Cache-Control': 'public, max-age=60, stale-while-revalidate=600',
-        'CDN-Cache-Control': 'max-age=300',
-        'Vercel-CDN-Cache-Control': 'max-age=300',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
       },
     });
   });
@@ -28,16 +26,34 @@ export async function POST(req: NextRequest) {
     await dbConnect();
     const body = await req.json();
     const parsed = groupWriteSchema.parse(body);
-    if (!parsed.slug) {
-      (parsed as any).slug = parsed.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
+    const rawSlug = (parsed.slug?.trim() || parsed.name.trim());
+    const slug = rawSlug
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+
+    if (!slug) {
+      throw { status: 400, message: 'A valid name or slug is required' };
     }
+
+    parsed.slug = slug;
+    parsed.name = parsed.name.trim();
+    if (parsed.description) parsed.description = parsed.description.trim();
+
+    // Check duplicate slug for this kind
+    const existing = await Group.findOne({ kind: parsed.kind, slug: parsed.slug });
+    if (existing) {
+      throw { status: 400, message: `A ${parsed.kind === 'subject' ? 'subject' : 'track'} with this name or slug already exists.` };
+    }
+
     const created = await Group.create(parsed);
 
     // Sync subject to Taxonomy model as well
     if (parsed.kind === 'subject') {
       await Taxonomy.updateOne(
-        { kind: 'subject', slug: (parsed as any).slug },
-        { $setOnInsert: { kind: 'subject', name: parsed.name, slug: (parsed as any).slug } },
+        { kind: 'subject', slug: parsed.slug },
+        { $set: { name: parsed.name }, $setOnInsert: { kind: 'subject', slug: parsed.slug } },
         { upsert: true }
       );
     }
@@ -49,6 +65,7 @@ export async function POST(req: NextRequest) {
       entity: { type: 'group', id: created._id.toString(), title: created.name },
       metadata: { kind: created.kind },
     });
+
     return created;
   });
 }

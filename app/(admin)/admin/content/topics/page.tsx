@@ -79,14 +79,14 @@ export default function AdminTopicsPage() {
     name: '',
     slug: '',
     kind: 'subject',
-    body: '',
+    description: '',
   });
 
-  // 1. Fetch Groups (Subjects and Advanced Tracks)
-  const { data: subjects = [] } = useQuery<SubjectGroup[]>({
+  // 1. Fetch Groups (Subjects and Advanced Tracks) with cache: 'no-store' to guarantee fresh data
+  const { data: subjects = [], isLoading: subjectsLoading } = useQuery<SubjectGroup[]>({
     queryKey: ['admin', 'groups'],
     queryFn: async () => {
-      const res = await fetch('/api/groups');
+      const res = await fetch('/api/groups', { cache: 'no-store' });
       if (!res.ok) throw new Error('Failed to fetch groups');
       return res.json();
     },
@@ -97,7 +97,7 @@ export default function AdminTopicsPage() {
     queryKey: ['admin', 'topics', search],
     queryFn: async () => {
       const url = search ? `/api/admin/content/topics?q=${encodeURIComponent(search)}` : '/api/admin/content/topics';
-      const res = await fetch(url);
+      const res = await fetch(url, { cache: 'no-store' });
       if (!res.ok) throw new Error('Failed to fetch topics');
       return res.json();
     },
@@ -163,7 +163,7 @@ export default function AdminTopicsPage() {
 
   // Subject / Track Save Mutation
   const saveSubjectMutation = useMutation({
-    mutationFn: async (payload: { id?: string; name: string; slug?: string; kind?: string; body?: string }) => {
+    mutationFn: async (payload: { id?: string; name: string; slug?: string; kind?: string; description?: string }) => {
       const isEdit = Boolean(payload.id);
       const url = isEdit ? `/api/groups/${payload.id}` : '/api/groups';
       const method = isEdit ? 'PATCH' : 'POST';
@@ -185,12 +185,16 @@ export default function AdminTopicsPage() {
       queryClient.invalidateQueries({ queryKey: ['admin', 'groups'] });
       queryClient.invalidateQueries({ queryKey: ['groups'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'taxonomies'] });
-      toast.add(editingSubject ? 'Track/Subject updated' : 'Track/Subject created', { type: 'success' });
+      queryClient.invalidateQueries({ queryKey: ['topics'] });
+      toast.add(editingSubject ? 'Subject updated' : 'Subject created', {
+        description: editingSubject ? 'Subject details updated successfully.' : 'Subject created. You can now add topic notes to this subject.',
+        type: 'success',
+      });
       setSubjectSlideOverOpen(false);
       resetSubjectForm();
     },
     onError: (err: any) => {
-      toast.add('Failed to save subject/track', { description: err.message, type: 'error' });
+      toast.add('Failed to save subject', { description: err.message, type: 'error' });
     },
   });
 
@@ -204,11 +208,12 @@ export default function AdminTopicsPage() {
       queryClient.invalidateQueries({ queryKey: ['admin', 'groups'] });
       queryClient.invalidateQueries({ queryKey: ['groups'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'taxonomies'] });
-      toast.add('Track/Subject deleted', { type: 'success' });
+      queryClient.invalidateQueries({ queryKey: ['topics'] });
+      toast.add('Subject deleted', { type: 'success' });
       setConfirmingDeleteSubject(null);
     },
     onError: (err: any) => {
-      toast.add("Couldn't delete subject/track", { description: err.message, type: 'error' });
+      toast.add("Couldn't delete subject", { description: err.message, type: 'error' });
     },
   });
 
@@ -220,15 +225,13 @@ export default function AdminTopicsPage() {
 
   const resetSubjectForm = () => {
     setEditingSubject(null);
-    setSubjectFormData({ name: '', slug: '', kind: 'subject', body: '' });
-    setEditorTab('edit');
+    setSubjectFormData({ name: '', slug: '', kind: 'subject', description: '' });
   };
 
-  const handleOpenCreateTopic = () => {
+  const handleOpenCreateTopic = (preselectedGroupId?: string) => {
     resetTopicForm();
-    if (subjects.length > 0) {
-      setTopicFormData({ title: '', groupId: subjects[0]._id, body: '' });
-    }
+    const defaultGroup = preselectedGroupId || subjects[0]?._id || '';
+    setTopicFormData({ title: '', groupId: defaultGroup, body: '' });
     setTopicSlideOverOpen(true);
   };
 
@@ -254,14 +257,13 @@ export default function AdminTopicsPage() {
       name: subject.name,
       slug: subject.slug,
       kind: subject.kind || 'subject',
-      body: subject.body || '',
+      description: subject.description || '',
     });
-    setEditorTab('edit');
     setSubjectSlideOverOpen(true);
   };
 
   // Image Upload Handler
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, target: 'topic' | 'subject') => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -279,12 +281,7 @@ export default function AdminTopicsPage() {
       const { url } = await res.json();
       const imageMarkdown = `\n![${file.name.replace(/\.[^/.]+$/, '')}](${url})\n`;
 
-      if (target === 'topic') {
-        setTopicFormData((prev) => ({ ...prev, body: prev.body + imageMarkdown }));
-      } else {
-        setSubjectFormData((prev) => ({ ...prev, body: prev.body + imageMarkdown }));
-      }
-
+      setTopicFormData((prev) => ({ ...prev, body: prev.body + imageMarkdown }));
       toast.add('Image attached', { type: 'success' });
     } catch (err: any) {
       toast.add('Image upload failed', { description: err.message, type: 'error' });
@@ -346,19 +343,49 @@ export default function AdminTopicsPage() {
       sortValue: (row) => row.name,
       cell: (row) => (
         <div className="min-w-0">
-          <span className="block truncate font-bold text-foreground text-sm">
-            {row.name}
+          <div className="flex items-center gap-2">
+            <span className="truncate font-bold text-foreground text-sm">
+              {row.name}
+            </span>
+            <span
+              className={cn(
+                'px-2 py-0.5 rounded-full text-3xs font-mono font-bold uppercase tracking-wider border',
+                row.kind === 'advanced'
+                  ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20'
+                  : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
+              )}
+            >
+              {row.kind === 'advanced' ? 'Advanced Track' : 'Core Subject'}
+            </span>
+          </div>
+          <span className="block truncate text-xs text-muted-foreground font-mono mt-0.5">
+            {row.kind === 'advanced' ? `/advanced/${row.slug}` : `/subjects/${row.slug}`}
           </span>
-          <span className="block truncate text-xs text-muted-foreground font-mono">
-            /subjects/{row.slug}
-          </span>
+          {row.description && (
+            <span className="block truncate text-xs text-muted-foreground mt-0.5 max-w-md">
+              {row.description}
+            </span>
+          )}
         </div>
       ),
+    },
+    {
+      id: 'topicCount',
+      header: 'Topics Count',
+      cell: (row) => {
+        const count = topics.filter((t) => t.groupId === row._id || t.groupId === row.slug).length;
+        return (
+          <span className="px-2.5 py-1 rounded-xl bg-muted/60 text-foreground font-mono text-xs font-semibold">
+            {count} {count === 1 ? 'topic' : 'topics'}
+          </span>
+        );
+      },
     },
     {
       id: 'updatedAt',
       header: 'Last Updated',
       hideBelow: 'md',
+      sortValue: (row) => row.updatedAt ?? null,
       cell: (row) => (
         <Text as="span" size="caption" tone="muted" numeric>
           {relative(row.updatedAt)}
@@ -384,7 +411,7 @@ export default function AdminTopicsPage() {
               <span>New Subject</span>
             </Button>
             <Button
-              onClick={handleOpenCreateTopic}
+              onClick={() => handleOpenCreateTopic()}
               className="rounded-xl font-semibold gap-1.5"
             >
               <Plus className="size-4" />
@@ -437,7 +464,7 @@ export default function AdminTopicsPage() {
           emptyDescription="Click 'New Topic Note' to add concept notes under any subject."
           emptyIcon={FileText}
           emptyAction={
-            <Button onClick={handleOpenCreateTopic} className="rounded-xl font-semibold">
+            <Button onClick={() => handleOpenCreateTopic()} className="rounded-xl font-semibold">
               <Plus className="size-4" />
               New Topic Note
             </Button>
@@ -482,12 +509,23 @@ export default function AdminTopicsPage() {
             </Button>
           }
           rowActions={(row) => (
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 px-2.5 text-xs font-semibold rounded-lg gap-1 border-border/40 hover:bg-emerald-500/10 hover:text-emerald-500 hover:border-emerald-500/30"
+                onClick={() => handleOpenCreateTopic(row._id)}
+                title="Add Topic Note under this subject"
+              >
+                <Plus className="size-3.5" />
+                <span>Add Topic</span>
+              </Button>
               <Button
                 variant="ghost"
                 size="icon"
                 className="size-8 text-muted-foreground hover:text-foreground"
                 onClick={() => handleOpenEditSubject(row)}
+                title="Edit Subject"
               >
                 <Edit className="size-4" />
               </Button>
@@ -496,6 +534,7 @@ export default function AdminTopicsPage() {
                 size="icon"
                 className="size-8 text-muted-foreground hover:text-rose-500"
                 onClick={() => setConfirmingDeleteSubject(row)}
+                title="Delete Subject"
               >
                 <Trash2 className="size-4" />
               </Button>
@@ -535,22 +574,40 @@ export default function AdminTopicsPage() {
         <div className="space-y-6">
           {/* Target Subject Select */}
           <div className="space-y-2">
-            <Label htmlFor="topic-group" className="font-semibold text-foreground">
-              Target Subject
-            </Label>
-            <select
-              id="topic-group"
-              value={topicFormData.groupId}
-              onChange={(e) => setTopicFormData({ ...topicFormData, groupId: e.target.value })}
-              className="w-full h-11 px-3.5 rounded-xl bg-background border border-border/40 text-sm font-medium focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500/20"
-            >
-              <option value="" disabled>Select a subject...</option>
-              {subjects.map((g) => (
-                <option key={g._id} value={g._id}>
-                  {g.name} ({g.slug})
-                </option>
-              ))}
-            </select>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="topic-group" className="font-semibold text-foreground">
+                Target Subject *
+              </Label>
+              <button
+                type="button"
+                onClick={() => {
+                  setTopicSlideOverOpen(false);
+                  handleOpenCreateSubject();
+                }}
+                className="text-xs font-semibold text-emerald-500 hover:text-emerald-400 hover:underline"
+              >
+                + New Subject
+              </button>
+            </div>
+            {subjects.length === 0 ? (
+              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-600 dark:text-amber-400 text-xs">
+                No subjects created yet. Please create a subject first before adding topics.
+              </div>
+            ) : (
+              <select
+                id="topic-group"
+                value={topicFormData.groupId}
+                onChange={(e) => setTopicFormData({ ...topicFormData, groupId: e.target.value })}
+                className="w-full h-11 px-3.5 rounded-xl bg-background border border-border/40 text-sm font-medium focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-500/20"
+              >
+                <option value="" disabled>Select a subject...</option>
+                {subjects.map((g) => (
+                  <option key={g._id} value={g._id}>
+                    {g.name} ({g.slug})
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
           {/* Topic Title */}
@@ -601,7 +658,7 @@ export default function AdminTopicsPage() {
                 <input
                   type="file"
                   ref={fileInputRef}
-                  onChange={(e) => handleImageUpload(e, 'topic')}
+                  onChange={handleImageUpload}
                   accept="image/*"
                   className="hidden"
                 />
@@ -640,16 +697,16 @@ export default function AdminTopicsPage() {
       <SlideOver
         open={subjectSlideOverOpen}
         onOpenChange={setSubjectSlideOverOpen}
-        title={editingSubject ? `Edit ${editingSubject.name}` : 'Create New Subject / Track'}
-        description="Manage subject or advanced track category, slug, and overview Markdown content."
-        width="xl"
+        title={editingSubject ? `Edit ${editingSubject.name}` : 'Create New Subject'}
+        description="Configure subject or advanced track details. All concept notes are created as Topic Notes inside this subject."
+        width="md"
         footer={
           <div className="flex items-center justify-end gap-3 w-full">
             <Button variant="ghost" onClick={() => setSubjectSlideOverOpen(false)}>
               Cancel
             </Button>
             <Button
-              disabled={saveSubjectMutation.isPending || !subjectFormData.name}
+              disabled={saveSubjectMutation.isPending || !subjectFormData.name.trim()}
               onClick={() =>
                 saveSubjectMutation.mutate({
                   id: editingSubject?._id,
@@ -658,40 +715,38 @@ export default function AdminTopicsPage() {
               }
               className="rounded-xl font-semibold"
             >
-              {saveSubjectMutation.isPending ? 'Saving...' : editingSubject ? 'Update Track' : 'Create Track'}
+              {saveSubjectMutation.isPending ? 'Saving...' : editingSubject ? 'Update Subject' : 'Create Subject'}
             </Button>
           </div>
         }
       >
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="s-kind" className="font-semibold text-foreground">
-                Category Type
-              </Label>
-              <select
-                id="s-kind"
-                value={subjectFormData.kind}
-                onChange={(e) => setSubjectFormData({ ...subjectFormData, kind: e.target.value })}
-                className="w-full h-11 rounded-xl bg-background border border-border/40 px-3 text-sm font-semibold text-foreground outline-none"
-              >
-                <option value="subject">Core Subject (/subjects)</option>
-                <option value="advanced">Advanced Topic Track (/advanced)</option>
-              </select>
-            </div>
+        <div className="space-y-5">
+          <div className="space-y-2">
+            <Label htmlFor="s-kind" className="font-semibold text-foreground">
+              Category Type
+            </Label>
+            <select
+              id="s-kind"
+              value={subjectFormData.kind}
+              onChange={(e) => setSubjectFormData({ ...subjectFormData, kind: e.target.value })}
+              className="w-full h-11 rounded-xl bg-background border border-border/40 px-3 text-sm font-semibold text-foreground outline-none focus:border-primary"
+            >
+              <option value="subject">Core Subject (/subjects)</option>
+              <option value="advanced">Advanced Topic Track (/advanced)</option>
+            </select>
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="s-name" className="font-semibold text-foreground">
-                Subject / Track Name
-              </Label>
-              <Input
-                id="s-name"
-                placeholder="e.g. System Design & Architecture"
-                value={subjectFormData.name}
-                onChange={(e) => setSubjectFormData({ ...subjectFormData, name: e.target.value })}
-                className="h-11 rounded-xl"
-              />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="s-name" className="font-semibold text-foreground">
+              Subject Name *
+            </Label>
+            <Input
+              id="s-name"
+              placeholder="e.g. Operating Systems"
+              value={subjectFormData.name}
+              onChange={(e) => setSubjectFormData({ ...subjectFormData, name: e.target.value })}
+              className="h-11 rounded-xl"
+            />
           </div>
 
           <div className="space-y-2">
@@ -700,71 +755,28 @@ export default function AdminTopicsPage() {
             </Label>
             <Input
               id="s-slug"
-              placeholder="e.g. system-design"
+              placeholder="e.g. operating-systems (auto-generated if empty)"
               value={subjectFormData.slug}
               onChange={(e) => setSubjectFormData({ ...subjectFormData, slug: e.target.value })}
               className="h-11 rounded-xl font-mono text-sm"
             />
           </div>
 
-          {/* Track Level Markdown Content */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5 p-1 rounded-xl bg-muted/60 border border-border/20">
-                <button
-                  type="button"
-                  onClick={() => setEditorTab('edit')}
-                  className={cn(
-                    'px-3 py-1 rounded-lg text-xs font-semibold transition-all',
-                    editorTab === 'edit'
-                      ? 'bg-background text-foreground shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground'
-                  )}
-                >
-                  Markdown Edit
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setEditorTab('preview')}
-                  className={cn(
-                    'px-3 py-1 rounded-lg text-xs font-semibold transition-all',
-                    editorTab === 'preview'
-                      ? 'bg-background text-foreground shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground'
-                  )}
-                >
-                  Live Preview
-                </button>
-              </div>
-
-              <div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  disabled={uploadingImage}
-                  onClick={() => fileInputRef.current?.click()}
-                  className="rounded-xl text-xs font-semibold gap-1.5 border-border/40"
-                >
-                  {uploadingImage ? <Upload className="size-3.5 animate-spin" /> : <ImageIcon className="size-3.5 text-rose-500" />}
-                  <span>{uploadingImage ? 'Uploading...' : 'Attach Image'}</span>
-                </Button>
-              </div>
-            </div>
-
-            {editorTab === 'edit' ? (
-              <Textarea
-                rows={14}
-                placeholder="Write Markdown track concept note content..."
-                value={subjectFormData.body}
-                onChange={(e) => setSubjectFormData({ ...subjectFormData, body: e.target.value })}
-                className="font-mono text-sm leading-relaxed rounded-2xl border-border/40"
-              />
-            ) : (
-              <div className="p-6 rounded-2xl bg-background/80 border border-border/30 min-h-[300px] max-h-[500px] overflow-y-auto">
-                <MarkdownView content={subjectFormData.body || 'No track content written yet.'} />
-              </div>
-            )}
+          <div className="space-y-2">
+            <Label htmlFor="s-desc" className="font-semibold text-foreground">
+              Description / Overview (Optional)
+            </Label>
+            <Textarea
+              id="s-desc"
+              rows={4}
+              placeholder="Brief summary of this subject (e.g. Processes, threads, memory management, virtual memory, and I/O scheduling)..."
+              value={subjectFormData.description}
+              onChange={(e) => setSubjectFormData({ ...subjectFormData, description: e.target.value })}
+              className="rounded-xl text-sm leading-relaxed"
+            />
+            <p className="text-xs text-muted-foreground">
+              Shown on the subject syllabus page. High-yield notes and concepts are added as individual Topic Notes.
+            </p>
           </div>
         </div>
       </SlideOver>
