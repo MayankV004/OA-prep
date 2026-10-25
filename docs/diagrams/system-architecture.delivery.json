@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "d5f3a715-474c-4e7a-9d68-1d363edd6cad",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "/home/streamliner/oa-prep/.archify/architecture-system-architecture-20261026-051400/candidate.json",
+  "output": "/home/streamliner/oa-prep/docs/diagrams/system-architecture.html",
+  "specification": {
+    "sha256": "e6f1bb9b08c25fb7aaef4efee0fed6425e8d39f39a57d9e77469c3afc67fb34f",
+    "bytes": 8002
+  },
+  "artifact": {
+    "sha256": "3cbfd9242a801f523c5b27e2782f03b5f2c90b422a134ae12de859d223067940",
+    "bytes": 859686
+  }
+}

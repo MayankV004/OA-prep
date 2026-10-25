@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "1f1f8c8f-2021-4ca7-874f-71c6c42a3bbe",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "/home/streamliner/oa-prep/.archify/sequence-oa-execution-20261026-051400/candidate.json",
+  "output": "/home/streamliner/oa-prep/docs/diagrams/oa-execution-sequence.html",
+  "specification": {
+    "sha256": "599b515458d1752aa361e5e82618543a4a1bc2d4a04f8bac63456b9b6dbad102",
+    "bytes": 5527
+  },
+  "artifact": {
+    "sha256": "c796fcd880cbd68bd06b1b0ec8da5c81e9c11941d232e97050f6ac41ab5ea9b2",
+    "bytes": 842546
+  }
+}

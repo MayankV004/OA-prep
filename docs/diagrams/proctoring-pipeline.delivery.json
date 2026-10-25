@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "b26410d6-4163-49fc-b0c2-b9f7a4c05ac4",
+  "status": "current",
+  "command": "deliver",
+  "type": "workflow",
+  "input": "/home/streamliner/oa-prep/.archify/workflow-proctoring-pipeline-20261026-051400/candidate.json",
+  "output": "/home/streamliner/oa-prep/docs/diagrams/proctoring-pipeline.html",
+  "specification": {
+    "sha256": "364375367935e1c5574d65369a5507af2c012961430d13b42bed5096b323cec8",
+    "bytes": 8094
+  },
+  "artifact": {
+    "sha256": "12d73582416d7c0be583a8de338f4dbe5627b53cb6500f6ccd6972df770a297e",
+    "bytes": 857530
+  }
+}

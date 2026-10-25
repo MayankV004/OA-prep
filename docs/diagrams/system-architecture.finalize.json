@@ -1,0 +1,408 @@
+{
+  "schemaVersion": 1,
+  "ok": false,
+  "command": "finalize",
+  "status": "skipped",
+  "type": "architecture",
+  "quality": "showcase",
+  "startedAt": "2026-10-25T23:46:09.093Z",
+  "specification": {
+    "path": "/home/streamliner/oa-prep/.archify/architecture-system-architecture-20261026-051400/candidate.json",
+    "sha256": "defdbc6ac5002f162466208cd4672e63436722aa60b242f53b3cbf7899d973d7",
+    "bytes": 7950
+  },
+  "artifact": {
+    "path": "/home/streamliner/oa-prep/docs/diagrams/system-architecture.html",
+    "sha256": "1b4ef7efbd85b809533c9b5ab714635e9059c7dcfb7f40b3649fb3d649fbccae",
+    "bytes": 859778
+  },
+  "stages": {
+    "validate": {
+      "status": "pass",
+      "exitCode": 0,
+      "durationMs": null,
+      "execution": "embedded-in-deliver",
+      "command": [
+        "/usr/bin/node",
+        "/home/streamliner/oa-prep/.agents/skills/archify/bin/archify.mjs",
+        "deliver",
+        "architecture",
+        "/home/streamliner/oa-prep/.archify/architecture-system-architecture-20261026-051400/candidate.json",
+        "/home/streamliner/oa-prep/docs/diagrams/system-architecture.html",
+        "--quality",
+        "showcase",
+        "--repo-root",
+        "/home/streamliner/oa-prep",
+        "--json"
+      ],
+      "receipt": {
+        "schemaVersion": 1,
+        "ok": true,
+        "command": "validate",
+        "specification": {
+          "sha256": "defdbc6ac5002f162466208cd4672e63436722aa60b242f53b3cbf7899d973d7",
+          "bytes": 7950
+        },
+        "validation": {
+          "checksPassed": 9,
+          "checkCount": 9,
+          "compositionProfile": "showcase",
+          "compositionStatus": "pass",
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    "deliver": {
+      "status": "pass",
+      "exitCode": 0,
+      "durationMs": 710,
+      "command": [
+        "/usr/bin/node",
+        "/home/streamliner/oa-prep/.agents/skills/archify/bin/archify.mjs",
+        "deliver",
+        "architecture",
+        "/home/streamliner/oa-prep/.archify/architecture-system-architecture-20261026-051400/candidate.json",
+        "/home/streamliner/oa-prep/docs/diagrams/system-architecture.html",
+        "--quality",
+        "showcase",
+        "--repo-root",
+        "/home/streamliner/oa-prep",
+        "--json"
+      ],
+      "receipt": {
+        "schemaVersion": 1,
+        "receiptId": "5060ba25-0242-4d58-a119-87c2a518deac",
+        "ok": true,
+        "command": "deliver",
+        "type": "architecture",
+        "input": "/home/streamliner/oa-prep/.archify/architecture-system-architecture-20261026-051400/candidate.json",
+        "output": "/home/streamliner/oa-prep/docs/diagrams/system-architecture.html",
+        "specification": {
+          "sha256": "defdbc6ac5002f162466208cd4672e63436722aa60b242f53b3cbf7899d973d7",
+          "bytes": 7950
+        },
+        "artifact": {
+          "sha256": "1b4ef7efbd85b809533c9b5ab714635e9059c7dcfb7f40b3649fb3d649fbccae",
+          "bytes": 859778
+        },
+        "validation": {
+          "checksPassed": 9,
+          "checkCount": 9,
+          "compositionProfile": "showcase",
+          "compositionStatus": "pass",
+          "errors": 0,
+          "warnings": 0
+        },
+        "evidence": {
+          "verified": true,
+          "repository": "https://github.com/MayankV004/OA-prep",
+          "revision": "e8e6020c4f9226e9e608e639af20570cc05986db",
+          "references": 14
+        },
+        "update": {
+          "status": "unavailable",
+          "installedVersion": null,
+          "availableVersion": null,
+          "releaseNotes": null,
+          "checkedAt": null,
+          "source": null,
+          "noticeRequired": false,
+          "noticeText": null,
+          "reason": "disabled"
+        }
+      }
+    },
+    "check": {
+      "status": "pass",
+      "exitCode": 0,
+      "durationMs": 229,
+      "command": [
+        "/usr/bin/node",
+        "/home/streamliner/oa-prep/.agents/skills/archify/bin/archify.mjs",
+        "check",
+        "/home/streamliner/oa-prep/docs/diagrams/system-architecture.html",
+        "--require-provenance"
+      ],
+      "receipt": {
+        "ok": true,
+        "file": "/home/streamliner/oa-prep/docs/diagrams/system-architecture.html",
+        "artifact": {
+          "sha256": "1b4ef7efbd85b809533c9b5ab714635e9059c7dcfb7f40b3649fb3d649fbccae",
+          "bytes": 859778
+        },
+        "checks": [
+          {
+            "name": "single_svg",
+            "ok": true,
+            "details": [
+              "found 1 <svg> block(s)"
+            ]
+          },
+          {
+            "name": "finite_svg",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "orthogonal_arrows",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "label_route_clearance",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "relationship_crossings",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "relationship_corridors",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "container_border_runs",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "route_rhythm",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "legend_clearance",
+            "ok": true,
+            "details": []
+          }
+        ],
+        "composition": {
+          "schemaVersion": 1,
+          "profile": "showcase",
+          "status": "pass",
+          "summary": {
+            "errors": 0,
+            "warnings": 0
+          },
+          "metrics": {
+            "properCrossings": 0,
+            "resolvedCrossovers": 1,
+            "ambiguousCorridors": 0,
+            "arrowheadCollisions": 0,
+            "containerBorderRuns": 0,
+            "labelRouteClearanceIssues": 0,
+            "labelCanvasOverflowIssues": 0,
+            "minLabelRouteClearance": 21,
+            "desktopReadabilityIssues": 0,
+            "viewportHeightIssues": 0,
+            "minProjectedNodeTextPx": 7.5,
+            "maxBends": 2,
+            "routesOverSuggestedBends": 0,
+            "maxStretch": 1.181,
+            "routesOverSuggestedStretch": 0,
+            "minSegmentPx": 24,
+            "minInteriorSegmentPx": 166,
+            "shortSegmentCount": 0,
+            "shortEndpointSegmentCount": 0,
+            "shortInteriorSegmentCount": 0,
+            "microSegmentCount": 0
+          },
+          "suggestedLimits": {
+            "bendsPerRelationship": 2,
+            "stretch": 1.35,
+            "segmentPx": 16,
+            "microSegmentPx": 8
+          },
+          "routeReview": {
+            "crossings": [
+              {
+                "left": {
+                  "id": "api-mongodb",
+                  "from": "api",
+                  "to": "mongodb",
+                  "label": "Mongoose CRUD",
+                  "collectionIndex": 5,
+                  "artifactIndex": 6
+                },
+                "right": {
+                  "id": "api-cp",
+                  "from": "api",
+                  "to": "cp",
+                  "label": "scrape rating crons",
+                  "collectionIndex": 10,
+                  "artifactIndex": 11
+                },
+                "point": [
+                  848,
+                  307.99999999999994
+                ],
+                "sharedNode": "api"
+              }
+            ],
+            "detours": []
+          },
+          "leadingSpace": {
+            "measured": true,
+            "emptyTopPx": 40,
+            "emptyTopRatio": 0.075,
+            "occupiedTop": 40,
+            "viewBoxTop": 0,
+            "canvasHeight": 532,
+            "typicalNodeHeight": 64,
+            "reviewSuggested": false
+          },
+          "desktopReadability": {
+            "budgetBasis": "recognized-declared-wide",
+            "readerContract": "declared-wide-v1",
+            "availableDiagramWidth": 1003.125,
+            "actualBudgetPx": 1003.125,
+            "actualReaderWidth": 1033.125,
+            "desiredReaderWidth": 1033.125,
+            "viewportCap": 1376,
+            "limit": "source-size",
+            "requestedTargetPx": 7.5,
+            "requestedTargetMet": true,
+            "hardFloorPx": 6,
+            "hardFloorMet": true,
+            "minimumOwner": {
+              "kind": "edge",
+              "id": "client-auth",
+              "from": "client",
+              "to": "auth"
+            },
+            "minimumSourceTextPx": 8,
+            "minimumProjectedTextPx": 7.5,
+            "semanticTextCount": 36
+          },
+          "issues": []
+        },
+        "provenance": "current",
+        "deliveryReceiptId": "5060ba25-0242-4d58-a119-87c2a518deac"
+      }
+    },
+    "browser-check": {
+      "status": "skipped",
+      "exitCode": 2,
+      "durationMs": 29,
+      "command": [
+        "/usr/bin/node",
+        "/home/streamliner/oa-prep/.agents/skills/archify/bin/archify.mjs",
+        "browser-check",
+        "/home/streamliner/oa-prep/docs/diagrams/system-architecture.html",
+        "--json",
+        "--require-provenance"
+      ],
+      "execution": "in-process",
+      "receipt": {
+        "schemaVersion": 1,
+        "ok": false,
+        "command": "browser-check",
+        "evidenceKind": "automated-browser",
+        "status": "skipped",
+        "visualReview": "not-requested",
+        "provenance": "current",
+        "deliveryReceiptId": "5060ba25-0242-4d58-a119-87c2a518deac",
+        "artifact": {
+          "path": "/home/streamliner/oa-prep/docs/diagrams/system-architecture.html",
+          "sha256": "1b4ef7efbd85b809533c9b5ab714635e9059c7dcfb7f40b3649fb3d649fbccae",
+          "bytes": 859778
+        },
+        "state": {
+          "detail": "read",
+          "motion": "still"
+        },
+        "chrome": {
+          "status": "unavailable",
+          "executable": null
+        },
+        "diagnostics": [
+          {
+            "code": "viewer/chrome-unavailable",
+            "severity": "warning",
+            "message": "No supported browser found. Install Chrome/Chromium (or Microsoft Edge), or set ARCHIFY_CHROME to its executable path.",
+            "subject": {
+              "artifact": "/home/streamliner/oa-prep/docs/diagrams/system-architecture.html"
+            },
+            "evidence": {
+              "executable": null
+            },
+            "supportedFixes": [
+              "set ARCHIFY_CHROME to a Chrome/Chromium executable (or Microsoft Edge) and rerun browser-check"
+            ]
+          }
+        ],
+        "containment": {
+          "status": "skipped",
+          "policy": "fit-or-reader-declared-readable-vertical-scroll",
+          "viewports": []
+        },
+        "themeStates": {
+          "status": "skipped",
+          "viewports": []
+        },
+        "readability": {
+          "status": "skipped",
+          "minimumProjectedNodeTextPx": 6,
+          "viewports": []
+        },
+        "viewerChrome": {
+          "status": "skipped",
+          "viewports": []
+        },
+        "captures": {
+          "status": "not-requested",
+          "screenshots": [],
+          "contactSheet": null
+        },
+        "sidecars": {
+          "receipt": "system-architecture.browser-check.json",
+          "files": []
+        },
+        "error": "No supported browser found. Install Chrome/Chromium (or Microsoft Edge), or set ARCHIFY_CHROME to its executable path."
+      }
+    }
+  },
+  "browserCheck": {
+    "requested": true,
+    "ran": false
+  },
+  "diagnostics": [
+    {
+      "code": "viewer/chrome-unavailable",
+      "severity": "warning",
+      "message": "No supported browser found. Install Chrome/Chromium (or Microsoft Edge), or set ARCHIFY_CHROME to its executable path.",
+      "subject": {
+        "artifact": "/home/streamliner/oa-prep/docs/diagrams/system-architecture.html"
+      },
+      "evidence": {
+        "executable": null
+      },
+      "supportedFixes": [
+        "set ARCHIFY_CHROME to a Chrome/Chromium executable (or Microsoft Edge) and rerun browser-check"
+      ]
+    }
+  ],
+  "evidence": {
+    "receipt": "/home/streamliner/oa-prep/docs/diagrams/system-architecture.finalize.json",
+    "summaryReceipt": "/home/streamliner/oa-prep/docs/diagrams/system-architecture.finalize-summary.json",
+    "browserCheckReceipt": "/home/streamliner/oa-prep/docs/diagrams/system-architecture.browser-check.json"
+  },
+  "visualReview": "not-requested",
+  "failedStage": "browser-check",
+  "finishedAt": "2026-10-25T23:46:10.231Z",
+  "durationMs": 1137,
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-10-25T23:46:09.242Z",
+    "source": "network",
+    "noticeRequired": false,
+    "noticeText": null
+  }
+}

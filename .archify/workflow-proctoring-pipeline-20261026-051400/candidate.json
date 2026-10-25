@@ -1,0 +1,262 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Dual-Engine Neural Proctoring & Anti-Cheat Pipeline",
+    "output": "docs/diagrams/proctoring-pipeline.html",
+    "quality_profile": "showcase",
+    "visual_preset": "signal-flow",
+    "repository": {
+      "url": "https://github.com/MayankV004/OA-prep.git",
+      "provider": "github",
+      "revision": "e8e6020c4f9226e9e608e639af20570cc05986db"
+    }
+  },
+  "lanes": [
+    { "id": "capture", "label": "Hardware Sensors & Video Stream" },
+    { "id": "inference", "label": "Dual-Loop Client Neural Models" },
+    { "id": "defense", "label": "Spatial Defense & Anti-Cheat HUD", "variant": "exception" },
+    { "id": "forensics", "label": "Evidence Vault & LLM Forensics" }
+  ],
+  "phases": [
+    { "id": "capture_phase", "label": "Media Capture & Resampling", "fromCol": 0, "toCol": 1 },
+    { "id": "inference_phase", "label": "Dual Neural Inference", "fromCol": 2, "toCol": 3, "variant": "emphasis" },
+    { "id": "defense_phase", "label": "Spatial Fusion & Vault", "fromCol": 4, "toCol": 4, "variant": "security" },
+    { "id": "forensic_phase", "label": "Behavioral Forensic Report", "fromCol": 5, "toCol": 5, "variant": "dashed" }
+  ],
+  "groups": [
+    { "id": "cv_group", "label": "Client Neural Loop", "lane": "inference", "fromCol": 2, "toCol": 3, "variant": "emphasis" },
+    { "id": "defense_group", "label": "Spatial Defense & HUD", "lane": "defense", "fromCol": 3, "toCol": 5, "variant": "security" }
+  ],
+  "mainPath": [
+    "webcam",
+    "canvas",
+    "blazeface",
+    "cocossd",
+    "torso_guard",
+    "hud"
+  ],
+  "nodes": [
+    {
+      "id": "webcam",
+      "lane": "capture",
+      "col": 0,
+      "type": "external",
+      "label": "Webcam Stream",
+      "sublabel": "30 FPS / 640x480 Raw Feed",
+      "sources": [
+        { "path": "components/oa/ProctorCameraPip.tsx", "line": 254, "end_line": 290, "label": "Webcam MediaStream Setup" }
+      ]
+    },
+    {
+      "id": "canvas",
+      "lane": "capture",
+      "col": 1,
+      "type": "frontend",
+      "label": "Analysis Canvas",
+      "sublabel": "320x240 Resampled WebGL",
+      "sources": [
+        { "path": "components/oa/ProctorCameraPip.tsx", "line": 305, "end_line": 340, "label": "Canvas Resampling" }
+      ]
+    },
+    {
+      "id": "audio",
+      "lane": "capture",
+      "col": 2,
+      "type": "frontend",
+      "label": "Web Audio FFT",
+      "sublabel": "256-pt Frequency RMS",
+      "tag": "Speech RMS",
+      "sources": [
+        { "path": "lib/proctor/audio/acoustic-analyzer.ts", "line": 1, "end_line": 35, "label": "Acoustic Audio Analyzer" }
+      ]
+    },
+    {
+      "id": "blazeface",
+      "lane": "inference",
+      "col": 2,
+      "type": "frontend",
+      "label": "Google BlazeFace",
+      "sublabel": "180ms Biometrics Loop",
+      "tag": "6 3D Keypoints",
+      "sources": [
+        { "path": "lib/proctor/vision/neural-face-detector.ts", "line": 13, "end_line": 75, "label": "BlazeFace Facial Biometrics" }
+      ]
+    },
+    {
+      "id": "cocossd",
+      "lane": "inference",
+      "col": 3,
+      "type": "frontend",
+      "label": "COCO-SSD Detection",
+      "sublabel": "450ms MobileNet-v2 Loop",
+      "tag": "Phone & Book Detect",
+      "sources": [
+        { "path": "lib/proctor/vision/neural-device-detector.ts", "line": 14, "end_line": 60, "label": "Hardware Device Detector" }
+      ]
+    },
+    {
+      "id": "gaze_pose",
+      "lane": "defense",
+      "col": 3,
+      "type": "security",
+      "label": "Head Pose & Gaze",
+      "sublabel": "Yaw / Pitch Deviations",
+      "tag": "Presence Gate",
+      "sources": [
+        { "path": "lib/proctor/vision/neural-face-detector.ts", "line": 80, "end_line": 135, "label": "Gaze Tracking" },
+        { "path": "lib/proctor/vision/device-analyzer.ts", "line": 15, "end_line": 60, "label": "Face Presence Gate" }
+      ]
+    },
+    {
+      "id": "torso_guard",
+      "lane": "defense",
+      "col": 4,
+      "type": "security",
+      "label": "Torso Exclusion Guard",
+      "sublabel": "2.2s Alert Debounce Decay",
+      "tag": "Anti-False Alarm",
+      "sources": [
+        { "path": "lib/proctor/vision/device-analyzer.ts", "line": 65, "end_line": 120, "label": "Torso Aspect Ratio Exclusion" },
+        { "path": "components/oa/ProctorCameraPip.tsx", "line": 400, "end_line": 470, "label": "State Fusion & Debounce" }
+      ]
+    },
+    {
+      "id": "r2_vault",
+      "lane": "forensics",
+      "col": 4,
+      "type": "cloud",
+      "label": "Cloudflare R2 Vault",
+      "sublabel": "AWS SigV4 WebP Upload",
+      "tag": "Infraction Snapshots",
+      "sources": [
+        { "path": "lib/proctor/storage.ts", "line": 41, "end_line": 85, "label": "R2 Native Upload" }
+      ]
+    },
+    {
+      "id": "hud",
+      "lane": "defense",
+      "col": 5,
+      "type": "frontend",
+      "label": "Biometric HUD",
+      "sublabel": "SVG Landmark Wireframe",
+      "tag": "Real-time Alerts",
+      "sources": [
+        { "path": "components/oa/ProctorCameraPip.tsx", "line": 480, "end_line": 550, "label": "Overlay HUD Render" }
+      ]
+    },
+    {
+      "id": "groq_audit",
+      "lane": "forensics",
+      "col": 5,
+      "type": "backend",
+      "label": "Groq Llama-3.3-70B",
+      "sublabel": "Behavioral Forensic Report",
+      "tag": "Risk Score 0-100",
+      "sources": [
+        { "path": "lib/proctor/activity-analyzer.ts", "line": 14, "end_line": 37, "label": "LLM Activity Analysis" }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "webcam-canvas",
+      "from": "webcam",
+      "to": "canvas",
+      "label": "30 FPS stream",
+      "variant": "default"
+    },
+    {
+      "id": "canvas-blazeface",
+      "from": "canvas",
+      "to": "blazeface",
+      "label": "180ms tick",
+      "variant": "emphasis"
+    },
+    {
+      "id": "canvas-audio",
+      "from": "canvas",
+      "to": "audio",
+      "label": "mic audio",
+      "variant": "default"
+    },
+    {
+      "id": "blazeface-cocossd",
+      "from": "blazeface",
+      "to": "cocossd",
+      "label": "450ms tick",
+      "variant": "default"
+    },
+    {
+      "id": "blazeface-gaze",
+      "from": "blazeface",
+      "to": "gaze_pose",
+      "label": "3D keypoints",
+      "variant": "emphasis"
+    },
+    {
+      "id": "cocossd-torso",
+      "from": "cocossd",
+      "to": "torso_guard",
+      "label": "candidate bboxes",
+      "variant": "default"
+    },
+    {
+      "id": "gaze-torso",
+      "from": "gaze_pose",
+      "to": "torso_guard",
+      "label": "face verified",
+      "variant": "security"
+    },
+    {
+      "id": "torso-hud",
+      "from": "torso_guard",
+      "to": "hud",
+      "label": "render live HUD",
+      "variant": "emphasis"
+    },
+    {
+      "id": "torso-r2",
+      "from": "torso_guard",
+      "to": "r2_vault",
+      "label": "upload WebP infraction",
+      "variant": "security"
+    },
+    {
+      "id": "r2-groq",
+      "from": "r2_vault",
+      "to": "groq_audit",
+      "label": "synthesize audit",
+      "variant": "emphasis"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Dual-Loop Client Scheduling",
+      "items": [
+        "Fast 180ms loop runs BlazeFace WebGL model for face count & 3D head pose",
+        "Throttled 450ms loop runs COCO-SSD MobileNet-v2 for phone/book detection",
+        "Zero raw webcam video streams to servers; candidate privacy is 100% preserved"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Anti-False-Alarm Spatial Guards",
+      "items": [
+        "Candidate presence guard suppresses device alarms when face is not verified",
+        "Spatial exclusion box prevents hair and dark clothing from triggering phone alarms",
+        "Persistent 2.2-second debounce prevents flashing warning indicators"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Evidence Vault & Forensic Audit",
+      "items": [
+        "Infraction frames compressed to WebP (<25KB) and stored on Cloudflare R2",
+        "Native AWS SigV4 signed direct PUT requests with zero backend proxying",
+        "Groq Llama-3.3-70B synthesizes timeline into executive integrity reports"
+      ]
+    }
+  ]
+}

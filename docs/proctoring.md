@@ -10,6 +10,9 @@ BigO incorporates an enterprise-grade proctoring subsystem engineered specifical
 
 All biometric and computer vision inferences execute **strictly client-side** using browser-accelerated hardware engines (**WebGL / WebAssembly** via TensorFlow.js), maintaining candidate privacy and ultra-low latency while eliminating heavy video streaming costs.
 
+> 💡 **Interactive Neural Proctoring Pipeline**: An interactive, full-fidelity pipeline diagram with multi-zone spatial guards, live alert debounce, and WebP evidence upload is available:
+> - 🛡️ **[Open Interactive Neural Proctoring Pipeline Diagram (HTML)](./diagrams/proctoring-pipeline.html)**
+
 ```
                                ┌────────────────────────────────────────────────┐
                                │             Webcam Video Stream                │

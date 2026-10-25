@@ -37,6 +37,10 @@
 
 ## 2. High-Level Shape
 
+> 💡 **Interactive Architecture Diagram**: Explore the complete verified system architecture with deep source tracing, dark/light themes, and pan/zoom:
+> - 🌐 **[Open Interactive System Architecture Diagram (HTML)](./diagrams/system-architecture.html)**
+> - ⚡ **[Open OA Execution & Grading Sequence Diagram (HTML)](./diagrams/oa-execution-sequence.html)**
+
 ```
                        ┌──────────────────────────────────────────────┐
                        │               Browser (React)                │

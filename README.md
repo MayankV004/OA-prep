@@ -29,6 +29,18 @@ Unlike traditional problem trackers, BigO integrates **pattern-oriented DSA trac
 
 ---
 
+## 🗺️ Interactive System Architecture & Process Diagrams
+
+BigO includes verified, interactive standalone architecture and workflow diagrams generated with [Archify](https://github.com/tt-a1i/archify). Each diagram is a self-contained HTML document featuring dark/light themes, live motion tracing, pan/zoom, and source-code navigation:
+
+| Diagram | Type | Coverage | Open Interactive Map |
+| --- | --- | --- | --- |
+| 🌐 **System Architecture** | `architecture` | Next.js 16, proxy.ts Edge Gateway, MongoDB Atlas, Upstash Redis, Docker Piston, Cloudflare R2, QStash, Groq | [**Open Diagram**](./docs/diagrams/system-architecture.html) |
+| 🛡️ **Neural Proctoring Pipeline** | `workflow` | Dual-loop BlazeFace (180ms) + COCO-SSD (450ms), Torso exclusion, 2.2s alert debounce, WebP R2 upload | [**Open Diagram**](./docs/diagrams/proctoring-pipeline.html) |
+| 💻 **OA Execution & Grading Lifecycle** | `sequence` | Monaco Editor, 12 runs/min sliding rate limit, Judge0 sandbox, hidden test grading, LLM forensic report | [**Open Diagram**](./docs/diagrams/oa-execution-sequence.html) |
+
+---
+
 ### 🛡️ 1. Enterprise Dual-Engine Neural Proctoring
 *Engineered from the ground up for high-integrity assessments without native desktop downloads or intrusive kernel drivers.*
 

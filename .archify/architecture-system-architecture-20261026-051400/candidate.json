@@ -1,0 +1,289 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "BigO Placement Platform System Architecture",
+    "output": "docs/diagrams/system-architecture.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/MayankV004/OA-prep.git",
+      "provider": "github",
+      "revision": "e8e6020c4f9226e9e608e639af20570cc05986db"
+    }
+  },
+  "components": [
+    {
+      "id": "client",
+      "type": "frontend",
+      "label": "Browser Client",
+      "sublabel": "Next.js 16 · Monaco · TFJS",
+      "pos": [40, 220],
+      "size": [150, 64],
+      "tag": "WebGL + WebAudio",
+      "sources": [
+        { "path": "components/oa/ProctorCameraPip.tsx", "line": 254, "end_line": 320, "label": "Client Proctor HUD" },
+        { "path": "app/(app)/oa/[slug]/test/page.tsx", "line": 260, "end_line": 330, "label": "OA Test Runner Page" }
+      ]
+    },
+    {
+      "id": "auth",
+      "type": "security",
+      "label": "BetterAuth Engine",
+      "sublabel": "Sessions & OAuth PKCE",
+      "pos": [40, 40],
+      "size": [150, 64],
+      "tag": "MongoDB Adapter",
+      "sources": [
+        { "path": "lib/auth.ts", "line": 8, "end_line": 40, "label": "BetterAuth Initialization" }
+      ]
+    },
+    {
+      "id": "proxy",
+      "type": "security",
+      "label": "proxy.ts Gateway",
+      "sublabel": "Edge Request Interceptor",
+      "pos": [320, 220],
+      "size": [150, 64],
+      "tag": "Edge Redis Rate Limit",
+      "sources": [
+        { "path": "proxy.ts", "line": 27, "end_line": 55, "label": "Edge Rate Limiting" }
+      ]
+    },
+    {
+      "id": "cache",
+      "type": "database",
+      "label": "Upstash Redis",
+      "sublabel": "L1 Memory + L2 Redis",
+      "pos": [320, 40],
+      "size": [150, 64],
+      "tag": "Sub-ms Cache",
+      "sources": [
+        { "path": "lib/cache.ts", "line": 25, "end_line": 45, "label": "Multi-tier Cache" }
+      ]
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "Next.js API Handlers",
+      "sublabel": "Zod Validation & withAuth",
+      "pos": [600, 220],
+      "size": [150, 64],
+      "tag": "App Router Routes",
+      "sources": [
+        { "path": "app/api/oa/execute/route.ts", "line": 29, "end_line": 60, "label": "Code Execution Handler" },
+        { "path": "app/api/groups/route.ts", "line": 10, "end_line": 50, "label": "Group API Handler" }
+      ]
+    },
+    {
+      "id": "storage",
+      "type": "cloud",
+      "label": "Cloudflare R2",
+      "sublabel": "AWS SigV4 Evidence Vault",
+      "pos": [600, 40],
+      "size": [150, 64],
+      "tag": "WebP Snapshots",
+      "sources": [
+        { "path": "lib/proctor/storage.ts", "line": 41, "end_line": 85, "label": "R2 Native Upload" }
+      ]
+    },
+    {
+      "id": "mongodb",
+      "type": "database",
+      "label": "MongoDB Atlas",
+      "sublabel": "Mongoose 9 Primary DB",
+      "pos": [880, 220],
+      "size": [150, 64],
+      "tag": "19+ Collections",
+      "sources": [
+        { "path": "lib/db.ts", "line": 21, "end_line": 42, "label": "Mongoose Pool Connection" }
+      ]
+    },
+    {
+      "id": "groq",
+      "type": "external",
+      "label": "Groq Llama-3.3-70B",
+      "sublabel": "Behavioral Forensic LLM",
+      "pos": [880, 40],
+      "size": [150, 64],
+      "tag": "Forensic Audit Report",
+      "sources": [
+        { "path": "lib/proctor/activity-analyzer.ts", "line": 14, "end_line": 37, "label": "Forensic Analysis Orchestrator" }
+      ]
+    },
+    {
+      "id": "runner",
+      "type": "backend",
+      "label": "Execution Sandbox",
+      "sublabel": "Docker Piston / Judge0",
+      "pos": [600, 400],
+      "size": [150, 64],
+      "tag": "C++, Python, Java",
+      "sources": [
+        { "path": "lib/runner/judge0.ts", "line": 10, "end_line": 50, "label": "Isolated Runner Integration" }
+      ]
+    },
+    {
+      "id": "qstash",
+      "type": "messagebus",
+      "label": "Upstash QStash",
+      "sublabel": "Async Queue & Retry Crons",
+      "pos": [320, 400],
+      "size": [150, 64],
+      "tag": "Signature Verification",
+      "sources": [
+        { "path": "lib/qstash.ts", "line": 20, "end_line": 45, "label": "QStash Email Enqueue" }
+      ]
+    },
+    {
+      "id": "email",
+      "type": "external",
+      "label": "Resend API",
+      "sublabel": "Transactional Email Alerts",
+      "pos": [40, 400],
+      "size": [150, 64],
+      "tag": "Contest Notifications",
+      "sources": [
+        { "path": "app/api/workers/email/route.ts", "line": 15, "end_line": 40, "label": "Worker Email Dispatch" }
+      ]
+    },
+    {
+      "id": "cp",
+      "type": "external",
+      "label": "CP Aggregators",
+      "sublabel": "Codeforces · LeetCode",
+      "pos": [880, 400],
+      "size": [150, 64],
+      "tag": "Scheduled Rating Sync",
+      "sources": [
+        { "path": "app/api/cron/contests-sync/route.ts", "line": 13, "end_line": 35, "label": "Cron Contest Sync" }
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Next.js 16 Serverless & Edge Runtime",
+      "wraps": ["proxy", "api"]
+    }
+  ],
+  "connections": [
+    {
+      "id": "client-auth",
+      "from": "client",
+      "to": "auth",
+      "label": "sign-in / session",
+      "variant": "security",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "client-proxy",
+      "from": "client",
+      "to": "proxy",
+      "label": "HTTPS UI fetch",
+      "variant": "emphasis"
+    },
+    {
+      "id": "proxy-cache",
+      "from": "proxy",
+      "to": "cache",
+      "label": "rate limit check",
+      "variant": "security",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "proxy-api",
+      "from": "proxy",
+      "to": "api",
+      "label": "forward verified",
+      "variant": "emphasis"
+    },
+    {
+      "id": "api-storage",
+      "from": "api",
+      "to": "storage",
+      "label": "upload WebP evidence",
+      "variant": "default",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "api-mongodb",
+      "from": "api",
+      "to": "mongodb",
+      "label": "Mongoose CRUD",
+      "variant": "emphasis"
+    },
+    {
+      "id": "api-groq",
+      "from": "api",
+      "to": "groq",
+      "label": "forensic telemetry audit",
+      "variant": "default"
+    },
+    {
+      "id": "api-runner",
+      "from": "api",
+      "to": "runner",
+      "label": "compile & run code",
+      "variant": "default",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "api-qstash",
+      "from": "api",
+      "to": "qstash",
+      "label": "enqueue email job",
+      "variant": "dashed"
+    },
+    {
+      "id": "qstash-email",
+      "from": "qstash",
+      "to": "email",
+      "label": "dispatch alert email",
+      "variant": "dashed",
+      "fromSide": "left",
+      "toSide": "right"
+    },
+    {
+      "id": "api-cp",
+      "from": "api",
+      "to": "cp",
+      "label": "scrape rating crons",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "left"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Dual-Engine Neural Client",
+      "items": [
+        "Monaco Code Editor with C++, Python, and Java support",
+        "TensorFlow.js BlazeFace (180ms) + COCO-SSD (450ms) inference",
+        "Web Audio API 256-point FFT acoustic speech analyzer"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Edge Gateway & Application",
+      "items": [
+        "proxy.ts intercepts requests to enforce Edge Redis rate limits",
+        "BetterAuth manages password & OAuth sessions with MongoDB adapter",
+        "Next.js App Router API handlers with Zod validation and withAuth"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "Persistence, Execution & Forensics",
+      "items": [
+        "MongoDB Atlas primary store with Mongoose 9 discriminators",
+        "Docker Piston container & cloud Judge0 code execution harnesses",
+        "Cloudflare R2 WebP evidence storage and Groq Llama-3.3 forensic auditing"
+      ]
+    }
+  ]
+}

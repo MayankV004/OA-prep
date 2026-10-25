@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "ok": false,
+  "command": "finalize",
+  "status": "skipped",
+  "type": "architecture",
+  "quality": "showcase",
+  "specification": {
+    "path": "/home/streamliner/oa-prep/.archify/architecture-system-architecture-20261026-051400/candidate.json",
+    "sha256": "defdbc6ac5002f162466208cd4672e63436722aa60b242f53b3cbf7899d973d7",
+    "bytes": 7950
+  },
+  "artifact": {
+    "path": "/home/streamliner/oa-prep/docs/diagrams/system-architecture.html",
+    "sha256": "1b4ef7efbd85b809533c9b5ab714635e9059c7dcfb7f40b3649fb3d649fbccae",
+    "bytes": 859778
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "skipped"
+  },
+  "failedStage": "browser-check",
+  "diagnostics": [
+    {
+      "code": "viewer/chrome-unavailable",
+      "severity": "warning",
+      "message": "No supported browser found. Install Chrome/Chromium (or Microsoft Edge), or set ARCHIFY_CHROME to its executable path.",
+      "subject": {
+        "artifact": "/home/streamliner/oa-prep/docs/diagrams/system-architecture.html"
+      },
+      "evidence": {
+        "executable": null
+      },
+      "supportedFixes": [
+        "set ARCHIFY_CHROME to a Chrome/Chromium executable (or Microsoft Edge) and rerun browser-check"
+      ]
+    }
+  ],
+  "diagnosticSummary": {
+    "total": 1,
+    "shown": 1,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "/home/streamliner/oa-prep/docs/diagrams/system-architecture.finalize.json",
+    "summaryReceipt": "/home/streamliner/oa-prep/docs/diagrams/system-architecture.finalize-summary.json",
+    "browserCheckReceipt": "/home/streamliner/oa-prep/docs/diagrams/system-architecture.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-10-25T23:46:09.242Z",
+    "source": "network",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 1137,
+  "browserCheck": {
+    "requested": true,
+    "ran": false
+  }
+}

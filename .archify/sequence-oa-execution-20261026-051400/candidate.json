@@ -1,0 +1,127 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "Online Assessment (OA) Execution & Test Grading Lifecycle",
+    "output": "docs/diagrams/oa-execution-sequence.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/MayankV004/OA-prep.git",
+      "provider": "github",
+      "revision": "e8e6020c4f9226e9e608e639af20570cc05986db"
+    }
+  },
+  "participants": [
+    {
+      "id": "candidate",
+      "type": "external",
+      "label": "Candidate",
+      "sublabel": "Monaco Editor",
+      "sources": [
+        { "path": "components/oa/ProctorCameraPip.tsx", "line": 254, "end_line": 290, "label": "Candidate Assessment UI" }
+      ]
+    },
+    {
+      "id": "proxy",
+      "type": "security",
+      "label": "proxy.ts",
+      "sublabel": "Edge Rate Limiter",
+      "sources": [
+        { "path": "proxy.ts", "line": 27, "end_line": 55, "label": "Edge Rate Limiter" }
+      ]
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "/api/oa/execute",
+      "sublabel": "Test Runner API",
+      "sources": [
+        { "path": "app/api/oa/execute/route.ts", "line": 29, "end_line": 60, "label": "OA Execute Handler" }
+      ]
+    },
+    {
+      "id": "runner",
+      "type": "backend",
+      "label": "Runner Sandbox",
+      "sublabel": "Docker Piston / Judge0",
+      "sources": [
+        { "path": "lib/runner/judge0.ts", "line": 10, "end_line": 50, "label": "Code Runner Adapter" }
+      ]
+    },
+    {
+      "id": "submit",
+      "type": "backend",
+      "label": "/api/oa/submit",
+      "sublabel": "Grading Engine",
+      "sources": [
+        { "path": "app/api/oa/assessments/[slug]/submit/route.ts", "line": 10, "end_line": 40, "label": "OA Submit Handler" }
+      ]
+    },
+    {
+      "id": "audit",
+      "type": "external",
+      "label": "Groq Llama-3",
+      "sublabel": "Behavioral Forensic",
+      "sources": [
+        { "path": "lib/proctor/activity-analyzer.ts", "line": 14, "end_line": 37, "label": "Forensic Analyzer" }
+      ]
+    }
+  ],
+  "segments": [
+    { "from": 150, "to": 290, "label": "Live Interactive Code Testing" },
+    { "from": 300, "to": 450, "label": "Final Submission & Hidden Suite Evaluation" },
+    { "from": 460, "to": 565, "label": "Behavioral Forensic Audit & Candidate Report" }
+  ],
+  "messages": [
+    { "id": "m1", "from": "candidate", "to": "proxy", "y": 165, "label": "POST /api/oa/execute", "variant": "emphasis" },
+    { "id": "m2", "from": "proxy", "to": "api", "y": 195, "label": "sliding window (max 12/min)", "variant": "security" },
+    { "id": "m3", "from": "api", "to": "runner", "y": 225, "label": "execute sample tests in sandbox", "variant": "default" },
+    { "id": "m4", "from": "runner", "to": "api", "y": 255, "label": "stdout, stderr, runtime, memory", "variant": "return" },
+    { "id": "m5", "from": "api", "to": "candidate", "y": 280, "label": "sample test results JSON", "variant": "return" },
+    { "id": "m6", "from": "candidate", "to": "proxy", "y": 320, "label": "POST /api/oa/submit", "variant": "emphasis" },
+    { "id": "m7", "from": "proxy", "to": "submit", "y": 350, "label": "forward code + proctor telemetry", "variant": "security" },
+    { "id": "m8", "from": "submit", "to": "runner", "y": 380, "label": "evaluate full hidden test suite", "variant": "default" },
+    { "id": "m9", "from": "runner", "to": "submit", "y": 410, "label": "verdicts: TLE / WA / AC metrics", "variant": "return" },
+    { "id": "m10", "from": "submit", "to": "candidate", "y": 440, "label": "submission receipt & score", "variant": "return" },
+    { "id": "m11", "from": "submit", "to": "audit", "y": 480, "label": "synthesize chronological telemetry", "variant": "default" },
+    { "id": "m12", "from": "audit", "to": "submit", "y": 515, "label": "risk score (0-100) & integrity verdict", "variant": "return" },
+    { "id": "m13", "from": "submit", "to": "candidate", "y": 545, "label": "render /oa/[slug]/report/[id]", "variant": "return" }
+  ],
+  "activations": [
+    { "participant": "candidate", "from": 160, "to": 550, "type": "external" },
+    { "participant": "proxy", "from": 165, "to": 200, "type": "security" },
+    { "participant": "api", "from": 195, "to": 285, "type": "backend" },
+    { "participant": "runner", "from": 225, "to": 260, "type": "backend" },
+    { "participant": "submit", "from": 350, "to": 550, "type": "backend" },
+    { "participant": "audit", "from": 480, "to": 520, "type": "external" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Interactive Execution",
+      "items": [
+        "Monaco Editor dispatches execution requests to /api/oa/execute",
+        "Edge Redis enforces sliding-window limit (12 runs/minute) per candidate",
+        "Harness generator compiles code against visible test cases in Docker sandbox"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Hidden Suite Evaluation",
+      "items": [
+        "Final submission triggers comprehensive evaluation against hidden test cases",
+        "Evaluator tests for Time Limit Exceeded (TLE) and Wrong Answer (WA)",
+        "Pass percentage and performance percentiles calculated automatically"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Forensic Telemetry Synthesis",
+      "items": [
+        "Gaze deviations, face absences, tab switches, and audio anomalies aggregated",
+        "Groq Llama-3.3-70B synthesizes events into an integrity audit report",
+        "Generates immutable candidate report at /oa/[slug]/report/[id]"
+      ]
+    }
+  ]
+}
