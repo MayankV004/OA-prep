@@ -20,10 +20,11 @@ export async function getDynamicPlans(): Promise<Record<CheckoutPlanKey, PlanPri
       const key = plan.planKey as CheckoutPlanKey;
       if (mergedPlans[key]) {
         mergedPlans[key] = {
-          ...mergedPlans[key],
-          name: plan.name || mergedPlans[key].name,
-          badge: plan.badge !== undefined ? plan.badge : mergedPlans[key].badge,
-          priceUsd: plan.priceUsd !== undefined ? plan.priceUsd : mergedPlans[key].priceUsd,
+           ...mergedPlans[key],
+           name: plan.name || mergedPlans[key].name,
+           badge: plan.badge !== undefined ? plan.badge : mergedPlans[key].badge,
+           priceInr: plan.priceInr !== undefined ? plan.priceInr : mergedPlans[key].priceInr,
+           priceUsd: plan.priceUsd !== undefined ? plan.priceUsd : mergedPlans[key].priceUsd,
           period: plan.period || mergedPlans[key].period,
           mode: plan.mode || mergedPlans[key].mode,
           description: plan.description || mergedPlans[key].description,
@@ -50,8 +51,9 @@ export async function seedDefaultPricingPlans() {
     const plansToSeed = Object.values(PLANS).map((p) => ({
       planKey: p.id,
       name: p.name,
-      badge: p.badge || '',
-      priceUsd: p.priceUsd,
+       badge: p.badge || '',
+       priceInr: p.priceInr,
+       priceUsd: p.priceUsd,
       period: p.period,
       mode: p.mode,
       description: p.description,

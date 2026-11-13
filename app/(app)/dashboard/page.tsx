@@ -70,18 +70,19 @@ export default function DashboardPage() {
   const verifiedRef = useRef(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'patterns'>('overview');
 
-  const sessionId = searchParams.get('session_id');
+  const orderId = searchParams.get('order_id');
+  const subscriptionId = searchParams.get('subscription_id');
   const paymentStatus = searchParams.get('payment');
 
   const { data: session } = authClient.useSession();
   const userName = session?.user?.name || 'Candidate';
 
-  // Instant session verification when redirected back from Stripe
+  // Fast server-side verification after Cashfree redirects back. Webhooks remain authoritative.
   useEffect(() => {
-    if (paymentStatus === 'success' && sessionId && !verifiedRef.current) {
+    if (paymentStatus === 'success' && (orderId || subscriptionId) && !verifiedRef.current) {
       verifiedRef.current = true;
       subscriptionApi
-        .verifySession(sessionId)
+        .verifySession({ orderId: orderId || undefined, subscriptionId: subscriptionId || undefined })
         .then((res) => {
           if (res.success) {
             toast.success('Subscription Activated! ⚡', {
@@ -97,7 +98,7 @@ export default function DashboardPage() {
           router.replace('/dashboard');
         });
     }
-  }, [sessionId, paymentStatus, queryClient, router]);
+  }, [orderId, subscriptionId, paymentStatus, queryClient, router]);
 
   // Centralized TanStack Query v5 queryOptions
   const { data: stats, isLoading } = useQuery(dashboardQueries.stats('me'));

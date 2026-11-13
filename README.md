@@ -108,9 +108,9 @@ BigO includes verified, interactive standalone architecture and workflow diagram
 - **Dynamic Pricing Configuration (`pricing_plans`)**: MongoDB-stored plans allowing administrators to change prices, badges, and features without code redeployment.
 - **Promo Code System (`promo_codes`)**: Generate percentage or fixed dollar discount codes with plan applicability, maximum redemption caps, and expiration tracking (`/api/promo/validate`).
 - **Administrative Billing Dashboard (`/admin/billing`)**: Real-time MRR, ARR, active subscriber breakdowns, 6-month historical revenue charts (`RevenueTrendChart.tsx`), and manual plan grant/revocation.
-- **Stripe Checkout & Billing Portal**: Seamless session redirection, customer management, and self-serve subscription cancellation.
-- **Cryptographic Webhook Verification**: `/api/webhooks/stripe` handles `checkout.session.completed`, `customer.subscription.updated`, and `customer.subscription.deleted`.
-- **Dev-Mode Mock Simulator**: Zero-friction local development bypass (`/api/checkout/mock-confirm`) enabling instant tier upgrades and quota resets without Stripe API credentials.
+- **Cashfree Checkout & Subscriptions**: Hosted checkout for Indian and international payments, recurring mandates, and self-serve cancellation.
+- **Cryptographic Webhook Verification**: `/api/webhooks/cashfree` verifies Cashfree HMAC signatures and handles order/subscription lifecycle events.
+- **Dev-Mode Mock Simulator**: Zero-friction local development bypass (`/api/checkout/mock-confirm`) enabling instant tier upgrades and quota resets without Cashfree credentials.
 - **AI Quota Accounting**: Enforces limits on automated behavioral forensic reviews and assessment attempts per billing period.
 
 ---
@@ -197,7 +197,7 @@ BigO includes verified, interactive standalone architecture and workflow diagram
 | **Interview Flashcards Engine**| 3D CSS Card Flip + Leitner Spacing | Fluid interactive flashcard deck (`FlashcardDeck.tsx`) with 4-tier confidence intervals and mastery stats |
 | **Machine-Readable GEO** | `llms.txt` + Dynamic XML Sitemap | AI web discovery manifest and comprehensive search crawler directives (`robots.txt`) |
 | **Analytics & Privacy** | Google Analytics 4 + PostHog | Privacy-focused `AnalyticsProvider` gated behind explicit GDPR `CookieConsentBanner` |
-| **Payment Gateway & Promos**| Stripe + Dynamic Pricing Models | Dynamic MongoDB pricing plans, promotional discount codes, Checkout Sessions, Customer Portal, and Webhooks |
+| **Payment Gateway & Promos**| Cashfree + Dynamic Pricing Models | Dynamic INR/USD pricing, promotional discount codes, hosted checkout, recurring mandates, cancellation, and webhooks |
 | **Authentication** | Better Auth | MongoDB adapter with session tokens, RBAC (`admin` / `user`), and database-backed rate limiting |
 | **Database & ODM** | MongoDB Atlas + Mongoose 9 | Document database with discriminators for `Problem` and `Group` entities, pool size capped at 3 for M0 |
 | **Caching & CDN Headers** | Multi-Tier (Memory + Redis + CDN) | L1 memory cache + L2 Upstash Redis (`lib/cache.ts`) + `CDN-Cache-Control` / `Vercel-CDN-Cache-Control` edge headers |
@@ -256,7 +256,7 @@ BigO includes verified, interactive standalone architecture and workflow diagram
 │       ├── admin/                     # Admin assessments, billing, promos, pricing
 │       ├── auth/                      # BetterAuth endpoints & OTP verification
 │       ├── cheatsheets/               # Cheatsheet CRUD
-│       ├── checkout/                  # Stripe checkout sessions & mock confirms
+│       ├── checkout/                  # Cashfree orders/subscriptions & mock confirms
 │       ├── contests/                  # Contest list & alert subscriptions
 │       ├── cp/                        # CP handle link & profile stats sync
 │       ├── cron/                      # Background cron workers (contests, alerts)
@@ -274,7 +274,7 @@ BigO includes verified, interactive standalone architecture and workflow diagram
 │       ├── subscription/              # User subscription state & customer portal
 │       ├── topics/                    # Subject concept notes CRUD
 │       ├── upload/                    # Proctoring snapshot uploads
-│       ├── webhooks/stripe/           # Stripe subscription webhooks
+│       ├── webhooks/cashfree/         # Cashfree order/subscription webhooks
 │       └── workers/email/             # QStash background email worker
 ├── components/                        # UI Component Library
 │   ├── admin/                         # Admin tables, RevenueTrendChart, taxonomy forms
@@ -305,7 +305,7 @@ BigO includes verified, interactive standalone architecture and workflow diagram
 ├── lib/                               # Core Backend & Utility Libraries
 │   ├── api/                           # Typed frontend API clients
 │   ├── cp/                            # Testcase parser & platform aggregators
-│   ├── payments/                      # Stripe client, mock provider, pricingService
+│   ├── payments/                      # Cashfree client, mock provider, pricingService
 │   ├── proctor/                       # Dual-Engine Neural Proctoring Library
 │   ├── runner/                        # Isolated Code Execution Runner (harness, judge0)
 │   ├── queries/                       # TanStack Query v5 query factories
@@ -342,10 +342,12 @@ cp .env.example .env.local
 | `NEXT_PUBLIC_APP_URL` | Frontend origin URL exposed to browser | Yes | `http://localhost:3000` |
 | `RESEND_API_KEY` | Resend API key for transactional emails | Yes | `re_xxx` (or `re_dummy` in dev) |
 | `EMAIL_FROM` | Sender address verified on Resend domain | Yes | `BigO <no-reply@bigoprep.tech>` |
-| `STRIPE_SECRET_KEY` | Stripe secret API key | Optional (Dev) | `sk_test_...` |
-| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret | Optional (Dev) | `whsec_...` |
-| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`| Stripe publishable API key | Optional (Dev) | `pk_test_...` |
-| `PAYMENT_PROVIDER` | Active payment processor (`stripe` / `lemonsqueezy`) | Optional | `stripe` |
+| `CASHFREE_CLIENT_ID` | Cashfree client/app ID | Optional (Dev) | `your_client_id` |
+| `CASHFREE_CLIENT_SECRET` | Cashfree client secret | Optional (Dev) | `your_client_secret` |
+| `CASHFREE_ENVIRONMENT` | Cashfree API environment (`sandbox` / `production`) | Optional | `sandbox` |
+| `CASHFREE_API_VERSION` | Cashfree API version | Optional | `2026-01-01` |
+| `NEXT_PUBLIC_CASHFREE_ENVIRONMENT` | Browser checkout mode | Optional | `sandbox` |
+| `PAYMENT_PROVIDER` | Active payment processor (`cashfree` / `mock`) | Optional | `cashfree` |
 | `CODE_RUNNER_URL` | Sandboxed code execution endpoint (Piston) | Optional (Dev) | `http://localhost:2000/api/v2/execute` |
 | `JUDGE0_API_URL` | Production Judge0 fallback code execution endpoint | Optional | `https://judge0-ce.p.rapidapi.com` |
 | `JUDGE0_API_KEY` | Judge0 RapidAPI or authentication key | Optional | `xxx...` |
@@ -455,9 +457,10 @@ For in-depth architectural specifications and subsystem guides, refer to the [`d
 | 💳 **[Monetization](./docs/monetization.md)** | Commercialization strategy, dynamic pricing tiers (`pricing_plans`), promo codes engine (`promo_codes`), and admin MRR/ARR analytics. |
 | 🔒 **[Security](./docs/security.md)** | Authentication mechanisms, sandboxed code isolation, anti-cheat client protection, session cookies, RBAC, Markdown XSS containment, and CSP headers. |
 | 🛠️ **[Setup Guide](./docs/setup.md)** | Complete guide for local development, Docker code runner setup, MongoDB setup, Resend email configuration, and environment reference. |
-| 🚀 **[Deployment Guide](./docs/deployment.md)** | Step-by-step production deployment guide for Vercel, MongoDB Atlas, Cloudflare R2, GitHub Actions 15-minute contest crons, Stripe Webhooks, and post-deploy verification. |
+| 🚀 **[Deployment Guide](./docs/deployment.md)** | Step-by-step production deployment guide for Vercel, MongoDB Atlas, Cloudflare R2, GitHub Actions 15-minute contest crons, Cashfree Webhooks, and post-deploy verification. |
 | 🛡️ **[Admin Panel](./docs/admin.md)** | Administrative features, user management, invite token workflows, company assessment editor, billing analytics dashboard, feedback moderation, dynamic taxonomies, and audit logging. |
 | 📈 **[Scalability](./docs/scalability.md)** | Scalability architecture, Upstash Redis caching, connection pooling, and database optimization. |
+| 💳 **[Cashfree Migration Plan](./docs/cashfree-migration-plan.md)** | Current Cashfree checkout, subscription, webhook, currency, sandbox, and go-live integration plan. |
 | 💡 **[Novelty](./docs/novelity.md)** | Core novelty angles: failure forensics, high-fidelity OA simulation environment, reasoning capture, and post-OA replay debriefs. |
 | 📋 **[Production Audit](./docs/production-audit.md)** | **Production Launch Checklist & Audit**: 20-point launch checklist, trust-breaking ranking, 5-phase quality playbook, and verification commands. |
 

@@ -25,7 +25,7 @@ import { Input } from '@/components/ui/input';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { PricingCard } from '@/components/pricing/PricingCard';
 import { useSubscription } from '@/hooks/useSubscription';
-import { PLANS, type CheckoutPlanKey, type PlanPricingDetail } from '@/lib/payments/types';
+import { PLANS, type CheckoutPlanKey, type PaymentCurrency, type PlanPricingDetail } from '@/lib/payments/types';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -45,7 +45,8 @@ function PricingContent() {
   const canceled = searchParams.get('canceled');
 
   const [billingInterval, setBillingInterval] = useState<'monthly' | 'annual'>('annual');
-  const { plan: currentPlan, isPro, checkout, isCheckingOut, openPortal, isOpeningPortal } = useSubscription();
+  const [currency, setCurrency] = useState<PaymentCurrency>('INR');
+  const { plan: currentPlan, isPro, checkout, isCheckingOut, cancelSubscription, isCancelingSubscription } = useSubscription();
 
   // Dynamic pricing fetch
   const { data: pricingData } = useQuery<{ success: boolean; plans: Record<CheckoutPlanKey, PlanPricingDetail> }>({
@@ -80,6 +81,7 @@ function PricingContent() {
         body: JSON.stringify({
           code: promoInput.trim().toUpperCase(),
           plan: activeProPlan.id,
+          currency,
         }),
       });
 
@@ -90,7 +92,7 @@ function PricingContent() {
       }
 
       setAppliedPromo(data);
-      toast.success(`Promo code ${data.code} applied! Saved $${data.discountAmount}`);
+       toast.success(`Promo code ${data.code} applied! Saved ${currency === 'INR' ? '₹' : '$'}${data.discountAmount}`);
     } catch (err: any) {
       toast.error('Failed to validate promo code');
     } finally {
@@ -105,17 +107,18 @@ function PricingContent() {
   };
 
   const handleSelectPlan = (planKey: CheckoutPlanKey) => {
-    checkout(planKey, appliedPromo?.code);
+    checkout(planKey, currency, appliedPromo?.code);
   };
 
   // Compute promo discounts per plan
   const getPlanDiscountedPrice = (plan: PlanPricingDetail) => {
     if (!appliedPromo) return undefined;
+    const price = currency === 'INR' ? plan.priceInr : plan.priceUsd;
     if (appliedPromo.discountType === 'percentage') {
-      const discount = (plan.priceUsd * appliedPromo.discountValue) / 100;
-      return Math.max(0, Math.round((plan.priceUsd - discount) * 100) / 100);
+      const discount = (price * appliedPromo.discountValue) / 100;
+      return Math.max(0, Math.round((price - discount) * 100) / 100);
     }
-    return Math.max(0, Math.round((plan.priceUsd - appliedPromo.discountValue) * 100) / 100);
+    return Math.max(0, Math.round((price - appliedPromo.discountValue) * 100) / 100);
   };
 
   return (
@@ -132,6 +135,7 @@ function PricingContent() {
           <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-500 mb-2">
             <Check className="h-5 w-5 stroke-[3]" />
           </div>
+
           <h3 className="text-lg font-bold text-foreground">Welcome to BigO Pro! ⚡</h3>
           <p className="mt-1 text-sm text-muted-foreground">
             Your subscription is active. All premium company mock OAs, AI edge-case diagnostics, and full curricula are unlocked.
@@ -202,6 +206,22 @@ function PricingContent() {
                 Save 47%
               </span>
             </button>
+          </div>
+
+          <div className="inline-flex items-center gap-1 rounded-full border border-border/80 bg-surface-sunken/80 p-1">
+            {(['INR', 'USD'] as PaymentCurrency[]).map((option) => (
+              <button
+                key={option}
+                type="button"
+                onClick={() => { setCurrency(option); setAppliedPromo(null); }}
+                className={cn(
+                  'rounded-full px-4 py-1.5 text-xs font-semibold transition-colors',
+                  currency === option ? 'bg-card text-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                {option === 'INR' ? 'India · ₹' : 'International · $'}
+              </button>
+            ))}
           </div>
 
           {/* Promo Code Drawer */}
@@ -322,7 +342,8 @@ function PricingContent() {
           isPopular={true}
           isCurrentPlan={isPro && (currentPlan === 'pro_monthly' || currentPlan === 'pro_annual')}
           isLoading={isCheckingOut}
-          discountedPrice={getPlanDiscountedPrice(activeProPlan)}
+           discountedPrice={getPlanDiscountedPrice(activeProPlan)}
+           currency={currency}
           promoCodeLabel={appliedPromo?.code}
           onSelect={handleSelectPlan}
         />
@@ -333,7 +354,8 @@ function PricingContent() {
           isPopular={false}
           isCurrentPlan={currentPlan === 'oa_pass'}
           isLoading={isCheckingOut}
-          discountedPrice={getPlanDiscountedPrice(currentPlans.oa_pass)}
+           discountedPrice={getPlanDiscountedPrice(currentPlans.oa_pass)}
+           currency={currency}
           promoCodeLabel={appliedPromo?.code}
           onSelect={handleSelectPlan}
         />
@@ -344,11 +366,15 @@ function PricingContent() {
         <div className="mt-8 text-center">
           <button
             type="button"
-            onClick={() => openPortal()}
-            disabled={isOpeningPortal}
+             onClick={() => {
+               if (window.confirm('Cancel your recurring Cashfree subscription? Access remains active until the current period ends.')) {
+                 cancelSubscription();
+               }
+             }}
+             disabled={isCancelingSubscription}
             className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4 cursor-pointer"
           >
-            Manage subscription, update payment method, or cancel anytime
+             Cancel recurring subscription
           </button>
         </div>
       )}
@@ -359,7 +385,7 @@ function PricingContent() {
           <div className="size-11 rounded-2xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 grid place-items-center shadow-2xs">
             <ShieldCheck className="size-5" />
           </div>
-          <h4 className="text-sm font-display font-bold text-foreground">Secure Stripe Checkout</h4>
+           <h4 className="text-sm font-display font-bold text-foreground">Secure Cashfree Checkout</h4>
           <p className="text-xs text-muted-foreground max-w-xs leading-relaxed">
             Bank-level 256-bit encryption. Card credentials never touch our servers.
           </p>
@@ -514,7 +540,7 @@ function PricingContent() {
               What payment methods and currencies are supported?
             </AccordionTrigger>
             <AccordionContent className="text-xs sm:text-sm text-muted-foreground leading-relaxed pb-4">
-              We process payments via Stripe, supporting credit/debit cards (Visa, Mastercard, Amex), Apple Pay, Google Pay, and localized bank rails in 135+ currencies with zero international transaction markup.
+               Cashfree supports Indian payment methods and international cards through a hosted, PCI-compliant checkout.
             </AccordionContent>
           </AccordionItem>
 
@@ -546,4 +572,3 @@ export default function PricingPage() {
     </Suspense>
   );
 }
-

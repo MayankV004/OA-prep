@@ -3,7 +3,7 @@ import {
   PLANS,
   type CreateCheckoutParams,
   type CheckoutResult,
-  type CustomerPortalParams,
+  type CancelSubscriptionParams,
   type PaymentProviderAdapter,
 } from './types';
 
@@ -23,22 +23,18 @@ export class MockPaymentAdapter implements PaymentProviderAdapter {
     if (params.promoCode) {
       mockConfirmUrl += `&promoCode=${encodeURIComponent(params.promoCode)}`;
     }
-    if (params.discountedPriceUsd !== undefined) {
-      mockConfirmUrl += `&discountedPriceUsd=${params.discountedPriceUsd}`;
-    }
+    mockConfirmUrl += `&currency=${params.currency}&amount=${params.amount}`;
 
     return {
       url: mockConfirmUrl,
       provider: 'mock',
       sessionId: `mock_sess_${Date.now()}`,
+      sessionType: 'order',
     };
   }
 
-  async createPortalSession(params: CustomerPortalParams): Promise<{ url: string }> {
-    // Redirect to subscription or pricing page in mock mode
-    return {
-      url: `${params.returnUrl}?status=portal_mock`,
-    };
+  async cancelSubscription(_params: CancelSubscriptionParams): Promise<void> {
+    return undefined;
   }
 }
 

@@ -1,9 +1,11 @@
 export type CheckoutPlanKey = 'pro_monthly' | 'pro_annual' | 'oa_pass';
+export type PaymentCurrency = 'INR' | 'USD';
 
 export interface PlanPricingDetail {
   id: CheckoutPlanKey;
   name: string;
   badge?: string;
+  priceInr: number;
   priceUsd: number;
   period: 'month' | 'year' | '75_days';
   mode: 'subscription' | 'payment';
@@ -16,6 +18,7 @@ export const PLANS: Record<CheckoutPlanKey, PlanPricingDetail> = {
   pro_monthly: {
     id: 'pro_monthly',
     name: 'BigO Pro (Monthly)',
+    priceInr: 1199,
     priceUsd: 14,
     period: 'month',
     mode: 'subscription',
@@ -33,6 +36,7 @@ export const PLANS: Record<CheckoutPlanKey, PlanPricingDetail> = {
     id: 'pro_annual',
     name: 'BigO Pro (Annual)',
     badge: 'Save 47% — Best Value',
+    priceInr: 7499,
     priceUsd: 89,
     period: 'year',
     mode: 'subscription',
@@ -50,6 +54,7 @@ export const PLANS: Record<CheckoutPlanKey, PlanPricingDetail> = {
     id: 'oa_pass',
     name: 'OA Season Pass',
     badge: 'One-Time Purchase',
+    priceInr: 3299,
     priceUsd: 39,
     period: '75_days',
     mode: 'payment',
@@ -67,25 +72,28 @@ export const PLANS: Record<CheckoutPlanKey, PlanPricingDetail> = {
 export interface CreateCheckoutParams {
   userId: string;
   userEmail: string;
+  userPhone?: string;
   plan: CheckoutPlanKey;
+  currency: PaymentCurrency;
+  amount: number;
   successUrl: string;
   cancelUrl: string;
   promoCode?: string;
-  discountedPriceUsd?: number;
 }
 
 export interface CheckoutResult {
   url: string;
-  provider: 'stripe' | 'mock';
+  provider: 'cashfree' | 'mock';
   sessionId?: string;
+  sessionType?: 'order' | 'subscription';
+  orderId?: string;
 }
 
-export interface CustomerPortalParams {
-  customerId: string;
-  returnUrl: string;
+export interface CancelSubscriptionParams {
+  subscriptionId: string;
 }
 
 export interface PaymentProviderAdapter {
   createCheckoutSession(params: CreateCheckoutParams): Promise<CheckoutResult>;
-  createPortalSession(params: CustomerPortalParams): Promise<{ url: string }>;
+  cancelSubscription(params: CancelSubscriptionParams): Promise<void>;
 }

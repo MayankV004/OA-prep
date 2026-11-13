@@ -57,7 +57,7 @@ Set in `next.config.mjs`:
 ## 6. Secrets Management
 
 - Secrets are configured via environment variables (`.env.local` locally, Vercel Environment Variables in production).
-- Credentials (`MONGODB_URI`, `BETTER_AUTH_SECRET`, `RESEND_API_KEY`, `STRIPE_SECRET_KEY`, `R2_*`, `GROQ_API_KEY`, `JUDGE0_*`) are kept out of source control (`.gitignore`).
+- Credentials (`MONGODB_URI`, `BETTER_AUTH_SECRET`, `RESEND_API_KEY`, `CASHFREE_CLIENT_SECRET`, `R2_*`, `GROQ_API_KEY`, `JUDGE0_*`) are kept out of source control (`.gitignore`).
 - `.env.example` provides template placeholders.
 
 ## 7. Online Assessment & Anti-Cheat Integrity Controls
@@ -72,9 +72,9 @@ The proctoring system enforces exam integrity while preserving candidate privacy
 
 ## 8. Payment Security & Webhook Verification
 
-- **Stripe Cryptographic Signature Validation**: All incoming requests to `/api/webhooks/stripe` must provide a valid `stripe-signature` header verified against `STRIPE_WEBHOOK_SECRET`.
+- **Cashfree Cryptographic Signature Validation**: All incoming requests to `/api/webhooks/cashfree` must provide valid `x-webhook-signature` and `x-webhook-timestamp` headers. The signature is verified against the exact raw body and Cashfree client secret.
 - **Server-Side Entitlement Authority**: Client applications cannot declare or upgrade their own tiers. All subscription state, credits, and expiry timestamps are written strictly by server-side webhook handlers.
-- **PCI-DSS Compliance**: No raw credit card details or payment credentials touch BigO servers. All checkout and payment method management is delegated to Stripe Checkout and Stripe Customer Portal.
+- **PCI-DSS Compliance**: No raw credit card details or payment credentials touch BigO servers. Checkout is delegated to Cashfree hosted checkout; recurring mandate cancellation is performed through Cashfree’s server API.
 
 ## 9. Sandboxed Code Execution Isolation & Rate Limiting
 
@@ -113,4 +113,3 @@ The proctoring system enforces exam integrity while preserving candidate privacy
 
 - **Robots.txt Boundary Protection**: `/robots.txt` explicitly disallows web bots and AI crawlers (including `GPTBot`, `ClaudeBot`, `PerplexityBot`, and `Google-Extended`) from indexing administrative interfaces (`/admin/*`), private API routes (`/api/*`), authentication flows (`/sign-in`, `/sign-up`, `/invite/*`), and live proctored exams (`/oa/*/test`).
 - **Controlled Machine-Readable Indexing**: `/llms.txt` and `/llms-full.txt` expose public educational curricula, pattern taxonomies, and practice topics in clean Markdown for Generative Engine Optimization (GEO), while omitting all private candidate records, internal secrets, and administrative schemas.
-

@@ -38,14 +38,14 @@ const envSchema = z.object({
   GOOGLE_CLIENT_ID: z.string().optional().default(''),
   GOOGLE_CLIENT_SECRET: z.string().optional().default(''),
 
-  // Payment Configuration (Stripe)
-  STRIPE_SECRET_KEY: z.string().optional().default(''),
-  STRIPE_WEBHOOK_SECRET: z.string().optional().default(''),
-  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().optional().default(''),
-  STRIPE_PRO_MONTHLY_PRICE_ID: z.string().optional().default(''),
-  STRIPE_PRO_ANNUAL_PRICE_ID: z.string().optional().default(''),
-  STRIPE_OA_PASS_PRICE_ID: z.string().optional().default(''),
-  PAYMENT_PROVIDER: z.enum(['stripe', 'mock']).default('stripe'),
+  // Payment Configuration (Cashfree)
+  CASHFREE_CLIENT_ID: z.string().optional().default(''),
+  CASHFREE_CLIENT_SECRET: z.string().optional().default(''),
+  CASHFREE_ENVIRONMENT: z.enum(['sandbox', 'production']).default('sandbox'),
+  CASHFREE_API_VERSION: z.string().default('2026-01-01'),
+  CASHFREE_DEFAULT_CUSTOMER_PHONE: z.string().optional().default(''),
+  NEXT_PUBLIC_CASHFREE_ENVIRONMENT: z.enum(['sandbox', 'production']).default('sandbox'),
+  PAYMENT_PROVIDER: z.enum(['cashfree', 'mock']).default('cashfree'),
 
   // Code Execution Engine (Docker Runner or Judge0)
   CODE_RUNNER_URL: z.string().optional().default('http://localhost:2000'),

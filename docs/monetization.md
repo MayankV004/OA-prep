@@ -177,7 +177,7 @@ const subscriptionSchema = new Schema(
       default: 'active',
       required: true,
     },
-    provider: { type: String, enum: ['stripe', 'razorpay', 'lemonsqueezy', 'manual'], required: true },
+    provider: { type: String, enum: ['cashfree', 'mock', 'manual'], required: true },
     customerId: { type: String, required: true },
     subscriptionId: { type: String }, // Gateway subscription reference ID
     orderId: { type: String },        // For one-time payments (OA Pass)
@@ -249,7 +249,7 @@ sequenceDiagram
     actor User
     participant Frontend as Next.js App
     participant API as /api/checkout
-    participant Gateway as Stripe / Razorpay
+    participant Gateway as Cashfree
     participant Webhook as /api/webhooks/payment
     participant DB as MongoDB (Subscription)
     participant Redis as Upstash Cache
@@ -270,7 +270,7 @@ sequenceDiagram
 ```
 
 #### Multi-Gateway Strategy:
-- **International Users (USD / EUR / GBP)**: Stripe or Lemon Squeezy (acts as Merchant of Record handling sales tax / VAT compliance).
+- **International Users (USD and other enabled currencies)**: Cashfree International Payments; merchant account approval and tax/settlement configuration are required.
 - **Indian Market (INR)**: Razorpay or Cashfree (critical for UPI, domestic debit cards, and net banking support where global credit card checkout conversion drops by >60%).
 
 ---
@@ -314,7 +314,7 @@ gantt
     dateFormat  YYYY-MM-DD
     section Phase 1: Core Billing [COMPLETED]
     Subscription Schema & DB Design       :done, p1_1, 2026-09-01, 4d
-    Stripe Checkout & Customer Portal     :done, p1_2, after p1_1, 4d
+    Cashfree Checkout & Subscription APIs :done, p1_2, after p1_1, 4d
     Webhook Listeners & Signature Verify  :done, p1_3, after p1_2, 3d
     Pricing Page & Paywall Modal UI       :done, p1_4, after p1_2, 4d
     section Phase 2: OA Simulator [COMPLETED]
@@ -333,7 +333,7 @@ gantt
 
 ### Phase 1: Billing Foundation & Entitlement Layer (Completed)
 - Integrated `Subscription` collection with user-level unique indexing.
-- Implemented Stripe Checkout Sessions and cryptographically verified webhook handlers (`/api/webhooks/stripe`) with customer portal redirection.
+- Implemented Cashfree hosted checkout, subscription mandates, and cryptographically verified webhook handlers (`/api/webhooks/cashfree`) with cancellation API support.
 - Built clean responsive `/pricing` page with dynamic pricing plan fetching.
 - Built entitlement access checks (`withAuth` and subscription plan guards).
 - Added zero-friction mock upgrade simulator (`/api/checkout/mock-confirm`) for local offline testing.
@@ -365,7 +365,7 @@ gantt
 |---|---|---|
 | **LLM Forensic Activity Reports** | ~$0.003 – $0.008 per submission (Groq Llama-3.3-70B) | High-speed Groq inference API; deterministic fallback evaluator when offline. Strict credit allowances per tier. |
 | **Code Execution (Piston/Judge0)** | Self-hosted Docker container ($5–$15/mo VPS) or Pay-as-you-go Judge0 | Sliding-window rate limiting (12 runs/min per user); smart regex/heuristic fallback for standard syntax checks. |
-| **Payment Gateway Fees** | 2.9% + $0.30 (Stripe) | Passed as standard cost of doing business. Annual plans and 75-day passes maximize lifetime margin. |
+| **Payment Gateway Fees** | Cashfree merchant-account pricing | Passed as standard cost of doing business. Annual plans and 75-day passes maximize lifetime margin. |
 | **Object Evidence Storage (R2)** | $0.015/GB/month + zero egress fees (Cloudflare R2) | WebP compression ($<25\text{ KB}$ per infraction snapshot); 60-day auto-purge TTL. |
 | **Gross Margin Target** | **88% – 94%** | Highly optimized serverless and edge compute footprint. |
 

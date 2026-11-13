@@ -1,5 +1,24 @@
 /** @type {import('next').NextConfig} */
+const allowedDevOrigins = [
+  'localhost:3000',
+  '*.ngrok-free.app',
+  '*.ngrok-free.dev',
+  '*.ngrok.app',
+  '*.ngrok.io',
+  '*.trycloudflare.com',
+];
+
+if (process.env.NEXT_PUBLIC_APP_URL) {
+  try {
+    const host = new URL(process.env.NEXT_PUBLIC_APP_URL).host;
+    if (host && !allowedDevOrigins.includes(host)) {
+      allowedDevOrigins.push(host);
+    }
+  } catch {}
+}
+
 const nextConfig = {
+  allowedDevOrigins,
   images: {
     dangerouslyAllowSVG: false,
     remotePatterns: [

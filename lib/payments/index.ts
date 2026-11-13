@@ -1,16 +1,16 @@
 import { env } from '@/lib/config';
-import { stripeAdapter } from './stripe';
+import { cashfreeAdapter } from './cashfree';
 import { mockPaymentAdapter } from './mock';
 import type { PaymentProviderAdapter } from './types';
 
 export * from './types';
 export * from './pricingService';
-export { stripeAdapter } from './stripe';
+export { cashfreeAdapter } from './cashfree';
 export { mockPaymentAdapter } from './mock';
 
 export function getPaymentAdapter(): PaymentProviderAdapter {
-  if (env.PAYMENT_PROVIDER === 'mock' || !stripeAdapter.isConfigured) {
+  if (env.PAYMENT_PROVIDER === 'mock' || !cashfreeAdapter.isConfigured) {
     return mockPaymentAdapter;
   }
-  return stripeAdapter;
+  return cashfreeAdapter;
 }

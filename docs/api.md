@@ -205,18 +205,18 @@ REST API via Next.js Route Handlers under `/api/*`. Route handlers enforce authe
 
 ---
 
-## Monetization, Billing & Subscriptions (Stripe)
+## Monetization, Billing & Subscriptions (Cashfree)
 
 | Method | Path | Auth | Body / Query | Description |
 | --- | --- | --- | --- | --- |
 | GET | `/api/pricing` | Public | — | Fetch active dynamic pricing plans (monthly, annual, OA pass) from MongoDB with default fallback |
 | POST | `/api/promo/validate` | Public/Auth | `{ code, plan }` | Validate promo code, check expiry/limits, and calculate discount & final price (15 req/min rate limit) |
 | GET | `/api/subscription` | Auth | — | Fetch user subscription status, plan tier (`free`, `pro_monthly`, `pro_annual`, `oa_pass`), and remaining AI credits |
-| POST | `/api/checkout` | Auth | `{ plan: "pro_monthly" \| "pro_annual" \| "oa_pass" }` | Generate Stripe Checkout Session URL or trigger instant mock confirmation in dev |
-| GET | `/api/checkout/verify-session` | Auth | `?session_id=...` | Verify completed Stripe checkout and sync entitlements immediately |
+| POST | `/api/checkout` | Auth | `{ plan, currency: "INR" \| "USD", promoCode? }` | Create a Cashfree hosted order or recurring subscription session; mock confirmation is used in dev without credentials |
+| POST | `/api/checkout/verify-session` | Auth | `{ orderId? , subscriptionId?, plan? }` | Verify Cashfree status server-side and sync entitlements immediately |
 | POST | `/api/checkout/mock-confirm` | Auth | `{ plan }` | Development-only instant upgrade bypass for testing without Stripe credentials |
-| POST | `/api/subscription/portal` | Auth | — | Create Stripe Billing Customer Portal session for managing payment methods |
-| POST | `/api/webhooks/stripe` | Public | Stripe Webhook Payload | Listens for `checkout.session.completed`, `customer.subscription.updated`, and `customer.subscription.deleted` |
+| POST | `/api/subscription/cancel` | Auth | — | Cancel the authenticated user’s Cashfree recurring subscription |
+| POST | `/api/webhooks/cashfree` | Public | Cashfree Webhook Payload | Verifies `x-webhook-signature` and handles order/subscription lifecycle events |
 
 ---
 
@@ -249,5 +249,4 @@ REST API via Next.js Route Handlers under `/api/*`. Route handlers enforce authe
 | POST | `/api/feedback` | Auth | `{ type: "bug" \| "feedback", title, description, category?, severity?, pageUrl? }` | Submit user feedback, bug reports, or feature requests with severity and URL context |
 | GET | `/api/metrics` | Auth | — | System telemetry, database metrics, and OpenTelemetry diagnostic counters |
 | GET | `/api/export` | Auth | `?format=json\|csv` | Export complete user revision notes, problem bookmarks, and progress data |
-
 

@@ -17,7 +17,7 @@
 | Code Editor | Monaco Editor (`@monaco-editor/react`) with syntax highlighting & language drivers |
 | Reader Mode | `ReaderLayout` component for immersive, responsive content consumption |
 | Evidence Storage | Cloudflare R2 (S3-compatible, native AWS SigV4 signed uploads via Node crypto) |
-| Payment & Billing | Stripe (Checkout Sessions, Customer Portal, Webhooks, mock fallback) + Dynamic Pricing Plans & Promo Codes (`models/pricingPlan.ts`, `models/promoCode.ts`) |
+| Payment & Billing | Cashfree hosted orders/subscriptions, HMAC webhooks, cancellation, mock fallback + Dynamic Pricing Plans & Promo Codes (`models/pricingPlan.ts`, `models/promoCode.ts`) |
 | Behavioral Forensic | Groq (Llama-3.3-70B) / Hugging Face / Deterministic Synthesizer fallback |
 | AI Revision Notes | Multi-Model Failover: NVIDIA NIM (Nemotron-3-Ultra-550B, Nemotron-4-340B) + Groq (Llama-3.3-70B) + Hugging Face with multi-language code tabs (C++, Java, Python) |
 | Interview Flashcards | 3D Interactive Flip Deck (`FlashcardDeck.tsx`) + 4-tier Leitner Spaced Repetition + MongoDB `UserQuestionProgress` |
@@ -221,7 +221,7 @@ Located under `models/userCpProfile.ts`, `models/contest.ts`, `lib/contests/aggr
 Located under `models/pricingPlan.ts`, `models/promoCode.ts`, `models/subscription.ts`, `lib/payments/`, and `app/(admin)/admin/billing/`:
 - **Dynamic Pricing Plans (`PricingPlan`)**: Allows administrators to adjust plan pricing, feature bullet points, badges, and AI credits dynamically in MongoDB without code redeployments via `getDynamicPlans()`.
 - **Promo Code Engine (`PromoCode`)**: Supports percentage or fixed discounts, expiration dates, plan-specific applicability, and maximum redemption caps via `POST /api/promo/validate` (rate-limited to 15 req/min).
-- **Stripe Webhook Processing**: Cryptographically verified webhooks (`/api/webhooks/stripe`) handle `checkout.session.completed`, `customer.subscription.updated`, and `customer.subscription.deleted`.
+- **Cashfree Webhook Processing**: Raw-body HMAC-verified webhooks (`/api/webhooks/cashfree`) handle successful orders, subscription authorization/status changes, recurring successes, failures, and cancellations with durable deduplication.
 - **Admin Revenue Dashboard (`/admin/billing`)**:
   - Aggregated financial KPIs: Monthly Recurring Revenue (MRR), Annual Recurring Revenue (ARR), and active subscriber counts broken down by plan (`pro_monthly`, `pro_annual`, `oa_pass`).
   - 6-month historical revenue trend visualization (`components/admin/RevenueTrendChart.tsx`).
@@ -320,7 +320,7 @@ BigO is dedicated exclusively to individual student preparation for technical in
 │       ├── admin/                     # Admin assessments, billing, promos, institutions, proctoring, runner
 │       ├── auth/                      # BetterAuth endpoints & OTP verification
 │       ├── cheatsheets/               # Cheatsheet CRUD
-│       ├── checkout/                  # Stripe checkout sessions & mock confirms
+│       ├── checkout/                  # Cashfree orders/subscriptions & mock confirms
 │       ├── contests/                  # Contest list & alert subscriptions
 │       ├── cp/                        # CP handle link & profile stats sync
 │       ├── cron/                      # Background cron workers (contests, alerts)
@@ -339,7 +339,7 @@ BigO is dedicated exclusively to individual student preparation for technical in
 │       ├── subscription/              # User subscription state & customer portal
 │       ├── topics/                    # Subject concept notes CRUD
 │       ├── upload/                    # Proctoring snapshot uploads
-│       ├── webhooks/stripe/           # Stripe subscription webhooks
+│       ├── webhooks/cashfree/         # Cashfree order/subscription webhooks
 │       └── workers/email/             # QStash background email worker
 ├── components/                        # UI Component Library
 │   ├── admin/                         # Admin tables, RevenueTrendChart, taxonomy forms
@@ -370,7 +370,7 @@ BigO is dedicated exclusively to individual student preparation for technical in
 ├── lib/                               # Core Backend & Utility Libraries
 │   ├── api/                           # Typed frontend API clients
 │   ├── cp/                            # Testcase parser & platform aggregators
-│   ├── payments/                      # Stripe client, mock provider, pricingService
+│   ├── payments/                      # Cashfree client, mock provider, pricingService
 │   ├── proctor/                       # Dual-Engine Neural Proctoring Library
 │   │   ├── audio/                     # Acoustic & RMS volume analyzer
 │   │   ├── vision/                    # BlazeFace, COCO-SSD, optical fallback
@@ -417,4 +417,3 @@ BigO is dedicated exclusively to individual student preparation for technical in
 - **Worker Verification**: `app/api/workers/email/route.ts` verifies `upstash-signature` headers.
 - **Resend SDK**: Renders React Email templates (`Invite.tsx`, `WelcomeConfirmation.tsx`, etc.) to HTML.
 - **Contest Alert Schedules**: 15-minute GitHub Actions workflow triggers `/api/cron/contest-alerts` to dispatch timely contest notifications.
-

@@ -8,6 +8,7 @@
 - **MongoDB**: MongoDB Atlas cluster or local MongoDB instance (`mongodb://localhost:27017`)
 - **Resend Account**: Account for email dispatch (optional for offline dev)
 - **Upstash Account**: Account for Redis caching and QStash job queue (optional for dev — app falls back to in-memory/after() processing)
+- **ngrok**: Required only for local Cashfree webhook/return-url testing
 - **Git**
 
 ## 2. Setup Procedure
@@ -49,7 +50,20 @@
    ```bash
    npm run dev
    ```
-   Navigate to [http://localhost:3000](http://localhost:3000).
+    Navigate to [http://localhost:3000](http://localhost:3000).
+
+7. **Run with an ngrok Cashfree webhook tunnel:**
+   Install ngrok, configure its token once, then start the app and tunnel together:
+   ```bash
+   ngrok config add-authtoken <your-ngrok-token>
+   npm run dev:tunnel
+   ```
+   The script prints the HTTPS URL and the exact Cashfree webhook URL. Register that URL in the Cashfree dashboard under both Payment Gateway and Subscription webhooks. The script also injects the tunnel URL into `NEXT_PUBLIC_APP_URL` and `BETTER_AUTH_URL` for the current process, so Cashfree return and notification URLs point to your local app.
+
+   To use a different local port:
+   ```bash
+   PORT=3001 npm run dev:tunnel
+   ```
 
 ## 3. Environment Variables
 
@@ -76,13 +90,14 @@
 | `QSTASH_CURRENT_SIGNING_KEY` | Upstash QStash Signature Key | Optional (Dev) | `sig_xxx` |
 | `QSTASH_NEXT_SIGNING_KEY` | Upstash QStash Next Signature Key | Optional (Dev) | `sig_yyy` |
 | `CRON_SECRET` | Bearer token securing cron endpoints | No (Dev) | `cron_secret_key` |
-| `STRIPE_SECRET_KEY` | Stripe API Secret Key | No (Dev) | `sk_test_xxx` |
-| `STRIPE_WEBHOOK_SECRET` | Stripe Webhook Signing Secret | No (Dev) | `whsec_xxx` |
-| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe Publishable Key | No (Dev) | `pk_test_xxx` |
-| `STRIPE_PRO_MONTHLY_PRICE_ID` | Stripe Price ID for Monthly Pro | No | `price_xxx` |
-| `STRIPE_PRO_ANNUAL_PRICE_ID` | Stripe Price ID for Annual Pro | No | `price_yyy` |
-| `STRIPE_OA_PASS_PRICE_ID` | Stripe Price ID for OA Pass | No | `price_zzz` |
-| `PAYMENT_PROVIDER` | Payment gateway mode (`stripe` or `mock`) | No | `stripe` (default in prod) |
+| `CASHFREE_CLIENT_ID` | Cashfree API client/app ID | No (Dev) | `your_client_id` |
+| `CASHFREE_CLIENT_SECRET` | Cashfree API client secret | No (Dev) | `your_client_secret` |
+| `CASHFREE_ENVIRONMENT` | Cashfree environment (`sandbox` or `production`) | No | `sandbox` |
+| `CASHFREE_API_VERSION` | Cashfree API version | No | `2026-01-01` |
+| `NEXT_PUBLIC_CASHFREE_ENVIRONMENT` | Browser checkout mode | No | `sandbox` |
+| `CASHFREE_DEFAULT_CUSTOMER_PHONE` | Optional fallback 10-digit checkout phone | No | `9876543210` |
+| `PAYMENT_PROVIDER` | Payment gateway mode (`cashfree` or `mock`) | No | `cashfree` |
+| `PORT` | Local Next.js port used by `dev:tunnel` | No | `3000` |
 | `R2_ACCOUNT_ID` | Cloudflare R2 Account ID | No (Dev) | `cf_account_id` |
 | `R2_ACCESS_KEY_ID` | Cloudflare R2 Access Key ID | No (Dev) | `r2_access_key` |
 | `R2_SECRET_ACCESS_KEY` | Cloudflare R2 Secret Access Key | No (Dev) | `r2_secret_key` |

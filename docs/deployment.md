@@ -1,6 +1,6 @@
 # Production Deployment Guide
 
-This document covers deploying BigO to Vercel with MongoDB Atlas, Upstash Redis, Upstash QStash, Resend, Cloudflare R2, Stripe, GitHub Actions Crons, and containerized Code Runners.
+This document covers deploying BigO to Vercel with MongoDB Atlas, Upstash Redis, Upstash QStash, Resend, Cloudflare R2, Cashfree, GitHub Actions Crons, and containerized Code Runners.
 
 ## 1. Production Setup
 
@@ -23,13 +23,13 @@ This document covers deploying BigO to Vercel with MongoDB Atlas, Upstash Redis,
 2. Generate an S3-compatible API Token with Object Read & Write permissions.
 3. Configure `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, and `R2_PUBLIC_URL`.
 
-### Stripe (Payments & Webhooks)
-1. Retrieve live API Keys from the Stripe Dashboard (`STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`).
-2. Configure webhook endpoint targeting `https://<domain>/api/webhooks/stripe` listening for:
+### Cashfree (Payments & Webhooks)
+1. Retrieve live client ID and client secret from the Cashfree Merchant Dashboard (`CASHFREE_CLIENT_ID`, `CASHFREE_CLIENT_SECRET`).
+2. Configure both PG and Subscription webhook groups targeting `https://<domain>/api/webhooks/cashfree` listening for successful/failed payments, subscription authorization, status changes, and cancellation events:
    - `checkout.session.completed`
    - `customer.subscription.updated`
    - `customer.subscription.deleted`
-3. Copy signing secret into `STRIPE_WEBHOOK_SECRET`.
+3. Use the Cashfree client secret for raw-body HMAC verification and configure `CASHFREE_ENVIRONMENT=production`, `CASHFREE_API_VERSION=2026-01-01`, and `NEXT_PUBLIC_CASHFREE_ENVIRONMENT=production`.
 
 ### Code Execution Runner (Piston / Judge0)
 - **Option A (Self-Hosted Docker Piston)**: Deploy `docker-compose.runner.yml` to an unprivileged Linux VPS or VM (Fly.io, Railway, EC2), exposing port 2000, and set `CODE_RUNNER_URL="http://<runner-ip>:2000"`.
@@ -51,7 +51,7 @@ This document covers deploying BigO to Vercel with MongoDB Atlas, Upstash Redis,
    - `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`
    - `QSTASH_TOKEN`, `QSTASH_CURRENT_SIGNING_KEY`, `QSTASH_NEXT_SIGNING_KEY`
    - `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_PUBLIC_URL`
-   - `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
+   - `CASHFREE_CLIENT_ID`, `CASHFREE_CLIENT_SECRET`, `CASHFREE_ENVIRONMENT`, `CASHFREE_API_VERSION`, `NEXT_PUBLIC_CASHFREE_ENVIRONMENT`
    - `CODE_RUNNER_URL` (or `JUDGE0_RAPIDAPI_KEY`)
    - `ADMIN_BOOTSTRAP_EMAIL`, `ADMIN_BOOTSTRAP_PASSWORD` (Initial deploy only)
 3. Deploy `main` branch.

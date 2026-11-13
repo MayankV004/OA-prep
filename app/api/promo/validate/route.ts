@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { dbConnect } from '@/lib/db';
 import { PromoCode } from '@/models/promoCode';
-import { getDynamicPlans, type CheckoutPlanKey } from '@/lib/payments';
+import { getDynamicPlans, type CheckoutPlanKey, type PaymentCurrency } from '@/lib/payments';
 import { z } from 'zod';
 
 import { checkRateLimit } from '@/lib/rate-limit';
@@ -9,6 +9,7 @@ import { checkRateLimit } from '@/lib/rate-limit';
 const validatePromoSchema = z.object({
   code: z.string().min(1).max(50),
   plan: z.enum(['pro_monthly', 'pro_annual', 'oa_pass']),
+  currency: z.enum(['INR', 'USD']).default('INR'),
 });
 
 export async function POST(req: NextRequest) {
@@ -24,7 +25,7 @@ export async function POST(req: NextRequest) {
 
     await dbConnect();
     const body = await req.json();
-    const { code, plan } = validatePromoSchema.parse(body);
+    const { code, plan, currency } = validatePromoSchema.parse(body);
 
     const cleanCode = code.trim().toUpperCase();
     const promo = await PromoCode.findOne({ code: cleanCode, isActive: true });
@@ -72,7 +73,7 @@ export async function POST(req: NextRequest) {
 
     const plans = await getDynamicPlans();
     const planConfig = plans[plan as CheckoutPlanKey];
-    const basePrice = planConfig?.priceUsd ?? 0;
+    const basePrice = currency === 'INR' ? (planConfig?.priceInr ?? 0) : (planConfig?.priceUsd ?? 0);
 
     let discountAmount = 0;
     if (promo.discountType === 'percentage') {
@@ -89,6 +90,7 @@ export async function POST(req: NextRequest) {
       code: promo.code,
       discountType: promo.discountType,
       discountValue: promo.discountValue,
+      currency: currency as PaymentCurrency,
       originalPrice: basePrice,
       discountAmount,
       finalPrice,

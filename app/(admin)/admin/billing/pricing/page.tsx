@@ -29,6 +29,7 @@ interface PricingPlanData {
   planKey: CheckoutPlanKey;
   name: string;
   badge?: string;
+  priceInr: number;
   priceUsd: number;
   period: 'month' | 'year' | '75_days';
   mode: 'subscription' | 'payment';
@@ -45,6 +46,7 @@ export default function AdminPricingPage() {
       planKey: 'pro_monthly',
       name: 'BigO Pro (Monthly)',
       badge: '',
+      priceInr: 1199,
       priceUsd: 14,
       period: 'month',
       mode: 'subscription',
@@ -63,6 +65,7 @@ export default function AdminPricingPage() {
       planKey: 'pro_annual',
       name: 'BigO Pro (Annual)',
       badge: 'Save 47% — Best Value',
+      priceInr: 7499,
       priceUsd: 89,
       period: 'year',
       mode: 'subscription',
@@ -81,6 +84,7 @@ export default function AdminPricingPage() {
       planKey: 'oa_pass',
       name: 'OA Season Pass',
       badge: 'One-Time Purchase',
+      priceInr: 3299,
       priceUsd: 39,
       period: '75_days',
       mode: 'payment',
@@ -114,6 +118,7 @@ export default function AdminPricingPage() {
             ...mapped[p.planKey],
             name: p.name,
             badge: p.badge || '',
+            priceInr: p.priceInr ?? mapped[p.planKey].priceInr,
             priceUsd: p.priceUsd,
             period: p.period,
             mode: p.mode,
@@ -236,6 +241,25 @@ export default function AdminPricingPage() {
 
                 <CardContent className="space-y-4 pt-4">
                   {/* Price Setting */}
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold flex items-center gap-1">
+                      <span className="text-emerald-500 font-mono">₹</span>
+                      Base Price (INR) *
+                    </Label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-2.5 text-sm text-muted-foreground font-mono">₹</span>
+                      <Input
+                        type="number"
+                        min={0}
+                        step={1}
+                        className="pl-7 font-mono font-bold text-base"
+                        value={plan.priceInr}
+                        onChange={(e) => handleUpdateField(key, 'priceInr', Number(e.target.value))}
+                        required
+                      />
+                    </div>
+                  </div>
+
                   <div className="space-y-1.5">
                     <Label className="text-xs font-semibold flex items-center gap-1">
                       <DollarSign className="size-3 text-emerald-500" />

@@ -22,4 +22,4 @@ export * from './assessmentSubmission';
 export * from './promoCode';
 export * from './pricingPlan';
 export * from './userQuestionProgress';
-
+export * from './processedWebhookEvent';

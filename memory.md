@@ -4,7 +4,7 @@
 
 ## Memory contract
 
-- **Last reviewed:** 2026-10-26
+- **Last reviewed:** 2026-11-12
 - **Repository:** `oa-prep` / product name `BigO`
 - **Primary source of truth:** implementation under `app/`, `components/`, `lib/`, `models/`, `types/`, and `scripts/`. Treat older prose in `README.md` and `docs/` as supporting documentation and verify it against code.
 - **Update rule:** every code change must also update this file when it changes a recorded fact. At minimum, refresh `Last reviewed` and add a short entry to the change log. Do not record credentials, tokens, personal data, or production dumps.
@@ -19,7 +19,7 @@ BigO is an invite-oriented technical interview preparation platform combining:
 3. Interview flashcards with Leitner-style spaced repetition.
 4. Online assessment simulation with Monaco, multi-language execution, hidden grading, and proctoring telemetry.
 5. Competitive-programming profile synchronization and contest alerts.
-6. Subscriptions, dynamic pricing, promo codes, Stripe checkout, and a development payment adapter.
+6. Subscriptions, dynamic INR/USD pricing, promo codes, Cashfree checkout/subscriptions, and a development payment adapter.
 7. Admin content, user, billing, feedback, taxonomy, runner, and proctoring operations.
 
 The application is a Next.js 16 App Router project using React 19 and strict TypeScript. Route handlers live in `app/api/**`; reusable backend logic lives in `lib/**`; Mongoose models live in `models/**`; browser UI lives in `app/**` and `components/**`.
@@ -66,7 +66,7 @@ The application is a Next.js 16 App Router project using React 19 and strict Typ
 | `lib/runner/` | Code harness generation, Piston/Judge0 execution, fallback evaluation, runner types |
 | `lib/proctor/` | Client/server proctoring analysis, evidence storage, LLM and deterministic reports |
 | `lib/contests/` | Contest aggregation, calendars, and user profile fetchers |
-| `lib/payments/` | Stripe/mock adapters, pricing service, payment types |
+| `lib/payments/` | Cashfree/mock adapters, fulfillment, pricing service, payment types |
 | `lib/ai/` | AI revision-note generation and provider fallback logic |
 | `lib/telemetry/` | OpenTelemetry tracing, metrics, Prometheus, and structured logging |
 | `models/` | Mongoose schemas and model exports |
@@ -123,11 +123,11 @@ The application is a Next.js 16 App Router project using React 19 and strict Typ
 
 ### Billing and entitlements
 
-- `lib/payments/index.ts` selects Stripe when configured, or the mock adapter when `PAYMENT_PROVIDER=mock` or Stripe is not configured.
+- `lib/payments/index.ts` selects Cashfree when configured, or the mock adapter when `PAYMENT_PROVIDER=mock` or Cashfree is not configured.
 - `PricingPlan` documents can override static plan defaults through `getDynamicPlans()`; static values remain the fallback.
-- `Subscription` stores plan, status, period, Stripe metadata, and AI credit usage.
+- `Subscription` stores plan, status, period, Cashfree/mock gateway IDs, currency/amount metadata, and AI credit usage.
 - `lib/entitlements.ts` is the entitlement boundary. Paid plans currently recognized as Pro are `pro_monthly`, `pro_annual`, `oa_pass`, and `campus`; admins are separately identified.
-- Checkout, session verification, portal, and Stripe webhook routes live under `app/api/checkout/**`, `app/api/subscription/**`, and `app/api/webhooks/stripe/**`.
+- Checkout and Cashfree verification live under `app/api/checkout/**`; recurring cancellation is `app/api/subscription/cancel`; gateway webhooks are handled by `app/api/webhooks/cashfree/**`.
 - Promo validation is public/authenticated and separately rate-limited; admin promo management is under `/api/admin/promos/**`.
 
 ## 5. Data model memory
@@ -176,14 +176,25 @@ Validated defaults and primary names are in `lib/config.ts`. Important groups ar
 - Email/queue: `RESEND_API_KEY`, `EMAIL_FROM`, `EMAIL_REPLY_TO`, `QSTASH_*`
 - Redis: `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`
 - Cron: `CRON_SECRET`
-- Payments: Stripe keys/price IDs and `PAYMENT_PROVIDER`
+- Payments: `CASHFREE_CLIENT_ID`, `CASHFREE_CLIENT_SECRET`, `CASHFREE_ENVIRONMENT`, `CASHFREE_API_VERSION`, `NEXT_PUBLIC_CASHFREE_ENVIRONMENT`, and `PAYMENT_PROVIDER`
 - Runner: `CODE_RUNNER_URL`, `JUDGE0_API_URL`, `JUDGE0_RAPIDAPI_KEY`, `JUDGE0_RAPIDAPI_HOST`
 - OA browser policy: `NEXT_PUBLIC_ALLOW_COPY_PASTE`
 - Additional integrations read directly by feature modules include `GROQ_API_KEY`, `HUGGINGFACE_API_KEY`, NVIDIA keys/models, Cloudflare R2 credentials, analytics keys, and OpenTelemetry settings.
 
 Never commit `.env*`, access keys, signed URLs, real user exports, or production database snapshots. Prefer the typed `env` object for server configuration; if a feature adds an environment variable, update `lib/config.ts`, setup/deployment docs, and this section.
 
-## 8. Development commands and checks
+## 8. Cashfree payment memory
+
+- One-time `oa_pass` uses `/orders` and `payment_session_id`; recurring Pro plans use `/subscriptions` and `subscription_session_id`.
+- The browser loads Cashfree’s hosted Web Checkout SDK from `https://sdk.cashfree.com/js/v3/cashfree.js`; card data never enters BigO.
+- The server verifies return parameters with Cashfree’s Get Order/Get Subscription APIs, but access activation is also driven by `/api/webhooks/cashfree`.
+- Cashfree webhook signatures are HMAC-SHA256 over `x-webhook-timestamp + rawBody` using `CASHFREE_CLIENT_SECRET`; duplicate raw payload hashes are rejected through `ProcessedWebhookEvent`.
+- `INR` and `USD` prices are explicit plan fields. Do not infer INR from USD using a live exchange rate; update admin-configured prices deliberately.
+- Cashfree does not provide a Stripe-style customer portal in this integration. `/api/subscription/cancel` calls the Cashfree manage-subscription API.
+- A valid phone number is collected in the profile because Cashfree requires customer email and phone for payment/subscription creation.
+- `npm run dev:tunnel` starts ngrok before Next.js, discovers its HTTPS URL, injects it as `NEXT_PUBLIC_APP_URL`/`BETTER_AUTH_URL`, and prints the Cashfree webhook URL for dashboard registration.
+
+## 9. Development commands and checks
 
 ```bash
 npm install
@@ -212,7 +223,7 @@ docker compose -f docker-compose.runner.yml up -d
 
 When validating a change, start with the narrowest relevant unit test, then run the broader test/build check when practical. Do not run destructive seed/flush scripts against a shared database.
 
-## 9. Change checklist
+## 10. Change checklist
 
 Before finishing a code change:
 
@@ -224,4 +235,8 @@ Before finishing a code change:
 
 ## Change log
 
+- **2026-11-13:** Allowed ngrok tunnel dev origins in `next.config.mjs` and sanitized `plan_name`, `order_note`, and `plan_note` in `lib/payments/cashfree.ts` to strictly strip parentheses and disallowed characters that triggered Cashfree's `planInfo.planName` validation error.
+- **2026-11-12:** Verified Cashfree implementation; fixed recurring subscription upfront charge (`authorization_amount: params.amount`), preserved Pro entitlements until period end upon cancellation, automated `PromoCode.redemptionCount` incrementing upon real activation, added webhook replay protection, and purged legacy Stripe variables from `.github/workflows/ci.yml`.
+- **2026-10-27:** Replaced Stripe payment code paths with Cashfree order/subscription checkout, HMAC webhooks, idempotent fulfillment, INR/USD pricing, profile phone collection, cancellation API, and migration documentation.
+- **2026-10-27:** Added the `npm run dev:tunnel` ngrok workflow for local Cashfree return URLs and webhook testing; removed stale Stripe variables from `.env.example`.
 - **2026-10-26:** Created the initial code-backed memory map covering runtime flow, auth boundaries, repository structure, feature pipelines, data models, integrations, operational commands, and the ongoing update contract.

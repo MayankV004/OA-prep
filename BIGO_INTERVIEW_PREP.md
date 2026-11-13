@@ -586,3 +586,6 @@ Third, **harden container isolation in Docker Piston**: I would remove `privileg
 * **"Connections < 120"** $\rightarrow$ *Do not quote as hard reality; pool size is set to 10 in `lib/db.ts` and BetterAuth opens a separate client.*
 * **"~65% CPU reduction"** $\rightarrow$ *Label as theoretical duty-cycle savings from throttling the COCO-SSD loop from 30 FPS to 2.2 FPS.*
 * **"25KB snapshots"** $\rightarrow$ *State as "typical WebP frame size at 320x240 resolution".*
+# Historical integration note
+
+> The payment examples in this interview-preparation document describe the pre-2026 Stripe implementation and are retained as historical interview material. The current application uses Cashfree; see [`docs/cashfree-migration-plan.md`](./docs/cashfree-migration-plan.md) and [`memory.md`](./memory.md) for the current payment architecture.

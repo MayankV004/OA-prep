@@ -5,6 +5,7 @@ export interface IPricingPlan extends Document {
   planKey: CheckoutPlanKey;
   name: string;
   badge?: string;
+  priceInr: number;
   priceUsd: number;
   period: 'month' | 'year' | '75_days';
   mode: 'subscription' | 'payment';
@@ -12,7 +13,6 @@ export interface IPricingPlan extends Document {
   features: string[];
   aiCredits: number;
   isActive: boolean;
-  stripePriceId?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -40,6 +40,12 @@ const pricingPlanSchema = new Schema<IPricingPlan>(
       type: Number,
       required: true,
       min: 0,
+    },
+    priceInr: {
+      type: Number,
+      required: true,
+      min: 0,
+      default: 0,
     },
     period: {
       type: String,
@@ -69,10 +75,6 @@ const pricingPlanSchema = new Schema<IPricingPlan>(
       type: Boolean,
       default: true,
       index: true,
-    },
-    stripePriceId: {
-      type: String,
-      default: '',
     },
   },
   { timestamps: true }
