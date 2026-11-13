@@ -74,9 +74,12 @@ export async function GET(req: NextRequest) {
     for (const sub of allPaidSubs as any[]) {
       const planKey = sub.plan as CheckoutPlanKey;
       const defaultPrice = dynamicPlans[planKey]?.priceUsd ?? (sub.plan === 'pro_annual' ? 119 : sub.plan === 'oa_pass' ? 39 : 19);
-      const paidPrice = typeof sub.metadata?.paidPriceUsd === 'number' ? sub.metadata.paidPriceUsd : defaultPrice;
+      const currency = sub.metadata?.currency === 'INR' ? 'INR' : 'USD';
+      const paidPrice = typeof sub.metadata?.paidAmount === 'number'
+        ? sub.metadata.paidAmount
+        : typeof sub.metadata?.paidPriceUsd === 'number' ? sub.metadata.paidPriceUsd : defaultPrice;
 
-      totalRevenueUsd += paidPrice;
+      if (currency === 'USD') totalRevenueUsd += paidPrice;
 
       const subDate = new Date(sub.createdAt || now);
       if (subDate < startDate) {
@@ -135,7 +138,8 @@ export async function GET(req: NextRequest) {
       aiCreditsQuota: sub.aiCreditsQuota,
       aiCreditsUsed: sub.aiCreditsUsed,
       promoCode: sub.metadata?.promoCode || null,
-      paidPriceUsd: sub.metadata?.paidPriceUsd ?? null,
+       paidAmount: sub.metadata?.paidAmount ?? sub.metadata?.paidPriceUsd ?? null,
+       currency: sub.metadata?.currency === 'INR' ? 'INR' : sub.metadata?.currency === 'USD' ? 'USD' : null,
       grantedByAdmin: Boolean(sub.metadata?.grantedByAdmin),
       updatedAt: sub.updatedAt,
     }));

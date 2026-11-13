@@ -14,6 +14,7 @@ export interface UserEntitlement {
   aiCreditsUsed: number;
   aiCreditsRemaining: number;
   customerId?: string;
+  subscriptionId?: string;
   isAdmin: boolean;
 }
 
@@ -51,7 +52,8 @@ export async function getUserEntitlement(userId: string): Promise<UserEntitlemen
 
   const isExpired = sub.currentPeriodEnd ? new Date(sub.currentPeriodEnd) < new Date() : false;
   const isPaidPlan = ['pro_monthly', 'pro_annual', 'oa_pass', 'campus'].includes(sub.plan);
-  const isPro = isPaidPlan && sub.status === 'active' && !isExpired;
+  const isStatusEntitled = sub.status === 'active' || (sub.status === 'canceled' && sub.cancelAtPeriodEnd);
+  const isPro = isPaidPlan && isStatusEntitled && !isExpired;
 
   const quota = sub.aiCreditsQuota ?? 10;
   const used = sub.aiCreditsUsed ?? 0;
@@ -66,6 +68,7 @@ export async function getUserEntitlement(userId: string): Promise<UserEntitlemen
     aiCreditsUsed: used,
     aiCreditsRemaining: Math.max(0, quota - used),
     customerId: sub.customerId,
+    subscriptionId: sub.subscriptionId,
     isAdmin,
   };
 }

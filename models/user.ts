@@ -5,6 +5,7 @@ const userSchema = new Schema(
     // BetterAuth standard fields (name, email, emailVerified, image)
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
+    phone: { type: String, default: '' },
     emailVerified: { type: Boolean, required: true, default: false },
     image: { type: String, default: '' },
 

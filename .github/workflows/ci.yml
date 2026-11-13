@@ -44,7 +44,8 @@ jobs:
           MONGODB_DB: test
           BETTER_AUTH_SECRET: test_better_auth_secret_minimum_32_characters_long
           BETTER_AUTH_URL: http://localhost:3000
-          STRIPE_SECRET_KEY: sk_test_mock
-          STRIPE_WEBHOOK_SECRET: whsec_mock
+          PAYMENT_PROVIDER: mock
+          CASHFREE_CLIENT_ID: cf_test_mock
+          CASHFREE_CLIENT_SECRET: cf_secret_test_mock
           RESEND_API_KEY: re_mock
         run: npm run build

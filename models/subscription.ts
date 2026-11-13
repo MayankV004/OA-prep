@@ -2,7 +2,7 @@ import { Schema, model, models, type Document, type Types } from 'mongoose';
 
 export type PlanType = 'free' | 'pro_monthly' | 'pro_annual' | 'oa_pass' | 'campus';
 export type SubscriptionStatus = 'active' | 'canceled' | 'past_due' | 'expired' | 'trialing';
-export type PaymentProvider = 'stripe' | 'mock';
+export type PaymentProvider = 'cashfree' | 'mock' | 'manual';
 
 export interface ISubscription extends Document {
   userId: Types.ObjectId;
@@ -38,8 +38,8 @@ const subscriptionSchema = new Schema<ISubscription>(
     },
     provider: {
       type: String,
-      enum: ['stripe', 'mock'],
-      default: 'stripe',
+      enum: ['cashfree', 'mock', 'manual'],
+      default: 'cashfree',
       required: true,
     },
     customerId: { type: String, default: '' },

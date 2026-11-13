@@ -63,7 +63,7 @@ export function UserMenu({
   const router = useRouter();
   const queryClient = useQueryClient();
   const { data: session } = authClient.useSession();
-  const { isPro, openPortal } = useSubscription();
+  const { isPro, cancelSubscription, isCancelingSubscription } = useSubscription();
 
   const [imgError, setImgError] = React.useState(false);
   const [feedbackOpen, setFeedbackOpen] = React.useState(false);
@@ -203,15 +203,20 @@ export function UserMenu({
             {/* Subscription & Billing Item */}
             {isPro ? (
               <DropdownMenuItem
-                onClick={() => openPortal()}
+                onClick={() => {
+                  if (window.confirm('Cancel your recurring Cashfree subscription? Access remains active until the current period ends.')) {
+                    cancelSubscription();
+                  }
+                }}
+                disabled={isCancelingSubscription}
                 className="flex items-center gap-3 p-2 rounded-2xl cursor-pointer hover:bg-muted/80 focus:bg-muted/80 transition-colors group/item"
               >
                 <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/20 group-hover/item:bg-amber-500/20 transition-colors">
                   <CreditCard className="size-4" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-bold text-foreground">Manage Subscription</p>
-                  <p className="text-[11px] text-muted-foreground truncate">Billing, portal & invoices</p>
+                  <p className="text-xs font-bold text-foreground">Cancel Subscription</p>
+                  <p className="text-[11px] text-muted-foreground truncate">Cashfree recurring billing</p>
                 </div>
                 <ChevronRight size={13} animateOnHover className="text-muted-foreground group-hover/item:text-foreground group-hover/item:translate-x-0.5 transition-all" />
               </DropdownMenuItem>

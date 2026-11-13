@@ -7,7 +7,7 @@ import { ArrowRight } from '@/components/animate-ui/icons/arrow-right';
 import { Sparkles } from '@/components/animate-ui/icons/sparkles';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import type { PlanPricingDetail, CheckoutPlanKey } from '@/lib/payments/types';
+import type { PlanPricingDetail, CheckoutPlanKey, PaymentCurrency } from '@/lib/payments/types';
 
 interface PricingCardProps {
   plan: PlanPricingDetail;
@@ -15,6 +15,7 @@ interface PricingCardProps {
   isCurrentPlan?: boolean;
   isLoading?: boolean;
   discountedPrice?: number;
+  currency: PaymentCurrency;
   promoCodeLabel?: string;
   onSelect: (planId: CheckoutPlanKey) => void;
 }
@@ -25,11 +26,14 @@ export function PricingCard({
   isCurrentPlan = false,
   isLoading = false,
   discountedPrice,
+  currency,
   promoCodeLabel,
   onSelect,
 }: PricingCardProps) {
   const isOneTime = plan.period === '75_days';
-  const hasDiscount = discountedPrice !== undefined && discountedPrice < plan.priceUsd;
+  const basePrice = currency === 'INR' ? plan.priceInr : plan.priceUsd;
+  const symbol = currency === 'INR' ? '₹' : '$';
+  const hasDiscount = discountedPrice !== undefined && discountedPrice < basePrice;
 
   return (
     <div
@@ -89,15 +93,15 @@ export function PricingCard({
           {hasDiscount ? (
             <>
               <span className="text-4xl sm:text-5xl font-display font-black tracking-tight text-emerald-500">
-                ${discountedPrice}
+                 {symbol}{discountedPrice}
               </span>
               <span className="text-lg line-through text-muted-foreground font-semibold">
-                ${plan.priceUsd}
+                 {symbol}{basePrice}
               </span>
             </>
           ) : (
             <span className="text-4xl sm:text-5xl font-display font-black tracking-tight text-foreground">
-              ${plan.priceUsd}
+               {symbol}{basePrice}
             </span>
           )}
           <span className="text-xs sm:text-sm font-medium text-muted-foreground font-mono">
@@ -107,7 +111,7 @@ export function PricingCard({
 
         {plan.period === 'year' && !hasDiscount && (
           <p className="mt-1.5 text-xs font-mono font-semibold text-emerald-600 dark:text-emerald-400">
-            Equivalent to only ~$7.40 / month
+             Equivalent to only {symbol}{currency === 'INR' ? Math.round(plan.priceInr / 12) : '~7.40'} / month
           </p>
         )}
 

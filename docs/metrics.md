@@ -191,11 +191,11 @@ Docker Piston Container (Port 2000)    Judge0 Cloud Runner (RapidAPI)
 
 ## 6. Financial, Billing & Operational Metrics
 
-Full integration with **Stripe Billing**, custom promotional engines, and multi-platform competitive programming synchronizers.
+Full integration with **Cashfree Payments**, custom promotional engines, and multi-platform competitive programming synchronizers.
 
 | System / Feature | Metric / SLA | Technical Implementation |
 |---|---|---|
-| **Stripe Webhook Processing** | < 100ms handler time | Verified webhooks for `checkout.session.completed` and subscription lifecycle. |
+| **Cashfree Webhook Processing** | < 100ms handler time | Raw-body HMAC verification, durable deduplication, and order/subscription lifecycle processing. |
 | **Revenue Telemetry (Admin)** | Real-time MRR / ARR | Aggregated across `pro_monthly`, `pro_annual`, and single-use `oa_pass` tiers. |
 | **Promo Code Validation** | **15 req/min** rate limit | Supports percentage and fixed discounts, max usage caps, and expiration limits. |
 | **CP Profile Sync** | 4 major platforms | Synchronizes ratings across Codeforces, LeetCode, CodeChef, and AtCoder. |
@@ -226,7 +226,7 @@ Use these bullet points directly on your resume, tailored to specific engineerin
 
 - **Engineered full-stack technical assessment platform** (`57,000+ lines of TypeScript`, Next.js 16, React 19, MongoDB Atlas) supporting **2,000 DAU** with multi-tier caching (L1 Memory + L2 Redis + Edge CDN), achieving an **88% cache hit ratio** and cutting database query volume by **80%**.
 - **Architected multi-language sandboxed code execution engine** supporting C++, Python, and Java across Docker Piston and Judge0, implementing dynamic AST harness wrappers, resource isolation (256MB memory cap, 2s timeout), and a **12 run/min sliding-window rate limiter**.
-- **Integrated Stripe Billing & dynamic pricing engine** with cryptographically verified webhooks, dynamic promotional codes, and automated subscription lifecycle management, featuring an executive revenue dashboard tracking MRR and ARR across 3 pricing tiers.
+- **Integrated Cashfree Payments & dynamic pricing engine** with cryptographically verified webhooks, dynamic promotional codes, and automated subscription lifecycle management, featuring an executive revenue dashboard tracking MRR and ARR across 3 pricing tiers.
 - **Spearheaded comprehensive testing and observability initiative** with Vitest, OpenTelemetry, and Prometheus, achieving **sub-2.0s automated test execution** across 22 test suites and sub-15ms cached API response times.
 
 ### ⚡ Backend & Distributed Systems Engineer

@@ -109,6 +109,7 @@ export async function GET(req: NextRequest) {
         id: userDoc._id.toString(),
         name: userDoc.name || '',
         email: userDoc.email || '',
+        phone: userDoc.phone || '',
         image: userDoc.image || null,
         role: userDoc.role || 'user',
         bio: userDoc.bio || '',
@@ -140,6 +141,7 @@ export async function GET(req: NextRequest) {
 
 const updateProfileSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100).optional(),
+  phone: z.string().regex(/^\+?[1-9]\d{9,14}$/, 'Enter a valid phone number').optional().or(z.literal('')),
   image: z.string().optional().nullable(),
   bio: z.string().max(300).optional().nullable(),
   college: z.string().max(120).optional().nullable(),
@@ -159,6 +161,7 @@ export async function PATCH(req: NextRequest) {
 
     const updateFields: Record<string, any> = {};
     if (parsed.name !== undefined) updateFields.name = parsed.name?.trim();
+    if (parsed.phone !== undefined) updateFields.phone = parsed.phone?.trim();
     if (parsed.image !== undefined) updateFields.image = parsed.image || '';
     if (parsed.bio !== undefined) updateFields.bio = parsed.bio || '';
     if (parsed.college !== undefined) updateFields.college = parsed.college || '';
@@ -188,6 +191,7 @@ export async function PATCH(req: NextRequest) {
         id: updatedUser._id.toString(),
         name: updatedUser.name,
         email: updatedUser.email,
+        phone: updatedUser.phone || '',
         image: updatedUser.image || null,
         role: updatedUser.role || 'user',
         bio: updatedUser.bio || '',

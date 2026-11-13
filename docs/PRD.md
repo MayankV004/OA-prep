@@ -63,7 +63,7 @@
 - **Tiered Access Model**: Free Tier, Pro Monthly, Pro Annual, and single-use OA Passes.
 - **Dynamic Pricing Configuration**: MongoDB-backed pricing plans (`pricing_plans`) allowing dynamic updates to pricing, badges, and feature lists.
 - **Promotional Code Engine**: Support for percentage and fixed dollar discounts, expiration dates, plan applicability rules, and redemption limits (`POST /api/promo/validate`).
-- **Stripe Integration**: Secure checkout sessions, billing customer portal, automated subscription lifecycle management via webhooks, and local mock testing bypass.
+- **Cashfree Integration**: Hosted INR/USD checkout, recurring subscription mandates, automated lifecycle management via HMAC-verified webhooks, and local mock testing bypass.
 - **AI Quotas**: Credit accounting for automated behavioral forensic analysis and proctored assessment attempts.
 
 ### 2.11 Administrative Management & Financial Analytics
@@ -107,4 +107,3 @@
 - **Privacy & Security**: Zero raw video streaming to servers. Video feeds stay on the client; only encrypted, compressed WebP frames of flagged violation moments are uploaded to Cloudflare R2.
 - **Content Security**: Strict Markdown XSS sanitization via `rehype-sanitize`, security header policies, and sliding-window rate limiting (`proxy.ts`).
 - **Observability**: Distributed tracing and metrics collection via OpenTelemetry and Prometheus/Grafana integrations.
-

@@ -20,7 +20,7 @@ BigO is designed as a high-performance, resilient, and cost-effective preparatio
 │   - Monaco Editor & Recharts │   - Docker Piston & Judge0   │   - Web Audio API (FFT / RMS)      │
 ├──────────────────────────────┼──────────────────────────────┼────────────────────────────────────┤
 │   💾 Data & Persistence      │   🛡️ Security & Identity     │   📈 Monetization & Telemetry      │
-│   - MongoDB Atlas + Mongoose │   - BetterAuth (MongoAdapter)│   - Stripe Checkout & Portal       │
+│   - MongoDB Atlas + Mongoose │   - BetterAuth (MongoAdapter)│   - Cashfree Checkout & Subscriptions│
 │   - Upstash Redis (L2 Cache) │   - Mandatory 6-Digit OTP    │   - Dynamic Database Pricing Plans │
 │   - Cloudflare R2 (SigV4)    │   - Sliding-Window Limits    │   - OpenTelemetry & Prometheus     │
 │   - Edge CDN Caching Headers │   - rehype-sanitize XSS Guard│   - GA4, PostHog & Cookie Consent  │

@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { withAuth } from '@/lib/auth';
-import { getPaymentAdapter, getDynamicPlans, type CheckoutPlanKey } from '@/lib/payments';
+import { getPaymentAdapter, getDynamicPlans, type CheckoutPlanKey, type PaymentCurrency } from '@/lib/payments';
 import { env } from '@/lib/config';
 import dbConnect from '@/lib/db';
 import { PromoCode } from '@/models/promoCode';
@@ -10,6 +10,7 @@ import { z } from 'zod';
 const checkoutSchema = z.object({
   plan: z.enum(['pro_monthly', 'pro_annual', 'oa_pass']),
   promoCode: z.string().optional(),
+  currency: z.enum(['INR', 'USD']).default('INR'),
 });
 
 export async function POST(req: NextRequest) {
@@ -19,7 +20,7 @@ export async function POST(req: NextRequest) {
     if (!db) throw { status: 500, message: 'Database connection failed' };
 
     const body = await req.json();
-    const { plan, promoCode } = checkoutSchema.parse(body);
+    const { plan, promoCode, currency } = checkoutSchema.parse(body);
 
     // Resolve user email
     const idQueries: any[] = [{ _id: userId }];
@@ -36,7 +37,8 @@ export async function POST(req: NextRequest) {
     // Resolve dynamic price
     const plans = await getDynamicPlans();
     const planConfig = plans[plan as CheckoutPlanKey];
-    let discountedPriceUsd = planConfig.priceUsd;
+    const basePrice = currency === 'INR' ? planConfig.priceInr : planConfig.priceUsd;
+    let amount = basePrice;
     let validatedCode: string | undefined = undefined;
 
     if (promoCode && promoCode.trim()) {
@@ -68,12 +70,12 @@ export async function POST(req: NextRequest) {
 
       let discountAmount = 0;
       if (promo.discountType === 'percentage') {
-        discountAmount = (planConfig.priceUsd * promo.discountValue) / 100;
+        discountAmount = (basePrice * promo.discountValue) / 100;
       } else {
-        discountAmount = Math.min(promo.discountValue, planConfig.priceUsd);
+        discountAmount = Math.min(promo.discountValue, basePrice);
       }
 
-      discountedPriceUsd = Math.max(0, Math.round((planConfig.priceUsd - discountAmount) * 100) / 100);
+      amount = Math.max(0, Math.round((basePrice - discountAmount) * 100) / 100);
       validatedCode = promo.code;
     }
 
@@ -85,17 +87,22 @@ export async function POST(req: NextRequest) {
     const session = await paymentAdapter.createCheckoutSession({
       userId: userDoc._id.toString(),
       userEmail: userDoc.email,
+      userPhone: userDoc.phone,
       plan: plan as CheckoutPlanKey,
+      currency: currency as PaymentCurrency,
+      amount,
       successUrl,
       cancelUrl,
       promoCode: validatedCode,
-      discountedPriceUsd,
     });
 
     return {
       success: true,
       url: session.url,
       provider: session.provider,
+      sessionId: session.sessionId,
+      sessionType: session.sessionType,
+      orderId: session.orderId,
     };
   });
 }

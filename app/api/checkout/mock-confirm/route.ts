@@ -58,8 +58,11 @@ export async function GET(req: NextRequest) {
   }
 
   const promoCode = searchParams.get('promoCode');
-  const discountedPriceParam = searchParams.get('discountedPriceUsd');
-  const paidPriceUsd = discountedPriceParam !== null ? Number(discountedPriceParam) : PLANS[plan].priceUsd;
+  const currency = searchParams.get('currency') === 'USD' ? 'USD' : 'INR';
+  const discountedPriceParam = searchParams.get('amount');
+  const paidAmount = discountedPriceParam !== null
+    ? Number(discountedPriceParam)
+    : currency === 'INR' ? PLANS[plan].priceInr : PLANS[plan].priceUsd;
 
   if (promoCode) {
     const { PromoCode } = await import('@/models/promoCode');
@@ -88,8 +91,9 @@ export async function GET(req: NextRequest) {
         aiCreditsUsed: 0,
         metadata: {
           promoCode: promoCode || null,
-          paidPriceUsd,
-          originalPriceUsd: PLANS[plan].priceUsd,
+           paidAmount,
+           currency,
+           originalAmount: currency === 'INR' ? PLANS[plan].priceInr : PLANS[plan].priceUsd,
         },
       },
     },
@@ -108,7 +112,8 @@ export async function GET(req: NextRequest) {
     metadata: {
       plan,
       provider: 'mock',
-      priceUsd: paidPriceUsd,
+       amount: paidAmount,
+       currency,
       promoCode: promoCode || null,
     },
   });

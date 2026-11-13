@@ -9,6 +9,7 @@ const updatePlanSchema = z.object({
   planKey: z.enum(['pro_monthly', 'pro_annual', 'oa_pass']),
   name: z.string().min(1).optional(),
   badge: z.string().optional(),
+  priceInr: z.number().min(0),
   priceUsd: z.number().min(0),
   description: z.string().optional(),
   features: z.array(z.string()).optional(),

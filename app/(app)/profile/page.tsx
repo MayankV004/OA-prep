@@ -241,6 +241,7 @@ interface ProfileData {
     id: string;
     name: string;
     email: string;
+    phone?: string;
     image: string | null;
     role: string;
     bio?: string;
@@ -291,6 +292,7 @@ export default function ProfilePage() {
 
   // Form states
   const [editName, setEditName] = useState('');
+  const [editPhone, setEditPhone] = useState('');
   const [editImage, setEditImage] = useState('');
   const [editBio, setEditBio] = useState('');
   const [editCollege, setEditCollege] = useState('');
@@ -312,6 +314,7 @@ export default function ProfilePage() {
   const updateMutation = useMutation({
     mutationFn: async (payload: {
       name?: string;
+      phone?: string;
       image?: string;
       bio?: string;
       college?: string;
@@ -362,6 +365,7 @@ export default function ProfilePage() {
   const handleStartEdit = () => {
     if (data?.user) {
       setEditName(data.user.name || '');
+      setEditPhone(data.user.phone || '');
       setEditImage(data.user.image || '');
       setEditBio(data.user.bio || '');
       setEditCollege(data.user.college || '');
@@ -378,6 +382,7 @@ export default function ProfilePage() {
     e.preventDefault();
     updateMutation.mutate({
       name: editName,
+      phone: editPhone,
       image: editImage,
       bio: editBio,
       college: editCollege,
@@ -1398,6 +1403,19 @@ export default function ProfilePage() {
                     required
                     className="bg-surface-sunken dark:bg-white/[0.04] text-xs rounded-xl focus:ring-2 focus:ring-primary/20 border-0"
                   />
+                </div>
+
+                {/* Phone */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-foreground">Phone Number</label>
+                  <Input
+                    value={editPhone}
+                    onChange={(e) => setEditPhone(e.target.value)}
+                    placeholder="e.g. +919876543210"
+                    inputMode="tel"
+                    className="bg-surface-sunken dark:bg-white/[0.04] text-xs rounded-xl focus:ring-2 focus:ring-primary/20 border-0"
+                  />
+                  <p className="text-[10px] text-muted-foreground">Required for Cashfree checkout and recurring payment authorisation.</p>
                 </div>
 
                 {/* Bio */}

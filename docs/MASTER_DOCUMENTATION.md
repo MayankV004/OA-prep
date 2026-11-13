@@ -67,7 +67,7 @@
 │   - Monaco Editor & Recharts │   - Docker Piston & Judge0   │   - Web Audio API (FFT / RMS)      │
 ├──────────────────────────────┼──────────────────────────────┼────────────────────────────────────┤
 │   💾 Data & Persistence      │   🛡️ Security & Identity     │   📈 Monetization & Telemetry      │
-│   - MongoDB Atlas + Mongoose │   - BetterAuth (MongoAdapter)│   - Stripe Checkout & Portal       │
+│   - MongoDB Atlas + Mongoose │   - BetterAuth (MongoAdapter)│   - Cashfree Checkout & Subscriptions│
 │   - Upstash Redis (L2 Cache) │   - Mandatory 6-Digit OTP    │   - Dynamic Pricing Plans & Promos │
 │   - Cloudflare R2 (SigV4)    │   - Sliding-Window Limits    │   - OpenTelemetry & Prometheus     │
 │   - Edge CDN Caching Headers │   - rehype-sanitize XSS Guard│   - GA4, PostHog & Cookie Consent  │
@@ -225,8 +225,8 @@ Stores all persistent domain entities across 25 Mongoose 9 collections:
 | `cheatsheets` | [`models/cheatsheet.ts`](file:///home/streamliner/oa-prep/models/cheatsheet.ts) | Rapid-recall summary sheets for CS subjects. | Compound unique `{ userId: 1, slug: 1 }`. |
 | `assessments` | [`models/assessment.ts`](file:///home/streamliner/oa-prep/models/assessment.ts) | Curated company OA templates, problem subdocuments, starter code, visible & hidden testcases. | Unique `slug`, `company`, `isProOnly`. |
 | `assessment_submissions` | [`models/assessmentSubmission.ts`](file:///home/streamliner/oa-prep/models/assessmentSubmission.ts) | Candidate test runs, code solutions, test pass/fail results, telemetry timelines, forensic reports. | `{ assessmentId: 1, userId: 1 }`, `status`. |
-| `subscription` | [`models/subscription.ts`](file:///home/streamliner/oa-prep/models/subscription.ts) | Commercial tiers (`free`, `pro_monthly`, `pro_annual`, `oa_pass`), Stripe IDs, AI/OA credit quotas. | Unique `userId`, `stripeCustomerId`. |
-| `pricing_plans` | [`models/pricingPlan.ts`](file:///home/streamliner/oa-prep/models/pricingPlan.ts) | Dynamic database pricing plan definitions, feature matrices, Stripe price IDs, active flags. | Unique `code`, `isActive`. |
+| `subscription` | [`models/subscription.ts`](file:///home/streamliner/oa-prep/models/subscription.ts) | Commercial tiers (`free`, `pro_monthly`, `pro_annual`, `oa_pass`), Cashfree/mock IDs, AI/OA credit quotas. | Unique `userId`, provider subscription/order ID. |
+| `pricing_plans` | [`models/pricingPlan.ts`](file:///home/streamliner/oa-prep/models/pricingPlan.ts) | Dynamic INR/USD pricing plan definitions, feature matrices, and active flags. | Unique `planKey`, `isActive`. |
 | `promo_codes` | [`models/promoCode.ts`](file:///home/streamliner/oa-prep/models/promoCode.ts) | Discount codes, discount type (`percentage`, `fixed`), max usages, redemption counters, expiration. | Unique uppercase `code`, `isActive`. |
 | `user_cp_profiles` | [`models/userCpProfile.ts`](file:///home/streamliner/oa-prep/models/userCpProfile.ts) | Linked handles (Codeforces, LeetCode, CodeChef, AtCoder), ratings, composite 0–100 score. | Unique `userId`. |
 | `user_contest_histories` | [`models/userContestHistory.ts`](file:///home/streamliner/oa-prep/models/userContestHistory.ts) | Chronological contest performance records and historical rating deltas. | Compound `{ userId: 1, platform: 1 }`. |
@@ -396,9 +396,9 @@ To guarantee a stutter-free 60 FPS editor experience, vision inferences are spli
 
 ### 5.7 Dynamic Monetization & SuperAdmin Operations
 
-- **Dynamic Database Pricing Plans ([`models/pricingPlan.ts`](file:///home/streamliner/oa-prep/models/pricingPlan.ts))**: Pricing tiers, features, prices, and Stripe price IDs are stored in MongoDB, allowing plan modifications without redeploying code.
+- **Dynamic Database Pricing Plans ([`models/pricingPlan.ts`](file:///home/streamliner/oa-prep/models/pricingPlan.ts))**: Pricing tiers, INR/USD prices, features, and active flags are stored in MongoDB, allowing plan modifications without redeploying code.
 - **Promotional Discount Engine ([`models/promoCode.ts`](file:///home/streamliner/oa-prep/models/promoCode.ts))**: Supports percentage and fixed currency discounts, expiration dates, maximum redemption limits, and sliding-window rate-limited validation (15 req/min).
-- **Stripe Billing Integration**: Secure Stripe Checkout sessions, Customer Portal billing management, and cryptographically verified webhook handlers for subscription lifecycles.
+- **Cashfree Payments Integration**: Hosted Checkout orders, recurring subscription mandates, cancellation API, and cryptographically verified webhook handlers for order/subscription lifecycles.
 - **SuperAdmin Operations Desk ([`app/(admin)`](file:///home/streamliner/oa-prep/app/(admin)))**:
   - Executive financial dashboard tracking MRR, ARR, and subscriber churn.
   - User management: disable accounts, inspect activity timelines, issue role promotions.
@@ -467,7 +467,7 @@ BigO implements a defense-in-depth security model across the entire application 
 │ 3. Application     │ Shared Zod Validation, Tenant Data Isolation, Role Gates    │
 │ 4. Execution       │ Container Isolation (Piston/Judge0), TLE/MLE Resource Caps  │
 │ 5. Content / XSS   │ rehype-sanitize, remark-gfm, Multi-line Delimiter Defense   │
-│ 6. Cryptography    │ Stripe Signatures, QStash Signatures, AWS SigV4 Signer     │
+│ 6. Cryptography    │ Cashfree HMAC, QStash Signatures, AWS SigV4 Signer       │
 └────────────────────┴─────────────────────────────────────────────────────────────┘
 ```
 
@@ -494,7 +494,7 @@ BigO implements a defense-in-depth security model across the entire application 
    - Facial recognition and object detection run locally via WebGL.
    - Only compressed WebP violation snapshots (<25KB) are uploaded to Cloudflare R2 upon verified infractions.
 6. **Cryptographic Webhook & Cron Verification**:
-   - Stripe Webhooks: Validates incoming `stripe-signature` against `STRIPE_WEBHOOK_SECRET`.
+   - Cashfree Webhooks: Validates incoming `x-webhook-signature` against the raw body, timestamp, and `CASHFREE_CLIENT_SECRET`.
    - QStash Workers: Validates `Upstash-Signature` against `QSTASH_CURRENT_SIGNING_KEY`.
    - Cron Endpoints: Requires `Authorization: Bearer <CRON_SECRET>`.
 7. **AI Prompt Injection Defense**:
@@ -642,7 +642,7 @@ flowchart LR
     UpstashR["Upstash Redis\n(L2 Cache & Rate Limiting)"]
     UpstashQ["Upstash QStash\n(Async Job Queue)"]
     R2Store["Cloudflare R2\n(S3-Compatible Evidence Vault)"]
-    StripeAPI["Stripe API\n(Billing & Webhooks)"]
+    CashfreeAPI["Cashfree API\n(Checkout & Webhooks)"]
     ResendAPI["Resend API\n(Transactional Emails)"]
     PistonVPS["Linux VPS\n(Docker Piston Runner)"]
     GHACron["GitHub Actions\n(15-Min Contest Cron)"]
@@ -652,7 +652,7 @@ flowchart LR
     Vercel --> UpstashQ
     UpstashQ --> Vercel
     Vercel --> R2Store
-    Vercel <--> StripeAPI
+    Vercel <--> CashfreeAPI
     Vercel --> ResendAPI
     Vercel <--> PistonVPS
     GHACron --> Vercel
@@ -664,7 +664,7 @@ flowchart LR
 2. **Upstash Redis & QStash**: Create Redis and QStash databases in the Upstash console. Obtain `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, `QSTASH_TOKEN`, `QSTASH_CURRENT_SIGNING_KEY`, and `QSTASH_NEXT_SIGNING_KEY`.
 3. **Cloudflare R2**: Create bucket (e.g. `bigo-proctor-snapshots`). Generate S3-compatible API credentials: `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_PUBLIC_URL`.
 4. **Code Execution Sandbox**: Deploy [`docker-compose.runner.yml`](file:///home/streamliner/oa-prep/docker-compose.runner.yml) on a Linux VM (port 2000) and set `CODE_RUNNER_URL="http://<ip>:2000"`, or configure RapidAPI Judge0 CE credentials (`JUDGE0_RAPIDAPI_KEY`).
-5. **Stripe Billing**: Configure live API keys (`STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`) and set up webhook targeting `https://<domain>/api/webhooks/stripe` with signing secret `STRIPE_WEBHOOK_SECRET`.
+5. **Cashfree Payments**: Configure live credentials (`CASHFREE_CLIENT_ID`, `CASHFREE_CLIENT_SECRET`) and register PG plus Subscription webhooks targeting `https://<domain>/api/webhooks/cashfree`.
 6. **Vercel Deployment**: Link repository, set all environment variables from [`.env.example`](file:///home/streamliner/oa-prep/.env.example), and deploy `main` branch.
 7. **GitHub Actions 15-Minute Contest Cron**: Add `APP_URL` and `CRON_SECRET` to repository secrets in GitHub. The workflow in [`.github/workflows/contest-alerts-cron.yml`](file:///home/streamliner/oa-prep/.github/workflows/contest-alerts-cron.yml) triggers `/api/cron/contest-alerts` every 15 minutes, bypassing Vercel Hobby tier 1-cron-per-day limits.
 8. **Admin Promotion & Seeding**:

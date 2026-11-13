@@ -23,7 +23,7 @@ Timestamps (`createdAt`, `updatedAt`) are managed by Mongoose's `timestamps: tru
 | `otpverifications` | System (OTP codes with TTL auto-deletion) |
 | `assessments` | Shared (company OA templates, starter code, test suites) |
 | `assessment_submissions` | Per user (`userId` + `assessmentId`) with proctoring audit logs |
-| `subscription` | Per user (`userId` unique) with Stripe metadata & AI quotas |
+| `subscription` | Per user (`userId` unique) with Cashfree/mock metadata & AI quotas |
 | `pricing_plans` | Shared (dynamic pricing tier definitions & features) |
 | `promo_codes` | Shared (promotional discount codes & redemption limits) |
 | `user_cp_profiles` | Per user (`userId` unique) with multi-platform CP stats |
@@ -326,7 +326,7 @@ User commercial plan entitlements, Stripe subscription metadata, and AI evaluati
 | `status` | `"active" \| "past_due" \| "canceled" \| "incomplete" \| "trialing"` | Stripe status |
 | `stripeCustomerId` | string? | Stripe Customer ID (`cus_...`) |
 | `stripeSubscriptionId` | string? | Stripe Subscription ID (`sub_...`) |
-| `stripePriceId` | string? | Current active Stripe Price ID |
+| `subscriptionId` | string? | Cashfree merchant subscription ID or one-time order ID |
 | `currentPeriodStart` | Date? | Billing cycle start |
 | `currentPeriodEnd` | Date? | Billing cycle renewal date |
 | `cancelAtPeriodEnd` | boolean | Cancellation state |
@@ -391,13 +391,13 @@ Dynamic subscription and checkout pricing plans managed by administrators withou
 | `name` | string | Display title (e.g. "BigO Pro Monthly") |
 | `badge` | string? | Highlight badge (e.g. "MOST POPULAR", "SAVE 40%") |
 | `priceUsd` | number | Plan price in USD |
+| `priceInr` | number | Plan price in INR |
 | `period` | `"month" \| "year" \| "75_days"` | Billing frequency |
 | `mode` | `"subscription" \| "payment"` | Recurring Stripe subscription vs one-time payment |
 | `description` | string | Subtitle / target persona description |
 | `features` | string[] | Array of feature bullet points |
 | `aiCredits` | number | Behavioral analysis forensic credits (default 100) |
 | `isActive` | boolean | Availability flag (indexed) |
-| `stripePriceId` | string? | Associated Stripe Price ID (`price_...`) |
 
 ### `promo_codes` (`models/promoCode.ts`)
 

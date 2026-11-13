@@ -54,14 +54,15 @@ interface SubscriptionRow {
   userEmail: string;
   plan: 'free' | 'pro_monthly' | 'pro_annual' | 'oa_pass' | 'campus';
   status: 'active' | 'canceled' | 'past_due' | 'expired' | 'trialing';
-  provider: 'stripe' | 'mock';
+  provider: 'cashfree' | 'mock' | 'manual';
   currentPeriodStart: string;
   currentPeriodEnd: string;
   cancelAtPeriodEnd: boolean;
   aiCreditsQuota: number;
   aiCreditsUsed: number;
   promoCode: string | null;
-  paidPriceUsd: number | null;
+  paidAmount: number | null;
+  currency: 'INR' | 'USD' | null;
   grantedByAdmin: boolean;
   updatedAt: string;
 }
@@ -236,8 +237,8 @@ export default function AdminBillingPage() {
           <span className="inline-flex items-center gap-1 font-mono text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded">
             <Percent className="size-3" />
             {row.promoCode}
-            {row.paidPriceUsd !== null && (
-              <span className="text-2xs text-muted-foreground font-normal">(${row.paidPriceUsd})</span>
+             {row.paidAmount !== null && (
+               <span className="text-2xs text-muted-foreground font-normal">({row.currency === 'INR' ? '₹' : '$'}{row.paidAmount})</span>
             )}
           </span>
         ) : (

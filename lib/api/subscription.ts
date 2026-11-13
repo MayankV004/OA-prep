@@ -1,5 +1,5 @@
 import { apiFetch } from './client';
-import type { CheckoutPlanKey, PlanPricingDetail } from '@/lib/payments/types';
+import type { CheckoutPlanKey, PaymentCurrency, PlanPricingDetail } from '@/lib/payments/types';
 import type { PlanType, SubscriptionStatus } from '@/models/subscription';
 
 export interface SubscriptionDTO {
@@ -14,6 +14,7 @@ export interface SubscriptionDTO {
     aiCreditsUsed: number;
     aiCreditsRemaining: number;
     customerId?: string;
+    subscriptionId?: string;
     isAdmin: boolean;
     planDetail: PlanPricingDetail | null;
   };
@@ -22,22 +23,22 @@ export interface SubscriptionDTO {
 export const subscriptionApi = {
   getSubscription: () => apiFetch<SubscriptionDTO>('/api/subscription'),
 
-  createCheckout: (plan: CheckoutPlanKey, promoCode?: string) =>
-    apiFetch<{ success: boolean; url: string; provider: string }>('/api/checkout', {
+  createCheckout: (plan: CheckoutPlanKey, currency: PaymentCurrency, promoCode?: string) =>
+    apiFetch<{ success: boolean; url: string; provider: string; sessionId?: string; sessionType?: 'order' | 'subscription' }>('/api/checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ plan, promoCode }),
+      body: JSON.stringify({ plan, currency, promoCode }),
     }),
 
-  openBillingPortal: () =>
-    apiFetch<{ success: boolean; url: string }>('/api/subscription/portal', {
+  cancelSubscription: () =>
+    apiFetch<{ success: boolean; message: string }>('/api/subscription/cancel', {
       method: 'POST',
     }),
 
-  verifySession: (sessionId: string) =>
+  verifySession: (params: { orderId?: string; subscriptionId?: string; plan?: CheckoutPlanKey }) =>
     apiFetch<{ success: boolean; isPro: boolean; plan: string; message: string }>('/api/checkout/verify-session', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sessionId }),
+      body: JSON.stringify(params),
     }),
 };
