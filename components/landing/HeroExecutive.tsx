@@ -221,12 +221,14 @@ export function HeroExecutive() {
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: 'easeOut' }}
-            className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-surface-sunken/80 dark:bg-white/[0.04] border border-border/80 dark:border-white/10 text-2xs sm:text-xs font-mono font-medium text-muted-foreground shadow-2xs backdrop-blur-md"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface-sunken/90 dark:bg-white/[0.04] border border-border/80 dark:border-white/10 text-xs font-semibold text-muted-foreground shadow-2xs backdrop-blur-md"
           >
             <span className="flex size-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-foreground font-semibold">19 PATTERN ARCHETYPES</span>
-            <span className="text-border dark:text-white/20">/</span>
-            <span className="text-emerald-600 dark:text-emerald-400 font-semibold">6 COMPANY OA SIMULATORS</span>
+            <span className="text-foreground font-semibold">19 Core Patterns</span>
+            <span className="text-muted-foreground/40">·</span>
+            <span className="text-foreground font-semibold">172 Variations</span>
+            <span className="text-muted-foreground/40">·</span>
+            <span className="text-emerald-600 dark:text-emerald-400 font-semibold">6 Company OAs</span>
           </motion.div>
 
           {/* Master Headline in Sentence Case */}
@@ -249,7 +251,7 @@ export function HeroExecutive() {
             transition={{ duration: 0.6, delay: 0.2, ease: [0.25, 1, 0.5, 1] }}
             className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto font-normal leading-relaxed text-pretty"
           >
-            Deconstruct technical rounds into 90+ reusable pattern variations. Simulate timed assessments for Amazon, Google, and Uber with hidden testcase verification, and lock core CS rounds.
+            Learn 172 reusable algorithmic variations, simulate timed assessments for Amazon, Google, and Uber with hidden testcase verification, and lock core CS rounds.
           </motion.p>
 
           {/* High-Contrast Action CTAs */}
@@ -283,17 +285,17 @@ export function HeroExecutive() {
           >
             <span className="inline-flex items-center gap-1.5">
               <BadgeCheck size={16} animateOnHover className="text-emerald-500" />
-              <span>Free Forever Core Roadmaps</span>
+              <span>100% Free Core Roadmaps</span>
             </span>
             <span className="hidden sm:inline text-border">•</span>
             <span className="inline-flex items-center gap-1.5">
               <BadgeCheck size={16} animateOnHover className="text-emerald-500" />
-              <span>Zero Setup In-Browser Execution</span>
+              <span>Zero-Setup In-Browser Runner</span>
             </span>
             <span className="hidden sm:inline text-border">•</span>
             <span className="inline-flex items-center gap-1.5">
               <BadgeCheck size={16} animateOnHover className="text-emerald-500" />
-              <span>Full Company Assessment Sets</span>
+              <span>870+ Practice Problems</span>
             </span>
           </motion.div>
         </div>

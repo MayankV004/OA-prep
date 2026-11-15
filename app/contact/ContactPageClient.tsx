@@ -46,7 +46,7 @@ const FAQS = [
   {
     question: 'Is BigO free to use for interview preparation?',
     answer:
-      'Yes! BigO provides 14 core DSA pattern variations, comprehensive CS core subject curricula, LeetCode activity tracking, and community practice completely free of charge.',
+      'Yes! BigO provides 19 core DSA patterns with 172 variations, comprehensive CS core subject curricula, LeetCode activity tracking, and community practice completely free of charge.',
   },
   {
     question: 'How do I report an issue during an ongoing Mock OA?',
@@ -139,21 +139,21 @@ export function ContactPageClient() {
       <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 pt-28 sm:pt-32 pb-20 space-y-16 relative z-10">
         {/* Hero Section */}
         <div className="text-center space-y-4 max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-mono font-bold uppercase tracking-wider">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
             <span className="relative flex size-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
               <span className="relative inline-flex rounded-full size-2 bg-emerald-500" />
             </span>
-            Candidate Support & Inquiries
+            <span>Candidate & Technical Support</span>
           </div>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-black tracking-tight text-foreground">
-            We're Here to Help You{' '}
+            How Can We Help Your{' '}
             <span className="text-primary">
-              Succeed
+              Preparation?
             </span>
           </h1>
           <p className="text-base sm:text-lg text-muted-foreground leading-relaxed font-normal">
-            Have questions about our DSA curricula, company OA mock simulations, or need technical assistance? Reach out directly to our engineering and support team.
+            Encountered an issue during an OA simulation, spotted a testcase mismatch, or need guidance on curriculum tracks? Reach out directly to our engineering team.
           </p>
         </div>
 
@@ -266,9 +266,6 @@ export function ContactPageClient() {
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-display font-bold text-foreground">Send Us a Message</h2>
-                <Badge variant="outline" className="text-2xs font-mono border-border/80 text-muted-foreground">
-                  Encrypted & Direct
-                </Badge>
               </div>
               <p className="text-xs sm:text-sm text-muted-foreground">
                 Submit your query below. Our team reviews all candidate submissions continuously.

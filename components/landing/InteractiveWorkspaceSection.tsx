@@ -69,7 +69,7 @@ const FEATURE_PILLS = [
   {
     icon: Layers,
     title: 'Company OA Variations',
-    desc: 'Handpicked problem sets categorized into 20+ core recurring patterns.',
+    desc: 'Handpicked problem sets categorized into 19 core recurring patterns.',
   },
   {
     icon: Zap,
@@ -109,10 +109,10 @@ export function InteractiveWorkspaceSection() {
         <ScrollReveal direction="right" delay={0.2}>
           <div className="space-y-6 sm:space-y-8">
             <div className="space-y-3">
-              <div className="inline-flex items-center gap-2 text-2xs font-mono font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                <span>[ IN-BROWSER EXECUTION ]</span>
-                <span>/</span>
-                <span>SUB-MS JUDGE</span>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                <span>In-Browser Execution</span>
+                <span className="text-emerald-500/40">·</span>
+                <span>Sub-ms Judge</span>
               </div>
               <h2 className="text-3xl sm:text-5xl font-display font-black tracking-tight leading-[1.12] text-foreground">
                 Master variations, <br />
@@ -121,7 +121,7 @@ export function InteractiveWorkspaceSection() {
                 </span>
               </h2>
               <p className="text-muted-foreground text-base sm:text-lg leading-relaxed font-normal">
-                Companies test adaptability under pressure. BigO categorizes problems into core variations so you can quickly identify patterns and write optimal code in timed interview environments.
+                Companies test adaptability under pressure. BigO categorizes problems into 172 variations so you can quickly identify patterns and write optimal code in timed interview environments.
               </p>
             </div>
 
@@ -161,7 +161,7 @@ export function InteractiveWorkspaceSection() {
 
               <div className="inline-flex items-center gap-2 text-xs text-muted-foreground font-mono bg-card dark:bg-white/[0.04] px-3.5 py-2 rounded-full border border-border/60">
                 <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span>90+ Variations Ready</span>
+                <span>172 Variations Ready</span>
               </div>
             </div>
           </div>

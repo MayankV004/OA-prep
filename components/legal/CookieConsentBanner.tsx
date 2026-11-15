@@ -40,7 +40,7 @@ export function CookieConsentBanner() {
           transition={{ duration: 0.25, ease: 'easeOut' }}
           role="region"
           aria-label="Cookie and Privacy Consent"
-          className="fixed bottom-4 inset-x-4 sm:bottom-6 sm:right-6 sm:left-auto sm:max-w-md z-50 pointer-events-auto"
+          className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom,0px))] inset-x-4 sm:bottom-6 sm:right-6 sm:left-auto sm:max-w-md z-50 pointer-events-auto"
         >
           <div className="p-4 sm:p-5 rounded-2xl bg-card/95 dark:bg-[#0B0F17]/95 border border-border/80 shadow-2xl backdrop-blur-2xl text-foreground space-y-3 relative overflow-hidden">
             {/* Top specular beam */}

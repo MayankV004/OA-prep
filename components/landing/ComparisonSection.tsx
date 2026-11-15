@@ -33,7 +33,7 @@ const TRADITIONAL_PAIN_POINTS = [
 
 const BIGO_ADVANTAGES = [
   {
-    title: '19 pattern archetypes & 90+ variations',
+    title: '19 pattern blueprints & 172 variations',
     desc: 'Categorize problems systematically. Spot whether an interview prompt needs Sliding Window, Monotonic Stack, or 2D Dynamic Programming in under 60 seconds.',
     tag: 'Structured recognition',
   },
@@ -45,7 +45,7 @@ const BIGO_ADVANTAGES = [
   {
     title: 'Curated CS core interview sheets',
     desc: 'Concise conceptual revision sheets, subject interview drills, and spaced-repetition flashcards for Operating Systems, DBMS, Networks, and System Design.',
-    tag: 'OS · DBMS · Networks · OOP',
+    tag: 'OS · DBMS · Networks · OOP · System Design',
   },
   {
     title: 'Authentic company OA simulation',
@@ -80,10 +80,10 @@ export function ComparisonSection() {
       {/* Section Header */}
       <ScrollReveal direction="up" delay={0.1}>
         <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-          <div className="inline-flex items-center gap-2 text-2xs font-mono font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-            <span>[ THE INTUITION GAP ]</span>
-            <span>/</span>
-            <span>METHODOLOGY</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+            <span>The Intuition Gap</span>
+            <span className="text-emerald-500/40">·</span>
+            <span>Methodology</span>
           </div>
           <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-foreground">
             Stop random grinding. <br className="hidden sm:inline" />
@@ -92,7 +92,7 @@ export function ComparisonSection() {
             </span>
           </h2>
           <p className="text-muted-foreground text-base sm:text-lg font-normal leading-relaxed max-w-2xl mx-auto">
-            Most candidates struggle in technical rounds not from a lack of effort, but from unstructured preparation that fails to hold under exam time constraints.
+            Memorizing isolated solutions creates brittle recall. Understanding structural invariants gives you the confidence to solve unseen problem variations under exam pressure.
           </p>
         </div>
       </ScrollReveal>
@@ -205,9 +205,9 @@ export function ComparisonSection() {
       <div className="mt-14 max-w-5xl mx-auto rounded-3xl border border-border/80 dark:border-white/10 bg-card/60 dark:bg-white/[0.02] p-6 sm:p-8 backdrop-blur-xl">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-border/60">
           <div>
-            <div className="flex items-center gap-2 text-2xs font-mono font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-              <Zap className="size-3.5" />
-              <span>PATTERN TRIGGER ENGINE</span>
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+              <Zap className="size-3.5 text-emerald-500" />
+              <span>Pattern Trigger Engine</span>
             </div>
             <h3 className="text-lg sm:text-xl font-bold text-foreground mt-1">
               How Pattern Intuition Solves Unseen Problems
@@ -268,13 +268,13 @@ export function ComparisonSection() {
 
         <div className="mt-6 pt-4 border-t border-border/60 flex items-center justify-between">
           <span className="text-2xs font-mono text-muted-foreground">
-            90+ PATTERN VARIATION TEMPLATES READY IN BROWSER
+            172 PATTERN VARIATION TEMPLATES READY IN BROWSER
           </span>
           <Link
             href="/dsa"
             className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline group"
           >
-            <span>Explore All 19 Archetypes</span>
+            <span>Explore All 19 Patterns</span>
             <ArrowRight size={14} animateOnHover className="size-3" />
           </Link>
         </div>

@@ -10,9 +10,10 @@ import { cn } from '@/lib/utils';
 interface FooterProps {
   className?: string;
   variant?: 'app' | 'public';
+  showCallout?: boolean;
 }
 
-export function Footer({ className, variant = 'app' }: FooterProps) {
+export function Footer({ className, variant = 'app', showCallout = true }: FooterProps) {
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [feedbackType, setFeedbackType] = useState<'bug' | 'feedback'>('feedback');
 
@@ -42,35 +43,37 @@ export function Footer({ className, variant = 'app' }: FooterProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-18 relative z-10">
           
           {/* Top Community & Placement Callout Strip */}
-          <div className="mb-12 p-6 sm:p-8 rounded-2xl bg-card/70 dark:bg-surface-elevated/50 border border-border/80 backdrop-blur-xl shadow-e2 flex flex-col sm:flex-row items-center justify-between gap-6 relative overflow-hidden">
-            <div className="pointer-events-none absolute -left-12 -top-12 size-36 rounded-full bg-emerald-500/10 blur-2xl" />
-            <div className="space-y-1 text-center sm:text-left relative z-10">
-              <div className="flex items-center justify-center sm:justify-start gap-2">
-                <span className="text-2xs font-mono font-bold uppercase tracking-wider text-emerald-500">
-                  Ready for Hiring Season
-                </span>
+          {showCallout && (
+            <div className="mb-12 p-6 sm:p-8 rounded-2xl bg-card/70 dark:bg-surface-elevated/50 border border-border/80 backdrop-blur-xl shadow-e2 flex flex-col sm:flex-row items-center justify-between gap-6 relative overflow-hidden">
+              <div className="pointer-events-none absolute -left-12 -top-12 size-36 rounded-full bg-emerald-500/10 blur-2xl" />
+              <div className="space-y-1 text-center sm:text-left relative z-10">
+                <div className="flex items-center justify-center sm:justify-start gap-2">
+                  <span className="text-2xs font-mono font-bold uppercase tracking-wider text-emerald-500">
+                    Ready for Hiring Season
+                  </span>
+                </div>
+                <h3 className="text-lg sm:text-xl font-black tracking-tight text-foreground">
+                  Master the exact patterns asked in Tier-1 OAs
+                </h3>
+                <p className="text-xs sm:text-sm text-muted-foreground font-normal">
+                  Join thousands of engineering students clearing Amazon, Google, Microsoft, and Uber assessments.
+                </p>
               </div>
-              <h3 className="text-lg sm:text-xl font-black tracking-tight text-foreground">
-                Master the exact patterns asked in Tier-1 OAs
-              </h3>
-              <p className="text-xs sm:text-sm text-muted-foreground font-normal">
-                Join thousands of engineering students clearing Amazon, Google, Microsoft, and Uber assessments.
-              </p>
-            </div>
 
-            <div className="flex items-center gap-3 shrink-0 relative z-10">
-              <Link href="/dsa">
-                <button className="px-5 py-2.5 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary-hover shadow-sm hover:shadow-[0_0_20px_rgba(16,185,129,0.35)] border-t border-white/20 transition-all active:scale-95 cursor-pointer">
-                  Explore 90+ Patterns
-                </button>
-              </Link>
-              <Link href="/oa/free-universal-diagnostic-oa">
-                <button className="px-4 py-2.5 rounded-xl text-xs font-semibold text-foreground bg-surface-sunken hover:bg-muted border border-border/80 transition-all active:scale-95 cursor-pointer">
-                  Take Free Diagnostic OA
-                </button>
-              </Link>
+              <div className="flex items-center gap-3 shrink-0 relative z-10">
+                <Link href="/dsa">
+                  <button className="px-5 py-2.5 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary-hover shadow-sm hover:shadow-[0_0_20px_rgba(16,185,129,0.35)] border-t border-white/20 transition-all active:scale-95 cursor-pointer">
+                    Explore 172 Variations
+                  </button>
+                </Link>
+                <Link href="/oa/free-universal-diagnostic-oa">
+                  <button className="px-4 py-2.5 rounded-xl text-xs font-semibold text-foreground bg-surface-sunken hover:bg-muted border border-border/80 transition-all active:scale-95 cursor-pointer">
+                    Take Free Diagnostic OA
+                  </button>
+                </Link>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Main Footer Links Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12 pb-12 border-b border-border/60">
@@ -105,7 +108,7 @@ export function Footer({ className, variant = 'app' }: FooterProps) {
               <ul className="space-y-2.5 text-xs font-medium">
                 <li>
                   <Link href="/dsa" className="text-muted-foreground hover:text-foreground hover:translate-x-0.5 transition-all inline-block">
-                    14 Core Patterns
+                    19 Core Patterns
                   </Link>
                 </li>
                 <li>

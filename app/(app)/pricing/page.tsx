@@ -308,7 +308,7 @@ function PricingContent() {
               </p>
               <ul className="space-y-3 text-xs sm:text-sm">
                 {[
-                  '14+ Core DSA pattern trackers',
+                  '19 Core DSA pattern trackers (172 variations)',
                   'LeetCode-style activity heatmap',
                   'Interview revision flashcard decks',
                   'Competitive programming radar',
@@ -438,12 +438,12 @@ function PricingContent() {
             <tbody className="divide-y divide-border/40 text-foreground/90 text-xs sm:text-sm">
               <tr>
                 <td className="p-4 sm:p-5 font-semibold text-foreground">Core DSA Pattern Variations</td>
-                <td className="p-4 sm:p-5 text-center text-muted-foreground font-mono">14 Patterns</td>
+                <td className="p-4 sm:p-5 text-center text-muted-foreground font-mono">19 Patterns</td>
                 <td className="p-4 sm:p-5 text-center font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/5 font-mono">
-                  All 90+ Variations
+                  All 172 Variations
                 </td>
                 <td className="p-4 sm:p-5 text-center text-emerald-600 dark:text-emerald-400 font-mono">
-                  All 90+ Variations
+                  All 172 Variations
                 </td>
               </tr>
               <tr>

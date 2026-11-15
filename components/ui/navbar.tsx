@@ -53,15 +53,15 @@ const NAV_CATEGORIES: NavCategory[] = [
     id: 'dsa',
     label: 'DSA & Patterns',
     featured: {
-      title: '14 Core Coding Patterns',
-      description: 'Master sliding window, two pointers, and fast & slow pointers with curated roadmaps.',
+      title: '19 Core Coding Patterns',
+      description: 'Master sliding window, two pointers, monotonic stack, and dynamic programming with curated roadmaps.',
       href: '/dsa',
       tag: 'Most Popular',
     },
     items: [
       {
-        title: '14 Standard Patterns',
-        description: 'Two pointers, sliding window, cyclic sort & interval merges.',
+        title: '19 Standard Patterns',
+        description: 'Two pointers, sliding window, cyclic sort, trees & interval merges.',
         href: '/dsa',
         icon: Code2,
       },
@@ -98,7 +98,7 @@ const NAV_CATEGORIES: NavCategory[] = [
     items: [
       {
         title: 'Company OA Catalog',
-        description: 'Amazon, Google, Uber, and Microsoft placement assessment tracks.',
+        description: 'Amazon, Google, Uber, Microsoft, and Atlassian assessment tracks.',
         href: '/oa',
         icon: ShieldCheck,
       },

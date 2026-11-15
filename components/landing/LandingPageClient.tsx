@@ -22,9 +22,9 @@ import { MobileStickyCta } from '@/components/landing/MobileStickyCta';
 
 export function LandingPageClient() {
   const [liveStats, setLiveStats] = useState({
-    variations: '90+',
-    problems: '500+',
-    topics: '7',
+    variations: '172',
+    problems: '870+',
+    topics: '5',
   });
 
   useEffect(() => {
@@ -33,9 +33,9 @@ export function LandingPageClient() {
       .then((data) => {
         if (data) {
           setLiveStats({
-            variations: data.variationCount || '90+',
-            problems: data.problemCount || '500+',
-            topics: String(data.topicCount || 7),
+            variations: data.variationCount || '172',
+            problems: data.problemCount || '870+',
+            topics: String(data.topicCount || 5),
           });
         }
       })
@@ -66,10 +66,10 @@ export function LandingPageClient() {
         <section id="features" className="py-20 relative">
           <ScrollReveal direction="up" delay={0.1}>
             <div className="text-center max-w-3xl mx-auto mb-16 space-y-3 px-4">
-              <div className="inline-flex items-center gap-2 text-2xs font-mono font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                <span>[ CURRICULUM ARCHITECTURE ]</span>
-                <span>/</span>
-                <span>FOUR PILLARS</span>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                <span>Curriculum Architecture</span>
+                <span className="text-emerald-500/40">·</span>
+                <span>Four Pillars</span>
               </div>
               <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-foreground">
                 Four pillars engineered for{' '}
@@ -101,8 +101,8 @@ export function LandingPageClient() {
         {/* 11. Closing Call To Action Section */}
         <CtaSection />
 
-        {/* 12. Glassmorphic Footer */}
-        <Footer variant="public" />
+        {/* 12. Glassmorphic Footer (Callout hidden here to avoid double-CTA collision with CtaSection) */}
+        <Footer variant="public" showCallout={false} />
 
         {/* 13. Mobile-Only Sticky Bottom CTA */}
         <MobileStickyCta />

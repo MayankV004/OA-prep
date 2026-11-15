@@ -8,7 +8,7 @@ const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://bigoprep.tech';
 export const metadata: Metadata = {
   title: 'DSA Patterns & Variation Roadmap',
   description:
-    'Master 14+ core Data Structures and Algorithms patterns: Sliding Window, Two Pointers, Monotonic Stack, Intervals, Dynamic Programming, and Graph Traversals with reusable code blueprints.',
+    'Master 19 core Data Structures and Algorithms patterns with 172 variations: Sliding Window, Two Pointers, Monotonic Stack, Intervals, Dynamic Programming, and Graph Traversals with reusable code blueprints.',
   alternates: {
     canonical: `${siteUrl}/dsa`,
   },

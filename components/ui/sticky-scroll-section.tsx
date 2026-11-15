@@ -54,24 +54,24 @@ export function StickyScrollSection({ items }: StickyScrollSectionProps) {
                       el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }}
                     className={cn(
-                      'group flex items-center gap-6 p-4 rounded-3xl transition-all duration-500 text-left cursor-pointer border-0 bg-transparent shrink-0',
-                      isActive ? 'scale-105' : 'opacity-40 hover:opacity-80'
+                      'group flex items-center gap-3 sm:gap-4 lg:gap-6 p-2.5 sm:p-3 lg:p-4 rounded-2xl lg:rounded-3xl transition-all duration-300 text-left cursor-pointer border-0 bg-transparent shrink-0',
+                      isActive ? 'scale-102 lg:scale-105 opacity-100' : 'opacity-40 hover:opacity-80'
                     )}
                   >
                     {/* Big Borderless Number */}
                     <span
                       className={cn(
-                        'text-4xl lg:text-6xl font-black font-mono transition-all duration-300',
+                        'text-2xl sm:text-3xl lg:text-6xl font-black font-mono transition-all duration-300',
                         isActive ? 'text-primary' : 'text-muted-foreground/60'
                       )}
                     >
                       {item.number}
                     </span>
 
-                    <div className="hidden lg:block space-y-1">
+                    <div className="space-y-0.5 lg:space-y-1 text-left">
                       <div
                         className={cn(
-                          'text-lg lg:text-xl font-bold tracking-tight transition-colors duration-300',
+                          'text-xs sm:text-sm lg:text-xl font-bold tracking-tight transition-colors duration-300 whitespace-nowrap lg:whitespace-normal',
                           isActive ? 'text-foreground font-extrabold' : 'text-muted-foreground'
                         )}
                       >
@@ -80,7 +80,7 @@ export function StickyScrollSection({ items }: StickyScrollSectionProps) {
                       {isActive && (
                         <motion.div
                           layoutId="active-indicator"
-                          className="h-1 w-16 bg-primary rounded-full"
+                          className="h-0.5 lg:h-1 w-8 lg:w-16 bg-primary rounded-full"
                         />
                       )}
                     </div>

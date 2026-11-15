@@ -10,19 +10,19 @@ import { cn } from '@/lib/utils';
 const FAQS = [
   {
     q: 'Is BigO Prep completely free to use?',
-    a: 'Yes. Core pattern roadmaps, full DSA problem trackers, CS core fundamentals (OS, DBMS, CN), and contest radar are 100% free forever with no credit card required. BigO Pro is an optional upgrade that unlocks timed company OA simulators and AI testcase debugging.',
+    a: 'Yes. Core pattern roadmaps covering 19 patterns and 172 variations, full problem trackers, 5 CS core fundamentals, and contest radar are 100% free forever with no credit card required. BigO Pro is an optional upgrade that unlocks timed company OA simulators and AI testcase debugging.',
   },
   {
     q: 'How are pattern variations different from regular problem lists?',
-    a: 'Instead of memorizing 200 isolated LeetCode problems, we group problems into core algorithmic variations (such as Fixed Window vs Dynamic Window vs Two Pointers). Once you learn the universal variation template, you can solve any related interview problem under timed exam conditions without freezing.',
+    a: 'Instead of memorizing hundreds of isolated LeetCode problems, we group problems into 172 algorithmic variations across 19 core patterns. Once you learn the universal variation template, you can solve any related interview problem under timed exam conditions without freezing.',
   },
   {
     q: 'Does it cover CS core subjects for technical interviews?',
-    a: 'Yes. Rejections in technical rounds frequently happen during Round-2 core CS questions. BigO includes dedicated high-yield revision sheets, subject Q&A interview drills, and flashcards for Operating Systems, DBMS, Computer Networks, and Object-Oriented Programming.',
+    a: 'Yes. Rejections in technical rounds frequently happen during Round-2 core CS questions. BigO includes dedicated high-yield revision sheets, subject Q&A interview drills, and flashcards for Operating Systems, DBMS, Computer Networks, System Design, and Object-Oriented Programming.',
   },
   {
     q: 'Can I simulate real company Online Assessments (OAs)?',
-    a: 'Yes. BigO provides realistic 45 to 70-minute timed mock tests emulating actual OA environments from top companies like Amazon, Google, Uber, and Microsoft, including test suites with edge cases and hidden tests.',
+    a: 'Yes. BigO provides realistic 45 to 90-minute timed mock tests emulating actual OA environments from top companies like Amazon, Google, Uber, Microsoft, and Atlassian, including private test suites with edge cases and hidden tests.',
   },
   {
     q: 'Does my progress sync across devices?',
@@ -41,9 +41,9 @@ export function FaqSection() {
     <section className="py-24 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto relative">
       <ScrollReveal direction="up" delay={0.1}>
         <div className="text-center mb-14 space-y-3">
-          <div className="inline-flex items-center gap-2 text-2xs font-mono font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-            <HelpCircle className="size-3" />
-            <span>CLARITY // COMMON QUESTIONS</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+            <HelpCircle className="size-3.5" />
+            <span>Frequently Asked Questions</span>
           </div>
           <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-foreground">
             Frequently asked questions.

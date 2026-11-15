@@ -34,7 +34,7 @@ export function MobileStickyCta() {
         >
           <div className="flex flex-col min-w-0">
             <span className="text-xs font-bold text-foreground truncate">
-              Master 90+ Patterns
+              Master 172 Variations
             </span>
             <span className="text-[10px] text-muted-foreground truncate">
               Free • Zero Distractions

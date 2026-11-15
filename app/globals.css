@@ -139,6 +139,8 @@
 }
 
 :root {
+  --font-display: var(--font-sans);
+
   /* Emerald brand scale */
   --accent-50: #ecfdf5;
   --accent-100: #d1fae5;

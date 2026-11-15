@@ -24,8 +24,8 @@ const PIPELINE_STAGES = [
     title: 'Drill the Variations',
     subtitle: 'Boundary & Twist Resilience',
     icon: Layers,
-    desc: 'Master the 90+ recurring variations per pattern. Solve non-standard twists, cyclic permutations, and complex constraints without freezing during tech rounds.',
-    badge: '90+ Variations',
+    desc: 'Master 172 recurring variations across 19 patterns. Solve non-standard twists, cyclic permutations, and complex constraints without freezing during tech rounds.',
+    badge: '172 Variations',
     actionText: 'View Variations',
     actionHref: '/non-standard',
   },
@@ -35,7 +35,7 @@ const PIPELINE_STAGES = [
     subtitle: 'Round-2 Technical Preparedness',
     icon: BookOpen,
     desc: 'Master concurrency deadlocks, virtual memory, SQL indexing internals, and TCP protocol handshakes with high-yield revision sheets and spaced-repetition cards.',
-    badge: 'OS · DBMS · Networks',
+    badge: '5 Core CS Subjects',
     actionText: 'Open CS Sheets',
     actionHref: '/subjects',
   },
@@ -57,10 +57,10 @@ export function PlacementLoopSection() {
       {/* Section Header */}
       <ScrollReveal direction="up" delay={0.1}>
         <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-          <div className="inline-flex items-center gap-2 text-2xs font-mono font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-            <span>[ SYSTEMATIC ROADMAP ]</span>
-            <span>/</span>
-            <span>4-STAGE PIPELINE</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+            <span>Systematic Roadmap</span>
+            <span className="text-emerald-500/40">·</span>
+            <span>4-Stage Pipeline</span>
           </div>
           <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-foreground">
             The 4-step placement loop.

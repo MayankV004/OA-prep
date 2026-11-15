@@ -18,9 +18,9 @@ export function CtaSection() {
             <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-96 h-48 bg-emerald-500/10 blur-3xl -z-10" />
 
             {/* Technical Eyebrow */}
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-sunken dark:bg-white/[0.04] border border-border/60 text-2xs font-mono font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-              <Terminal className="size-3" />
-              <span>FINAL PREPARATION MILESTONE</span>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+              <Terminal className="size-3.5" />
+              <span>Start Your Preparation</span>
             </div>
 
             {/* Headline in Sentence Case */}
@@ -33,7 +33,7 @@ export function CtaSection() {
 
             {/* Pragmatic Subtitle */}
             <p className="text-muted-foreground text-base sm:text-lg max-w-xl mx-auto leading-relaxed font-normal">
-              Master 90+ recurring patterns, simulate timed 45-minute company assessments under exam conditions, and master core CS rounds.
+              Master 172 recurring variations across 19 patterns, simulate timed assessments for top companies, and conquer CS core rounds.
             </p>
 
             {/* Action Buttons */}

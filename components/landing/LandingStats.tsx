@@ -14,17 +14,17 @@ interface LandingStatsProps {
 
 export function LandingStats({ liveStats }: LandingStatsProps) {
   return (
-    <section className="relative z-20 max-w-6xl mx-auto px-4 sm:px-6 my-16">
+    <section className="relative z-20 max-w-6xl mx-auto px-4 sm:px-6 py-14 sm:py-16">
       <ScrollReveal direction="up" delay={0.1} distance={20}>
         <div className="space-y-4">
           {/* Telemetry Header Line */}
-          <div className="flex items-center justify-between text-2xs font-mono text-muted-foreground border-b border-border/60 pb-2">
-            <span className="flex items-center gap-1.5 uppercase font-semibold tracking-wider text-emerald-600 dark:text-emerald-400">
-              <Activity className="size-3 animate-pulse" />
-              <span>Real-Time Telemetry // Verified Curriculum Surface</span>
+          <div className="flex items-center justify-between text-2xs font-mono text-muted-foreground border-b border-border/60 pb-2.5">
+            <span className="flex items-center gap-2 uppercase font-semibold tracking-wider text-emerald-600 dark:text-emerald-400">
+              <Activity className="size-3.5 animate-pulse text-emerald-500" />
+              <span>Verified Platform Curriculum</span>
             </span>
-            <span className="hidden sm:inline font-mono text-muted-foreground/70">
-              CURATED FOR CAMPUS & OFF-CAMPUS RECRUITMENT
+            <span className="hidden sm:inline font-mono text-muted-foreground/80">
+              CURATED FOR PLACEMENT SUCCESS
             </span>
           </div>
 
@@ -41,7 +41,7 @@ export function LandingStats({ liveStats }: LandingStatsProps) {
                 {liveStats.variations}
               </div>
               <p className="text-xs text-muted-foreground mt-2 font-medium">
-                Recurring pattern templates
+                Algorithmic problem archetypes
               </p>
             </div>
 
@@ -56,7 +56,7 @@ export function LandingStats({ liveStats }: LandingStatsProps) {
                 {liveStats.problems}
               </div>
               <p className="text-xs text-muted-foreground mt-2 font-medium">
-                Curated problem catalog
+                Curated practice catalog
               </p>
             </div>
 
@@ -68,10 +68,10 @@ export function LandingStats({ liveStats }: LandingStatsProps) {
                 <BookOpen className="size-4 text-muted-foreground group-hover:text-emerald-500 transition-colors" />
               </div>
               <div className="text-3xl sm:text-4xl lg:text-5xl font-black font-mono tracking-tight text-foreground">
-                4
+                5
               </div>
               <p className="text-xs text-muted-foreground mt-2 font-medium">
-                OS, DBMS, Networks, OOP
+                OS, DBMS, CN, System Design, OOP
               </p>
             </div>
 
@@ -86,7 +86,7 @@ export function LandingStats({ liveStats }: LandingStatsProps) {
                 6
               </div>
               <p className="text-xs text-muted-foreground mt-2 font-medium">
-                Full timed assessment sets
+                Full timed assessment tracks
               </p>
             </div>
           </div>

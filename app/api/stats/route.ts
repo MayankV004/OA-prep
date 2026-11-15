@@ -44,14 +44,10 @@ export async function GET() {
 
     return NextResponse.json(
       {
-        patternCount: data.patternCount || 10,
-        variationCount: data.variationCount
-          ? `${Math.floor(data.variationCount / 10) * 10}+`
-          : '90+',
-        problemCount: data.problemCount
-          ? `${Math.floor(data.problemCount / 100) * 100}+`
-          : '500+',
-        topicCount: data.topicCount || 7,
+        patternCount: data.patternCount || 19,
+        variationCount: data.variationCount ? String(data.variationCount) : '172',
+        problemCount: data.problemCount ? `${data.problemCount}+` : '870+',
+        topicCount: 5,
       },
       {
         headers: {
@@ -62,10 +58,10 @@ export async function GET() {
     );
   } catch (error) {
     return NextResponse.json({
-      patternCount: 10,
-      variationCount: '90+',
-      problemCount: '500+',
-      topicCount: 7,
+      patternCount: 19,
+      variationCount: '172',
+      problemCount: '870+',
+      topicCount: 5,
     });
   }
 }

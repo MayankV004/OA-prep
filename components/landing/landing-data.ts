@@ -121,12 +121,12 @@ export const getPlatformModules = (liveStats: {
       'Operating Systems & Concurrency',
       'DBMS, B-Trees & SQL Indexing',
       'Computer Networks & Protocols',
-      'Object-Oriented Design Principles',
+      'System Design & OOP Principles',
     ],
     linkText: 'Study CS Subjects',
     linkUrl: '/subjects',
     icon: Terminal,
-    metric: '4 Core CS Subjects',
+    metric: '5 Core CS Subjects',
   },
   {
     id: 'company-oa',
@@ -136,8 +136,8 @@ export const getPlatformModules = (liveStats: {
     description:
       'Tackle authentic Online Assessment questions and non-standard problem sets asked by Amazon, Google, Microsoft, Uber, and Atlassian under timed conditions.',
     highlights: [
-      'Amazon, Google & Uber OA Sets',
-      'Non-Standard Problem Buckets',
+      'Amazon, Google, Uber & MS Sets',
+      '100 Non-Standard Curveballs',
       'Timed Exam Simulation Mode',
       'Hidden Edge Cases & Time Constraints',
     ],
@@ -155,7 +155,7 @@ export const getPlatformModules = (liveStats: {
       'Built-in spaced repetition engine and quick-reference cheatsheets. Retain time & space complexity proofs, OS mutex vs semaphore nuances, and SQL indexing rules right before your interview.',
     highlights: [
       'Algorithm Complexity Proofs',
-      'OS & Networking Flashcards',
+      'OS, DBMS & Networks Flashcards',
       'System Design Architecture Notes',
       'Spaced Repetition Review Engine',
     ],
@@ -175,12 +175,12 @@ export const PLACEMENT_STEPS = [
   {
     num: '02',
     title: 'Practice Variations',
-    desc: 'Solve handpicked OA problem variations grouped by pattern difficulty and company frequency.',
+    desc: 'Solve handpicked OA problem variations across 172 archetypes grouped by pattern difficulty.',
   },
   {
     num: '03',
     title: 'Retain CS Cores',
-    desc: 'Use active-recall flashcards for Operating Systems, DBMS, Computer Networks, and System Design.',
+    desc: 'Use active-recall flashcards for Operating Systems, DBMS, Computer Networks, System Design, and OOP.',
   },
   {
     num: '04',

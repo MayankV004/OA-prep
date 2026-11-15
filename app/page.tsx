@@ -6,14 +6,14 @@ const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://bigoprep.tech';
 export const metadata: Metadata = {
   title: 'BigO - Master DSA Patterns & Technical Online Assessments',
   description:
-    'Master 90+ DSA patterns, full-screen OA simulations, and CS core subjects. Practice with spaced repetition and multi-language code execution.',
+    'Master 19 DSA patterns with 172 variations, full-screen OA simulations, and 5 CS core subjects. Practice with spaced repetition and multi-language code execution.',
   alternates: {
     canonical: siteUrl,
   },
   openGraph: {
     title: 'BigO - Master DSA Patterns & Technical Online Assessments',
     description:
-      'Master 90+ DSA patterns, full-screen OA simulations, and CS core subjects. Practice with spaced repetition and multi-language code execution.',
+      'Master 19 DSA patterns with 172 variations, full-screen OA simulations, and 5 CS core subjects. Practice with spaced repetition and multi-language code execution.',
     url: siteUrl,
     type: 'website',
     siteName: 'BigO',
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'BigO - Master DSA Patterns & Technical Online Assessments',
     description:
-      'Master 90+ DSA patterns, full-screen OA simulations, and CS core subjects.',
+      'Master 19 DSA patterns with 172 variations, full-screen OA simulations, and 5 CS core subjects.',
     images: ['/opengraph-image'],
   },
 };
@@ -48,9 +48,9 @@ const jsonLd = {
       description:
         'Structured algorithmic problem roadmaps, CS core subjects, and timed online assessment simulations for engineering candidates.',
       featureList: [
-        '14 Core DSA Pattern Roadmaps',
-        'Timed 45-70 min Company Online Assessment Simulators',
-        'Interactive CS Core Subjects (OS, DBMS, CN, System Design)',
+        '19 Core DSA Pattern Roadmaps (172 Variations)',
+        'Timed 45-90 min Company Online Assessment Simulators',
+        '5 Interactive CS Core Subjects (OS, DBMS, CN, System Design, OOP)',
         'Spaced Repetition Flashcards',
         'Competitive Programming Contest Radar',
         'Engineering Syntax Cheatsheets',
@@ -86,7 +86,7 @@ const jsonLd = {
           name: 'Is BigO completely free to use?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Yes! Core pattern roadmaps, full DSA problem trackers, CS core fundamentals (OS, DBMS, CN), and contest radar are 100% free forever with no credit card required.',
+            text: 'Yes! Core pattern roadmaps covering 19 patterns and 172 variations, full DSA problem trackers, 5 CS core fundamentals, and contest radar are 100% free forever with no credit card required.',
           },
         },
         {
@@ -94,7 +94,7 @@ const jsonLd = {
           name: 'How are pattern variations different from regular problem lists?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Instead of memorizing 200 isolated problems, we group problems into core algorithmic variations with universal templates so you can solve any related interview problem under timed exam conditions without freezing.',
+            text: 'Instead of memorizing isolated problems, we group problems into 172 algorithmic variations across 19 patterns with universal templates so you can solve any related interview problem under timed exam conditions without freezing.',
           },
         },
         {
@@ -102,7 +102,7 @@ const jsonLd = {
           name: 'Does it cover CS core subjects for technical interviews?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Yes. BigO includes dedicated high-yield revision sheets, subject Q&A interview drills, and flashcards for Operating Systems, DBMS, Computer Networks, and Object-Oriented Programming.',
+            text: 'Yes. BigO includes dedicated high-yield revision sheets, subject Q&A interview drills, and flashcards for Operating Systems, DBMS, Computer Networks, System Design, and Object-Oriented Programming.',
           },
         },
         {
@@ -110,7 +110,7 @@ const jsonLd = {
           name: 'Can I simulate real company Online Assessments (OAs)?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Yes. BigO provides realistic 45 to 70-minute timed mock tests emulating actual OA environments from top tech companies with comprehensive edge case suites.',
+            text: 'Yes. BigO provides realistic 45 to 90-minute timed mock tests emulating actual OA environments from top tech companies with comprehensive edge case suites.',
           },
         },
       ],

@@ -116,9 +116,9 @@ export function CompanyMarquee() {
   return (
     <section className="py-10 relative overflow-hidden border-y border-border/60 dark:border-white/5 bg-surface-sunken/40 dark:bg-white/[0.01]">
       <div className="max-w-7xl mx-auto px-4 mb-5 text-center">
-        <div className="inline-flex items-center gap-2 text-2xs font-mono font-semibold uppercase tracking-wider text-muted-foreground">
+        <div className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground">
           <span className="size-1.5 rounded-full bg-emerald-500" />
-          <span>Curated for Tier-1 Online Assessments & Placement Rounds</span>
+          <span>Curated problem sets & timed mock assessments for top tech companies</span>
         </div>
       </div>
 
