@@ -47,11 +47,9 @@ export default function DSALoading() {
                 <Skeleton className="size-11 sm:size-12 rounded-2xl shrink-0" />
               </div>
 
-              {/* Title & description */}
-              <div className="space-y-2">
+              {/* Title */}
+              <div>
                 <Skeleton className="h-6 w-3/4 rounded-lg" />
-                <Skeleton className="h-3.5 w-full rounded" />
-                <Skeleton className="h-3.5 w-4/5 rounded" />
               </div>
 
               {/* Variations & Tasks Meta */}

@@ -440,10 +440,6 @@ export default function DSAPageClient({ initialPatterns }: { initialPatterns: an
             const slug = pattern.slug;
             const variationsCount = pattern.variations?.length || 0;
 
-            // Clean description snippet
-            const rawDesc = pattern.description || pattern.concept || '';
-            const cleanDesc = rawDesc.replace(/[#*`_]/g, '').trim();
-
             return (
               <motion.div key={pattern.title} variants={itemVariants} className="h-full">
                 <Link href={`/dsa/${slug}`} className="group block h-full outline-none">
@@ -478,16 +474,11 @@ export default function DSAPageClient({ initialPatterns }: { initialPatterns: an
                         <CircularMasteryRing pct={pct} isMastered={isMastered} />
                       </div>
 
-                      {/* Pattern Title & Subtitle */}
+                      {/* Pattern Title */}
                       <div>
                         <h3 className="font-display text-xl sm:text-2xl font-bold tracking-tight text-foreground group-hover:text-primary transition-colors">
                           {pattern.title}
                         </h3>
-                        {cleanDesc && (
-                          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed line-clamp-2 mt-1.5 font-normal">
-                            {cleanDesc}
-                          </p>
-                        )}
                       </div>
 
                       {/* Variations & Tasks Meta Row */}
