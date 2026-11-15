@@ -460,7 +460,7 @@ export default function DSAPageClient({ initialPatterns }: { initialPatterns: an
                       <div className="flex items-start justify-between gap-3">
                         <span
                           className={cn(
-                            'px-3.5 py-1 rounded-full text-xs font-semibold border shadow-2xs backdrop-blur-md',
+                            'px-2.5 py-0.5 rounded-full text-[11px] font-semibold border shadow-2xs backdrop-blur-md',
                             isMastered
                               ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25'
                               : isInProgress

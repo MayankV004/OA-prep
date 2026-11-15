@@ -43,7 +43,7 @@ export default function DSALoading() {
             <div className="space-y-3.5">
               {/* Top row: Pill badge + icon box */}
               <div className="flex items-start justify-between gap-3">
-                <Skeleton className="h-6 w-20 rounded-full" />
+                <Skeleton className="h-5 w-16 rounded-full" />
                 <Skeleton className="size-11 sm:size-12 rounded-2xl shrink-0" />
               </div>
 

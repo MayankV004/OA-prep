@@ -547,19 +547,19 @@ export default function InterviewPage() {
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex flex-wrap items-center gap-1.5">
                         {due > 0 ? (
-                          <span className="px-3.5 py-1 rounded-full text-xs font-semibold border shadow-2xs backdrop-blur-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25">
+                          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold border shadow-2xs backdrop-blur-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25">
                             {due} Due Review
                           </span>
                         ) : isMastered ? (
-                          <span className="px-3.5 py-1 rounded-full text-xs font-semibold border shadow-2xs backdrop-blur-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25">
+                          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold border shadow-2xs backdrop-blur-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25">
                             Mastered
                           </span>
                         ) : isInProgress ? (
-                          <span className="px-3.5 py-1 rounded-full text-xs font-semibold border shadow-2xs backdrop-blur-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25">
+                          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold border shadow-2xs backdrop-blur-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25">
                             In Progress
                           </span>
                         ) : (
-                          <span className="px-3.5 py-1 rounded-full text-xs font-semibold border shadow-2xs backdrop-blur-md bg-foreground/[0.04] dark:bg-white/[0.06] text-muted-foreground border-border/70 dark:border-white/10">
+                          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold border shadow-2xs backdrop-blur-md bg-foreground/[0.04] dark:bg-white/[0.06] text-muted-foreground border-border/70 dark:border-white/10">
                             Interview Module
                           </span>
                         )}
