@@ -660,3 +660,9 @@
 .animate-marquee:hover {
   animation-play-state: paused;
 }
+
+/* ─── Content Visibility Optimization for Off-Screen Sections ─── */
+.content-visibility-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 600px;
+}

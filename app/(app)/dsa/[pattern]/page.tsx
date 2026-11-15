@@ -80,9 +80,20 @@ export default async function DSAPatternPage({ params }: { params: Promise<{ pat
 
   const htmlBlocks: Record<string, string> = {};
   if (pattern.variations) {
-    for (const v of pattern.variations) {
-      if (v.templateCode || v.template_code) {
-        htmlBlocks[v._id || v.id] = await highlightCode(v.templateCode || v.template_code, 'java');
+    const variationHighlights = await Promise.all(
+      pattern.variations.map(async (v: any) => {
+        const code = v.templateCode || v.template_code;
+        if (code) {
+          const html = await highlightCode(code, 'java');
+          return { id: v._id || v.id, html };
+        }
+        return null;
+      })
+    );
+
+    for (const item of variationHighlights) {
+      if (item) {
+        htmlBlocks[item.id] = item.html;
       }
     }
   }

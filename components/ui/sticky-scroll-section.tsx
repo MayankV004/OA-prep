@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { ArrowRight, CheckCircle2 } from 'lucide-react';
@@ -26,6 +26,10 @@ interface StickyScrollSectionProps {
 
 export function StickyScrollSection({ items }: StickyScrollSectionProps) {
   const [activeIdx, setActiveIdx] = useState(0);
+
+  const handleItemInView = useCallback((idx: number) => {
+    setActiveIdx(idx);
+  }, []);
 
   return (
     <div className="relative max-w-7xl mx-auto px-4 md:px-8 py-12">
@@ -119,7 +123,7 @@ export function StickyScrollSection({ items }: StickyScrollSectionProps) {
               key={item.id}
               item={item}
               index={idx}
-              onInView={() => setActiveIdx(idx)}
+              onInView={handleItemInView}
             />
           ))}
         </div>
@@ -135,7 +139,7 @@ function StickyItemCard({
 }: {
   item: StickyScrollItem;
   index: number;
-  onInView: () => void;
+  onInView: (index: number) => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { margin: '-35% 0px -35% 0px' });
@@ -143,9 +147,9 @@ function StickyItemCard({
 
   useEffect(() => {
     if (isInView) {
-      onInView();
+      onInView(index);
     }
-  }, [isInView, onInView]);
+  }, [isInView, onInView, index]);
 
   return (
     <div

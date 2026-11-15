@@ -17,7 +17,6 @@ import {
   ExternalLink,
   ChevronDown,
 } from 'lucide-react';
-import { highlightCode } from '@/lib/shiki';
 import { cn } from '@/lib/utils';
 import { visit } from 'unist-util-visit';
 
@@ -177,7 +176,8 @@ function CodeBlock({ code, language }: { code: string; language: string }) {
   useEffect(() => {
     let isMounted = true;
     if (language && language !== 'mermaid' && code) {
-      highlightCode(code, language)
+      import('@/lib/shiki')
+        .then((m) => m.highlightCode(code, language))
         .then((html) => {
           if (isMounted && html) {
             setHighlightedHtml(html);

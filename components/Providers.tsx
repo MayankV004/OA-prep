@@ -55,7 +55,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <ToastProvider>
         {children}
         <Toaster />
-        <ReactQueryDevtools initialIsOpen={false} />
+        {process.env.NODE_ENV === 'development' && (
+          <ReactQueryDevtools initialIsOpen={false} />
+        )}
       </ToastProvider>
     </PersistQueryClientProvider>
   );

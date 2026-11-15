@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState, useId, useMemo } from 'react';
-import mermaid from 'mermaid';
 import { useTheme } from 'next-themes';
 
 interface MermaidProps {
@@ -43,6 +42,9 @@ export function Mermaid({ chart }: MermaidProps) {
 
     const renderChart = async () => {
       try {
+        const mermaidModule = await import('mermaid');
+        const mermaid = mermaidModule.default || mermaidModule;
+
         mermaid.initialize({
           startOnLoad: false,
           theme,

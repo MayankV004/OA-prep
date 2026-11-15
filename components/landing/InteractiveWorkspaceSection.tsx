@@ -17,22 +17,32 @@ import { Check } from '@/components/animate-ui/icons/check';
 import { ScrollReveal, Scroll3DCard } from '@/components/ui/scroll-reveal';
 import { CODE_SNIPPETS } from './landing-data';
 
+// Cache tokenized lines to eliminate regex evaluation on tab switches
+const tokenLineCache = new Map<string, React.ReactNode>();
+
 // Lightweight token highlighter for crystal-clear code in both light & dark modes
-function highlightCodeLine(line: string) {
+function highlightCodeLine(line: string): React.ReactNode {
+  const cached = tokenLineCache.get(line);
+  if (cached) return cached;
+
   // Comments
   if (line.trim().startsWith('//') || line.trim().startsWith('#')) {
-    return <span className="text-zinc-500 italic font-mono">{line}</span>;
+    const res = <span className="text-zinc-500 italic font-mono">{line}</span>;
+    tokenLineCache.set(line, res);
+    return res;
   }
 
   // Preprocessor / Imports
   if (line.trim().startsWith('#include') || line.trim().startsWith('import ')) {
     const parts = line.split(/(#include|import)/);
-    return (
+    const res = (
       <span className="font-mono">
         <span className="text-emerald-400 font-semibold">{parts[1]}</span>
         <span className="text-amber-300">{parts[2]}</span>
       </span>
     );
+    tokenLineCache.set(line, res);
+    return res;
   }
 
   // Tokenize keywords, builtins, functions, numbers, and operators
@@ -40,7 +50,7 @@ function highlightCodeLine(line: string) {
     /(\b(?:int|const|return|for|while|if|else|def|public|class|boolean|new|continue|size_t|void)\b|\b(?:std|vector|list|Queue|LinkedList|Solution|accumulate|max|min|len)\b|\b(?:maxSumSubarray|maxArea|isBipartite)\b|\b\d+\b|[-+*\/=<>!&|?:;,.(){}\[\]]+|[ \t]+|[A-Za-z_][A-Za-z0-9_]*)/g
   );
 
-  return (
+  const res = (
     <span className="font-mono">
       {tokens.map((token, idx) => {
         if (!token) return null;
@@ -63,6 +73,8 @@ function highlightCodeLine(line: string) {
       })}
     </span>
   );
+  tokenLineCache.set(line, res);
+  return res;
 }
 
 const FEATURE_PILLS = [

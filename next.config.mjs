@@ -19,6 +19,9 @@ if (process.env.NEXT_PUBLIC_APP_URL) {
 
 const nextConfig = {
   allowedDevOrigins,
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'date-fns', 'recharts'],
+  },
   images: {
     dangerouslyAllowSVG: false,
     remotePatterns: [

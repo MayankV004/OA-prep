@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import Image from 'next/image';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { format } from 'date-fns';
@@ -518,9 +519,11 @@ export default function ProfilePage() {
             <div className="relative group shrink-0">
               <div className="relative size-24 sm:size-28 rounded-full p-1 bg-surface-sunken dark:bg-white/[0.06] shadow-xs">
                 {hasAvatar ? (
-                  <img
+                  <Image
                     src={user.image!}
                     alt={user.name}
+                    width={112}
+                    height={112}
                     referrerPolicy="no-referrer"
                     onError={() => setImgError(true)}
                     className="size-full rounded-full object-cover bg-background"
@@ -1484,9 +1487,11 @@ export default function ProfilePage() {
                             : 'bg-surface-sunken dark:bg-white/[0.04] hover:bg-surface-sunken/80'
                         )}
                       >
-                        <img
+                        <Image
                           src={data.user.image}
                           alt="Google Account"
+                          width={40}
+                          height={40}
                           referrerPolicy="no-referrer"
                           className="size-10 rounded-full object-cover shrink-0"
                         />

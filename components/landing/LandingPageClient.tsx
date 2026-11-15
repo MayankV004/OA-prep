@@ -87,19 +87,29 @@ export function LandingPageClient() {
         </section>
 
         {/* 7. Comparison: Random Grind vs Pattern Intuition */}
-        <ComparisonSection />
+        <div className="content-visibility-auto">
+          <ComparisonSection />
+        </div>
 
         {/* 8. The 4-Step Placement Loop Pipeline */}
-        <PlacementLoopSection />
+        <div className="content-visibility-auto">
+          <PlacementLoopSection />
+        </div>
 
         {/* 9. Multi-Language Interactive Workspace Cockpit */}
-        <InteractiveWorkspaceSection />
+        <div className="content-visibility-auto">
+          <InteractiveWorkspaceSection />
+        </div>
 
         {/* 10. Interactive Frequently Asked Questions */}
-        <FaqSection />
+        <div className="content-visibility-auto">
+          <FaqSection />
+        </div>
 
         {/* 11. Closing Call To Action Section */}
-        <CtaSection />
+        <div className="content-visibility-auto">
+          <CtaSection />
+        </div>
 
         {/* 12. Glassmorphic Footer (Callout hidden here to avoid double-CTA collision with CtaSection) */}
         <Footer variant="public" showCallout={false} />

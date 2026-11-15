@@ -15,12 +15,20 @@ import {
 import { format, parseISO } from 'date-fns';
 import { SpotlightCard } from '@/components/ui/spotlight-card';
 import { Skeleton } from '@/components/ui/skeleton';
+import dynamic from 'next/dynamic';
 import { CpProfileOverviewCard, UserCpProfileData } from '@/components/cp/CpProfileOverviewCard';
-import { RatingProgressChart } from '@/components/cp/RatingProgressChart';
 import { ContestHistoryTable, ContestHistoryRecord } from '@/components/cp/ContestHistoryTable';
 import { ContestAlertPreferencesModal } from '@/components/contests/ContestAlertPreferencesModal';
 import { Button } from '@/components/ui/button';
 import { queryKeys, STALE_TIMES } from '@/lib/query-keys';
+
+const RatingProgressChart = dynamic(
+  () => import('@/components/cp/RatingProgressChart').then((m) => m.RatingProgressChart),
+  {
+    loading: () => <Skeleton className="h-[340px] w-full rounded-2xl" />,
+    ssr: false,
+  }
+);
 
 interface PerformanceData {
   success: boolean;

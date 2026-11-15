@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef, useMemo } from 'react';
+import { useState, useCallback, useRef, useMemo, memo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import {
@@ -47,7 +47,7 @@ const DIFF_STYLE = {
 } as const;
 
 /* ── Individual problem row ─────────────────────────────────────────────── */
-function ProblemRow({
+const ProblemRow = memo(function ProblemRow({
   problem,
   index,
   completed,
@@ -408,7 +408,7 @@ function ProblemRow({
       )}
     </li>
   );
-}
+});
 
 /* ── Main component ─────────────────────────────────────────────────────── */
 export default function PracticePageClient({
@@ -524,6 +524,18 @@ export default function PracticePageClient({
       [problemId]: { ...old[problemId], userNotes },
     }));
   }, [queryClient, progressKey]);
+
+  const handleToggleComplete = useCallback((id: string, val: boolean) => {
+    completeMutation.mutate({ problemId: id, completed: val });
+  }, [completeMutation]);
+
+  const handleToggleRevision = useCallback((id: string, val: boolean) => {
+    revisionMutation.mutate({ problemId: id, revision: val });
+  }, [revisionMutation]);
+
+  const handleMarkRevised = useCallback((id: string) => {
+    markRevisedMutation.mutate(id);
+  }, [markRevisedMutation]);
 
   /* Aggregate stats & filters */
   type FilterType = 'all' | 'unsolved' | 'solved' | 'revision';
@@ -650,9 +662,9 @@ export default function PracticePageClient({
               completed={progressData[p._id]?.completed ?? false}
               revision={progressData[p._id]?.revision ?? false}
               userNotes={progressData[p._id]?.userNotes ?? ''}
-              onToggleComplete={(id, val) => completeMutation.mutate({ problemId: id, completed: val })}
-              onToggleRevision={(id, val) => revisionMutation.mutate({ problemId: id, revision: val })}
-              onMarkRevised={(id) => markRevisedMutation.mutate(id)}
+              onToggleComplete={handleToggleComplete}
+              onToggleRevision={handleToggleRevision}
+              onMarkRevised={handleMarkRevised}
               onSaveNotes={saveNotes}
             />
           ))}

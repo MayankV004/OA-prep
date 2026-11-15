@@ -5,11 +5,16 @@ import { usePathname } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 
 import { cn } from '@/lib/utils';
-import { CommandPalette } from './CommandPalette';
+import dynamic from 'next/dynamic';
 import { Sidebar, SIDEBAR_COLLAPSED_WIDTH, SIDEBAR_WIDTH } from './Sidebar';
 import { Topbar } from './Topbar';
 import { SidebarProvider, useSidebar } from './use-sidebar';
 import { APP_NAV, ADMIN_NAV, type NavSection } from './nav';
+
+const CommandPalette = dynamic(
+  () => import('./CommandPalette').then((m) => m.CommandPalette),
+  { ssr: false }
+);
 
 function ShellFrame({
   sections,
