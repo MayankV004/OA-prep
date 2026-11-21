@@ -54,11 +54,11 @@ function CircularMasteryRing({ pct, isMastered }: { pct: number; isMastered: boo
   return (
     <div
       className={cn(
-        'size-11 sm:size-12 rounded-2xl flex items-center justify-center border shadow-2xs backdrop-blur-md transition-all duration-300 group-hover:scale-105 shrink-0 relative',
-        'bg-foreground/[0.03] dark:bg-white/[0.06] border-border/70 dark:border-white/10',
+        'size-11 sm:size-12 rounded-2xl flex items-center justify-center border shadow-2xs backdrop-blur-md transition-all duration-300 group-hover/card:scale-105 shrink-0 relative',
+        'bg-surface-sunken border-border/80 dark:border-emerald-500/20 dark:bg-emerald-950/20',
         isMastered
-          ? 'group-hover:border-emerald-500/40 group-hover:bg-emerald-500/[0.05]'
-          : 'group-hover:border-primary/40 group-hover:bg-primary/[0.05]'
+          ? 'border-emerald-500/30 bg-emerald-500/10 shadow-[0_0_12px_rgba(16,185,129,0.2)]'
+          : 'group-hover/card:border-primary/40 group-hover/card:bg-primary/[0.05]'
       )}
       title={`${pct}% mastered`}
     >
@@ -68,7 +68,7 @@ function CircularMasteryRing({ pct, isMastered }: { pct: number; isMastered: boo
           cx="18"
           cy="18"
           r={radius}
-          className="stroke-foreground/10 dark:stroke-white/10 fill-none"
+          className="stroke-muted-foreground/20 dark:stroke-emerald-950/60 fill-none"
           strokeWidth="2.75"
         />
         {/* Progress fill */}
@@ -78,7 +78,9 @@ function CircularMasteryRing({ pct, isMastered }: { pct: number; isMastered: boo
           r={radius}
           className={cn(
             'fill-none transition-all duration-500 ease-out',
-            isMastered ? 'stroke-emerald-500' : 'stroke-primary'
+            isMastered
+              ? 'stroke-emerald-500 drop-shadow-[0_0_4px_rgba(16,185,129,0.8)]'
+              : 'stroke-primary'
           )}
           strokeWidth="2.75"
           strokeDasharray={circumference}
@@ -91,7 +93,7 @@ function CircularMasteryRing({ pct, isMastered }: { pct: number; isMastered: boo
         {isMastered ? (
           <Check className="size-3.5 text-emerald-500 stroke-[3]" />
         ) : (
-          <span className="text-[10px] font-mono font-bold text-foreground/90">
+          <span className="text-[10px] font-mono font-bold text-foreground tabular-nums">
             {pct}%
           </span>
         )}
@@ -290,10 +292,10 @@ export default function DSAPageClient({ initialPatterns }: { initialPatterns: an
         </div>
       )}
 
-      {/* 3. Search & Dual-Tier Filter Toolbar */}
+      {/* ── 3. Search & Dual-Tier Filter Toolbar ──────────────────────── */}
       <div className="space-y-3">
         {/* Search Bar & Status Tabs */}
-        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 p-2.5 sm:p-3 rounded-2xl bg-card/60 border border-border/70 backdrop-blur-md shadow-xs">
+        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 p-3 rounded-2xl bg-card border border-border/80 shadow-2xs backdrop-blur-xl">
           {/* Search Box */}
           <div className="relative flex-1">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
@@ -303,7 +305,7 @@ export default function DSAPageClient({ initialPatterns }: { initialPatterns: an
               placeholder="Search patterns by name, triggers, or complexities (e.g. 'two pointers', 'O(N)')..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-10 pl-10 pr-16 text-xs sm:text-sm font-medium bg-background/80 rounded-xl border border-border/70 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-muted-foreground/60"
+              className="w-full h-10 pl-10 pr-16 text-xs sm:text-sm font-medium bg-background rounded-xl border border-border/70 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-muted-foreground/60"
             />
             {searchQuery ? (
               <button
@@ -322,7 +324,7 @@ export default function DSAPageClient({ initialPatterns }: { initialPatterns: an
           </div>
 
           {/* Status Filter Tabs with Counts */}
-          <div className="flex items-center gap-1 overflow-x-auto p-1 rounded-xl bg-surface-sunken/80 border border-border/60 shrink-0">
+          <div className="flex items-center gap-1 overflow-x-auto p-1 rounded-xl bg-surface-sunken border border-border/70 shrink-0">
             {(
               [
                 { id: 'all', label: 'All', count: initialPatterns.length },
@@ -340,15 +342,15 @@ export default function DSAPageClient({ initialPatterns }: { initialPatterns: an
                   className={cn(
                     'px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5',
                     isActive
-                      ? 'bg-card text-foreground font-bold shadow-2xs border border-border/60'
+                      ? 'bg-card text-foreground font-bold shadow-2xs border border-border/80'
                       : 'text-muted-foreground hover:text-foreground'
                   )}
                 >
                   <span>{tab.label}</span>
                   <span
                     className={cn(
-                      'px-1.5 py-0.2 rounded text-[10px] font-mono tabular-nums',
-                      isActive ? 'bg-muted text-foreground' : 'text-muted-foreground'
+                      'px-1.5 py-0.2 rounded-md text-[10px] font-mono tabular-nums',
+                      isActive ? 'bg-muted text-foreground font-bold' : 'text-muted-foreground'
                     )}
                   >
                     {tab.count}
@@ -373,7 +375,7 @@ export default function DSAPageClient({ initialPatterns }: { initialPatterns: an
                     'px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap border transition-all cursor-pointer',
                     isActive
                       ? 'bg-primary/15 text-primary border-primary/30 font-bold shadow-2xs'
-                      : 'bg-card/50 text-muted-foreground border-border/60 hover:bg-card hover:text-foreground'
+                      : 'bg-card text-muted-foreground border-border/70 hover:text-foreground hover:border-border'
                   )}
                 >
                   {cat.label}
@@ -400,9 +402,9 @@ export default function DSAPageClient({ initialPatterns }: { initialPatterns: an
         </div>
       </div>
 
-      {/* 4. Pattern Grid (Modern LMS Course-Cards Aesthetic with Pastel Tones) */}
+      {/* ── 4. Pattern Grid (Executive Cards with Specular Highlight) ──── */}
       {filteredPatterns.length === 0 ? (
-        <div className="p-12 text-center rounded-3xl bg-card/40 border border-dashed border-border/80 space-y-4">
+        <div className="p-12 text-center rounded-3xl bg-card border border-dashed border-border/80 space-y-4">
           <div className="size-12 rounded-2xl bg-muted/60 border border-border/60 flex items-center justify-center text-muted-foreground mx-auto">
             <Search className="size-5" />
           </div>
@@ -430,7 +432,7 @@ export default function DSAPageClient({ initialPatterns }: { initialPatterns: an
           variants={containerVariants}
           initial="hidden"
           animate="show"
-          className="grid gap-6 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3"
+          className="grid gap-5 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3"
         >
           {filteredPatterns.map((pattern) => {
             const stat = statsMap[pattern.title] ?? { total: 0, completed: 0 };
@@ -442,30 +444,27 @@ export default function DSAPageClient({ initialPatterns }: { initialPatterns: an
 
             return (
               <motion.div key={pattern.title} variants={itemVariants} className="h-full">
-                <Link href={`/dsa/${slug}`} className="group block h-full outline-none">
+                <Link href={`/dsa/${slug}`} className="group/card block h-full outline-none">
                   <div
                     className={cn(
-                      'h-full flex flex-col justify-between p-6 sm:p-7 rounded-[28px] sm:rounded-3xl border transition-all duration-300 relative overflow-hidden',
-                      // Frosted glass styling
-                      'bg-card/70 dark:bg-card/35 backdrop-blur-2xl',
-                      'border-border/80 dark:border-white/10',
-                      'hover:border-foreground/20 dark:hover:border-white/20',
-                      'shadow-xs hover:shadow-xl hover:-translate-y-0.5',
+                      'h-full flex flex-col justify-between p-6 rounded-2xl border transition-all duration-300 relative overflow-hidden',
+                      'bg-card border-border/80 shadow-2xs',
+                      'hover:shadow-lg hover:-translate-y-1 hover:border-primary/40 dark:hover:border-emerald-500/40',
                       // Top specular sheen
-                      'before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white/70 dark:before:via-white/15 before:to-transparent'
+                      'before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-emerald-500/25 before:to-transparent'
                     )}
                   >
                     <div className="space-y-3.5">
-                      {/* Top Header Row: Frosted Badge + Circular Mastery Ring */}
+                      {/* Top Header Row: Status Chip + Circular Mastery Ring */}
                       <div className="flex items-start justify-between gap-3">
                         <span
                           className={cn(
-                            'px-2.5 py-0.5 rounded-full text-[11px] font-semibold border shadow-2xs backdrop-blur-md',
+                            'px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider border shadow-2xs',
                             isMastered
-                              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25'
+                              ? 'bg-emerald-500/15 text-emerald-500 dark:text-emerald-400 border-emerald-500/30'
                               : isInProgress
-                              ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25'
-                              : 'bg-foreground/[0.04] dark:bg-white/[0.06] text-muted-foreground border-border/70 dark:border-white/10'
+                              ? 'bg-amber-500/15 text-amber-500 dark:text-amber-400 border-amber-500/30'
+                              : 'bg-surface-sunken text-muted-foreground border-border/80'
                           )}
                         >
                           {isMastered ? 'Mastered' : isInProgress ? 'In Progress' : 'Roadmap'}
@@ -476,16 +475,16 @@ export default function DSAPageClient({ initialPatterns }: { initialPatterns: an
 
                       {/* Pattern Title */}
                       <div>
-                        <h3 className="font-display text-xl sm:text-2xl font-bold tracking-tight text-foreground group-hover:text-primary transition-colors">
+                        <h3 className="font-display text-xl font-bold tracking-tight text-foreground group-hover/card:text-primary transition-colors">
                           {pattern.title}
                         </h3>
                       </div>
 
                       {/* Variations & Tasks Meta Row */}
-                      <div className="flex flex-wrap items-center gap-2.5 text-xs font-medium text-foreground/80 pt-1">
+                      <div className="flex flex-wrap items-center gap-2.5 text-xs font-medium text-foreground/80 pt-0.5">
                         <span className="flex items-center gap-1.5">
-                          <Layers className="size-3.5 text-muted-foreground" />
-                          {variationsCount} variations
+                          <Layers className="size-3.5 text-primary" />
+                          <span>{variationsCount} variations</span>
                         </span>
                         <span className="text-muted-foreground/40">•</span>
                         <span className="flex items-center gap-1.5">
@@ -497,29 +496,45 @@ export default function DSAPageClient({ initialPatterns }: { initialPatterns: an
                       {/* Complexities Badges */}
                       <div className="flex flex-wrap items-center gap-1.5 pt-1">
                         {pattern.timeComplexity && (
-                          <span className="px-2.5 py-0.5 rounded-lg bg-foreground/[0.03] dark:bg-white/[0.04] border border-border/60 dark:border-white/10 font-mono text-[11px] text-muted-foreground backdrop-blur-xs">
+                          <span className="px-2.5 py-0.5 rounded-lg bg-surface-sunken border border-border/80 font-mono text-[11px] text-muted-foreground">
                             Time: {pattern.timeComplexity}
                           </span>
                         )}
                         {pattern.spaceComplexity && (
-                          <span className="px-2.5 py-0.5 rounded-lg bg-foreground/[0.03] dark:bg-white/[0.04] border border-border/60 dark:border-white/10 font-mono text-[11px] text-muted-foreground backdrop-blur-xs">
+                          <span className="px-2.5 py-0.5 rounded-lg bg-surface-sunken border border-border/80 font-mono text-[11px] text-muted-foreground">
                             Space: {pattern.spaceComplexity}
                           </span>
                         )}
                       </div>
+
+                      {/* Micro Progress Bar */}
+                      <div className="pt-1.5">
+                        <div className="h-1.5 w-full rounded-full bg-surface-sunken overflow-hidden border border-border/40">
+                          <div
+                            style={{ width: `${pct}%` }}
+                            className={cn(
+                              'h-full rounded-full transition-all duration-500',
+                              isMastered
+                                ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]'
+                                : 'bg-primary'
+                            )}
+                          />
+                        </div>
+                      </div>
                     </div>
 
                     {/* Footer Action Row */}
-                    <div className="pt-4 mt-4 border-t border-border/50 dark:border-white/10 flex items-center justify-between gap-3">
+                    <div className="pt-4 mt-4 border-t border-border/60 flex items-center justify-between gap-3">
                       <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-mono">
                         <span className="font-bold text-foreground">{stat.completed}</span>
                         <span>/</span>
                         <span>{stat.total} solved</span>
+                        <span className="text-muted-foreground/50">({pct}%)</span>
                       </div>
 
-                      <div className="px-4 py-2 rounded-full text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary-hover active:scale-95 transition-all shadow-xs flex items-center gap-1.5 cursor-pointer shrink-0">
+                      <div className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-primary text-primary-foreground group-hover/card:bg-primary-hover active:scale-95 transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer shrink-0">
                         <span>{isMastered ? 'Review' : isInProgress ? 'Continue' : 'Practice'}</span>
-                        <ArrowRight className="size-3 group-hover:translate-x-0.5 transition-transform" />
+                        <ArrowRight className="size-3 group-hover/card:translate-x-0.5 transition-transform" />
                       </div>
                     </div>
                   </div>
@@ -532,4 +547,3 @@ export default function DSAPageClient({ initialPatterns }: { initialPatterns: an
     </div>
   );
 }
-

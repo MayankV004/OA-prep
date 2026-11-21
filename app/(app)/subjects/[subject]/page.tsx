@@ -91,12 +91,6 @@ export default function SubjectPage({ params }: { params: Promise<{ subject: str
       {/* ── 1. Top Header ── */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-1 pb-5 border-b border-border/60">
         <div className="space-y-1.5 min-w-0">
-          <div className="flex items-center gap-2 text-2xs font-bold text-emerald-500 font-mono uppercase tracking-wider">
-            <BookOpen className="size-3.5 inline" />
-            <span>Core Subject</span>
-            <span className="text-border">·</span>
-            <span>/{subject?.slug || slug}</span>
-          </div>
           <h1 className="font-display text-3xl sm:text-4xl font-black tracking-tight text-foreground">
             {subject?.name || slug}
           </h1>

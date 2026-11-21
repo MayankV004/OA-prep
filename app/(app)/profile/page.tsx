@@ -467,14 +467,6 @@ export default function ProfilePage() {
       {/* ── 1. Page Cockpit Header (Clean & Borderless, No Ambient Gradient) ──── */}
       <div className="pt-1 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div className="space-y-2 max-w-2xl">
-          <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold uppercase tracking-wider bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-              Candidate Dossier
-            </span>
-            <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-2xs font-mono text-muted-foreground">Live Telemetry</span>
-          </div>
-
           <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-foreground leading-[1.08]">
             Profile & <span className="text-emerald-600 dark:text-emerald-400">Mastery</span>
           </h1>

@@ -152,7 +152,7 @@ export default function ContestsPage() {
       {/* ── 1. Page Header (Modern Cockpit Header) ── */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pt-2">
         <div className="space-y-3">
-          <div className="flex items-center gap-3">
+          <div>
             <Link
               href="/cp"
               className="inline-flex items-center justify-center size-9 rounded-full bg-card/70 dark:bg-card/35 border border-border/80 dark:border-white/10 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors shadow-2xs cursor-pointer"
@@ -160,9 +160,6 @@ export default function ContestsPage() {
             >
               <ArrowLeft className="size-4" />
             </Link>
-            <span className="text-2xs font-mono font-bold tracking-wider text-primary uppercase">
-              Global CP Tracker
-            </span>
           </div>
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black font-display tracking-tight text-foreground leading-[1.08]">

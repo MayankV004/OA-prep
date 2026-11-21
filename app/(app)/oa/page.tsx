@@ -187,20 +187,15 @@ export default function OACatalogPage() {
     <div className="space-y-8 pb-16">
       {/* ── 1. Page Header (Modern Cockpit Header) ── */}
       <div className="pt-2 space-y-3">
-        <div className="flex items-center gap-2.5">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-card/70 dark:bg-card/35 border border-border/80 dark:border-white/10 text-xs font-mono font-bold tracking-wider text-primary shadow-xs backdrop-blur-md">
-            <span className="size-1.5 rounded-full bg-primary animate-pulse" />
-            PLACEMENT READINESS SIMULATOR
-          </span>
+        <div className="flex items-center gap-3">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black font-display tracking-tight text-foreground leading-[1.08]">
+            Company OA{' '}
+            <span className="bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-400 dark:from-emerald-400 dark:via-teal-300 dark:to-emerald-200 bg-clip-text text-transparent">
+              Mock Simulator
+            </span>
+          </h1>
           {isPro && <ProBadge />}
         </div>
-
-        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black font-display tracking-tight text-foreground leading-[1.08]">
-          Company OA{' '}
-          <span className="bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-400 dark:from-emerald-400 dark:via-teal-300 dark:to-emerald-200 bg-clip-text text-transparent">
-            Mock Simulator
-          </span>
-        </h1>
 
         <p className="text-sm sm:text-base text-muted-foreground font-normal leading-relaxed max-w-2xl">
           Experience authentic Online Assessments under strict countdown timers, proctoring emulation, and real hiring cut-offs for Amazon, Google, Uber, and Microsoft.

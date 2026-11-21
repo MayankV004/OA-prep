@@ -29,15 +29,15 @@ function Brand({ collapsed, href }: { collapsed: boolean; href: string }) {
       )}
       aria-label="BigO home"
     >
-      <BigOIcon className="size-8 shrink-0" />
+      <BigOIcon className="size-8 shrink-0 bg-white text-[#065f46] dark:bg-primary dark:text-primary-foreground shadow-sm" />
       <span
         className={cn(
-          'truncate font-display text-base font-black tracking-tight text-foreground',
+          'truncate font-display text-base font-black tracking-tight text-white dark:text-foreground',
           'transition-opacity duration-200 ease-out-quart',
           collapsed && 'w-0 opacity-0'
         )}
       >
-        Big<span className="text-primary">O</span>
+        Big<span className="text-emerald-300 dark:text-primary">O</span>
       </span>
     </Link>
   );
@@ -55,16 +55,17 @@ function SearchTrigger({
       type="button"
       onClick={onOpen}
       className={cn(
-        'press group flex h-9 w-full items-center rounded-lg bg-input-background px-3 text-sm outline-none',
-        'text-text-muted hover:bg-muted hover:text-foreground',
+        'press group flex h-9 w-full items-center rounded-lg px-3 text-sm outline-none transition-colors cursor-pointer',
+        'bg-white/10 text-white/80 hover:bg-white/15 hover:text-white border border-white/15',
+        'dark:bg-white/[0.06] dark:border-white/15 dark:text-zinc-200 dark:hover:bg-white/[0.1] dark:hover:text-white dark:hover:border-emerald-500/30',
         collapsed && 'justify-center px-0'
       )}
     >
-      <Search className="size-4 shrink-0" aria-hidden />
+      <Search className="size-4 shrink-0 text-white/80 group-hover:text-white dark:text-zinc-300 dark:group-hover:text-white transition-colors" aria-hidden />
       {!collapsed ? (
         <>
-          <span className="ml-2.5 flex-1 text-left">Search</span>
-          <kbd className="inline-flex h-5 items-center gap-0.5 rounded bg-surface px-1.5 font-mono text-2xs font-medium text-text-muted shadow-e1">
+          <span className="ml-2.5 flex-1 text-left text-xs font-medium">Search</span>
+          <kbd className="inline-flex h-5 items-center gap-0.5 rounded px-1.5 font-mono text-2xs font-medium border shadow-xs bg-white/15 text-white/90 border-white/20 dark:bg-white/10 dark:text-zinc-200 dark:border-white/15">
             <span className="text-xs">⌘</span>K
           </kbd>
         </>
@@ -89,16 +90,16 @@ function UpgradeBanner({ collapsed }: { collapsed: boolean }) {
   if (isPro || collapsed) return null;
 
   return (
-    <div className="rounded-xl border border-warning/30 bg-warning/10 p-3 text-left">
-      <div className="font-semibold text-xs text-warning">
+    <div className="rounded-xl border border-white/15 bg-white/10 p-3 text-left dark:border-amber-500/25 dark:bg-amber-500/10">
+      <div className="font-semibold text-xs text-amber-300 dark:text-amber-400">
         Upgrade to BigO Pro
       </div>
-      <p className="mt-1 text-[11px] text-muted-foreground leading-tight">
+      <p className="mt-1 text-[11px] text-white/80 dark:text-zinc-300 leading-tight">
         Unlock timed mock OAs & AI testcase debugger.
       </p>
       <Link
         href="/pricing"
-        className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-warning hover:underline"
+        className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-amber-300 hover:text-amber-200 dark:text-amber-400 dark:hover:text-amber-300 hover:underline"
       >
         <span>View Plans</span>
         <ArrowRight className="h-3 w-3" />
@@ -172,7 +173,11 @@ function Sidebar({
       <aside
         style={{ width: collapsed ? COLLAPSED : EXPANDED }}
         className={cn(
-          'fixed inset-y-0 left-0 z-30 hidden bg-sidebar/80 backdrop-blur-xl border-r border-border/50 shadow-xl md:block',
+          'fixed inset-y-0 left-0 z-30 hidden border-r shadow-xl md:block',
+          // Light mode: Vibrant Executive Emerald gradient
+          'bg-gradient-to-b from-[#047857] via-[#065f46] to-[#064e3b] text-white border-white/10',
+          // Dark mode: High-contrast Cyber-Emerald Obsidian gradient with vibrant emerald border
+          'dark:bg-gradient-to-b dark:from-[#081e18] dark:via-[#061713] dark:to-[#030d0a] dark:text-white dark:border-emerald-500/20 dark:shadow-[4px_0_30px_rgba(0,0,0,0.7)]',
           ready && 'transition-[width] duration-250 ease-out-quart'
         )}
       >
@@ -195,9 +200,11 @@ function Sidebar({
                 aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
                 aria-expanded={!collapsed}
                 className={cn(
-                  'press absolute -right-3 top-16 grid size-6 place-items-center rounded-full',
-                  'bg-surface text-text-muted shadow-e2 outline-none',
-                  'hover:text-foreground'
+                  'press absolute -right-3 top-16 grid size-6 place-items-center rounded-full outline-none cursor-pointer',
+                  // Light mode
+                  'bg-white text-[#065f46] border border-[#065f46]/20 shadow-md hover:bg-emerald-50 hover:text-[#064e3b]',
+                  // Dark mode: Luminous high-contrast toggle
+                  'dark:bg-[#0a1f18] dark:text-emerald-400 dark:border-emerald-500/35 dark:shadow-[0_0_14px_rgba(16,185,129,0.25)] dark:hover:bg-emerald-950 dark:hover:text-emerald-300'
                 )}
               >
                 {collapsed ? (
@@ -245,13 +252,13 @@ function Sidebar({
                   setMobileOpen(false);
                 }
               }}
-              className="absolute inset-y-0 left-0 w-[min(19rem,85vw)] bg-sidebar shadow-e4"
+              className="absolute inset-y-0 left-0 w-[min(19rem,85vw)] bg-gradient-to-b from-[#047857] via-[#065f46] to-[#064e3b] text-white dark:bg-gradient-to-b dark:from-[#081e18] dark:via-[#061713] dark:to-[#030d0a] dark:text-white dark:border-r dark:border-emerald-500/20 shadow-e4"
             >
               <button
                 type="button"
                 onClick={() => setMobileOpen(false)}
                 aria-label="Close navigation"
-                className="press absolute right-3 top-3 z-10 grid size-9 place-items-center rounded-lg text-text-muted outline-none hover:bg-muted hover:text-foreground"
+                className="press absolute right-3 top-3 z-10 grid size-9 place-items-center rounded-lg text-white/80 hover:bg-white/10 hover:text-white dark:text-text-muted dark:hover:bg-muted dark:hover:text-foreground outline-none"
               >
                 <X className="size-4" />
               </button>

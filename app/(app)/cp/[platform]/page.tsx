@@ -23,7 +23,7 @@ export default function CPPlatformPage({ params }: { params: Promise<{ platform:
     <div className="space-y-8 pb-16">
       {/* ── 1. Header & Navigation ── */}
       <header className="flex flex-col gap-4 pt-2">
-        <div className="flex flex-wrap items-center gap-3">
+        <div>
           <Link
             href="/cp"
             className="group inline-flex items-center justify-center size-9 rounded-xl bg-card border border-border/70 text-muted-foreground hover:text-primary hover:border-primary/40 hover:bg-primary/5 transition-all shrink-0"
@@ -31,15 +31,6 @@ export default function CPPlatformPage({ params }: { params: Promise<{ platform:
           >
             <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-0.5" />
           </Link>
-
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-500 border border-emerald-500/25">
-            <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_6px_rgba(16,185,129,0.8)]" />
-            Competitive Programming
-          </span>
-
-          <span className="px-2.5 py-0.5 rounded-full bg-muted/70 text-muted-foreground font-mono text-[10px] font-medium border border-border/50">
-            Upsolving Track
-          </span>
         </div>
 
         <div className="space-y-1">

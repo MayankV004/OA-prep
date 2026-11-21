@@ -549,12 +549,6 @@ export default function InterviewSubjectPage({
       {/* ── 1. Top Header Strip ── */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-1 pb-5 border-b border-border/50">
         <div className="space-y-1.5 min-w-0">
-          <div className="flex items-center gap-2 text-2xs font-bold text-emerald-400 font-mono uppercase tracking-wider">
-            <GraduationCap className="size-3.5 inline" />
-            <span>Interview Drill Studio</span>
-            <span className="text-border">·</span>
-            <span>/{group?.slug || slug}</span>
-          </div>
           <h1 className="font-display text-3xl sm:text-4xl font-black tracking-tight text-foreground">
             {group?.name || slug} Questions
           </h1>

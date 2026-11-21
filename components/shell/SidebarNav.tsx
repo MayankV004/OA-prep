@@ -37,7 +37,8 @@ function SidebarNav({
           {/* The label collapses to a hairline rather than disappearing abruptly. */}
           <p
             className={cn(
-              'px-3 text-2xs font-semibold uppercase tracking-[0.1em] text-text-muted',
+              'px-3 text-2xs font-semibold uppercase tracking-[0.1em]',
+              'text-white/60 dark:text-emerald-400/80',
               'transition-all duration-200 ease-out-quart',
               collapsed
                 ? 'h-0 overflow-hidden opacity-0'
@@ -143,14 +144,14 @@ function SidebarNavLink({
         'transition-colors duration-150 ease-out-quart',
         collapsed && 'justify-center px-0',
         active
-          ? 'text-primary font-bold'
-          : 'text-text-secondary hover:bg-muted/60 hover:text-foreground'
+          ? 'text-white font-bold dark:text-emerald-300'
+          : 'text-white/75 hover:bg-white/10 hover:text-white dark:text-zinc-300 dark:hover:bg-white/[0.08] dark:hover:text-white'
       )}
     >
       {active ? (
         <motion.span
           layoutId={layoutId}
-          className="absolute inset-0 rounded-xl bg-primary/12 border border-primary/25 shadow-[0_0_14px_rgba(99,102,241,0.18)] before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white/25 before:to-transparent"
+          className="absolute inset-0 rounded-xl bg-white/15 border border-white/25 shadow-xs dark:bg-emerald-500/20 dark:border-emerald-500/35 dark:shadow-[0_0_18px_rgba(16,185,129,0.3)] before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white/25 before:to-transparent"
           transition={{ type: 'spring', stiffness: 380, damping: 32 }}
           aria-hidden
         />
@@ -159,7 +160,9 @@ function SidebarNavLink({
       <Icon
         className={cn(
           'relative z-10 size-4 shrink-0 transition-colors',
-          active ? 'text-primary' : 'text-text-muted group-hover:text-foreground'
+          active
+            ? 'text-white dark:text-emerald-300'
+            : 'text-white/70 group-hover:text-white dark:text-zinc-400 dark:group-hover:text-white'
         )}
       />
 

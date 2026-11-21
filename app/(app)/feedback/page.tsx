@@ -121,10 +121,6 @@ export default function FeedbackPage() {
 
       {/* Page Header */}
       <div className="text-center max-w-3xl mx-auto space-y-4">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-mono font-bold uppercase tracking-wider">
-          <Sparkles className="size-3 text-emerald-500" />
-          Product Telemetry & Community Feedback
-        </div>
         <h1 className="text-3xl sm:text-5xl font-display font-black tracking-tight text-foreground">
           Report an Issue or{' '}
           <span className="text-primary">
